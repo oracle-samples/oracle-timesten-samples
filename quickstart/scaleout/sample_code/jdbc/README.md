@@ -35,6 +35,7 @@ To build and run the sample program:
 4.    Build GridSample using the provided Makefile.
 
       make clean
+      
       make
 
 5.    Run the sample program. You can use the 'gridsample.sh' wrapper script as a convenience if so desired.

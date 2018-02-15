@@ -29,7 +29,7 @@ To build and run the sample program:
 
 3.    Set your environment for the TimesTen instance that you will use to connect to the database (this instance must be configured with a suitable connectable):
 
-      source \<instance_home\>/bin/ttenv.[c]sh
+      source \<instance\_home\>/bin/ttenv.[c]sh
       
       source \<quickstart\_install\_dir\>/scaleout/ttquickstartenv.[c]sh
 
@@ -37,11 +37,13 @@ To build and run the sample program:
 4.    Build GridSample using the provided Makefile. If you have a full instance then you can build both the direct mode (GridSample) and client/server (GridSampleCS) binaries:
 
       make clean
+  
       make
 
-      If you have a client instance then instead build just the client/server (GridSampleCS) binary:
+    If you have a client instance then instead build just the client/server (GridSampleCS) binary:
 
       make clean
+
       make csonly
 
 5.    Run the sample program. 
