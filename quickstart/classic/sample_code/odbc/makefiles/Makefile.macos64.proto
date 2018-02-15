@@ -1,0 +1,174 @@
+#
+# Build TimesTen Sample Programs (Unix)
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# $Revision: /main/1 $
+#
+
+INSTDIR         = $(TIMESTEN_HOME)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
+TTDMDIR         = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
+
+CC              = cc
+
+PLATCFLAGS      = -m64 -O2 -finline-functions
+LDFLAGS         = -Wl,-rpath -Wl,$(INSTDIR)/lib -lpthread -lm -lc -ldl
+SHLIB_SUFFIX    = dylib
+
+INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
+
+CSDEFS          = -DTTCLIENTSERVER
+CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
+
+TTLINK          = -L$(INSTDIR)/lib
+TTDMLINK        = -L$(QUICKSTART_HOME)/lib
+
+DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
+CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS)
+TTDMLIBS        = $(TTDMLINK) -lttdrvmgr $(EXTRALIBS)
+
+#
+# TimesTen Driver Manager Shared Library
+#
+TTDMSHLIB       = $(INSTDIR)/lib/libttdrvmgr.$(SHLIB_SUFFIX)
+
+BLKINSDC        = bulkinsert
+BLKINSDCOBJS    = bulkinsert.o ttTime.o utils.o ttgetopt.o
+BLKINSCS        = bulkinsertCS
+BLKINSCSOBJS    = bulkinsertCS.o ttTime.o utils.o ttgetopt.o
+BLKINSTTDM      = bulkinsertTTDM
+
+TPCBDC          = tpcb
+TPCBDCOBJS      = tpcb.o ttTime.o utils.o ttgetopt.o
+TPCBCS          = tpcbCS
+TPCBCSOBJS      = tpcbCS.o ttTime.o utils.o ttgetopt.o
+TPCBTTDM        = tpcbTTDM
+
+TPTBMDC         = tptbm
+TPTBMDCOBJS     = tptbm.o utils.o ttgetopt.o
+TPTBMCS         = tptbmCS
+TPTBMCSOBJS     = tptbmCS.o utils.o ttgetopt.o
+TPTBMTTDM       = tptbmTTDM
+
+WISCBMDC        = wiscbm
+WISCBMDCOBJS    = wiscbm.o wiscextra.o utils.o ttTime.o ttgetopt.o
+WISCBMCS        = wiscbmCS
+WISCBMCSOBJS    = wiscbmCS.o wiscextra.o utils.o ttTime.o ttgetopt.o
+WISCBMTTDM      = wiscbmTTDM
+
+PROGS           = $(BLKINSCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS)
+
+#
+# Top level targets
+#
+
+all:		$(PROGS)
+
+clean:
+	rm -f $(PROGS) *.o
+
+#
+# Targets for building Direct Linked executables
+#
+
+$(BLKINSDC):	$(BLKINSDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(BLKINSDCOBJS) $(DCLIBS)
+
+$(PLSQLODBCDC): $(PLSQLODBCDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCDCOBJS) $(DCLIBS)
+
+$(TPCBDC):	$(TPCBDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPCBDCOBJS) $(DCLIBS) -lm
+
+$(TPTBMDC):	$(TPTBMDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMDCOBJS) $(DCLIBS) -lm
+
+$(WISCBMDC):	$(WISCBMDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMDCOBJS) $(DCLIBS) -lm
+
+
+#
+# Targets for Client Server building executables
+#
+
+$(BLKINSCS):	$(BLKINSCSOBJS)
+	$(CC) $(CFLAGS) -o $@ $(BLKINSCSOBJS) $(CSLIBS) $(LDFLAGS)
+
+$(PLSQLODBCCS): $(PLSQLODBCCSOBJS)
+	$(CC) $(CFLAGS) -o $@ $(PLSQLODBCCSOBJS) $(CSLIBS) $(LDFLAGS)
+
+$(TPCBCS):	$(TPCBCSOBJS)
+	$(CC) $(CFLAGS) -o $@ $(TPCBCSOBJS) $(CSLIBS) $(LDFLAGS)
+
+$(TPTBMCS):	$(TPTBMCSOBJS)
+	$(CC) $(CFLAGS) -o $@ $(TPTBMCSOBJS) $(CSLIBS) $(LDFLAGS)
+
+$(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
+	$(CC) $(CFLAGS) -o $@ $(WISCBMCSOBJS) $(CSLIBS) $(LDFLAGS)
+
+#
+# Targets for TimesTen Driver Manager building executables
+#
+
+$(BLKINSTTDM):	$(BLKINSDCOBJS) $(TTDMSHLIB)
+	$(CC) -o $@ $(LDFLAGS) $(BLKINSCSOBJS) $(TTDMLIBS)
+
+$(PLSQLODBCTTDM): $(PLSQLODBCDCOBJS) $(TTDMSHLIB)
+	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCCSOBJS) $(TTDMLIBS)
+
+$(TPCBTTDM):	$(TPCBDCOBJS) $(TTDMSHLIB)
+	$(CC) -o $@ $(LDFLAGS) $(TPCBCSOBJS) $(TTDMLIBS) -lm
+
+$(TPTBMTTDM):	$(TPTBMDCOBJS) $(TTDMSHLIB)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(TTDMLIBS) -lm
+
+$(WISCBMTTDM):	$(WISCBMDCOBJS) wiscprotos.h sqlfunc.h $(TTDMSHLIB)
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMCSOBJS) $(TTDMLIBS) -lm
+	
+#
+# Targets for building object files
+#
+
+utils.o:	$(COMMDIR)/utils.c $(COMMDIR)/utils.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/utils.c
+
+ttgetopt.o:	$(COMMDIR)/ttgetopt.c $(COMMDIR)/ttgetopt.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/ttgetopt.c
+
+ttTime.o:	$(COMMDIR)/ttTime.c $(COMMDIR)/ttTime.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/ttTime.c
+
+bulkinsert.o:	bulkinsert.c
+	$(CC) $(CFLAGS) -o $@ -c bulkinsert.c
+
+bulkinsertCS.o:	bulkinsert.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c bulkinsert.c
+
+
+tpcb.o:		tpcb.c
+	$(CC) $(CFLAGS) -o $@ -c tpcb.c
+
+tpcbCS.o:	tpcb.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c tpcb.c
+
+tptbm.o:	tptbm.c
+	$(CC) $(CFLAGS) -o $@ -c tptbm.c
+
+tptbmCS.o:	tptbm.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c tptbm.c
+
+wiscextra.o:	wiscextra.c
+	$(CC) $(CFLAGS) -o $@ -c wiscextra.c
+
+wiscbm.o:	wiscbm.c wiscprotos.h sqlfunc.h
+	$(CC) $(CFLAGS) -o $@ -c wiscbm.c
+
+wiscbmCS.o:	wiscbm.c wiscprotos.h sqlfunc.h
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c wiscbm.c
+
+#
+# Target for building TimesTen Driver Manager shared library
+#
+
+$(TTDMSHLIB):
+	cd $(TTDMDIR); make

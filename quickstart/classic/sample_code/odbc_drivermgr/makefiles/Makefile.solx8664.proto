@@ -1,0 +1,64 @@
+#
+# Build TimesTen Sample Programs (Unix)
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# $Revision: /main/1 $
+#
+
+INSTDIR         = $(TIMESTEN_HOME)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
+TTDMDIR         = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
+
+CC              = cc
+
+EXTRALIBS       =  -lposix4 -lpthread -lthread -lsocket -lnsl -lm -lc -ldl
+PLATCFLAGS      = -xO4 -mt -m64 -Kpic
+DEFS            = -DBITS64 -DTT_LIB_VERSION=181000
+LDFLAGS         = -G -Bdynamic $(PLATCFLAGS)
+LIBS            = -ldl -lpthread
+SHLIB_SUFFIX    = so
+
+INCS            = -I$(INSTDIR)/include -I$(COMMDIR) -I.
+
+CSDEFS          = -DTTCLIENTSERVER
+CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
+
+TTLINK          = -L$(INSTDIR)/lib -R$(INSTDIR)/lib
+TTDMLINK        = -L$(QUICKSTART_HOME)/lib -R$(QUICKSTART_HOME)/lib
+
+DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
+CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS)
+TTDMLIBS        = $(TTDMLINK) -lttdrvmgr $(EXTRALIBS)
+
+
+#
+# TimesTen Driver Manager Shared Library
+#
+TTDMSHLIB       = $(QUICKSTART_HOME)/lib/libttdrvmgr.$(SHLIB_SUFFIX)
+
+DMSHLIB         = $(QUICKSTART_HOME)/lib/libttdrvmgr.$(SHLIB_SUFFIX)
+DMOBJ           = ttdrvmgr.o
+DMSRC           = ttdrvmgr.c
+DMHDR           = ttdrvmgr.h ttdmbldopt.h
+
+
+PROGS           = $(DMOBJ) $(DMSHLIB)
+
+#
+# Top level targets
+#
+
+all:		$(PROGS)
+
+ttdrvmgr:
+	@echo "Invalid target. Run 'make all'."
+
+clean:
+	rm -f $(PROGS) *.o
+
+
+$(DMSHLIB):	$(DMOBJ)
+	$(CC) $(LDFLAGS) -o $(DMSHLIB) $(DMOBJ) $(LIBS)
+
+$(DMOBJ):	$(DMSRC) $(DMHDR)
+	$(CC) $(INCS) $(CFLAGS) -c $(DMSRC)

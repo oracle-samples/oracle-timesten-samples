@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Installing Oracle Clusterware and TimesTen</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Installing Oracle Clusterware and TimesTen</span>
+<p >The installation and configuration tasks for both Oracle Clusterware and TimesTen are distinct and different.<br />
+This section describes how to install Oracle Clusterware and TimesTen.</p>
+
+<p><span class="section1">1. Install Oracle Clusterware 11.2.0.4 on the cluster nodes</span></p>
+
+<table class="steps" border="1">
+	<tr class="r0">
+		<td class="c0" >1.</td>
+		<td class="c1" >Install Oracle Clusterware 11.2.0.4</td>
+		<td class="c2" >Install Oracle Clusterware according to the instructions in the installation guide for the platform you are using.<br/><br/>
+		Oracle Clusterware starts automatically after a successful installation.</td>
+	</tr>
+	<tr class="r1">
+		<td class="c0" >2.</td>
+		<td class="c1" >Verify all of the steps </td>
+	  <td class="c2" >Make sure that the Cluster Verify Utility is used to confirm that all nodes are properly configured 
+		for Oracle Clusterware during the pre and post installation steps.<br/><br/>
+		If Oracle Clusterware is not installed and configured correctly, then the TimesTen 
+		<span class="doclink">ttCWAdmin -create</span> 
+		utility will not work correctly.		</td>
+	</tr>
+</table>
+<p >&nbsp;</p>
+
+<p class="section1">2. Install TimesTen 18.1 on the cluster nodes</p>
+<table class="steps" border="1">
+	<tr class="r0">
+		<td class="c0" >1.</td>
+		<td class="c1" >Install TimesTen 18.1 on each node</td>
+		<td class="c2" >Install TimesTen software and create instance on each node where Oracle Clusterware was installed.<br/>
+		<br/>
+		The TimesTen  <span class="doclink"> ttInstanceCreate </span> command  prompts you to indicate if you want to install TimesTen replication with Oracle Clusterware. 
+		It prompts you for the path into which to install the Oracle Clusterware installation 
+		and the port number for the TimesTen Clusterware agent.
+		The install also checks for any nodes where the Oracle Clusterware is currently configured and prompts you to specify 
+	  a node list for TimesTen replication with Oracle Clusterware.</td>
+	</tr>
+	<tr class="r1">
+		<td class="c0" >2.</td>
+		<td class="c1" >Use same config on each node</td>
+		<td class="c2" >Create TimesTen instance as the same OS user and in the same location on each node.<br/><br/>
+		Although you do not need to  create TimesTen instance using the same OS user as Oracle Clusterware, 
+		doing so will simplify the administration.</td>
+	</tr>
+	<tr class="r0">
+		<td class="c0" >3.</td>
+		<td class="c1" >Add clusterware specific parameters</td>
+		<td class="c2" >When Timesten is to be used with Oracle Clusterware, the following Oracle Clusterware specific parameters 
+		<b>must</b> to be added either as part of the 
+		<span class="doclink">instance creation</span> 
+		or via <span class="doclink">ttInstanceModify</span>:
+		<ul>
+			<li>TCP Port (the port used by the TimesTen Cluster Agent)</li>
+			<li>crsHome (the absolute path where Oracle Clusterware was installed)</li>
+			<li>hosts (the list of hosts to be managed by Oracle Clusterware)</li>                
+		</ul>
+	  TimesTen starts automatically after a successful installation.</td>
+	</tr>
+</table>
+ <p>Click <a href="cw_aspair_config_timesten.html" class="compilerun">here</a> to learn how to configure an Active Standby Pair
+with TimesTen In-Memory Database and Clusterware.</p>
+<p>Click <a href="cw_aspair_config_timesten_cache.html" class="compilerun">here</a> to learn how to configure an an Active Standby Pair
+with TimesTen Application-Tier Database Cache and Clusterware.</p>
+<p>For more information about TimesTen installation refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61193/ovwreqts.htm#TTINS372" target="_blank" class="doclink">here</a> </p>
+<p>&nbsp; </p>
+</div>
+<div id="footer"/>
+</body>
+</html>

@@ -1,0 +1,28 @@
+
+
+<project name="TimesTenDialect1122" default="compile" basedir=".">
+
+    <property file="build.properties"/>
+    <property name="src.dir"   value="${basedir}"/>
+    <property name="build.dir" value="${basedir}/build"/>
+
+    <!-- Initialize the build -->
+    <target name="prepare">
+        <mkdir dir="${build.dir}"/>
+    </target>
+
+    <!-- Compile  -->
+    <target name="compile" depends="prepare">
+        <javac destdir="${build.dir}" srcdir="${src.dir}"
+               includeantruntime="false"
+               includes="TimesTenDialect1122.java"
+               classpath="${hibernate.jar}">
+        </javac>
+    </target>
+
+    <!-- Clean -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+</project>

@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Setting Up a Cache Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Setting Up a Cache Database</span>
+<p >Before you can  start caching Oracle tables, you need to   create a TimesTen in-memory    database. 
+This  database must include a  user with either <span class="codetext">ADMIN</span> or <span class="codetext">CACHE_MANAGER</span> privilege. 
+This user is known as the cache manager user, he is responsible for administrating the cache groups. 
+The  Oracle user that owns the tables to be cached  must also exist in the cache database, this user is known as the cache table user. </p>
+<p class="section1">1. Create a Cache Database</p>
+<blockquote><ol type=a>
+<li>
+	<p>Create a cache database by first defining a 
+	  <span class="doclink">DSN</span>, 
+	in this tutorial  we will use <em class="codetext">cachedb1_1211</em>.</p>
+	<p>
+    On Linux and UNIX  systems, <span class="codetext">system DSN</span> are defined in the   <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini</span> file. </p> 
+<p>The following section goes through an example of how to set up a system DSN. Suppose that you want to:</p>
+<ul>
+	<li>name your TimesTen database <span class="codetext">cachedb1_1211</span></li>
+    	<li>have your TimesTen instance known as <span class="codetext">$TIMESTEN_HOME</span>  location be <span class="codetext">/home/timesten/instance/tt181</span></span></li>
+	<li>have your TimesTen database's disk location be <span class="codetext">/home/timesten/instance/tt181/sample_db/</span></li>
+	<li>have your TimesTen database's transaction logs located in the same directory as your database</li>
+</ul>
+<p>In your <span class="codetext">sys.odbc.ini </span>file, add a  new data source name in the section labeled 
+	<span class="codetext">[ODBC Data Sources]</span> :</p>
+	<p class="codetext">cachedb1_1211=TimesTen 18.1 Driver</p>
+    </p>
+    
+    For each DSN entry specified, there is a corresponding set of database properties and attributes you need to specify. 
+	The database attributes can be added anywhere after the <span class="codetext">[ODBC Data Sources]</span> section.</p>
+
+	<p><b>Note:</b> The DSN name appears inside square brackets at the top of the DSN definition on a line by itself</p>
+    <p class="codetext">
+          [cachedb1_1211]<br />
+          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
+          DataStore=/home/timesten/instance/tt181/sample_db/cachedb1_1211<br />
+          PermSize=512<br />
+          TempSize=128<br />
+          LogBufMB=256<br />
+          LogFileSize=256<br />
+          DatabaseCharacterSet=AL32UTF8<br />
+          PLSQL=1<br />
+          OracleNetServiceName=ttorcl 
+  	</p><br/>
+    
+    <p><b>Note:</b> the DSN attribute 
+	  <span class="doclink">OracleNetServiceName</span> 
+	must contain a valid TNS service name  pointing to the Oracle database, and the value of 
+	<span class="doclink">DatabaseCharacterSet</span> 
+	must be identical  to the database character set  defined in the   Oracle database. 
+	Please update these two attributes with the correct settings before proceeding.
+	If necessary, refer to the section <a href="db_ops_createdb.html">Creating a TimesTen Database</a> for more information.</p>
+    <p>In the example, we are using  <span class="codetext">ttorcl</span> as the <span class="codetext">OracleNetServiceName</span> 
+	and <span class="codetext">AL32UTF8</span> as the <span class="codetext">DatabaseCharacterSet</span>. </p>
+</li><br/>
+<li>
+	<p>Create and connect to the database <span class="codetext">cachedb1_1211</span> in  ttIsql as the instance administrator </p>
+     <p class="codetext">ttisql<br />
+       connect cachedb1_1211;</p>
+	<p><img class="cmdscnshot" src="../images/cg_config_tt_cr_cachedb1.gif" alt="create cachedb1" /></p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">2. Create a Cache Manager User</p>
+<blockquote><ol type=a>
+<li>
+	<p>Create a <span class="doclink">cache manager  user</span> 
+	by granting either <span class="codetext">ADMIN</span> or <span class="codetext">CACHE_MANAGER</span> privilege to this user. 
+	This user is responsible for setting up and managing the cache, and creating and loading data into the cache groups. </p>
+    <p>In the example, <span class="codetext">cacheadm</span> is the  cache manager user. This user has the same user name as the 
+	cache administration user in the Oracle database.</p>
+	<p class="codetext">create user  <em>cacheadm</em> identified by  <em>cacheadm</em>; <br />
+	grant  admin  to <em>cacheadm</em>; </p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">3. Create a Cache Table User </p>
+<blockquote><ol type=a>
+<li>
+	<p>In order to cache Oracle  tables, the user who owns the Oracle tables to be cached must  also exist in the TimesTen cache database.</p>
+	<p>In our example, we are caching the tables owned by the <span class="codetext">HR</span> user. 
+	Therefore the <span class="codetext">HR</span> user needs to be created.</p>
+	<p class="codetext">create user <em>hr</em> identified by hr; <br/>
+	grant  create session to hr; </p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">4. Associate the Oracle Cache Administration user with the Cache Database </p>
+<blockquote><ol type=a>
+<li>
+	<p>Log in as the cache manager user, making sure to specify the password used by 
+	the cache administration user in the Oracle database. Use the built-in procedure 
+	  <span class="doclink">ttCacheUidPwdSet</span> 
+	to associate the  Oracle cache administration user with the cache database.  Verify that the Oracle cache administration 
+	user has been set by calling the procedure 
+	<span class="doclink">ttCacheUidGet</span>.</p>
+    <p class="codetext">connect &quot;dsn=cachedb1_1211;uid=cacheadm;oraclepwd=cacheadm&quot;;</p>
+    <p class="codetext">call ttcacheuidpwdset  ('cacheadm','cacheadm');<br />
+    call ttcacheuidget;</p>
+    <p><img class="cmdscnshot" src="../images/cg_config_tt_cacheuidpwdset.gif" alt="call ttcacheuidpwdset" /></p>
+</li><br/>
+</ol></blockquote>
+ 
+<p>Click <a href="cache_create_cache_group.html" class="compilerun">here</a> to learn how to create cache groups to a cache Database.</p>
+<p> <br />
+  For more information about Configuring a TimesTen database to cache Oracle Database data refer to the documetation <a href="http://docs.oracle.com/database/timesten-18.1/e61196/prereqs.htm#TTCAC182" target="_blank" class="doclink">here</a> </p>
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Compile and Run application with WebSphere Applicaton Server</title>
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Compile and Run application with WebSphere Applicaton Server</span>
+<p class="normal"><span class="section1"><br />
+IMPORTANT PRE-REQUISITES</span> </p>
+<blockquote>
+<p class="normal-bold">1. <a href="../sample_dsn_setup.html">Manually Configure Sample DSN for Sample Programs</a> </span></p>
+   <p class="normal-bold">2. Set up  environment to compile and run the sample application</p>
+  <p class="normal">The following script must be run for each of the terminal session:</p>
+    <li><p class="normal">Set up the Instance environment variables:<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></p></li>
+ 
+  <li><p class="normal">Set up quickstart environment variables:</p> 
+  <table width="606" border="0">
+  
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ . quickstart/classic/ttquickstartenv.sh <span class="normal-bold">OR</span><br />
+        $ source 
+        quickstart/classic/ttquickstartenv.csh</td>
+    </tr>
+  </table>
+  </li>
+  <p class="normal-bold">3. Set up sample database, user accounts and the TPTBM table</p>
+  <p class="normal">The following command should be run once to set up the sample database, user accounts and the TPTBM table.</p>
+  <table width="608" border="0">
+    <tr>
+      <td width="62" valign="top" class="normal">Unix/Linux:</td>
+      <td width="3" class="codetext">&nbsp;</td>
+      <td width="529" class="codetext">&gt; cd quickstart/classic/sample_code/j2ee_orm<br />
+        &gt; ttIsql -connStr "DSN=sampledb" -f tptbm.sql</td>
+    </tr>
+  </table>
+
+  <p class="normal-bold">3. If necessary, install the Apache Ant build tool.</p>
+  <p class="normal">For each application server, an Ant build script is provided to configure, build and execute the application based on the properties of the applicaton server installation. The Apache Ant build tool has to be installed if not present.
+  <p class="normal">After installation, make sure the Operating System environment variable PATH includes the path to the 'ant' executable.
+  <p class="normal">The Ant build scripts have been tested with Apache Ant version 1.9.2.<p>
+
+
+</blockquote>
+
+<p class="normal"> &nbsp;&nbsp; </p>
+<p class="normal"><span class="section1">CONFIGURE AND RUN</span></p>
+
+<blockquote>
+  <p class="normal-bold">1. install WebSphere Application Server and configure build.properties </p>
+  <p class="normal">Install WebSphere Application Server 8.5 and then set the following properties in file <span class="codetext"><a href="../../../sample_code/j2ee_orm/build.properties">quickstart/classic/sample_code/j2ee_orm/build.properties</a>:</span>
+
+<pre>
+    websphere.home.dir      -- set this to the home (WAS_HOME) installation 
+                               directory of the local WebSphere server 
+                               installation
+
+    websphere.profile.dir   -- set this to the profile directory for the 
+                               WebSphere server that will deploy the Tptbm 
+                               EJB
+
+    websphere.cell          -- set this to the the name of the WebSphere 
+                               cell that will run the Tptbm EJB
+
+    websphere.host          -- the name of the host machine running the 
+                               WebSphere application server
+
+    websphere.port          -- the RMI port number used by clients to 
+                               communicate with the server, the default port
+                               number is 2809
+</pre>
+
+  Each Ant build script reads values from file <span class="codetext">quickstart/classic/sample_code/j2ee_orm/build.properties</span>. This file specifies the locations of build dependencies including the location of the application server installation. This file also specifies the common benchmark execution parameters.</p>
+
+  <p class="normal-bold">2. TimesTen Data Source</p>
+  <p class="normal"> 
+
+   Before the application can be deployed or executed, a TimesTen data source with
+   the JNDI name of jdbc/TbtbmDS must be configured on the server. This can
+   be done from a web browser by configuring a JDBC Provider resource for
+   TimesTen within the WebSphere Administrative Console. Follow these steps
+   to configure the TimesTen data source:
+
+  <ol type="a">
+    <li> Login to the WebSphere Administrative Console from a web browser. The default URL for this is '<span class="codetext">http://localhost:9060/ibm/console</span>'.<br><br>
+   
+    <li> Select <span class="codetext">Resources-&gt;JDBC-&gt;JDBC Providers</span> from the left hand panel.<br><br>
+
+    <li> Select a scope from the drop down list box.<br><br>
+
+    <li>Click the New button to create a new JDBC Provider. In the 
+    '<span class="codetext">Database type</span>' list box select '<span class="codetext">User-defined</span>'. 
+    <br>In the 
+    '<span class="codetext">Implementation class name</span>' field specify 
+    '<span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span>'. 
+    <br>In the 'Name' field type 
+    '<span class="codetext">TimesTen JDBC Provider</span>'. 
+    <br>Click the Next button.<br><br>
+
+    <li> In the '<span class="codetext">Class path</span>' field specify the complete path to the TimesTen JDBC driver jar file, for example: '<span class="codetext">C:\TimesTen\tt1122_64\lib\ttjdbc6.jar</span>'.
+    <br>Click the Next button and then click the Finish button at the summary screen.<br><br>
+
+    <li> Click the name of the TimesTen JDBC provider that was just created. In 
+    the '<span class="codetext">Native library path</span>' field specify the directory where the TimesTen shared libraries are located, for example: '<span class="codetext">C:\TimesTen\tt1122_64\bin</span>'. 
+    <br>Click the Apply button. 
+    <br>Click the Save link to save the configuration.<br><br>
+
+      <li> Select <span class="codetext">Resources-&gt;JDBC-&gt;Data sources</span> from the left hand panel.<br><br>
+
+    <li> Select a scope from the drop down list box.<br><br>
+
+    <li> Click the New button to create a new data source. 
+    <br>In the 
+    '<span class="codetext">Data source name</span>' field type '<span class="codetext">TptbmDS</span>'. 
+    <br>In the '<span class="codetext">JNDI name</span>' field type 
+    '<span class="codetext">jdbc/TptbmDS</span>'. 
+    <br>Click Next. 
+    <br>Click the '<span class="codetext">Select an existing JDBC provider</span>' check box and then select the name of the TimesTen JDBC provider. 
+    <br>Click Next. Make sure that the '<span class="codetext">Use this Data Source in container managed persistence</span>' check box is checked. In the '<span class="codetext">Data store helper class name</span>' field '<span class="codetext">com.ibm.websphere.rsadapter.GenericDataStoreHelper</span>' should be specified. 
+    <br>Click the Next button. 
+    <br>Click the next button again on the '<span class="codetext">Setup security aliases</span>' step. 
+    <br>Click the Finish button at the summary screen.<br><br>
+
+    <li> Click on the '<span class="codetext">TptbmDS</span>' data source link. 
+    <br>Click on the '<span class="codetext">Custom properties</span>' link. 
+    <br>Click on the '<span class="codetext">url</span>' property link. In the '<span class="codetext">Value</span>' field type '<span class="codetext">jdbc:timesten:direct:sampledb</span>'. Click the OK button. 
+    <br>Click on the '<span class="codetext">user</span>' property link. In the '<span class="codetext">Value</span>' field type '<span class="codetext">SCOTT</span>'. Click the OK button. 
+    <br>Click on the '<span class="codetext">password</span>' property link. In the '<span class="codetext">Value</span>' field type '<span class="codetext">tiger</span>'.  Click the OK button. 
+    <br>Click on the '<span class="codetext">webSphereDefaultIsolationLevel</span>' property link. In the '<span class="codetext">Value</span>' field type '<span class="codetext">2</span>' for READ_COMMITTED. Click the Apply button.<br><br>
+
+    <li> At the top of the page click on the link called '<span class="codetext">Save</span>' to save the server's configuration for this data source.
+    <br>At this point the <span class="codetext">jdbc/TptbmDS</span> data source has been configured. <br><br>
+  </ol>
+
+  <p class="normal-bold">3. build the sample application</p>
+  <p class="normal"> 
+  After the server has been configured to use the <span class="codetext">jdbc/TbtbmDS</span> data source and restarted, the application can be built, through Ant script <span class="codetext"><a href="../../../sample_code/j2ee_orm/build-websphere8.xml">build-websphere8.xml</a>,</span> with this sequence of Ant tasks under directory <span class="codetext">quickstart/classic/sample_code/j2ee_orm</span>:
+
+   <pre>
+   ant -f build-websphere8.xml clean
+   ant -f build-websphere8.xml package
+   </pre>
+
+  <p class="normal">
+  These steps will result in a deployable archive file located in the dist directory called <span class="codetext">tptbmas-ejb3.jar</span>.
+
+  <p class="normal">
+  <b>Note:</b> To avoid Java class version conflicts build the TptbmAS packages 
+   using the same JVM used by the application server. This can be done by
+   setting the JAVA_HOME environment variable to the location of the JDK
+   used by the application server in the shell where the application ant scripts are executed.
+
+  <p class="normal-bold">4. deploy the sample application</p>
+  <p class="normal"> To deploy the archive to the server login to the WebSphere Administrative Console and follow these steps:
+  <ol type="a">
+    <li> Select <span class="codetext">Applications-&gt;New Application</span> from the left hand panel.<br><br>
+    <li> Click on the '<span class="codetext">New Enterprise Application</span>' link.<br><br>
+    <li> Click the '<span class="codetext">Local file system</span>' option and then click the Choose File button.  Navigate to the dist directory where the <span class="codetext">tptbmas-ejb3.jar</span> file was 
+      created in step 3 above. Select the JAR file and click Open. Click Next.<br><br>
+      <li> At the '<span class="codetext">Preparing for the application installation</span>' step select the 
+      '<span class="codetext">Fast Path</span>' option. Click on the '<span class="codetext">Choose to generate default bindings...</span>'
+      label and then check the '<span class="codetext">Generate Default Bindings</span>' option. Click Next.<br><br>
+     
+      <li> At the '<span class="codetext">Select installation options</span>' step click Next.<br><br>
+
+      <li> At the '<span class="codetext">Map modules to servers</span>' step click Next.<br><br>
+
+      <li> At the '<span class="codetext">Metadata for modules</span>' step click Next.<br><br>
+
+      <li> In the '<span class="codetext">Summary</span>' step click the Finish button to install the Tptbm EJB.
+      When the installation process completes click the '<span class="codetext">Save</span>' link at the bottom of the page to save the configuration.<br><br>
+
+      <li> Select <span class="codetext">Applications-&gt;Application Types-&gt;WebSphere enterprise applications</span> from the left hand panel.<br><br>
+
+      <li> Click on the check box next to the '<span class="codetext">tptbmas-ejb3_jar</span>' application. Click the Start button.<br><br>
+  </ol>
+
+  <p class="normal-bold">5. run the sample application</p>
+  <p class="normal"> To run the client execute this command:
+   <pre>
+   ant -f build-websphere8.xml run
+   </pre>
+
+
+</blockquote>
+
+<p class="normal">Note that this application has been tested with WebSphere Application Server 8.5.</p>
+
+<p class="normal">&nbsp;</p>
+<p class="normal"><span class="section1">TROUBLESHOOTING</span></p>
+<p class="normal">Various problems may occur when using TimesTen with WebSphere. The list below describes possible solutions for common problems.<br />
+<ul>
+  <li>When clicking on Test Connection for a TimesTen data source on the Data sources screen of the administration console, TimesTen throws a "<i>java.lang.IllegalAccessError</i>" exception. This problem can occur if you have configured a new TimesTen data source but have not restarted the server. Try restarting the server to solve the problem <br><br>
+
+  <li>When attempting to establish a connection to a TimesTen data source from within WebSphere, TimesTen throws the exception "<i>TT0837: Cannot attach data store shared-memory segment.</i>" This problem is likely to occur on 32-bit platforms when the system is unable to allocate or map enough contiguous shared memory to hold the TimesTen database. These troubleshooting steps are recommended: <br><br>
+    <ol type="i">
+      <li>Verify that it is possible to connect to the TimesTen data store outside of the WebSphere JVM. You can use the ttIsql utility for this purpose.
+      <li>Try increasing the maximum amount of shared memory available to the system. See the Oracle TimesTen In-Memory Database Installation Guide for platform specific details.
+      <li>Try decreasing the size of the TimesTen data store by recreating the data store with lower values for the PermSize and TempSize connection attributes.
+      <li>Terminate any unnecessary processes on the system to make more memory available.
+      <li>Try a client/server TimesTen JDBC connection instead of a direct connection for the WebSphere data source.
+      <li>If possible try a 64-bit version of TimesTen and WebSphere.
+    </ol>
+    <br>For detailed instructions on how to resolve this and other connection problems see the <span class="codetext">Oracle TimesTen In-Memory Database Troubleshooting Procedures Guide</span> and the <span class="codetext">Oracle TimesTen In-Memory Database Installation Guide</span>. <br /> <br />
+</ul>
+
+
+<p class="normal">&nbsp;</p>
+<p class="normal">For more information on Java programming with Oracle TimesTen, refer to the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61200/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database Java Developer's Guide</font></a>. </p>
+<p class="normal"><br />
+</p>
+<!-- Footner -->
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

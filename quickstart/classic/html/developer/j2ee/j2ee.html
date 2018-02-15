@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TimesTen Sample Application for Java EE Application Servers</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Sample Application for Java EE Application Servers</span>
+<p class="normal">This page provides a sample application that demonstrates how to configure and run the Oracle TimesTen In-Memory Database with several different Java EE Application Servers. The application is a multi-user throughput benchmark program that uses EJB 3.0 client-server application architecture.
+<p class="normal">The application has been tested with the following Java EE Application Servers: <br>
+<ul>
+  <li> Oracle WebLogic Server 12c (12.1.2.0)
+  <li> Oracle GlassFish Server 3
+  <li> JBoss Enterprise Application Platform 6.2
+  <li> WebSphere Application Server 8.5
+</ul>
+</p>
+<p class="normal">The sample application is available in the <span class="codetext">quickstart/classic/sample_code/j2ee_orm</span> directory. It includes the following source files: <br></p>
+
+<table width="760" border="1">
+  <tr class="table-header">
+    <td width="110" valign="top" class="normal-bold">&nbsp;&nbsp;<span class="table-header">Source file</span></td>
+    <td width="634" valign="top" class="normal"><span class="table-header"><strong>Description</strong></span></td>
+  </tr>
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/Tptbm.java" class="codetext">Tptbm.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      This is the POJO (Plain Old Java Object) class.
+      An instance of this class corresponds to a
+      unique row in the TPTBM table. Annotations are used to 
+      associate properties of the class with the database table.
+    </td>
+  </tr>
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/TptbmPKey.java" class="codetext">TptbmPKey.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      Each instance of the Tptbm class contains an embedded 
+      instance of the TptbmPKey class. TptbmPKey represents the 
+      unique ID for a Tptbm. The TPTBM table has a composite
+      primary key consisting of the VPN_NB and VPN_ID table 
+      columns. TptbmPKey is mapped to these key columns through 
+      the use of annotations. 
+    </td>
+  </tr>
+
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/TptbmSession.java" class="codetext">TptbmSession.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      TptbmSession is the remote interface used by application 
+      server clients to manage instances of the Tptbm class. 
+    </td>
+  </tr>
+
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/TptbmSessionBean.java" class="codetext">TptbmSessionBean.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      TptbmSessionBean is a stateless EJB 3.0 session bean 
+      that runs in the application server's container. It 
+      implements the TptbmSession interface and manages instances 
+      of the Tptbm class via the EntityManager API. 
+    </td>
+  </tr>
+
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/CommonClient.java" class="codetext">CommonClient.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      CommonClient is the
+      base abstract class from which all concrete client
+      classes inherit. CommonClient implements the high level
+      benchmark setup and execution logic. CommonClient also
+      defines the following abstract methods which are
+      implemented by the concrete client classes using a specific 
+      persistence API:
+
+      <ul>
+        <li> open ()
+      <li> close ()
+      <li> txnBegin ()
+      <li> txnCommit ()
+      <li> txnRollback ()
+      <li> read ()
+      <li> insert ()
+      <li> update ()
+      <li> deleteAll ()
+      <li> populate ()
+      </ul>
+    </td>
+  </tr>
+
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/ASClient.java" class="codetext">ASClient.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      Implements an application server client that uses the 
+      TptbmSession interface to communicate with a stateless 
+      TptbmSessionBean class running on the server. The 
+      TptbmSessionBean class uses the EntityManager API for 
+      persistence.
+    </td>
+  </tr>
+
+  
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/config/hibernate4/TimesTenDialect1122.java" class="codetext">TimesTenDialect1122.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      JBoss Application Server uses Hibernate as its internal persistence 
+      provider. Therefore the sample application for JBoss Application Server 
+      uses the included Hibernate dialect class called TimesTenDialect1122. 
+      <br><br>
+      The dialect has been optimized for SQL features in TimesTen. 
+      It is not included in current versions of the Hibernate 
+      distribution. The TimesTenDialect1122 class is compiled and packaged 
+      into the EJB jar file (of the sample application) for JBoss application server.
+
+      <br><br>This is the recommended dialect for applications that use TimesTen version 11.2.2 or greater.
+    </td>
+  </tr>
+</table>
+
+<p class="section1">Compile and Run</p>
+<p>Click the corresponding link below to learn how to compile and run the sample application with different application servers:</p>
+<p><a href="howto_j2ee_weblogic.html" class="compilerun">WebLogic Application Server</a></p>
+<p><a href="howto_j2ee_glassfish.html" class="compilerun">GlassFish Application Server</a></p>
+<p><a href="howto_j2ee_jboss.html" class="compilerun">JBoss Application Server</a></p>
+<p><a href="howto_j2ee_websphere.html" class="compilerun">WebSphere Application Server</a></p>
+<p class="normal">For more information on Java programming with Oracle TimesTen, refer to the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61200/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database Java Developer's Guide</font></a>. </p>
+<p class="normal">&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+
+</html>

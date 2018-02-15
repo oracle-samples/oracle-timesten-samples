@@ -1,0 +1,440 @@
+
+# ttIsql.inp
+# To execute this file use the following ttIsql command
+# line syntax: ttIsql -f <filename>
+
+connect "DSN=sampledb;DurableCommits=1";
+
+E:
+E: This is a sample input file that demonstrates features 
+E: of ttIsql.
+E:
+
+
+# turn off autocommit 
+autocommit 0;
+
+
+E: ----------------------------------------
+E: -- Examples of prepared commands ------- 
+E: ----------------------------------------
+
+
+# create a table with a primary key; the hash clause allows us to 
+# specify the size of the hash index
+CREATE TABLE T1 (A INTEGER NOT NULL, B INTEGER, PRIMARY KEY (A) )
+UNIQUE HASH ON (A) PAGES = 1;
+
+INSERT INTO T1 VALUES (1, 3);
+INSERT INTO T1 VALUES (2, 2);
+INSERT INTO T1 VALUES (3, 1);
+
+commit;
+
+
+# prepare a new UPDATE statement 
+prepare UPDATE T1 SET B = B + ? WHERE A > ?;
+commit;
+
+
+# show table T1
+E:
+E: -- Table T1 before executing UPDATE
+E:
+SELECT * FROM T1;
+commit;
+
+
+# execute the UPDATE with parameter arguments of 10 and 1 
+exec;
+10;
+1;
+commit;
+
+
+# show updated table T1 
+E:
+E: -- Table t1 after executing first UPDATE
+E:
+SELECT * FROM T1;
+commit;
+
+
+# execute the UPDATE with parameter arguments of 20 and 2 
+exec;
+20;
+2;
+commit;
+
+
+# show updated table t1
+E: 
+E: -- Table t1 after executing second UPDATE
+E:
+SELECT * FROM T1;
+commit;
+
+# free the previously prepared UPDATE statement 
+free;
+commit;
+
+
+# turn on the timing command to display elapsed
+# execution time
+timing 1;
+
+
+# prepare two queries and do various exec's and fetches 
+E:
+E: -- Miscellaneous query results
+E:
+trytbllocks 1;
+
+prepare 1 SELECT A + 100 from T1;
+prepare 2 SELECT B - 100 from T1;
+
+
+# note that more than one command can exist on a given
+# line when separated by the semicolon character
+
+execandfetch 1;execandfetch 2;
+
+exec 1;fetchone 1;
+
+exec 2;fetchone 2;
+
+fetchone 1;fetchone 2;
+fetchone 1;fetchone 2;
+fetchone 1;fetchone 2;
+
+close 1;close 2;
+
+exec 1;fetchall 1;
+
+exec 2;fetchall 2;
+
+free 1;free 2;
+
+DROP TABLE T1;
+
+commit;
+
+timing 0;
+
+
+
+E: ----------------------------------------
+E: -- Examples of query optimizer hints --- 
+E: ----------------------------------------
+
+
+# create three tables and insert some rows 
+CREATE TABLE T1 (A INTEGER);
+CREATE TABLE T2 (B INTEGER);
+CREATE TABLE T3 (C INTEGER);
+
+# insert some rows
+INSERT INTO T1 VALUES (3);
+INSERT INTO T2 VALUES (3);
+INSERT INTO T3 VALUES (3);
+INSERT INTO T1 VALUES (4);
+INSERT INTO T2 VALUES (5);
+INSERT INTO T3 VALUES (6);
+INSERT INTO T1 VALUES (3);
+INSERT INTO T2 VALUES (3);
+INSERT INTO T3 VALUES (3);
+INSERT INTO T1 VALUES (4);
+INSERT INTO T2 VALUES (5);
+INSERT INTO T3 VALUES (6);
+INSERT INTO T1 VALUES (3);
+INSERT INTO T2 VALUES (3);
+INSERT INTO T3 VALUES (3);
+INSERT INTO T1 VALUES (4);
+INSERT INTO T2 VALUES (5);
+INSERT INTO T3 VALUES (6);
+INSERT INTO T1 VALUES (3);
+INSERT INTO T2 VALUES (3);
+INSERT INTO T3 VALUES (3);
+INSERT INTO T1 VALUES (4);
+INSERT INTO T2 VALUES (5);
+INSERT INTO T3 VALUES (6);
+INSERT INTO T1 VALUES (3);
+INSERT INTO T2 VALUES (3);
+INSERT INTO T3 VALUES (3);
+INSERT INTO T1 VALUES (4);
+INSERT INTO T2 VALUES (5);
+INSERT INTO T3 VALUES (6);
+INSERT INTO T1 VALUES (3);
+INSERT INTO T2 VALUES (3);
+INSERT INTO T3 VALUES (3);
+INSERT INTO T1 VALUES (4);
+INSERT INTO T2 VALUES (5);
+INSERT INTO T3 VALUES (6);
+
+
+# update statistics for all of the current user's tables
+statsupdate;
+commit;
+
+
+# display the query optimizer plans
+showplan 1;
+
+E:
+E: -- SELECT statement's plan
+E:
+tryrowlocks 1; trytbllocks 0;
+prepare SELECT * FROM T1, t2, t3 WHERE A=B AND B=C AND A=B;
+
+E:
+E: -- Same as above, but without temporary ttrees on T3
+E:
+tryrowlocks 0; trytbllocks 0;
+setuseindex _tmpttree,T3,0;
+prepare SELECT * FROM T1, T2, T3 WHERE A=B AND B=C AND A=B;
+
+E:
+E: -- Same as above, but with merge-joins prevented
+E:
+trymergejoin 0;
+prepare SELECT * FROM T1, T2, T3 WHERE A=B AND B=C AND A=B;
+
+E:
+E: -- Same as first, but with new join order
+E:
+tryrowlocks 0; trytbllocks 1; trymergejoin 1; trymaterialize 1;
+setjoinorder T1 T2 T3;
+prepare SELECT * FROM T1, T2, T3 WHERE A=B AND B=C AND A=B;
+
+E:
+E: -- Same as above, but without temporary ttrees
+E:
+tryrowlocks 1; trytbllocks 1; trytmpttree 0;
+prepare SELECT * FROM T1, T2, T3 WHERE A=B AND B=C AND A=B;
+
+
+# create two ttree indexes on T1 
+CREATE INDEX IDX1 ON T1 (A);
+CREATE INDEX IDX2 ON T1 (A);
+
+E:
+E: -- index IDX1 scan is used to access table T1
+E:
+unsetjoinorder; unsetuseindex;
+prepare SELECT * FROM T1;
+
+E:
+E: -- Same as above, but index IDX2 is used instead
+E:
+setuseindex IDX2,T1,1;
+prepare SELECT * FROM T1;
+commit;
+
+
+
+
+
+
+
+E: ----------------------------------------
+E: -- Examples of catalog commands -------- 
+E: ----------------------------------------
+
+
+
+# create a new table with a primary key 
+CREATE TABLE T4 ( C1 DECIMAL (10, 5) NOT NULL PRIMARY KEY,
+C2 CHAR (20), C3 DATE, C4 VARBINARY (100));
+
+# build some ttree indexes on the new table 
+CREATE INDEX T4_IDX1 ON T4 (C3, C2);
+CREATE INDEX T4_IDX2 ON T4 (C4 );
+
+E:
+E: -- All tables in data store
+E:
+tables %;
+
+E:
+E: -- All tables with a 4 in the name
+E:
+sqltables %4%;
+
+E:
+E: -- Describe columns of tables T1, T2, T3 and T4
+E:
+describe T_;
+
+E:
+E: -- Show indexes on tables T1, T2, T3 and T4 
+E:
+indexes T_;
+
+E:
+E: -- Statistics for table T1
+E:
+sqlstatistics T1;
+
+
+
+# create a materialized view on table T4
+CREATE MATERIALIZED VIEW V4 AS SELECT C1, C4 FROM T4;
+
+E:
+E: -- Show the properties of materialized views
+E:
+views %;
+
+DROP MATERIALIZED VIEW V4;
+
+
+# create some sequences
+CREATE SEQUENCE SEQ1 INCREMENT BY -1 
+MINVALUE 0 MAXVALUE 1000000 CYCLE;
+
+CREATE SEQUENCE SEQ2 INCREMENT BY 100 
+MINVALUE -10000000 MAXVALUE 0;
+
+E:
+E: -- Show the properties of sequences SEQ1 and SEQ2
+E:
+sequences seq%;
+
+DROP SEQUENCE SEQ1;
+DROP SEQUENCE SEQ2;
+
+
+
+# create a replication scheme
+CREATE TABLE REP_TABLE (C1 INT NOT NULL PRIMARY KEY);
+
+CREATE REPLICATION R1
+ELEMENT E1 TABLE REP_TABLE
+MASTER SELF 
+SUBSCRIBER STORE2 ON SOMEHOST;
+
+E:
+E: -- Show the properties of a replication scheme
+E:
+repschemes %;
+
+
+DROP REPLICATION R1;
+DROP TABLE REP_TABLE;
+
+
+
+E: ----------------------------------------
+E: -- Examples of built-in procedures ----- 
+E: ----------------------------------------
+
+E:
+E: -- Checkpoint the data store
+E:
+CALL ttCkpt;
+
+E:
+E: -- Show all connections to the data store
+E:
+CALL ttDataStoreStatus (NULL);
+
+E:
+E: -- Show this context
+E:
+CALL ttContext;
+
+E:
+E: -- Show replication status 
+E:
+CALL ttReplicationStatus (NULL);
+
+E:
+E: -- Show log bookmarks
+E:
+CALL ttBookmark;
+
+E:
+E: -- Show size of tables 
+E:
+CALL ttSize('T1', NULL, NULL);
+CALL ttSize('T1', 1000000, NULL);
+CALL ttSize('T4', 20000, 0.8);
+
+commit;
+
+
+
+# drop all tables
+DROP TABLE T1;
+DROP TABLE T2;
+DROP TABLE T3;
+DROP TABLE T4;
+commit;
+
+
+
+E: ----------------------------------------
+E: -- Examples of verbosity command ------- 
+E: ----------------------------------------
+
+E: - The verbosity command changes the amount of
+E: - information displayed when SQL errors or
+E: - information messages appear
+
+E:
+E: -- At verbosity level 2 a simple message is displayed
+E:
+verbosity 2;
+DROP TABLE T1;
+
+E:
+E: -- At verbosity level 3 more detail is provided
+E:
+verbosity 3;
+DROP TABLE T1;
+
+E:
+E: -- At verbosity level 4 the most detail is provided
+E:
+verbosity 4;
+DROP TABLE T1;
+verbosity 2;
+commit;
+
+
+# disconnect from the data source
+disconnect;
+
+
+E: ----------------------------------------
+E: -- Examples of help command ------------ 
+E: ----------------------------------------
+
+E:
+E: Detailed help on specific commands can
+E: be viewed by using the help [command [command...]|all]
+E: syntax
+E:
+help connect disconnect;
+
+
+E: ----------------------------------------
+E: -- Examples of history command --------- 
+E: ----------------------------------------
+
+E:
+E: Use the history command to view up to the last
+E: 100 commands entered. Commands in the history
+E: list can be re-executed using the !<command_id|command_string|!>
+E: syntax
+E:
+
+history 100;
+!help;
+
+
+
+
+
+
+

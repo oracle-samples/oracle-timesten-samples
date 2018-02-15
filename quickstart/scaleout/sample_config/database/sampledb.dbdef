@@ -1,0 +1,8 @@
+DataStore=/<customize>/<this>/<path>/sampledb
+PermSize=128
+TempSize=128
+LogBufMB=128
+LogFileSize=128
+DatabaseCharacterSet=AL32UTF8
+ConnectionCharacterSet=AL32UTF8
+Durability=0

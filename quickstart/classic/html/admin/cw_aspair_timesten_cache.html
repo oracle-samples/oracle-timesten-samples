@@ -1,0 +1,191 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Active Standby Pair with TimesTen Application-Tier Database Cache and Clusterware</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Active Standby Pair<br/> 
+with TimesTen Application-Tier Database Cache and Clusterware</span>
+
+<p >An <span class="doclink">Active Standby Pair</span> 
+configuration includes an active database, a standby  database, and optional read-only subscriber databases. 
+The standby database uses 
+  <span class="doclink">Oracle TimesTen Replication</span> 
+to receive the <span class="doclink">changes</span> from 
+the active database and forwards the changes to optional read-only subscriber databases.</p>
+<p ><a href="http://www.oracle.com/technetwork/database/clusterware/overview/index-090666.html" target="_blank" class="doclink">Oracle 
+Clusterware</a> is a general purpose cluster manager that manages and monitors the availability of software components that participate 
+in a cluster. TimesTen Cache is 
+<span class="doclink">integrated</span> 
+with Oracle Clusterware via the <span class="doclink">ttCWAdmin</span> 
+utility.  When a customer chooses to use Oracle Clusterware with TimesTen Cache, the 
+<span class="doclink">failover and restart</span> 
+of Active Standby Pairs of databases are handled automatically.  In addition, Oracle Clusterware may be used to manage
+the actual <span class="doclink">applications</span> 
+that use TimesTen Cache.</p>
+
+<p ><span class="section1">Installing Oracle Clusterware and TimesTen Application-Tier Database Cache</span></p>
+<table border=1 class="steps">
+	<tr class="r0">
+		<td class="c0">1.</td>
+		<td class="c1">Install Clusterware</td>
+		<td class="c2">Oracle Clusterware 11.2.0.4 is required.</td>
+	</tr>
+	<tr class="r1">
+		<td class="c0">2.</td>
+		<td class="c1">Install TimesTen Application-Tier Database Cache (TimesTen Cache) </td>
+		<td class="c2">Oracle TimesTen In-Memory Database 18.1 is required.</td>
+	</tr>
+</table>
+<p >Follow the example below to install Oracle Clusterware and TimesTen Cache as described in the tasks above:<br /> 
+  <br />
+  <a href="cw_aspair_install.html" class="example">Installing Oracle Clusterware and TimesTen example</a></p>
+
+<p >&nbsp;</p>
+
+<p class="section1">Configuring an Active Standby Pair for Clusterware and TimesTen  Cache</p>
+<table border="1" class="steps">
+	<tr class="r0">
+		<td class="c0">1.</td>
+		<td class="c1">Create a cache database</td>
+		<td class="c2">An initial cache database must be created before an active standby pair can be set up. 
+		This database should contain a user with <span class="codetext">CACHE_MANAGER</span> or <span class="codetext">ADMIN</span> 
+		privilege for managing a cache, with the required cache groups already defined.<br/><br/>
+		If you have an existing cache database, this step can be skipped.</td>
+	</tr>
+	<tr class="r1">
+		<td class="c0">2.</td>
+		<td class="c1">Create a database user to administer the active standby pair</td>
+		<td class="c2">The cache  database must  include a user with the 
+		  <span class="doclink">ADMIN</span> 
+		privilege, if it does not yet exist. This user will be responsible for managing the active standby pair configuration.</td>
+	</tr>
+ 
+    <tr class="r0">
+		<td class="c0" >3.</td>
+		<td class="c1" >Start the cache agent </td>
+		<td class="c2">Use the built-in procedure 
+		  <span class="doclink">ttCacheStart</span><a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF234" target="_blank" class="doclink"></font></a> 
+		to start the cache  agent process if not already started. </td>
+	</tr>
+    <tr class="r1">
+		<td class="c0">4.</td>
+		<td class="c1" >Define cache groups </td>
+		<td class="c2" ><span class="doclink">Create</span> 
+		some <span class="doclink">cache groups</span> 
+		for the Active Standby Pair.</br>
+		If you have existing cache groups then this step can be skipped.</td>
+	</tr>
+	<tr class="r0">
+		<td class="c0" >5.</td>
+		<td class="c1" >Register TimesTen instance information </td>
+		<td class="c2" >TimesTen instance information is stored in the Oracle Cluster Registry. 
+		Register the TimesTen instance information by executing the 
+		  <span class="doclink">ttCWAdmin -ocrConfig</span> 
+		command on any one of the hosts.</td>
+	</tr>
+	<tr class="r1">
+		<td class="c0" >6.</td>
+		<td class="c1" >Start cluster agent</td>
+		<td class="c2" >Start the TimesTen cluster agent by executing the 
+		  <span class="doclink">ttCWAdmin -init</span> 
+		command on one of the hosts. This cluster agent will manage the TimesTen 
+		<span class="doclink">Main Daemon</span>, 
+		which in turn manages the TimesTen 
+		<span class="doclink">cache agent</span>, and
+		<span class="doclink">replication agent</span> 
+		on all hosts in the cluster.</td>
+	</tr>
+	<tr class="r0">
+		<td class="c0">7.</td>
+		<td class="c1" >Create  cluster.oracle.ini file</td>
+		<td class="c2" >The <span class="doclink">cluster.oracle.ini</span> 
+		config file uses <span class="doclink">attributes</span> 
+		to declaratively define the configuration of an active standby pair that will be managed by Oracle Clusterware.</br>
+		The <span class="doclink">entry name</span> 
+		for the Active Standby Pair in the <span class="codetext">cluster.oracle.ini</span> file 
+		<span class="normal-bold">must</span> correspond to the 
+		system <span class="doclink">DSN</span> created in step 1 above.</td>
+	</tr>
+	<tr class="r1">
+		<td class="c0">8.</td>
+		<td class="c1" >Create an Active Standby Pair</td>
+		<td class="c2" >Create an Active Standby Pair  by executing the <span class="codetext">ttCWAdmin -create</span>  
+		command on any host in the cluster.</td>
+	</tr>  
+	<tr class="r0">
+		<td class="c0" >9.</td>
+		<td class="c1" >Start the Active Standby Pair</td>
+		<td class="c2" >Start the Active Standby Pair by executing the <span class="codetext">ttCWAdmin -start</span> 
+		command on any host in the cluster.</td>
+	</tr>
+	<tr class="r1">
+		<td class="c0" >10.</td>
+		<td class="c1" >Preload data into cache groups</td>
+		<td class="c2" >Use the <span class="doclink">LOAD   CACHE GROUP</span> statement to preload the cache groups with data from the Oracle   database. </td>
+	</tr>
+</table>
+<p>Follow the example to configure an active standby pair with TimesTen Cache and Oracle Clusterware using the configuration<br /> 
+  steps described above:<br />  
+  <a href="cw_aspair_config_timesten_cache.html" class="example"><br />
+  Configuring an Active Standby Pair with TimesTen Cache 
+and Clusterware example</a></p>
+<p >&nbsp;</p>
+
+
+<p class="section1">Managing the Active Standby Pair for Clusterware and TimesTen Cache</p>
+<table class="steps" border="1">
+	<tr class="r0">
+		<td class="c0" >1.</td>
+		<td class="c1" >Get cluster agents' status</td>
+		<td class="c2" >Find the status of the active standby pair via the 
+		  <span class="doclink">ttCWAdmin -status</span> 
+		command on any host in the cluster.</td>
+	</tr>
+	<tr class="r1">
+		<td class="c0">2.</td>
+		<td class="c1">Stop Active Standby Pair</td>
+		<td class="c2" >Stop the active standby pair via the <span class="codetext">ttCWAdmin -stop</span> command on any host in the cluster.</td>
+	</tr>
+	<tr class="r0">
+		<td class="c0" >3.</td>
+		<td class="c1" >Drop Active Standby Pair</td>
+	  <td class="c2" >Drop the active standby pair via the <span class="codetext">ttCWAdmin -drop</span> command on any host in the cluster.<br /><br/>
+		<b>Note:</b> Remember to <b>always</b> stop and drop the Active Standby Pair before 
+		<span class="doclink">dropping</span> their cache group(s).</td>
+	</tr>
+</table>
+<p >Follow the example below to manage an active standby pair with TimesTen Cache and Oracle clusterware using the <br />
+  configuration steps described above:<br /> 
+  <br />
+  <a href="cw_aspair_admin_timesten_cache.html" class="example">Managing an Active Standby Pair
+with TimesTen Cache and Clusterware example</a> <br />
+<br />
+<br />
+<br /> 
+The following <a href="http://docs.oracle.com/database/timesten-18.1/e61197/cluster.htm#TTREP294" target="_blank" class="doclink">documentation link</a> 
+covers more admin tasks.</p>
+<p class="section1"><br />
+  Automatic failover and restart for Active Standby Pairs and user applications</p>
+<p >The following links describe how Oracle Clusterware is used to 
+<a href="http://docs.oracle.com/database/timesten-18.1/e61197/cluster.htm#TTREP281" target="_blank" class="doclink">failover and restart</a> 
+Active Standby Pairs and <a href="http://docs.oracle.com/database/timesten-18.1/e61197/cluster.htm#TTREP268" target="_blank" class="doclink">user applications.</a>
+</p>
+<p>The following <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_crs_demo_1.html" target="_blank" class="doclink">viewlet</a> shows failover and failback of 
+a user application and its corresponding Active Standby Pair and with Oracle Clusterware.</p>
+<p >&nbsp;</p>
+
+</div>
+<div id="footer"/>
+
+</body>
+</html>

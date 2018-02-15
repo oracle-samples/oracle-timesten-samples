@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Creating a Standby Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Creating a Standby Database  </span>
+<p>After setting up an active master database, you can create the standby database by cloning the active database to the standby server. 
+In order to duplicate the active database, the instance administrator on  the standby machine must be identical 
+to the one on the active server.</p>
+<p>This tutorial uses the   DSNs <span class="codetext">repdb1_1211</span> 
+and <span class="codetext">repdb2_1211</span> to create an Active Standby Pair. 
+The hostnames of the two machines are <span class="codetext">tthost1</span> 
+and <span class="codetext">tthost2</span>.  <span class="codetext">repdb1_1211</span> is the 
+active database on <span class="codetext">tthost1</span>,  and <span class="codetext">repdb2_1211</span> 
+on <span class="codetext">tthost2</span> is the standby database. </p>
+
+<span class="section1">6. Duplicate the active database to the standby</span>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in to server 2(<span class="codetext">tthost2</span>) as the 
+	instance administrator and define a DSN for the standby database. In this example 
+	we will use DSN <span class="codetext">repdb2_1211</span>.</p>
+    
+    <p>In your <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini </span>file, add a  new data source name in the section labeled 
+	<span class="codetext">[ODBC Data Sources]</span> :</p>
+	<p class="codetext">repdb2_1211=TimesTen 18.1 Driver</p>
+    </p>
+    
+    For each DSN entry specified, there is a corresponding set of database properties and attributes you need to specify. 
+	The database attributes can be added anywhere after the <span class="codetext">[ODBC Data Sources]</span> section.</p>
+
+	<p><b>Note:</b> The DSN name appears inside square brackets at the top of the DSN definition on a line by itself</p>
+    <p class="codetext">
+          [repdb2_1211]<br />
+          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
+          DataStore=/home/timesten/instance/tt181/sample_db/repdb2_1211<br />
+          PermSize=512<br />
+          TempSize=128<br />
+          LogBufMB=256<br />
+          LogFileSize=256<br />
+          DatabaseCharacterSet=AL32UTF8<br />
+          PLSQL=1<br />
+          OracleNetServiceName=ttorcl 
+  	</p><br/>
+    
+	<p>Refer to the section <a href="db_ops_createdb.html">Setting up a Data Source Name</a> if you need 
+	information on how to define your own DSNs.
+     </p><br />
+<li>
+	<p>Log in to server 2 (<em>tthost2</em>) as the instance administrator. 
+	Use the <span class="doclink">ttRepAdmin</span> 
+	utility to duplicate from the active database to the standby database.</p>
+	<p class="codetext">ttrepadmin -duplicate -from repdb1_1211 -host &quot;tthost1&quot; -uid adm -pwd adm &quot;dsn=repdb2_1211&quot; </p>
+	<p><b>Note:</b> The <span class="codetext">-from</span> clause is using the data store name <span class="codetext">repdb1_1211</span> 
+	and not the DSN name; <span class="codetext">-uid</span> and <span class="codetext">-pwd</span> 
+	correspond to the  username and password of the ADMIN user on the active database.</p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">7. Start the replication agent</span>
+<blockquote ><ol type=a>
+<li>
+	<p>Using <span class="codetext">ttIsql</span>, connect to the database <em>repdb2_1211</em> as the replication administrator <em>adm</em>.</p>
+	<p class="codetext">ttisql</p>
+	<p class="codetext">connect &quot;dsn=repdb2_1211;uid=adm&quot;;</p>
+</li><br/>
+<li>
+	<p>The replication agent on the standby is responsible for  processing  the data 
+	from the active database. Use the built-in procedure 
+	  <span class="doclink">ttRepStart</span> 
+	to start the replication agent.</p>
+	<p class="codetext">call ttrepstart; </p>
+</li><br/>
+<li>
+	<p>Wait for <em>repdb2_1211</em> to enter the standby  state. 
+	Use the built-in procedure <span class="doclink">ttRepStateGet</span> 
+	to verify the current replication state of the database. </p>
+	<p class="codetext">call ttrepstateget; </p>
+	<p><img class="cmdscnshot" src="../images/rep_standby_repstateget_repdb2.gif" /></p>
+	<p>Once the  standby database entered the "standby" state, the configuration of an active standby pair is  completed. 
+	Changes to data in the active database will be automatically replicated to the standby. </p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">8. Verify the data is being replicated between the active and the standby</span>  
+<blockquote ><ol type=a>
+<li>
+	<p>In <span class="codetext">ttIsql</span> on <em>tthost1</em>, 
+	connect to <em>repdb1_1211</em> as <em>appuser</em>, and insert a record into the orders table. </p>
+	<p class="codetext">ttIsql</p>
+	<p class="codetext">connect &quot;dsn=repdb1_1211; uid=appuser&quot;;</p>
+	<p class="codetext">insert into orders values (6853180,1121,'9999999999', sysdate);</p>
+	<p><img class="cmdscnshot" src="../images/rep_standby_add_row.gif" /></p>
+</li><br/>
+<li>
+	<p>Verify that the insert is replicated to the standby database <em>repdb2_1211</em> on <em>tthost2</em>.</p>
+	<p class="codetext">select * from appuser.orders where order_number=6853180;</p>
+	<p><img class="cmdscnshot" src="../images/rep_standby_retrieve_row.gif" /></p>
+</li><br/>
+</ol></blockquote >
+
+<p>&nbsp;For more information about how to set up and manage an Active Standby Pair on a TimesTen database refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/standby.htm#TTREP210" target="_blank" class="doclink">here</a></p>
+<p>&nbsp; </p>
+<table align="right" border="0">
+<tr>
+	<td><a href="rep_aspair_define_activedb.html"><b>&lt; Previous</b></a></td>
+	<td><a href="rep_aspair_config_db.html"><b>1</b></a></td>
+	<td><a href="rep_aspair_define_activedb.html"><b>2</b></a>
+	<td>3</td>
+</tr>
+</table>
+
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+
+</html>

@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Prerequisites for the Sample Programs</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Prerequisites for the Sample Programs</span>
+<p >This page describes the pre-requisites  required to run the sample programs. The <a href="developer.html">SAMPLE PROGRAMS</a> section contains a suite of sample programs grouped by programming language and data access interface.  The  programs are located in  subdirectories under the <span class="codetext">quickstart/classic/sample_code</span> directory. </p>
+<p >A number of scripts are available to set up the database, user accounts, and program run time environment. Follow the steps below to get started:<br />
+</p>
+<p><span class="section1">1.  <a href="sample_dsn_setup.html">Manually Configure Sample DSN for Sample Programs</a> </span></p>
+
+<p><span class="section1">2. Run the <em>build_sampledb</em> script</span></p>
+<blockquote>
+<table width="700" border="0">
+      <tr>
+        <td colspan="2" valign="top" >
+        <li> Set up the Instance Environment Variables<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></li>
+<br />
+        <li>Run the <span class="codetext">quickstart/classic/sample_scripts/createdb/build_sampledb</span> script, which creates the sample database and user accounts that are used by the sample programs. This script  creates the TimesTen user accounts and prompts you for the desired user passwords.</li></td>
+      </tr>
+  </table>
+  <br />
+  <table width="700" border="0">
+     
+    <tr>
+      <td valign="top" >Unix / Linux:</td>
+      <td class="codetext">$ cd quickstart/classic/sample_scripts/createdb<br />
+        $
+        ./build_sampledb.sh</td>
+    </tr>
+  </table>
+  <p >Note: To reset the sample program environment, re-run the <span class="codetext">build_sampledb</span> script. 
+<table width="700" border="0">
+  <tr>
+    <td height="24" colspan="2" valign="top" ><span  style="x:scroll;y:scroll;"><strong>User Accounts</strong>: The <span class="codetext">build_sampledb</span> script creates the following TimesTen database users:</span></td>
+  </tr>
+</table>
+<span ><br />
+</span>
+  <table width="700" border="1">
+    
+    <tr bgcolor="#F6F6F6">
+      <td width="76" valign="top" class="codetext">ADM</td>
+      <td valign="top" >This user  is the administrator of the sample database. <span class="codetext">ADM</span> can perform administrative tasks such as create new user accounts and backing up the database. </td>
+    </tr>
+    
+    <tr>
+      <td valign="top" class="codetext">APPUSER</td>
+      <td valign="top" > <span class="codetext">APPUSER</span> is the default application user for the sample programs. This  user owns all the database objects required by the sample programs.</td>
+    </tr>
+    
+    <tr bgcolor="#F6F6F6">
+      <td valign="top" class="codetext">XLAUSER</td>
+      <td valign="top" ><span class="codetext">XLAUSER</span> is used in the XLA sample programs to subscribe to database changes.  </td>
+    </tr>
+  </table>
+<br />
+<table width="700" border="0">
+  <tr>
+    <td height="24" colspan="2" valign="top" ><strong>Database Objects</strong>: The  following database objects are created under  <span class="codetext">APPUSER</span>: </td>
+  </tr>
+</table>
+</blockquote>
+
+<blockquote>
+  <table width="700" border="1">
+    <tr>
+      <td width="96" valign="top" bgcolor="#F6F6F6" ><b>TABLES</b></td>
+      <td width="588" valign="top" bgcolor="#F6F6F6" class="codetext">
+<table>
+  <tr><td width="150" valign="top" class="codetext">
+ABC<br />
+ACCOUNT<br />
+ACTION<br /> 
+CUSTOMER<br />
+DATA_TABLE<br />
+DEPT<br />
+EMP<br /> 
+</td><td width="150" valign="top" class="codetext">
+ICF<br />
+INVENTORY<br />
+INVENTORY2<br />
+MYDATA<br />
+MYTABLE<br /> 
+ORDERS<br />
+</td><td width="150" valign="top" class="codetext">
+ORDER_ITEM<br />
+PRODUCT<br />
+PURCHASE_RECORD<br />
+PRINT_MEDIA<br />
+RATIO<br />
+RESULT_TABLE<br /> 
+TEMP 
+</td></tr></table>
+</td>
+    </tr>
+    
+    <tr>
+      <td width="96" valign="top" ><b>PACKAGES</b></td>
+      <td valign="top" class="codetext">EMP_PKG<br />
+      PERSONNEL<br />
+      SAMPLE_PKG</td>
+    </tr>
+    
+    <tr>
+      <td width="96" valign="top" bgcolor="#F6F6F6" ><b>PROCEDURES</b></td>
+      <td valign="top" bgcolor="#F6F6F6" class="codetext"> GETEMPNAME_UNIQUE_ID_<br />
+GETEMPNO_UNIQUE_ID_</td>
+    </tr>
+    
+    <tr>
+      <td width="96" valign="top" ><b>FUNCTION</b></td>
+      <td valign="top" class="codetext">SP</td>
+    </tr>
+    
+    <tr>
+      <td width="96" valign="top" bgcolor="#F6F6F6" ><b>SEQUENCES</b></td>
+      <td valign="top" bgcolor="#F6F6F6" class="codetext">  
+ORDERID </td>
+    </tr>
+  </table>
+  <br />
+  <table width="700" border="0">
+    <tr>
+      <td height="24" colspan="2" valign="top" >All sample programs run against the <span class="codetext">sampledb</span> database using  a default user  <em class="codetext">appuser</em>, unless specified explicitly at the command line. The  sample database must be created before any sample programs can be run.</td>
+    </tr>
+  </table>
+  <br />
+</blockquote>
+
+<p class="section1">3. Set up the  program environment for compilation and execution</p>
+
+<blockquote>
+
+<table width="700" border="0">
+  <tr>
+    <td height="24" colspan="2" valign="top" >To set up the    environment to compile and execute  the sample programs, run both the <span class="codetext">ttenv</span> script in the<span class="codetext"> &lt;instance_dir&gt;/bin</span> directory and <span class="codetext">ttquickstartenv</span> script in the <span class="codetext">quickstart</span> directory. Run the scripts each time you starts a new terminal or command prompt session, where you want to compile and run any of the sample programs. </td>
+  </tr>
+</table>
+<br />
+<li><p class="normal">Set up the Instance environment variables:<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></p></li>
+ 
+  <li><p class="normal">Set up quickstart environment variables:</p> 
+  <table width="606" border="0">
+  
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ . quickstart/classic/ttquickstartenv.sh <span class="normal-bold">OR</span><br />
+        $ source 
+        quickstart/classic/ttquickstartenv.csh</td>
+    </tr>
+  </table>
+  </li>
+</blockquote>
+<p class="section1">4. Compile and run the sample programs </p>
+<blockquote>
+
+<table width="700" border="0">
+  <tr>
+    <td height="24" colspan="2" valign="top" >For information on how to compile and run the sample programs, see the README file in each directory. In   addition, each Sample Programs page in Quick Start has a Compile and Run link, which provides examples on how to run the sample programs.</td>
+  </tr>
+</table>
+</blockquote>
+
+<p >Now you are ready to select sample programs available for the API of your choice, either from the links on the left navigation menu or <a href="developer.html">SAMPLE PROGRAMS</a></p>
+
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+
+</html>

@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Required configuration on the Oracle database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Required Configuration on the Oracle Database</span>
+<p >Before you can cache  tables from an Oracle database into TimesTen Application-Tier Database Cache (TimesTen Cache), 
+a cache administration user and  TimesTen system tables must be created in the   Oracle database. 
+A cache administration user is an Oracle user  that tracks the changes between the Oracle database and the TimesTen Cache database. 
+This user must be granted sufficient  privileges so that he can create triggers and have access to the  Oracle  data that are being cached.</p>
+<p class="section1">1. Create a  Tablespace in the Oracle Database</p>
+<blockquote><ol type=a>
+<li>
+	<p>Using SQL*Plus, log into your Oracle database as the user SYS. 
+	In the example, we are using <span class="codetext">ttorcl</span> as the TNS service name pointing to the Oracle database.</p>
+	<p class="codetext">sqlplus sys@ttorcl as sysdba</p>
+</li><br/>
+<li>
+	<p>Create a   tablespace for managing all the TimessTen Cache objects. </p>
+	<p class="codetext">create tablespace  ttusers datafile 'ttusers.dbf' SIZE 40M;</p>
+</li><br/>
+</ol></blockquote>
+<p class="section1">2. Create a  Cache Administration User in the Oracle Database </p>
+<blockquote><ol type=a>
+<li>
+	<p>Create an Oracle account for the cache administration user. In this example, 
+	<span class="codetext">cacheadm</span> is the cache administration user. </p>
+	<p class="codetext">create user cacheadm identified by cacheadm<br/>
+	default tablespace ttusers<br />
+	quota unlimited on ttusers<br />
+	temporary tablespace temp;</p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">3. Create the Cache objects in the Oracle database </p>
+<blockquote><ol type=a>
+<li>
+	<p>Run the script  <span class="codetext">initCacheAdminSchema.sql</span> located in the 
+	<span class="codetext">&lt;instance_dir&gt;/install/oraclescripts</span> directory to create the TimesTen schema in the Oracle database.
+	The script prompts for the default tablespace for  the <span class="codetext">cacheadm</span> user. 
+	Enter <span class="codetext">cacheadm</span> at the prompt. </p>
+	<p class="codetext">@/home/timesten/instance/tt181/install/oraclescripts/initCacheAdminSchema.sql</p>
+	<p><img class="cmdscnshot" src="../images/cg_conf_orcl_inita.gif" /></p>
+    <b>Note:</b> Copy this <span class="codetext">initCacheAdminSchema.sql</span> script to Oracle database accessible directory.
+</li><br/>
+</ol></blockquote>
+
+
+
+<p class="section1">4. Grant System Privileges to  the Cache Administration User</p>
+<blockquote><ol type=a>
+<li>
+	<p>Run the script  <span class="codetext">&lt;instance_dir&gt;/install/oraclescripts/grantCacheAdminPrivileges.sql</span> 
+	to grant the necessary privileges to the cache administration user. The script prompts for the user name of the cache administration user. 
+	Enter <span class="codetext">cacheadm</span> at the prompt. </p>
+	<p class="codetext">@/home/timesten/instance/tt181/install/oraclescripts/grantCacheAdminPrivileges.sql </p>
+	<p><img class="cmdscnshot" src="../images/cg_conf_orcl_grant_cacheadmin.gif" /></p>
+       <b>Note:</b> Copy this <span class="codetext">grantCacheAdminPrivileges.sql</span> script to Oracle database accessible directory.
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">5. Grant Data Access Privileges to  the Cache Administration User</p>
+<blockquote><ol type=a>
+<li>
+	<p>The cache administration user is responsible for monitoring, and applying the data changes between the  
+	cache database and the Oracle database. This user needs to be granted access privileges to the Oracle tables being cached. </p>
+	<p>In our example, which we will see in the succeeding tutorials, the  <span class="codetext">hr.departments</span> table 
+	will be cached as a read-only table, while the tables <span class="codetext">hr.employees </span> and 
+	<span class="codetext">hr.job_history</span> 
+	will be cached as updatable tables. Once you installed the <a href="http://docs.oracle.com/database/121/COMSC/installation.htm#COMSC00004" target="_blank" class="doclink">HR sample schema</a>, log in as the user <span class="codetext">hr</span> and 
+	grant the following object privileges to <span class="codetext">cacheadm</span>.</p>
+    <p class="codetext">connect hr@ttorcl </p>
+    <p class="codetext">grant select on hr.departments to cacheadm;<br />
+    grant select, insert, update, delete on hr.employees to cacheadm;<br />
+    grant select, insert, update, delete on hr.job_history to cacheadm;</p>
+</li><br/>
+</ol></blockquote>
+<p class="normal">Click  <a href="cache_create.html" class="compilerun">here</a> to learn how to setup up a cache database.</p>
+ 
+<p class="section1"></p>
+<p> For more information about  configuring the Oracle database to cache data in TimesTen refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61196/prereqs.htm#TTCAC171" target="_blank" class="doclink">here</a></p>
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+</body>
+</html>

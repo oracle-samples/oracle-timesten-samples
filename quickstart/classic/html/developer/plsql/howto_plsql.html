@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Run PL/SQL Sample Code</title>
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Run PL/SQL Sample Code</span>
+<p class="normal"><strong>PL/SQL </strong>support in Oracle TimesTen is seamlessly integrated within the TimesTen database and is available from all supported TimesTen programming interfaces, ODBC, JDBC, OCI, Pro*C, and TTClasses (C++). TimesTen PL/SQL uses the same language syntax and semantics as supported in the Oracle database. In this release, a subset of the PL/SQL packages targeted for performance critical OLTP applications are available. For details of supported PL/SQL functionality, refer to the <span class="doclink"><font color="#000000"><a href="http://docs.oracle.com/database/timesten-18.1/e61201/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database PL/SQL Developer's Guide</a></font>.</span></p>
+<p class="normal"><span class="section1">IMPORTANT PRE-REQUISITES</span> </p>
+<blockquote>
+<p class="normal-bold">1. <a href="../sample_dsn_setup.html">Manually Configure Sample DSN for Sample Programs</a> </span></p>
+ <p class="normal-bold">2. Set up sample database and user accounts</p>
+  <p class="normal">The following build_sampledb script should be run once to set up the sample database and user accounts </p>
+  <table width="700" border="0">
+      <tr>
+        <td colspan="2" valign="top" >
+        <li> Set up the Instance Environment Variables<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></li>
+<br />
+        <li>Run the <span class="codetext">quickstart/classic/sample_scripts/createdb/build_sampledb</span> script, which creates the sample database and user accounts that are used by the sample programs. This script  creates the TimesTen user accounts and prompts you for the desired user passwords.</li></td>
+      </tr>
+  </table>
+  <br />
+  <table width="608" border="0">
+    
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ cd quickstart/classic/sample_scripts/createdb<br />
+        $
+        ./build_sampledb.sh</td>
+    </tr>
+  </table>
+  <p class="normal-bold">3. Set up  environment to compile and run the sample application</p>
+  <p class="normal">The following script must be run for each of the terminal session:</p>
+    <li><p class="normal">Set up the Instance environment variables:<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></p></li>
+ 
+  <li><p class="normal">Set up quickstart environment variables:</p> 
+  <table width="606" border="0">
+  
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ . quickstart/classic/ttquickstartenv.sh <span class="normal-bold">OR</span><br />
+        $ source 
+        quickstart/classic/ttquickstartenv.csh</td>
+    </tr>
+  </table>
+  </li>
+</blockquote>
+<p class="section1">How to run the sample PL/SQL code </p>
+<p class="normal">To run the PL/SQL sample code using ttIsql, do </p>
+<p class="codetext">$ttIsql "dsn=&lt;name&gt;;uid=&lt;username&gt;"<br />
+&gt; @&lt;plsql_filename&gt;;</p>
+<p class="normal">OR</p>
+<p class="codetext"> ttIsql -f &lt;plsql_filename&gt; "dsn=&lt;name&gt;;uid=&lt;username&gt;"</p>
+<p class="normal">Examples:</p>
+<p class="codetext">$ttIsql &quot;dsn=sampledb;uid=appuser&quot;<br />
+&gt; enter the password for appuser<br />
+&gt; @basics.sql;</p>
+<p class="codetext">$ttIsql -f basics.sql &quot;dsn=sampledb;uid=appuser&quot;<br />
+</p>
+<table width="760" border="1">
+  <tr class="table-header">
+    <td width="180" valign="top" class="style108">&nbsp;&nbsp;<span class="style119">Procedures</span></td>
+    <td width="564" valign="top" class="table-header"><strong>Description</strong></td>
+  </tr>
+  <tr>
+    <td height="248" valign="top" class="codetext">&nbsp;&nbsp; basics.sql</td>
+    <td valign="top" class="normal">This PL/SQL script gives an overview of the functionality of TimesTen PL/SQL via ttIsql.
+      <p>Features shown include:</p>
+      <ul>
+        <li>SET SERVEROUTPUT ON</li>
+        <li>Creating stored procedures</li>
+        <li>Executing stored procedures from a block</li>
+        <li>Error output with SHOW ERRORs</li>
+        <li>Examples of INPUT and OUTPUT bind variables</li>
+        <li>PL/SQL querying the TimesTen SYSTEM tables</li>
+        <li>Shows the stored procedures in the database using the PROCEDURES command</li>
+        <li>Describes a PL/SQL object</li>
+        <li>Displays the USER_OBJECTS view</li>
+      </ul>
+    <p>This PL/SQL script should be executed from ttIsql.</p></td>
+  </tr>
+  <tr>
+    <td height="174" valign="top" class="codetext">&nbsp;&nbsp;case_procedures.sql</td>
+    <td valign="top" class="normal">This   PL /SQL block   demonstrates the usage of the CASE statement and CASE  expression. The PL/SQL CASE statement includes the simple CASE statement and  the searched CASE statement. The CASE expression includes the simple CASE  expression, the searched CASE expression, plus two syntactic shorthands,  COALESCE and NULLIF.
+      <p>For comparison, each stored procedure is also implemented  using traditional language elements,  such as a sequence of IF statements or the SQL DECODE function. </p>
+    <p>This PL/SQL block should be executed from ttIsql and output is displayed using DBMS_OUTPUT to the console.</p></td>
+  </tr>
+  <tr>
+    <td height="108" valign="top" class="codetext"><p class="style126">&nbsp;<span class="codetext">&nbsp; cursor_loop.sql</span></p>    </td>
+    <td valign="top" class="normal">This PL /SQL block  uses a CURSOR and a LOOP to find and conditionally insert all employees whose monthly wages (salary plus commission) are higher than $2000. A variable of type %ROWTYPE is used to FETCH a row into. EXIT is used to quit the LOOP.
+    <p>This program can be executed from ttIsql [or from a TimesTen API] and output is inserted into the TEMP table. Check the values in the TEMP table before and after running this program.</p>    </td>
+  </tr>
+  <tr>
+    <td height="107" valign="top" class="codetext">&nbsp;&nbsp;cursor_loop_types.sql</td>
+    <td valign="top" class="normal">This PL /SQL block show the use of the %TYPE datatype to declare variables of the same type as database columns. These types are then used in the CURSOR and some simple math is performed on the fetched data. WHEN %NOTFOUND is used to exit the LOOP.
+    <p>This program can be executed from ttIsql [or from a TimesTen API] and output is inserted into the TEMP table. Check the values in the TEMP table before and after running this program.</p>    </td>
+  </tr>
+  <tr>
+    <td height="91" valign="top" class="codetext">&nbsp;&nbsp;cursor_loop_types2.sql</td>
+    <td valign="top" class="normal">This PL/SQL block show the use of a FOR-LOOP based on a CURSOR. The CURSOR resultset is used to exit the LOOP.
+    <p>This program can be executed from ttIsql [or from a TimesTen API] and output is inserted into the TEMP table. Check the values in the TEMP table before and after running this program.</p></td>
+  </tr>
+  <tr>
+    <td height="173" valign="top" class="codetext">&nbsp;&nbsp;cursor_update_logic.sql</td>
+    <td valign="top" class="normal">This program modifies the ACCOUNT table based on instructions stored in the ACTION table. Each row of the ACTION table contains an account number to act upon, an action to be taken (insert, update, or delete), an amount by which to update the account, and a time tag.
+      <p>On an insert, if the account already exists, an update is performed instead. On an update, if the account does not exist, it is created by an insert. On a delete, if the row does not exist, no action is taken.</p>
+    <p>This program can be executed from ttIsql [or from a TimesTen API] and output goes to the ACCOUNT and ACTION tables. Check the values in the ACTION and ACCOUNT tables before and after running this program.</p></td>
+  </tr>
+  <tr>
+    <td height="105" valign="top" class="codetext">&nbsp;&nbsp;inner_loop_block.sql</td>
+    <td valign="top" class="normal">This PL/SQL block illustrates block structure and scope rules. An outer block declares two variables named X and COUNTER, and loops four times. Inside the loop is a sub-block that also declares a variable named X. The values inserted into the TEMP table show that the two Xs are indeed different. 
+    <p>This program can be executed from ttIsql [or from a TimesTen API] and output is inserted into the TEMP table. Check the values in the TEMP table before and after running this program.</p></td>
+  </tr>
+  <tr>
+    <td height="104" valign="top" class="codetext">&nbsp;&nbsp;loop_insert.sql</td>
+    <td valign="top" class="normal">This sample PL/SQL block uses a simple FOR loop to insert 10 rows into a table. The values of a loop index, counter variable, and either of two character strings are inserted. The inserted string depends on the value of the loop index. 
+    <p>This program can be executed from ttIsql [or from a TimesTen API] and output is inserted into the TEMP table. Check the values in the TEMP table before and after running this program.</p></td>
+  </tr>
+  <tr>
+    <td height="185" valign="top" class="codetext">&nbsp;&nbsp;select_exception.sql</td>
+    <td valign="top" class="normal">This sample program  shows examples of PL/SQL Exception handling. 
+      <p>The first PL/SQL block  calculates the ratio between the X and Y columns of  the RESULT_TABLE table.  If the ratio is greater than 0.72, the block  inserts the ratio into RATIO.  Otherwise, it inserts -1.   If the denominator is zero, ZERO_DIVIDE is raised, and a  zero is inserted into RATIO. </p>
+      <p>The second PL/SQL block uses a cursor to fetch and display the employees  in a given department. If no employee is found, the PL/SQL exception NO_DATA_FOUND is raised. </p>
+      <p>This program can be executed from ttIsql [or from a TimesTen API] and output is inserted into the RATIO table. Check the values in the RATIO table before and after running this program.</p></td>
+  </tr>
+  <tr>
+    <td height="106" valign="top" class="codetext">&nbsp;&nbsp;update_inventory.sql</td>
+    <td valign="top" class="normal">This PL/SQL block processes orders for tennis rackets.  It decrements  the quantity of rackets on hand only if there is at least one  racket left in stock.
+    <p>This program can be executed from ttIsql [or from a TimesTen API] and output goes to the INVENTORY2 and PURCHASE_RECORD tables. Check the values in the INVENTORY2 and PURCHASE_RECORD tables before and after running this program.</p></td>
+  </tr>
+</table>
+<p>For more information on PL/SQL support in TimesTen, refer to the <font color="#000000"><a href="http://docs.oracle.com/database/timesten-18.1/e61201/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database PL/SQL Developer's Guide</a></font>. </p>
+<p>&nbsp;</p>
+<p class="normal">&nbsp;</p>
+
+</div>
+<div id="footer"/>
+</body>
+
+</html>

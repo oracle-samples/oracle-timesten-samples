@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to Run TimesTen Index Advisor</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to Run the TimesTen Index Advisor</span>
+<p>This page provides an overview  of the TimesTen Index Advisor and an example of running it. For more details, refer to the <a href="http://docs.oracle.com/database/timesten-18.1/e61195/comp.htm#TTOPR740" target="_new">TimesTen Documentation</a> <br><br>
+
+<p class="normal"><a name="overview"><span class="section1"><font size=3><strong>Overview</strong></font></span></a><br /></p>
+<p class="normal">TimesTen Index Advisor evaluates a given SQL workload and recommends optimal indexes to improve the query response time.
+
+<p>The Index Advisor  supports three different modes: <b>connection-level (default mode)</b>, <b>connection-level with SQL preparation only</b>, and <b>database-level</b>. The table below describes the usage scenarios and the corresponding commands required for each of the modes specified.
+<table width="800" border="1">
+  <tr>
+    <td width="120" valign="center" class="normal"></td>
+    <td width="120" valign="center" class="normal"><div align="center"><b>Connection-level (the default)</b></div></td>
+    <td width="120" valign="center" class="normal"><div align="center"><b>Connection-level (SQL preparation only)</b></div></td>
+    <td width="120" valign="center" class="normal"><div align="center"><b>Database-level</b></div></td>
+  </tr>
+  <tr>
+    <td width="120" valign="center" class="normal"><b>Usage Scenario</b></td>
+    <td width="120" valign="center" class="normal"><div align="left">You have specific physical SQL queries that you want to tune</div></td>
+    <td width="120" valign="center" class="normal"><div align="left">You have the physical SQL queries you want to tune, but do not want to wait for the SQL execution.</div></td>
+    <td width="120" valign="center" class="normal"><div align="left">You want to tune the entire workload running on the database from multiple connections.</div></td>
+  </tr>
+  <tr>
+    <td width="120" valign="center" class="normal"><b>Commands</b></td>
+    <td width="120" valign="center" class="normal"><div align="left">
+        <pre><font color="#800040">ttIsql</font>
+connect "DSN=xxx;UID=xxx;PWD=xxx";
+call ttOptUpdateStats(,1);
+call ttIndexAdviceCaptureStart(<font color="red">0</font>);
+
+&lt;SQL query 1&gt;;
+&lt;SQL query 2&gt;;
+...
+&lt;SQL query n&gt;;
+
+call ttIndexAdviceCaptureEnd(<font color="red">0</font>);
+call ttIndexAdviceCaptureOutput(<font color="red">0</font>);
+quit;</pre>
+    </div></td>
+    <td width="120" valign="center" class="normal"><div align="left">
+        <pre><font color="#800040">ttIsql</font>
+connect "DSN=xxx;UID=xxx;PWD=xxx";
+call ttOptUpdateStats(,1);
+call ttIndexAdviceCaptureStart(<font color="red">0</font>,<font color="red">31</font>);
+
+&lt;SQL query 1&gt;;
+&lt;SQL query 2&gt;;
+...
+&lt;SQL query n&gt;;
+
+call ttIndexAdviceCaptureEnd(<font color="red">0</font>);
+call ttIndexAdviceCaptureOutput(<font color="red">0</font>);
+quit;</pre>
+    </div></td>
+    <td width="120" valign="center" class="normal"><div align="left">
+        <pre><font color="#800040">ttIsql</font>
+connect "DSN=xxx;UID=xxx;PWD=xxx";
+call ttOptUpdateStats(,1);
+call ttIndexAdviceCaptureStart(<font color="red">1</font>);
+quit;
+
+&lt;run the SQL workload&gt;
+
+<font color="#800040">ttIsql</font>
+connect "DSN=xxx;UID=xxx;PWD=xxx";
+call ttIndexAdviceCaptureEnd(<font color="red">1</font>);
+call ttIndexAdviceCaptureOutput(<font color="red">1</font>);
+quit;</pre>
+    </div></td>
+  </tr>
+</table>
+ 
+<p class="normal"><span class="section1"><font size=3><strong>Running Index Advisor in ttIsql</strong></font></span></p>
+<p class="normal">The following section provides step-by-step instructions on how to run the Index Advisor at <b>connection-level (SQL preparation only)</b>.
+<br><br>
+<span class="section1"><em>1. Obtain the SQL Query Workload</em></span>
+<p>The first step is to identify and obtain the SQL queries that require performance tuning or that may benefit from additional indexes. The SQL query workload can be one query or multiple queries.
+
+<p><b>Note:</b> if you cannot get the physical SQL queries, or your workload spans multiple connections, run index advisor using the <b>database-level</b> commands mentioned in the <a href="#overview">table in the Overview section above</a>.
+
+<br><br>
+<em><br>
+<span class="section1">2. Update TimesTen Statistics</span></em><span class="section1"></span>
+<p>Index Advisor recommends optimal indexes by evaluating the SQL workload based on TimesTen table statistics (rows and columns). <b>Statistics must be up-to-date before running the Index Advisor.</b>
+<blockquote>
+Assuming the database DSN is <i>sampledb</i> and the tables your SQL workload access are under user <i>SCOTT</i>, you can run the following commands to collect statistics for all tables under these two users.
+  <pre>
+ttIsql
+ 
+Command&gt; connect "DSN=sampledb;UID=SCOTT;PWD=&lt;PASSWORD OF SCOTT&gt;"; 
+Command&gt; call ttOptUpdateStats(,1);
+Command&gt; quit;</pre></blockquote>
+
+<p><b>Note: </b>Updating statistics may take a while  depending on the number of rows in the table and CPU speed.
+  Typically you  need to update the statistics after the table incurs major changes to the data set. For example, if you updated the statistics yesterday and there has been no bulk changes to the tables, it is not necessary to update the statistics again.</p>
+<p><br/>
+  <span class="section1"><em>3. Run Index Advisor Commands</em></span></p>
+<p>As an example, here's how to  run the Index Advisor  using the <b>connection-level (SQL preparation only)</b>. The benefit of running the query with PREPARE only is that the query may run for a while without proper indexes. Using (0,31) specifies to the Index Advisor to skip the execution portion.  
+
+<blockquote>
+<pre>
+ttIsql
+Command&gt; connect "DSN=sampledb;UID=SCOTT;PWD=&lt;PASSWORD OF SCOTT&gt;"; 
+
+Command&gt; call ttIndexAdviceCaptureStart(<font color="red">0</font>,<font color="red">31</font>);  -- (0,31) specifies connection level with SQL Prepare only
+
+Command&gt; &lt;SQL 1&gt;;
+Command&gt; &lt;SQL 2&gt;;
+Command&gt; ...
+Command&gt; &lt;SQL n&gt;;
+
+Command&gt; call ttIndexAdviceCaptureEnd(<font color="red">0</font>);
+Command&gt; call ttIndexAdviceCaptureOutput(<font color="red">0</font>); 
+Command&gt; quit;</pre></blockquote>
+
+<p>A sample output from "call ttIndexAdviceCaptureOutput(0)" looks like:
+<blockquote>
+<pre>
+call ttIndexAdviceCaptureOutput(0);
+&lt; 2, create unique hash index FACT_AGG_TT_17M_i57 on SCOTT.FACT_AGG_TT_17M(DEST_AIRPO00039C2A); &gt;
+&lt; 1, create hash index FACT_AGG_TT_17M_i57 on SCOTT.FACT_AGG_TT_17M(DEST_AIRPO00039C2A); &gt;
+&lt; 1, create hash index FACT_AGG_TT_08Y_i34 on SCOTT.FACT_AGG_TT_08Y(DEP_TIME_B00039BA6); &gt;
+&lt; 2, create hash index FACT_AGG_TT_08Y_i38 on SCOTT.FACT_AGG_TT_08Y(DEP_YEAR00039C0A); &gt;
+&lt; 1, create hash index FACT_AGG_TT_08Y_i40 on SCOTT.FACT_AGG_TT_08Y(DISTANCE_G00039B9F); &gt;
+5 rows found.</pre>
+</blockquote>
+
+<p>You should review the indexes recommended by the index advisor, some of them might already exist. Create the recommended indexes, and then try your SQL queries again to determine if there is any performance improvement.
+
+<p>Note that the first two indexes recommended have the same index name <i>FACT_AGG_TT_17M_i57</i>. This is by design: we first try to create this index as a unique hash index for optimal performance, but if it fails due to unique constraints, we will create it as a non-unique hash index, as the second row suggested.
+<br><br>
+Follow the summary of in the <a href="#overview">Overview</a> section for commands to use for the other two modes. 
+<p>
+<span class="section1"><em>4. Run Index Advisor Commands Again, If Necessary</em></span><br/>
+<p>After you create the indexes recommended, sometimes it helps to repeat step #3 and re-run Index Advisor to get additional indexes.
+
+<p>&nbsp;</p>
+<p class="normal"><span class="section1"><font size=3><strong>Running  Index Advisor in SQL Developer</strong></font></span><br/></p>
+<p class="normal">SQL Developer provides users with a GUI interface to run the Index Advisor. 
+<p>Check out the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_6.html"><i>SQL Developer - TimesTen Index Advisor</i></a> viewlet, and the <a href="http://docs.oracle.com/database/timesten-18.1/e71314/ixadvisor.htm#TTSDV300"><i>SQL Developer documentation - TimesTen Index Advisor</i></a> section for details.
+
+<p>Download the latest SQL Developer software <a href="http://www.oracle.com/technetwork/developer-tools/sql-developer/overview/index.html">here</a>.
+<p>
+<img width=431 height=302 src="images/indexadvisor1.png" border=0>
+<br>
+<!--<img width=408 height=183 src="images/indexadvisor2.png" border=0>-->
+<img width=544 height=244 src="images/indexadvisor2.png" border=0>
+
+<p>&nbsp;</p>
+</div>
+
+<div id="footer"/>
+</body>
+</html>

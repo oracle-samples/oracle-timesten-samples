@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Best Practices on Programming</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Best Practices for Programming</span>
+<p class="normal">This page contains the top 5 recommendations for your coding practices to achieve optimal performance in using the Oracle TimesTen product. </p>
+<table width="715" border="0">
+  <tr>
+    <td  ><div align="center"><img src="../images/program.gif" alt="programming" width="75" height="142" /></div></td>
+    <td width="525"><table width="520" border="0">
+      
+      <tr>
+        <td width="33" class="normal"><div align="center">-</div></td>
+        <td width="471" class="normal">Milliseconds count - use direct-linked connections for best response time</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Prepare queries and bind columns and parameters in advance</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Tune your application connections and use connection pooling</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Close cursor promptly</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Turn OFF AutoCommit and Commit Regularly</td>
+      </tr>
+    </table></td>
+    <td width="16">&nbsp;</td>
+  </tr>
+</table>
+<p class="section1">Milliseconds count - Use Direct-linked Connections for Best Response Time</p>
+<p class="normal">If you have control on how your application accesses the  TimesTen database and if you can run your application on the same machine as  the TimesTen database, we recommend that you use the direct-linked connection  mode. Direct-linked applications can achieve significantly better performance  than client/server applications because database operations are executed  directly from the application process’ address space without incurring inter-process  communication and network roundtrip overhead. <br />
+</p>
+<p class="normal">TimesTen supports multi-process and multi-threaded  applications, a TimesTen database can be shared across processes that are using  direct-linked and client/server connection modes. </p>
+<p class="normal">For Java applications that  utilize the JDBC interface, it is simple to use direct-linked  connection mode. Just change your JDBC connection string to the form of <em>“jdbc:TimesTen:direct:…”</em><br />
+</p>
+<p class="normal">For applications accessing data cached from the Oracle  Database, the use of a direct-linked connection improves your application’s  performance the same way it does for TimesTen data that is not cached from the  Oracle Database.</p>
+<p class="normal">If your application cannot use a direct-linked connection,  the use of a client/server connection still provides significantly higher  performance than accessing a conventional disk-based relational database. This is  primarily due to the TimesTen product being designed and optimized for  in-memory data structure and layout.</p>
+<p class="section1"><strong>Prepare All SQL Queries and Bind Columns/Parameters In Advance</strong></p>
+<p class="normal">For best performance, you should prepare all SQL statements  that are executed more than once in advance. This is true for all relational  databases, but for TimesTen and its extremely fast transaction rates, the time  spent to compile a statement can actually take several times longer than it  takes to execute it.<br />
+</p>
+<p class="normal">In addition to preparing statements in advance, you should bind all input  parameters and output columns for those SQL statements in advance:</p>
+<table width="610" border="0">
+  
+  <tr>
+    <td width="33" class="normal"><div align="center">-</div></td>
+    <td width="567" class="normal">ODBC users use the <span class="style110">SQLPrepare</span> function</td>
+  </tr>
+  <tr>
+    <td class="normal"><div align="center">-</div></td>
+    <td class="normal">TTClasses users use the <span class="style110">TTCmd:Prepare</span> method </td>
+  </tr>
+  <tr>
+    <td class="normal"><div align="center">-</div></td>
+    <td class="normal">JDBC users use the <span class="style110">PreparedStatement</span> class</td>
+  </tr>
+  <tr>
+    <td class="normal"><div align="center">-</div></td>
+    <td class="normal">OCI users use the OCIStmtPrepare function</td>
+  </tr>
+</table>
+<p class="section1">Tune Your Connections and Use Connection Pooling</p>
+<p class="normal">If your application is multithreaded and opens multiple  connections to the same TimesTen database, you should pay attention to and  manage your connections carefully. As an in-memory database, TimesTen uses  available processor resources efficiently and is, in general, CPU-bound (as  supposed to disk-bound for many applications running on disk-based RDBMS). In  general, it is difficult to achieve best performance if there are more  concurrent connections active simultaneously than there are CPUs on your  machine to handle the operations, and unnecessary concurrent connections may result in  lower application throughput.<br />
+</p>
+<p class="normal">If your application requires a lot of connections, you  should ensure that connections are held efficiently for the transactions. Efficient usage of connections via a connection pool is better than having lots of idle connections.  TTClasses inludes a complete connection pool implementation. Also, commercial Java EE application servers typically use connection  pooling by default.</p>
+<p class="section1">Close Cursor Promptly</p>
+<p class="normal">Similar to the Oracle Database, you do not need to commit  TimesTen read-only transactions. However, it is important to close read-only  cursors promptly in order to release all resources (such as temporary space  used for a sort operation) held by a read-only SQL query.</p>
+<p class="normal">The following methods  close a SQL cursor:</p>
+<table width="610" border="0">
+  <tr>
+    <td width="33" class="normal"><div align="center">-</div></td>
+    <td width="567" class="normal">For ODBC, use <span class="style110">SQLFreeStmt(SQL_CLOSE)</span></td>
+  </tr>
+  <tr>
+    <td class="normal"><div align="center">-</div></td>
+    <td class="normal">For TTClasses, use the <span class="style110">TTcmd:Close</span> method </td>
+  </tr>
+  <tr>
+    <td class="normal"><div align="center">-</div></td>
+    <td class="normal">For JDBC, use the <span class="style110">PreparedStatement.close</span> method</td>
+  </tr>
+  <tr>
+    <td class="normal"><div align="center">-</div></td>
+    <td class="normal">For OCI, use the OCIHandleFree<em> </em>function</td>
+  </tr>
+</table>
+<p class="section1">Turn Off AutoCommit and Commit Regularly</p>
+<p class="normal">By default in ODBC and JDBC, all connections to the  database have <em>autocommit</em> turned on. This means  that each individual SQL statement is committed in its own transaction. By  turning <em>autocommit</em> off and explicitly committing  multiple SQL statements in a single transaction, an application's performance  can be greatly improved. This makes particular sense for large operations, such  as bulk inserts or bulk deletes. (TTClasses turns off autocommit as by default.)</p>
+<p class="normal"><span class="normal">However, it is also possible to group too many  operations into a single transaction where locks are held for a much longer  time for each transaction, resulting in much less concurrency in the system. In  general, bulk insert, update and delete operations tend to work most  effectively when you commit every few thousand rows</span></p>
+<p class="normal">Refer to the <a href="http://docs.oracle.com/database/timesten-18.1/e61199/tuning.htm#TTCDV363" target="_blank" class="doclink">Oracle TimesTen In-Memory Database C Developer's Guide</a> and <a href="http://docs.oracle.com/database/timesten-18.1/e61200/tuning.htm#TTJDV251" target="_blank" class="doclink">Oracle TimesTen In-Memory Database Java Developer's Guide</a> for additional application tuning information.</p>
+
+</div>
+<div id="footer"/>
+</body>
+
+</html>

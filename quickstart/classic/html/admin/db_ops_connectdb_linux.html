@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to Configure Client/Server Connections on Linux and UNIX systems</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to Configure Client/Server Connections on Linux and UNIX systems</span>
+<p>In this section we will step through what needs to be configured on the client-side, to perform  a successful client/server connection. This will involve making additions to two files used by the TimesTen client:
+<ol type=a><li> Adding a Logical Server entry to the sys.ttconnect.ini file</li>
+<li> Adding a client DSN entry to the sys.odbc.ini file</li></ol>
+
+</p> 
+<br/>
+ <span class="section1"> Adding a Logical Server entry to the sys.ttconnect.ini file</span></dt>
+
+ <p>TimesTen client applications use the <span class="codetext"> sys.ttconnect.ini</span> file to store the Logical Server name definitions. Before a client/server connection can be configured, you need to know the port number on which the TimesTen Server process is listening. This can be located by running ttStatus on the remote TimesTen instance:<br />
+   <br />
+   $<strong><span class="codetext"> ttstatus</span></strong><br /> 
+  <ul>
+    <span class="codetext"> TimesTen  status report as of Mon Feb 27 11:57:26 2017 </span><br />
+  <span class="codetext">  Daemon  pid 25723 port 6624 instance tt181 </span><br />
+<span class="codetext">TimesTen  server pid 25732 started on port  <strong>6625</strong></span></ul></p>
+ <p> In this example, the target TimesTen server port number is <span class="codetext">6625</span>.
+ <br />
+ Manually add the logical server entry by editing the  <span class="codetext"> sys.ttconnect.ini</span> file located in <span class="codetext">&lt;instance_dir&gt;/conf </span> directory.  </p>
+ <br />
+ For example:
+
+ <br />
+  <ul>
+    <span class="codetext">[sampledb_CS] </span><br />
+  <span class="codetext">  Description=TimesTen Server</span><br />
+<span class="codetext">Network_Address=server.mycompany.com</span>
+<br />
+<span class="codetext">TCP_PORT=6625</span>
+</ul> 
+  <p><br />
+  The <span class="codetext">Network_Address</span> is the host name or IP address of the system on which the TimesTen Server is running.  </p>
+  <br />
+  <b>Note:</b> To override the name and location of this file at run-time, set the <span class="codetext">SYSTTCONNECTINI</span>  environment variable before launching the TimesTen Client application.
+    <p><br /> </p> 
+    </blockquote>
+    <span class="section1"> Adding a client DSN entry to the sys.odbc.ini file</span><br/>
+  </p>
+  <p>Once we have created the Logical Server entry, we can add a client DSN entry to the  <span class="codetext">sys.odbc.ini</span> file on the client machine. There are two parts to this.  </p>
+  <br/>
+  Firstly, define the client DSN name and provide the name of the ODBC client driver to use in the ODBC Data Sources section:
+ <br />
+  <ul><span class="codetext">[ODBC Data Sources] </span><br />
+  <span class="codetext"> sampledbCS=TimesTen 18.1 Client Driver</span><br /></ul>
+  <br />
+ <p>Next, create an entry using the client DSN name you just defined. This entry needs to specify the Logical Server name, and the server DSN to look for on the server side:
+ <br />
+  <ul>
+    <span class="codetext">[sampledbCS] </span><br />
+  <span class="codetext">TTC_SERVER=sampledb_CS</span><br />
+   <span class="codetext">TTC_SERVER_DSN=sampledb</span><br /></ul> </p>
+     <br />
+   <p> Let’s break this down into its constituent parts. </p>
+<ol type=a>
+   
+   <em>
+    <b> sampledbCS :</b> the Client DSN you defined in the client’s ODBC Data Sources section<br />
+    <b> sampledb_CS:</b> the Logical Server name you defined in sys.ttconnect.ini<br />
+    <b> sampledb:</b> the server DSN which we configured <span class="doclink"><a href="dsn_setup_unix_linux.html">here </a></span><br />
+    <br /> 
+    </em>
+</ol>
+
+<p> Together, these mean the client has an IP address to aim for, a port it will expect to find a TimesTen Server listening on, and a DSN to tell the TimesTen Server it wants to make a connection to. <br />
+</p>
+ 
+ <p class="normal">Click  <a href="db_ops_connectdb.html" class="compilerun">here</a> to learn how to connect to a TimesTen database using both direct and client/server mode.</p>
+<p>&nbsp;</p>
+</div>
+
+<div id="footer"/>
+</body>
+</html>

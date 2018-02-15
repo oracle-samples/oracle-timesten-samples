@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+
+    <!-- a SessionFactory instance -->
+    <session-factory name="Tptbm">
+
+        <!-- properties -->
+        <property name="hibernate.connection.url">jdbc:timesten:direct:sampledb</property>
+        <property name="hibernate.connection.username">SCOTT</property>
+        <property name="hibernate.connection.password">tiger</property>                
+        <property name="hibernate.connection.driver_class">com.timesten.jdbc.TimesTenDriver</property> 
+       
+        <property name="hibernate.dialect">org.hibernate.dialect.TimesTenDialect1122</property>        
+                <!-- Connection.TRANSACTION_READ_COMMITTED = 2 -->
+        <property name="hibernate.connection.isolation">2</property>    
+        
+        <!-- rely solely on the TimesTenDialect for DB capabilities -->
+        <property name="hibernate.temp.use_jdbc_metadata_defaults">false</property>
+        
+        <property name="hibernate.jdbc.fetch_size">32</property>
+        <property name="hibernate.jdbc.batch_size">256</property>
+        <property name="hibernate.jdbc.batch_versioned_data">true</property>
+
+        <property name="hibernate.jdbc.use_streams_for_binary">false</property>
+        <property name="hibernate.jdbc.use_get_generated_keys">false</property>
+        <property name="hibernate.jdbc.use_scrollable_resultset">false</property>
+        
+        <property name="hibernate.cache.use_query_cache">false</property>
+        <property name="hibernate.cache.use_second_level_cache">false</property>
+        
+        <property name="hibernate.show_sql">false</property>        
+        <property name="hibernate.connection.pool_size">4</property>
+
+        
+        <!-- mapping file -->
+        <mapping resource="META-INF/Tptbm.hbm.xml"/>
+
+    </session-factory>
+
+</hibernate-configuration>

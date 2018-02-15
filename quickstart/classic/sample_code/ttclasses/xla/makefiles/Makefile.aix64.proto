@@ -1,0 +1,142 @@
+##############################################################################
+#
+# 64-bit AIX Makefile (cc_r) for the TimesTen TTCLASSES sample programs
+#
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+##############################################################################
+
+INSTDIR       = $(TIMESTEN_HOME)/install
+COMMON        = $(QUICKSTART_HOME)/sample_code/common
+SAMPLES       = $(QUICKSTART_HOME)/sample_code/ttclasses
+TTCLASSESDIR  = $(INSTDIR)/ttclasses
+TTDMDIR       = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
+
+###
+### To compile for 64-bit AIX, replace $(CF32) -> $(CF64)
+### in CFLAGS; then replace $(LD32) -> $(LD64) in LDFLAGS;
+### finally, set ODBC to point to /64, not /32 directory.
+###
+
+CF32 = -qro -qroconst
+LD32 =
+CF64 = -qro -qroconst -q64 -qlanglvl=ansi -qlonglong -qchars=signed -DTT_64BIT
+LD64 = -q64
+
+THREAD_SAFE   = -D_THREAD_SAFE
+POSIX_THREADS = -D_POSIX_PTHREAD_SEMANTICS
+OPTFLAG       = -O3 -qstrict
+DEBUGFLAG     = -g -DTTDEBUG
+CSDEFS        = -DTTCLIENTSERVER
+
+CFLAGS        = $(DEBUGFLAG) $(THREAD_SAFE) -I$(TTC_INCLUDEDIR) -I$(INSTDIR)/include $(CF64) \
+                -DAIX -DUSE_OLD_CPP_STREAMS -I$(COMMON)
+
+LDFLAGS       = $(LD64) -bh:5
+DIRLIBS       = -L$(INSTDIR)/lib -ltten -lttclasses -lm -lpthread -lC_r
+CSLIBS        = -L$(INSTDIR)/lib -lttclient -lttclassesCS -lm -lpthread -lC_r
+TTDMLIBS      = -L$(INSTDIR)/lib -lttdrvmgr -lttclassesTTDM -lm -lpthread -lC_r
+
+
+
+CPLUSPLUS     = xlC_r
+CC            = cc_r
+
+# default LINK line (both opt/debug)
+LINK          =  ar $(ARFLAGS) cr
+
+ARFLAGS       = -X64
+
+SHLDEXT       = so
+AREXT         = a
+
+OBJ_DIR = obj
+
+# used to determine what targets to build
+TT_CLIENTLIB  = $(wildcard $(INSTDIR)/lib/libttclient.$(SHLDEXT))
+TT_LIBTTEN    = $(wildcard $(INSTDIR)/lib/libtten.$(SHLDEXT))
+
+#
+# TimesTen ttClasses Driver Manager Shared Library
+#
+TTCLASSES_TTDM_SHLIB  = $(INSTDIR)/lib/libttclassesTTDM.$(SHLDEXT)
+
+#
+# TimesTen Driver Manager Shared Library
+#
+TTDM_SHARED_LIB       = $(INSTDIR)/lib/libttdrvmgr.$(SHLDEXT)
+# -----------------------------------------------------------------------------------
+# file lists
+# -----------------------------------------------------------------------------------
+
+TTC_INCLUDEDIR  =  $(INSTDIR)/include/ttclasses
+
+TTC_DEMO_CPP_OBJS = \
+$(OBJ_DIR)/ttXlaAdmin.o \
+$(OBJ_DIR)/xlasubscriber1.o \
+$(OBJ_DIR)/xlasubscriber2.o
+
+TTC_DEMO_C_OBJS = \
+UTILS = \
+$(SAMPLES)/$(OBJ_DIR)/portable_thread_unix.o
+
+TESTPROGS = \
+ttXlaAdmin \
+xlasubscriber1 \
+xlasubscriber2
+
+UTILS = \
+$(SAMPLES)/$(OBJ_DIR)/testprog_utils.o
+
+# -----------------------------------------------------------------------------------
+#  Top-level targets
+# -----------------------------------------------------------------------------------
+ifneq ($(strip $(TT_LIBTTEN)),)
+PROGS = $(TESTPROGS) $(TESTPROGS_TTDM)
+endif
+
+ifneq ($(strip $(TT_CLIENTLIB)),)
+PROGS += $(TESTPROGS_CS) $(TESTPROGS_TTDM)
+endif
+
+all: $(PROGS)
+
+clean:
+		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS) $(TESTPROGS_CS) $(TESTPROGS_TTDM)
+		$(PLAT_SPECIFIC_CLEAN)
+
+# -----------------------------------------------------------------------------------
+# build targets
+# -----------------------------------------------------------------------------------
+
+.SUFFIXES: .cpp $(SUFFIXES)
+
+.KEEP.STATE:
+
+$(OBJ_DIR)/%.o:%.c
+	$(CC) $(CFLAGS) -c $*.c -o $@
+
+$(OBJ_DIR)/%_client.o:%.c
+	$(CC) $(CFLAGS) $(CSDEFS) -c $*.c -o $@
+
+$(OBJ_DIR)/%.o:%.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c $*.cpp -o $@
+
+$(OBJ_DIR)/%_client.o:%.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c $*.cpp -o $@
+
+#
+# TTClasses direct linked sample programs
+#
+
+ttXlaAdmin: $(UTILS) $(OBJ_DIR)/ttXlaAdmin.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttXlaAdmin.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+xlasubscriber1: $(UTILS) $(OBJ_DIR)/xlasubscriber1.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/xlasubscriber1.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+xlasubscriber2: $(UTILS) $(OBJ_DIR)/xlasubscriber2.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/xlasubscriber2.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)

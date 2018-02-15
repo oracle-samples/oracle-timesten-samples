@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Sample TimesTen ODBC Driver Manager</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Sample  TimesTen ODBC Driver Manager</span>
+<p > <strong>TimesTen ODBC Driver Manager</strong> (TTDM) is a lightweight ODBC Driver Manager specifically developed and optimized for use with the Oracle TimesTen In-Memory Database.   </p>
+
+<p class="section1">What is a Driver Manager and why might I need it?</p>
+<p >When an ODBC based application connects to a TimesTen database, it connects to a logical name, the Data Source  Name (DSN), which identifies the datasource to which it wants to connect. It  does this by calling various ODBC functions provided by an ODBC driver. Some  external repository of configuration information holds the various DSN values  that are available, together with the necessary configuration and control  information needed by the ODBC driver to establish a connection and manage  usage of the datasource.</p>
+
+<p >An ODBC driver is a piece of software (typically a library  of some kind) that implements the ODBC API and provides the functionality to  connect to a specific kind of datasource. For example, there are ODBC drivers  available for most popular databases; Oracle, SQL Server, Sybase, DB2 etc. etc.  Each type of database (datasource) requires a different ODBC driver. Herein  lies a potential problem.</p>
+
+<p >Since each ODBC library defines and exposes (largely)  the same set of functions (those defined in the ODBC API), an application can  only be linked with one ODBC driver library at any one time. This means that if  the application has to support different kinds of datasource, different versions  of the application must be built for each type of datasource. If the  application needs to connect concurrently to different types of datasource  (i.e. needs to concurrently use more than one ODBC driver) then this becomes  impossible.</p>
+
+<p>A solution to this issue is to use a Driver Manager. A driver manager itself implements and exposes the ODBC API , thus the application  can link directly to the driver manager library instead of the individual ODBC Driver  libraries. Based on some configuration data or other mechanism, the driver manager will  dynamically load the relevant ODBC Driver libraries at runtime as the  application requires them. The driver manager sits between the application and the  individual ODBC drivers and arbitrates all ODBC calls. The application can now  connect to multiple datasources, using different ODBC drivers, concurrently</p>
+<br/>
+
+<p class="section1">TTDM Functionality</p>
+<p >TTDM enables an application to concurrently use both the direct-linked  mode and the client/server  mode to connect to the TimesTen database. TTDM dynamically determines the correct connection type based on the DSN that is being used for a connection. </p>
+<ul>
+	<li>TTDM <a href="../../sample_code/odbc_drivermgr/TTDMUserGuide.pdf">User's Guide</a></li>
+	<li>TTDM Source  <a href="../../sample_code/odbc_drivermgr/ttdrvmgr.c">ttdrvmgr.c</a></li>
+</ul>
+<p ><b>Note:</b> TTDM is provided as is with  source code. Oracle is not responsible for supporting   any user modifications to the sample driver manager.</p>
+<p >&nbsp;</p>
+
+</div>
+<div id="footer"/>
+</body>
+
+</html>

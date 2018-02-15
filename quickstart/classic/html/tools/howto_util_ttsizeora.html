@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to use ttSizeOra</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script></head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to  use ttSizeOra </span>
+<p> <span class="codetext">ttSizeOra</span> is a command-line utility that examines a table in an Oracle database and provides an estimate of the memory requirement for the table, its metadata and its indexes to be imported into a TimesTen database. This utility is not an	official	production	utility	and	support	will	be	provided	on	a	'best	effort'	basis.
+</p>
+  
+<p><span class="codetext">ttSizeOra</span> should be downloaded from <a href="http://www.oracle.com/technetwork/indexes/samplecode/utilities-2180928.html"> OTN </a> and run in any server where can connect to the Oracle database remotely. The	main	features	provided	by	ttSizeOra are:</p>
+<ul>
+  <li>Generates	an	accurate	memory	sizing	estimate	thereby	facilitating	capacity	planning	prior	to	any	
+actual	data	movement. 
+  </li> <br />
+  <li>The	sizing	estimate	is	based	on	an	understanding	of	how	certain	Oracle	data	types	are mapped	to	
+equivalent	TimesTen	data	types. </li> <br />
+  <li>The	estimate	can	also	optionally	take	into	account	memory	savings	from	applying	data	type	
+mapping	of	suitable	NUMBER	columns	to	TimesTen	native	integer	types. 
+  </li> <br />
+  <li>Allows	control	over	the	boundary	that	determines	if	variable	length	columns	are	stored	INLINE	or	
+NOT	INLINE	in	TimesTen,	which	affects	the	overall	memory	usage.  </li> <br />
+  <li>Allows	the	user	to	specify	the	TimesTen	range	index	type		to	be	used	when
+estimating	index	sizes.
+  </li> 
+  <br />
+  <li>Analyzes	the	Oracle	table	data	to determine	the	row count	and	the	average	utilization	of	variable	
+length	columns. </li> <br />
+  <li>Row count	and/or	variable	length	column	utilization	can	be	specified	on	the	command	line	to	
+override	the	automatically	determined	values	(which	may	also	avoid	the	need	to	analyze the	data	
+in	the	Oracle	database).
+  </li> <br />
+  <li>Supported	on	a	wide	range	of	platforms: Linux	x86 64 bit, Solaris	SPARC 64bit, Solaris	x86	64	bit, AIX 64	bit and Mac	OS	X 64-bit.</li> <br />
+</ul>
+<p><span class="section1"><strong><em>ttSizeOra </em></strong></span><strong><em><span class="section1"> Usage Example</span></em></strong> <br/>
+    <br />
+    Make	sure	that	the	system	where	you	intent	to	run	<span class="codetext">ttSizeOra</span>	has	a	functioning Oracle	client	
+installation	(the	InstantClient	is	sufficient).	Configure	the	client	installation	so	that	it	can	
+connect	to	the	target	Oracle	database	and	verify	this	using	SQL*Plus.  
+  <br />  <br />
+  <strong>Examples:</strong><br />
+  <br />
+  The following command generates 	an	accurate	memory	sizing	estimate for <span class="codetext">employees</span> table under Oracle database user <span class="codetext">hr. </span><br />
+    <br />  
+    <span class="codetext">$ ./ttSizeOra -oraConn hr/hr@ttorcl -tbl employees </span><br />
+    <br />
+<p><strong><br /></strong></p>
+<p><strong>For more details and usage information, refer to <span class="doclink"><a href="http://download.oracle.com/otn/samplecode/timesten/ttSizeOra-ttImportFromOracle/ttSizeOra.pdf">ttSizeOra</a></span> online document.
+</strong> 
+</p>
+<p><strong><br /></strong>
+</blockquote>
+</div>
+
+<div id="footer"/>
+</body>
+</html>

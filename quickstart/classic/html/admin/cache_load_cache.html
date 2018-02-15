@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Loading Data into Cache Groups</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Loading Data into Cache Groups</span>
+<p >Data from the Oracle database can be preloaded into a cache group by using the 
+  <span class="doclink">LOAD CACHE GROUP</span> statement. 
+Depending on the cache group type, an optional <span class="codetext">WHERE</span> clause can  also be specified to 
+restrict the  amount of data to be cached.  For 
+<span class="doclink">dynamic cache groups</span>, 
+data is also loaded when <span class="codetext">SELECT</span>,<span class="codetext"> INSERT</span>, <span class="codetext">UPDATE</span> 
+or <span class="codetext">DELETE</span> statements are issued against one of the cache tables. </p>
+<p>The  examples  below show how  you can load data from Oracle tables into cache groups.</p>
+
+<p class="section1">4. Preload data into Cache Groups</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Only users with either <span class="codetext">CACHE_MANAGER</span> or <span class="codetext">LOAD CACHE GROUP</span> 
+	privilege can load data into  cache groups. Enter the <span class="codetext">LOAD CACHE GROUP</span> statement below in 
+	<span class="codetext">ttIsql</span>, to populate the  read-only cache group <em>cacheadm.ro</em></p>
+	<p class="codetext">load cache group ro commit every 256 rows;</p>
+	<p><img class="cmdscnshot" src="../images/cg_load_cg_ro.gif"/></p>
+</li><br/>
+<li>
+	<p>Enter the following <span class="codetext">LOAD CACHE GROUP</span> statement in <span class="codetext">ttIsql</span> 
+	to pre-load a dynamic cache group <span class="codetext">cacheadm.d_awt,</span> with employees records where their id is greater than 200; </p>
+	<p class="codetext">load cache group d_awt where employees.employee_id &gt; 200 commit every 0 rows;</p>
+	<p><img class="cmdscnshot" src="../images/cg_load_cg_d_awt.gif" /></p>
+	<p><b>Note:</b> After loading the data, the autorefresh state for read only cache groups will 
+	be changed to "ON". Changes to the underlying autorefresh tables in Oracle will be applied to the cache tables 
+	once the defined refresh interval has been reached. For 
+	<span class="doclink">asynchronous writethrough cache groups</span>,  
+	all updates  in the cache database will  be propagated to the Oracle database, once the replication agent process 
+	is up and running. </p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">Dynamically Load Data into a Cache Group</p>
+<p>For a  dynamic cache group, if no rows are found by a query issued against the cached tables, 
+it will execute the query in Oracle. If any rows are returned they  will be returned by the query  and inserted into the TimesTen cache  tables. 
+The  examples  below show how  data can be loaded on-demand into a dynamic cache group. </p>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in to <span class="codetext">ttIsql</span> as the cache table user  <span class="codetext">HR</span>, passing in both the TimesTen and Oracle passwords </p>
+	<p class="codetext">connect &quot;dsn=cachedb1_1211;uid=hr;pwd=hr;oraclepwd=hr&quot;; </p>
+</li><br/>
+<li>
+	<p>Select from the <span class="codetext">hr.employees</span> table to list the records 
+	loaded from the previous <span class="codetext">LOAD CACHE GROUP</span> statement.</p>
+	<p class="codetext">select employee_id, first_name from employees; </p>
+	<p><img class="cmdscnshot" src="../images/cg_load_cg_d_awt_select.gif" /></p>
+</li><br/>
+<li>
+	<p>To load data into a dynamic cache group, you must use a <span class="codetext">WHERE</span> 
+	equality clause in your query against either the primary key  or foreign key column on the cache tables.</p>
+	<p class="codetext">select first_name, last_name from employees where employee_id=100;</p>
+    <p class="codetext">select count(*) from employees;</p>
+	<p><img class="cmdscnshot" src="../images/cg_load_cg_d_awt_tp1.gif" /></p>
+</li><br/>
+<li>
+	<p>When performing a  <span class="codetext">WHERE</span> clause query against a child cache table, 
+	both the child and parent records will  be loaded into the cache database.</p>
+	<p class="codetext">select employee_id, start_date, end_date from job_history where employee_id=200;</p>
+    <p class="codetext">select count(*) from employees; </p>
+	<p><img class="cmdscnshot" src="../images/cg_load_cg_d_awt_tp2.gif" /></p>
+</li><br/>
+</ol></blockquote>
+<p>For more information on Cache Groups refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61196/define.htm#TTCAC203" target="_blank" class="doclink">here</a></p>
+
+<table align="right" border="0">
+<tr>
+	<td><a href="cache_create_cache_group.html"><b>&lt; Previous</b></a></td>
+	<td><a href="cache_create_cache_group.html"><b>1</b></a></td>
+	<td>2</td>
+</tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+</html>

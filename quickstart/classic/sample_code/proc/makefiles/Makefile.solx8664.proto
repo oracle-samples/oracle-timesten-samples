@@ -1,0 +1,126 @@
+#
+# Build TimesTen Sample Programs (Unix)
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# $Revision
+#
+
+#
+# Precompilation of plsqlPROC.pc requires that the environment variable
+# TWO_TASK is set. The syntax for setting environment variables varies 
+# depending on which type of shell is used. This make file uses Bourne shell.
+#
+SHELL=/bin/sh
+
+INSTDIR         = $(TIMESTEN_HOME)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
+TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_11_2
+OCIINCS         = $(TTORACLE_HOME)/sdk/include
+
+CC              = cc
+
+PLATCFLAGS      = -xO4 -mt -m64
+LDFLAGS         = -mt -m64
+
+
+EXTRALIBS       = -lpthread -lm -lrt
+
+ifeq ($(TT_MVL_LINUX),1)
+EXTRALIBS       += -ldl -lnsl -lnnz11
+endif
+
+INCS 		= -I$(INSTDIR)/include -I$(COMMDIR) -I$(OCIINCS)
+
+CSDEFS          = -DTTCLIENTSERVER
+CFLAGS          = $(PLATDEFS) $(PLATCFLAGS) $(INCS)
+
+TTLINK          = -L$(INSTDIR)/lib -R$(INSTDIR)/lib 
+
+
+ICLIBS          = $(TTLINK) -lclntsh  $(EXTRALIBS)
+
+ANSIDYN1           = ansidyn1
+ANSIDYN1OBJS       = ansidyn1.o psswds.o parseargs.o
+ADDEMPPROC         = addempPROC
+ADDEMPPROCOBJS     = addempPROC.o psswds.o parseargs.o
+BATCHFETCHPROC     = batchfetchPROC
+BATCHFETCHPROCOBJS = batchfetchPROC.o psswds.o parseargs.o
+CURSORPROC         = cursorPROC
+CURSORPROCOBJS     = cursorPROC.o psswds.o parseargs.o
+GETEMPPROC         = getempPROC
+GETEMPPROCOBJS     = getempPROC.o psswds.o parseargs.o
+PLSQLPROC          = plsqlPROC
+PLSQLPROCOBJS      = plsqlPROC.o psswds.o parseargs.o
+
+PROGS           = $(ANSIDYN1) $(ADDEMPPROC) $(BATCHFETCHPROC) $(CURSORPROC) \
+                  $(GETEMPPROC) $(PLSQLPROC)
+C_FILES         = ansidyn1.c addempPROC.c batchfetchPROC.c cursorPROC.c \
+                  getempPROC.c plsqlPROC.c
+
+#
+# Top level targets
+#
+
+all: $(PROGS)
+
+clean:
+	rm -f $(PROGS) *.o *.lis $(C_FILES)
+
+
+#
+# Targets for building executables
+#
+
+$(ANSIDYN1): $(ANSIDYN1OBJS)
+	$(CC) -o $@ $(LDFLAGS) $(ANSIDYN1OBJS) $(ICLIBS)
+
+$(ADDEMPPROC): $(ADDEMPPROCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(ADDEMPPROCOBJS) $(ICLIBS)
+
+$(BATCHFETCHPROC): $(BATCHFETCHPROCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(BATCHFETCHPROCOBJS) $(ICLIBS)
+
+$(CURSORPROC): $(CURSORPROCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(CURSORPROCOBJS) $(ICLIBS)
+
+$(GETEMPPROC): $(GETEMPPROCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(GETEMPPROCOBJS) $(ICLIBS)
+
+$(PLSQLPROC): $(PLSQLPROCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(PLSQLPROCOBJS) $(ICLIBS)
+
+
+#
+# Target for building object files
+#
+
+.c.o:
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+
+#
+# Targets for Oracle Pro*C Pre-compilation
+#
+
+ansidyn1.c: ansidyn1.pc
+	@proc include=$(COMMDIR) iname=ansidyn1.pc config=pcscfg.cfg mode=ansi
+
+addempPROC.c: addempPROC.pc
+	@proc include=$(COMMDIR) iname=addempPROC.pc config=pcscfg.cfg
+
+batchfetchPROC.c: batchfetchPROC.pc
+	@proc include=$(COMMDIR) iname=batchfetchPROC.pc config=pcscfg.cfg
+
+cursorPROC.c: cursorPROC.pc
+	@proc include=$(COMMDIR) iname=cursorPROC.pc config=pcscfg.cfg
+
+getempPROC.c: getempPROC.pc
+	@proc include=$(COMMDIR) iname=getempPROC.pc config=pcscfg.cfg 
+
+plsqlPROC.c: plsqlPROC.pc
+ifeq ($(TT_MVL_LINUX),1)
+	@TWO_TASK=sampledb;export TWO_TASK;LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) proc include=$(COMMDIR) USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics
+else
+	@TWO_TASK=sampledb;export TWO_TASK;proc include=$(COMMDIR) USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics
+endif
+

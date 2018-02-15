@@ -1,0 +1,97 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to use ttBulkCp</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script></head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to  use ttBulkCp </span>
+<p>The tutorial shows how to use the <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF324">ttBulkCp</a></span>  utility to export data from a TimesTen database and also how to import data from an external ASCII file into a TimesTen database table.</p>
+<p> <span class="codetext">ttBulkCp</span> is a TimesTen utility that can export from and import into TimesTen tables using ASCII files. It can be used to copy data between TimesTen databases.
+There are three majoe modes: <b>output</b>(-o) mode, <b>input</b>(-i) mode and the <b> direct load input</b>(-directLoad) mode. </p>
+<p>The example on this page references a sample TimesTen database called <span class="codetext"><em>sampledb</em></span>. The database schema belongs to a user called <span class="codetext">ttuser </span> with a sample table called <span class="codetext"><em>EMPLOYEES</em></span>. </p>
+<p><span class="section1"><strong><em>1. Export data via </em></strong></span><strong><em><span class="section1"> output(-o) mode</span></em></strong> <br/>
+    <br />
+    In this section, you will learn how to export TimesTen database table via <span class="codetext">ttBulkCp</span> utility output(-o) mode. <br />
+  <br />
+  <strong>Examples:</strong><br />
+  <br />
+  The following command use <span class="codetext">ttBulkCp</span> utility to export the <span class="codetext">ttuser.employees</span> table from TimesTen using a text data file called <span class="codetext">employees.dump</span> . <br />
+    <br />  
+    <span class="codetext">$ ttbulkcp -o -connstr &quot;DSN=sampledb;uid=ttuser;pwd=ttuser&quot; employees employees.dump</span><br />
+    <br />
+where<br />
+<br />
+<span class="codetext">-<em>o</em></span>   specifies the output mode to export data of a table from TimesTen database.<br />
+<span class="codetext">-<em>oraconn</em></span>   specifies the connection string where DSN is the data source name, UID the user id and PWD the user password.<br />
+<span class="codetext"><em>employees</em></span>   specifies the source table name to be copied in sampledb database. <br />
+<span class="codetext"><em>employees.dump</em></span>   specifies the data file name.<br />
+
+<br />
+Here is the sample output from running the above command:</p>
+<p><img src="../images/howto_util_ttBulkCp_example1.gif" width="562"  class="cmdscnshot"/></p>
+<br />
+ 
+<p><strong><br />
+    </strong> <span class="section1"><strong><em>2. Import data via  </em></strong></span><strong><em><span class="section1">input(-i) mode</span></em></strong> <br/>
+    <br />
+    In this section, you will learn how to use the <span class="codetext">ttBulkCp</span> utility input(-i) mode to import the data of single table into TimesTen database. <br />
+
+    <strong><br />
+    Examples:</strong><ol type=a>
+      <li> Before using <span class="codetext">ttBulkCp</span> utility to load data into a TimesTen table, the table itself must first be created.
+       </li>
+       
+  <p><strong> 
+  
+ </strong> <li> The following command will load the rows listed in the file <span class="codetext">employees.dump</span> into a table <span class="codetext">ttuser.employees</span> in database <span class="codetext">sampledb</span> .<br />
+      <br />  
+      <span class="codetext">$ ttbulkcp -i "DSN=sampledb;uid=ttuser;pwd=ttuser" ttuser.employees employees.dump</span><br />  
+        
+      <p><img src="../images/howto_util_ttBulkCp_imp1.gif" width="562" class="cmdscnshot"/></p>
+  <p><strong><br /></strong></li>
+   </ol>
+
+  <span class="section1"><strong><em>3. Import data via  </em></strong></span><strong><em><span class="section1">direct load input(-directLoad) mode</span></em></strong> <br/>
+    <br />
+    In 18.1 release, there is a new major mode  - <b>direct load input</b>(-directLoad) mode which is designed to load large amounts of data as fast as possible with the benefit of better performance and scalability.
+    <br />
+    Note: The direct load input mode of <span class="codetext">ttBulkCp</span> utility is only available in Direct Connection Mode (<span class="codetext">ttBulkCp</span> ), not Client/Server mode (<span class="codetext">ttBulkCpCS</span> ). <br />
+ <br />
+ In this section, we will use <span class="codetext">ttBulkCp</span>  with <span class="codetext">-directLoad</span>  option to load a large data file into TimesTen <span class="codetext">ttuser.employees</span> table.
+  <br />
+    <strong><br />
+   Examples:</strong><br />
+  <ol type=a>
+  <li> Connect to <span class="codetext">sampledb</span> and verify the table ttuser.employees has been created.<br />
+       </li><br />
+  
+  <li> Load the rows listed in the file <span class="codetext">bigfile.dump</span> into <span class="codetext">ttuser.employees</span> table in database <span class="codetext">sampledb</span> via <span class="codetext">-directLoad</span> input mode .<br />
+      <br />  
+      <span class="codetext">$ ttBulkCp -directload -connstr "DSN=sampledb;uid=ttuser;pwd=ttuser" ttuser.employees bigfile.dump</span><br />  
+        
+      <p><img src="../images/howto_util_ttBulkCp_directLoad1.gif" width="562" class="cmdscnshot"/></p>
+  <p><strong><br /></strong></li>
+</ol>
+ 
+
+<p><strong>For more details and usage information, see <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF324">ttBulkCp</a></span> in the Oracle TimesTen In-Memory Database Reference.
+</strong> 
+</p>
+<p><strong><br /></strong>
+
+</p>
+  <br />
+    <br />
+</blockquote>
+</div>
+
+<div id="footer"/>
+</body>
+</html>

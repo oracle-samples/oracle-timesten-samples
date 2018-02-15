@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Configuring Replication Between TimesTen Databases</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit('rep');">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Configuring Replication Between TimesTen Databases</span>
+<p >Availability is an essential requirement for most real-time applications. 
+Industries that operate 24x7 such as telecommunications, and global systems that are Web-accessible such as travel and reservations sites, 
+cannot tolerate service downtime. 
+<a href="http://docs.oracle.com/database/timesten-18.1/e61197/overview.htm#TTREP115" target="_blank" class="doclink">TimesTen replication</a> 
+enables real-time data replication between in-memory databases  for high availability and load   sharing. 
+Replication  can also be used to facilitate online database upgrades and maintenance.</p>
+<p>TimesTen replication is supported over LAN and WAN connections. Both asynchronous and synchronous data replications are available. 
+Asynchronous replication provides maximum performance, but the application is completely decoupled from the 
+receipt process of the replicated elements on the subscriber. For "pessimistic" applications that need higher levels of confidence 
+that the replicated data is consistent between the master and subscriber databases, 
+options such as synchronous replication with the return receipt or return twosafe services are both supported.</p>
+<p>Replication is transaction-log based, this enables high efficiency and low overhead. 
+The replication agent on the master database reads the records from its transaction log and forwards any relevant changes to the 
+replication agent on the subscriber machine, which then applies the updates to its local database. 
+A  range of replication configuration options are supported, 
+including an <a href="http://docs.oracle.com/database/timesten-18.1/e61192/availability.htm#TTCIN206" target="_blank" class="doclink">active standby pair</a> 
+configuration with optional read-only subscribers. An active standby pair can be configured for both TimesTen In-Memory Database and 
+TimesTen Application-Tier Database Cache (TimesTen Cache).<br />
+<br />
+<span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61197/attrib.htm#TTREP423">Automatic Parallel Replication </a></span> (APR) is enabled by default to provide a significant boost for replication throughput – the rate of transactions replicated from the source database to another TimesTen database on a remote host. Transaction dependencies are tracked automatically and the commit ordering is honored when applying the transactions on the remote standby database. Users may enable  Parallel Replication feature with Commit Optimization by relax enforcing commit ordering on the receiving hosts to further improve the replication throughput.</p>
+<p>Oracle Clusterware is a cluster manager that monitors and controls applications to provide high availability. 
+Clusterware can be used to manage availability for an active standby database. Clusterware enables the protection of TimesTen databases 
+and applications within a cluster.</p>
+<br/>
+<p class="section1">TimesTen Database to TimesTen Database Replication</p>
+<p>This section describes how you can set up and administer an active standby pair 
+consisting of TimesTen in-memory databases both with and without Oracle Clusterware.</p>
+<blockquote><dl>
+	<dt>1. <a href="rep_aspair.html">Active Standby Pair with TimesTen In-Memory Database</a></dt>
+		<dd>This section lists the steps and goes through a detailed example of how to set up and manage 
+		an Active Standby Pair on a TimesTen database <i>without</i> Oracle Clusterware.</dd>
+	<br/>
+	<dt>2. <a href="cw_aspair_timesten.html">Active Standby Pair with TimesTen In-Memory Database and Clusterware</a></dt>
+		<dd>This section lists the steps and goes through a detailed example of how to set up and manage 
+		an Active Standby Pair on a TimesTen database <i>with</i> Oracle Clusterware.</dd>
+</dl></blockquote>
+<br/>
+<p class="section1">TimesTen Cache to TimesTen Cache Replication</p>
+<p>This section describes how you can set up and administer an active standby pair 
+consisting of TimesTen Cache databases both with and without Oracle Clusterware.</p>
+<blockquote><dl>
+	<dt>1. <a href="rep_aspair_cache.html">Active Standby Pair with TimesTen Cache </a></dt>
+		<dd>This section lists the steps and goes through a detailed example of how to set up and manage 
+		an Active Standby Pair on an TimesTen Cache database <i>without</i> Oracle Clusterware.</dd>
+	    <br/>
+	<dt>2. <a href="cw_aspair_timesten_cache.html">Active Standby Pair with TimesTen Cache and Clusterware</a></dt>
+		<dd>This section lists the steps and goes through a detailed example of how to set up and manage 
+		an Active Standby Pair on an TimesTen Cache database <i>with</i> Oracle Clusterware.</dd>
+</dl></blockquote>
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+
+</html>

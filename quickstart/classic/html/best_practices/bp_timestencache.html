@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Best Practices for TimesTen Cache</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Best Practices for TimesTen Application-Tier Database Cache</span>
+
+<p>This page contains recommendations on how best to configure <a href="http://docs.oracle.com/database/timesten-18.1/e61196/concepts.htm#TTCAC117" target="_blank" class="doclink">TimesTen Application-Tier Database Cache  </a>(TimesTen Cache).  It contains configuration and monitoring best practices for Read-only and Asynchronous Write-through cache groups.  </p>
+<h2>TimesTen Cache Configuration</h2>
+<h3>Use the same user for Cache Administration User and Cache Manager User </strong></h3>
+<p>In order to cache Oracle database tables into a TimesTen database, you must create a <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61196/prereqs.htm#TTCAC172">cache administration user</a> in the Oracle database. This user owns objects that are used for cache management and change tracking purposes. Similarly, in the TimesTen database, a <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61196/prereqs.htm#TTCAC185">cache manager user</a> is responsible for setting up and managing the cache, and creating and loading data into cache groups. <span >It is recommended to use the same database user name for both the cache administration user and the cache manager user. It simplifies the configuration of TimesTen Cache. Note: The user in the TimesTen database can have a different password to the one in the Oracle database. </span></p>
+<h2>Read-only cache group<br /> </h2><h3><strong>Choose appropriate Autorefresh Intervals</strong></h3>
+<p><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61196/define.htm#TTCAC236">Autorefresh interval</a> is a cache group property that determines the frequency of data refresh for cache tables in a read-only cache group. Cache groups with the same autorefresh interval are refreshed within the same transaction. This ensures transactional data consistency across cache groups. However, if set inappropriately, this can lead to poor refresh performance, since the updates to all the cache tables are applied within in a single large transaction. Consider using different autorefresh intervals between cache groups for better performance, if transactional consistency across cache groups is not required. This enhances the performance of autorefresh, since the volume of updates will be smaller, and multiple refresh threads can be used, one per refresh interval.</p>
+<h3><strong>Handle large updates on Oracle Database tables </strong></h3>
+<p><span >Autorefresh operation is performed as a single transaction on a TimesTen database. Large updates such as a bulk update on read-only cache group base tables in an Oracle database can take a long time to refresh, and potentially cause the Perm space to be exhausted. The three suggestions below can help to alleviate the problem:</span></p>
+<blockquote>
+  <h4 >Avoid large updates to Oracle Database tables</h4>
+  <p>If possible, break down large updates to the Oracle database tables into smaller transactions, and execute them over multiple autorefresh intervals. This allows the updates to be processed automatically by the autorefresh operation.</p>
+  <h4>Use LOAD Cache Group with PARALLEL clause</h4>
+  <p>Updates to Oracle database tables are refreshed into TimesTen using a single autorefresh thread. For applications, where data can be temporarily unavailable during the refresh, consider pausing the cache group, and use a manual LOAD CACHE GROUP to populate the cache table using multiple threads. Here are the steps:</p>
+  <ol>
+    <li>Set the AUTOREFRESH state of the cache groups to PAUSED prior to running the bulk update on the Oracle Database. This ensures there is a consistent view of the data during the update.</li>
+    <li>Run the large update job on the Oracle database tables.</li>
+    <li>Use manual <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61203/state.htm#TTSQL335">UNLOAD CACHE GROUP</a> and <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61203/state.htm#TTSQL323">LOAD CACHE GROUP</a> with PARALLEL threads and COMMIT EVERY N ROWS, to re-populate the data using multiple threads and smaller transactions. </li>
+    <li>Set the AUTOREFRESH state of the cache groups back to ON to resume autorefresh.</li>
+  </ol>
+  <p>For more information refer to the section on <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61198/cache_trouble.htm#TTTRB366">Avoid performance and memory problems for large batch jobs on Oracle database tables</a> in the Cache User's Guide.</p>
+  <h4>Define autocommit limit for autorefresh</h4>
+  <p>If transactional consistency of data during refresh is not required, consider using the built-in <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF791">ttCacheAutorefreshXactLimit</a> to  break up a single autorefresh transaction into multiple smaller transactions. Once the autorefresh cycle completes, the data is transactionally consistent.  </p>
+  <p>For more information refer to the section on <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61196/perform.htm#TTCAC510">Improving execution of massive data changes for autorefresh, read-only cache groups</a> in the Cache User's Guide.</p>
+</blockquote>
+<h3>Use separate Oracle database connection versus PassThrough</h3><p><a href="http://docs.oracle.com/database/timesten-18.1/e61196/operations.htm#TTCAC291" target="_blank" class="doclink">PassThrough</a> specifies which SQL statements are to be executed locally in the TimesTen database and which are to be redirected to the Oracle database for execution. This allows an application to establish a single database connection to both the TimesTen and the Oracle database. If your application requires frequent access to non cache tables in the Oracle database, establishing a separate connection, and executing the Oracle SQL statements directly on the Oracle database is more efficient than going through the TimesTen database.</p>
+<h3><strong>Monitor Read-only cache groups<br /> </strong></h3><ul><li>Use the built-in procedure <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61198/cache_trouble.htm#TTTRB248">ttCacheAutoRefreshStatsGet</a> to check the status and the progress of the last ten autorefresh operations for a cache group. For each autorefresh operation, it includes the following statistics: the number of rows refreshed, the time taken to fetch the rows from the Oracle database, and the time taken to perform the updates in the TimesTen Database.<br />
+  <br />
+   </li>
+<li><span >For each table in a read-only cache group, a change log table is created in the Oracle database to track the updates that need to be refreshed to a TimesTen database. You can use the </span><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61198/cache_trouble.htm#TTTRB251">cacheInfo.sql</a><span > script to monitor the current autorefresh status, including the autorefresh backlog on the different change log tables.<br />
+  <br /> </span></li><li><span >Redundant change log tables can impact the performance of the Oracle database tables, as they continue to track the autorefresh changes. These leftover autorefresh objects are caused by a TimesTen database that is offline, or the TimesTen database was destroyed without dropping its read-only cache groups. Redundant change log tables can be found by running the </span><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61196/cache_trouble.htm#TTTRB251">cacheInfo.sql</a><span > script. Use the </span><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61196/manage.htm#TTCAC323">cacheCleanup.sql</a><span > script to remove them from the Oracle database.</span></li>
+</ul>
+<p> <span >For more information refer to the section on </span><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61198/cache_trouble.htm#TTTRB247">Monitoring autorefresh cache groups<span ></span></a> in the Cache User's Guide.</p>
+<p><strong> </strong></p>
+<h2>Asynchronous writethrough (AWT) cache group</h2>
+<h3><strong>Configure parallel propagation to Oracle Database tables</strong></h3><p>To improve the throughput for AWT cache groups, you can configure multiple threads that act in parallel to propagate updates to the Oracle database. Parallel propagation enforces transactional dependencies and applies changes to Oracle database tables in the same commit order. <span >The following database attributes </span><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF750">ReplicationApplyOrdering</a><span >, </span><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF133">ReplicationParallelism</a><span > and </span><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF760">CacheAwtParallelism</a><span > enable parallel propagation, and control the number of parallel write threads to the Oracle Database.</span></p>
+<p>For more information refer to the section on Configuring parallel propagation to Oracle tables in the Cache User's Guide.</p>
+<h3 >Follow Replication best practices for A/S pairs</h3><p>When using Active Standby Pairs with AWT cache groups, the updates to the Oracle database are sent from the standby database. Therefore the throughput for AWT cache groups can be impacted by the replication performance between the active and the standby database. Please review the <a target="_blank" class="doclink" href="bp_replication.html">Best Practices for TimesTen Replication</a> to ensure it is configured optimally.</p>
+<h3><strong>Add constraint checks to minimize AWT errors</strong></h3><p>Constraints on tables in the Oracle database can cause AWT propagation to fail if the same checks were not enforced in the TimesTen database. It is a good practice to create the same constraints in the TimesTen database; if that is not possible, build the checks into the application. <br /> </p><h3><strong>Monitor Asynchronous WriteThrough cache groups<br /> </strong></h3><ul><li>Monitor performance statistics using system table. AWT cache group statistics are stored in the system table <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61205/systemtables.htm#TTSYS439">SYS.SYSTEMSTATS</a>.<br />
+   e.g. <u> </u><span class="codetext">select * from sys.systemstats where name like 'cg.awt%';</span><br />
+    It includes a breakdown on the number of rows propagated by the different DML operations, and the number of batches sent to the Oracle database.<u><br /> <br /> </u></li>
+<li>Monitor AWT performance using the ttRepAdmin utility. Use <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/monitor.htm#TTREP472">ttRepAdmin</a> with the<em> -showstatus -awtmoninfo</em> options to monitor and obtain more detailed performance statistics for AWT cache groups. The statistics include timing information and the latency between the TimesTen and Oracle database. In order for  ttRepAdmin to return AWT performance metrics,  
+  AWT performance monitoring must be enabled using the  built-in procedure <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF221">ttCacheAwtMonitorConfig</a>.<br />
+    <br /></li>
+<li>If the log buffer size (LogBufMB) is set too small, it can affect the throughput for AWT Cache groups. Since it will read from the transaction logs on disk instead of from the log buffer in memory. Refer to the section on <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61198/rep_trouble.htm#TTTRB320">Check size of log buffer</a> for more information.</li>
+</ul><ul>
+  <li>Monitor Oracle Database errors reported by AWT cache groups. There are 2 types of Oracle Database errors, Permanent and Transient errors, they can impact the throughput for AWT cache groups. <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61198/awt_trouble.htm#TTTRB279">Permanent errors</a> are Insert, delete, update errors that occur while applying the changes to the Oracle database. For example, a unique constraint violation may cause an update to fail. Permanent errors are not retried. They are reported in the AWT error file. <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61198/awt_trouble.htm#TTTRB282">Transient errors</a> are underlying problems on the Oracle database. For example, Oracle database is not available or the TNS listener is down. Transient errors are reported in the support log. The AWT transactions are retried. The problem must be solved before AWT operations can continue.</li>
+</ul>
+<p>For more information refer to the section on <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61198/awt_trouble.htm#TTTRB277">AWT performance monitoring</a> in the Cache User's Guide. </p>
+<p>&nbsp; </p>
+<p>&nbsp; </p>
+
+
+
+
+
+
+
+
+
+</div>
+<div id="footer"/>
+</body>
+
+</html>

@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TimesTen OCI Sample Programs</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Oracle Call Interface (OCI) Sample Programs</span>
+<p class="normal">The following OCI sample programs are available in the <span class="codetext">quickstart/classic/sample_code/oci</span> directory.</p>
+<table width="760" border="1">
+  <tr>
+    <td width="120" valign="top" class="table-header">&nbsp;&nbsp;<span class="style119">Program</span></td>
+    <td width="624" valign="top" class="table-header"><span class="style119"><strong>Description</strong></span></td>
+  </tr>
+  <tr valign="top">
+    <td height="123" class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/oci/addemp.c" class="codetext">addemp.c</a></span></td>
+    <td class="normal">This is an OCI program that prompts the users for information  and inserts the corresponding data into a new employee into the EMP table.<br />
+    <br />
+      You are prompted for the username and password at runtime.<br />
+      The ‘servicename’ can be either an entry in the TNSnames.ora file or an easy connect  string.
+      <p>The EMP table needs to exist for this program to work.</p>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td height="155" bgcolor="#F6F6F6" class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/oci/plsqlOCI.c" class="codetext">plsqlOCI.c</a></span></td>
+    <td bgcolor="#F6F6F6" class="normal">This 
+      sample program uses OCI to access common PL/SQL packages (emp_pkg and sample_pkg) in four different ways:<br />
+      <br />
+        - Calls a stored procedure with IN and OUT parameters<br />
+        - Calls a stored function with IN and OUT parameters<br />
+        - Calls an anonymous block and passes host variables into and out of the block<br />
+        - Calls a store procedure to open a ref cursor and uses OCI to process the result-set of the ref cursor </p>
+    <p>The EMP table and the emp_pkg and sample_pkg PL/SQL packages need to exist for this program to work.</td>
+  </tr>  
+  <tr valign="top">
+    <td height="219" class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/oci/tptbmOCI.c" class="codetext">tptbmOCI.c</a></span></td>
+    <td class="normal">This program implements a multi-user throughput benchmark. By default, the   transaction mix consists of 80% SELECT (read)   transactions and 20% UPDATE (write) transactions. In   addition to SELECTs and UPDATEs, INSERTs and DELETES can also be   included in the transaction mix. The ratio of SELECTs, UPDATEs and INSERTs and DELETES is specified at the command line. Each transaction   consists of one or more SQL operations.<br />
+        <br />
+      The benchmark   initially populates the data store, and then executes the transaction mix on it.   The number of rows inserted as part of the transaction mix cannot exceed the   number of rows with which the database is populated initially.<br />
+      <br />
+      The   measurement error for the benchmark is at most 2 seconds. This will be   negligible at loads with a duration in excess of 200 seconds. A suggested load   for the benchmark is one which lasts at least 600 seconds.<br />
+      <br />
+    The schema for this test is described in the program source file <span class="codetext">tptbmOCI.c</span>.    </td>
+  </tr>
+
+</table>
+<p class="section1">Compile and Run</p>
+<p class="normal">Click <a href="howto_oci.html" class="compilerun">here</a> to learn how to compile and run the sample programs on your installed platform.</p>
+<p class="normal">For more information on OCI, refer to the OCI chapter in the<span class="codetext"> <a href="http://docs.oracle.com/database/timesten-18.1/e61199/oci.htm#TTCDV190" target="_blank" class="doclink"></a></span><a href="http://docs.oracle.com/database/timesten-18.1/e61199/oci.htm#TTCDV190" target="_blank" class="doclink"><span class="doclink">Oracle TimesTen In-Memory Database C Developer's Guide</font></span>.</a></p>
+<p class="normal">&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

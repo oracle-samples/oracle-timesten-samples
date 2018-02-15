@@ -1,0 +1,131 @@
+
+
+
+<project name="tptbmas-hibernate4" default="run" basedir=".">
+
+    <property file="build.properties"/>
+
+    <property name="src.dir"   value="${basedir}/src"/>
+    <property name="metainf.dir"   value="${src.dir}/META-INF"/>
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="dist.dir" value="${basedir}/dist"/>
+
+
+    <!-- The classpath for running the client -->
+    <path id="client.classpath">
+   
+        <fileset file="${timesten.jdbc.driver.jar}"/>        
+            
+        <fileset dir="${hibernate.home.dir}/lib">
+            <include name="**/*.jar"/>
+            <!-- don't use log4j for hibernate logging-->
+            <exclude name="**/log4j*.jar"/>                   
+        </fileset>
+           
+    </path>
+
+
+    <!-- The build classpath -->
+    <path id="build.classpath">
+        <path refid="client.classpath"/>
+        <pathelement location="${build.dir}"/>
+    </path>
+
+
+    <!-- Initialize the build -->
+    <target name="prepare">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+
+
+    <!-- Compile  -->
+    <target name="compile" depends="prepare">
+        <javac destdir="${build.dir}" classpathref="build.classpath" 
+               includeantruntime="false"
+               includes="**/HIBClient.java **/CommonClient.java **/Tptbm.java **/TptbmPKey.java **/TimesTenDialect1122.java">
+            <src path="${src.dir}" />
+            <src path="${basedir}/config/hibernate4" />
+        </javac>
+    </target>
+
+    <!-- Package the persistence archive -->
+    <target name="package" depends="compile">
+       <jar destfile="${dist.dir}/tptbmas-hibernate4.jar" basedir="${build.dir}"
+            includes="**/HIBClient.class **/CommonClient.class **/Tptbm.class **/TptbmPKey.class **/TimesTenDialect1122.class">
+            
+            <metainf dir="${metainf.dir}"  includes="Tptbm.hbm.xml hibernate.cfg.xml"/>
+            
+            <manifest>
+                <attribute name="Main-Class" 
+                    value="com.timesten.tptbmas.HIBClient"/>
+            </manifest>
+            
+       </jar>
+    </target>
+
+
+    <!-- Run the client  -->
+    <target name="run">
+        <java classname="com.timesten.tptbmas.HIBClient" fork="yes">
+
+        <!-- configure JDK 1.4 logging used by Hibernate -->      
+        <jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
+                                                     
+            <!-- the number of rows squared to initially populate the TPTBM 
+                 table with, for example, if -keyCount is specified as 100 then
+                 the TPTBM table will contain 100^2 = 10000 rows when the 
+                 benchmark starts -->   
+            <arg value="-keyCount"/>
+            <arg value="${tptbmas.arg.keycount}"/>
+
+            <!-- the number of transactions to execute per thread during the 
+                 benchmark run -->                  
+            <arg value="-numXacts"/>
+            <arg value="${tptbmas.arg.numxacts}"/>
+            
+            <!-- the number of concurrently executing threads during the 
+                 benchmark run -->            
+            <arg value="-numThreads"/>
+            <arg value="${tptbmas.arg.numthreads}"/>
+            
+            <!-- the transaction mix of read, update and insert operations
+                 during the benchmark run - the update operation percent is 
+                 not specified on the command line - it is calculated as: 
+                 %update = 100 - (%read + %insert) -->
+            <arg value="-percentReads"/>
+            <arg value="${tptbmas.arg.percentreads}"/>
+            
+            <arg value="-percentInserts"/>
+            <arg value="${tptbmas.arg.percentinserts}"/>
+            
+            <!-- if -seed is not specified then the random number seed
+                 is based on the system time -->                      
+            <arg value="-seed"/>
+            <arg value="${tptbmas.arg.seed}"/>
+            
+            <!-- if -quiet is not specified then the primary key values
+                 of all Tptbm objects manipulted by the program are printed -->
+            <arg value="-quiet"/>
+
+            <!-- if -debug is specified then the state of all Tptbm objects
+                 manipulated by the program is printed -->                                      
+            <!-- <arg value="-debug"/> -->
+                
+            <classpath>
+                <pathelement location="${dist.dir}/tptbmas-hibernate4.jar"/>
+                <path refid="client.classpath"/>
+            </classpath>
+            
+        </java>
+    </target>
+
+
+    <!-- Clean -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+</project>

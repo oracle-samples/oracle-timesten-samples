@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to Set Up a DSN on Linux and UNIX Platforms</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to Set Up a DSN on Linux and UNIX Platforms</span>
+<p>TimesTen  databases are accessed through 
+ <span class="codetext">Data Source Names</span> (DSNs). 
+A DSN is a logical name that identifies a TimesTen  database and   the set of connection attributes used for connecting to the database. 
+This section shows you how to set up a TimesTen Data Source Name (DSN) on  Linux and UNIX  platforms.</p>
+<p>You can define  either a <span class="codetext">system DSN</span> 
+or a <span class="codetext">user DSN</span>. </p>
+<p>On Linux and UNIX  systems, <span class="codetext">system DSN</span> are defined in the   <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini</span> file. 
+  This file is also referred to as the system ODBC.INI file.</p>
+<!--span class="section1">Setting up a Data Source Name (DSN)</span-->
+<p>The following section goes through an example of how to set up a system DSN. Suppose that you want to:</p>
+<ul>
+	<li>name your TimesTen database <span class="codetext">sampledb</span></li>
+    	<li>have your TimesTen instance known as <span class="codetext">$TIMESTEN_HOME</span>  location be <span class="codetext">/home/timesten/instance/tt181</span></span></li>
+	<li>have your TimesTen database's disk location be <span class="codetext">/disk1/ttdata/database</span></li>
+	<li>have your TimesTen database's transaction logs to be in the <span class="codetext">/disk2/ttdata/logs</span> directory</li>
+</ul>
+<p>You would do the following:</p>
+<blockquote><ol type=a>
+<li>
+	<p>In your <span class="codetext">sys.odbc.ini </span>file, add a  new data source name in the section labeled 
+	<span class="codetext">[ODBC Data Sources]</span> :</p>
+	<p class="codetext">sampledb=TimesTen 18.1 Driver</p>
+</li><br/>
+<li>
+	<p>For each DSN entry specified, there is a corresponding set of database properties and attributes you need to specify. 
+	The database attributes can be added anywhere after the <span class="codetext">[ODBC Data Sources]</span> section.</p>
+	<p>Here is an example of the  database attributes you enter for <span class="codetext">sampledb</span>:</p>
+	<p><b>Note:</b> The DSN name appears inside square brackets at the top of the DSN definition on a line by itself</p>
+    <p class="codetext">
+          [sampledb]<br />
+          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
+          DataStore=/disk1/ttdata/database/sampledb<br />
+          LogDir=/disk2/ttdata/logs<br />
+          PermSize=512<br />
+          TempSize=128<br />
+          LogBufMB=256<br />
+          LogFileSize=256<br />
+          DatabaseCharacterSet=AL32UTF8<br />
+          PLSQL=1<br />
+          OracleNetServiceName=ttorcl 
+  	</p><br/>
+    <p>The relevant attributes' values are: 
+    <p><span class="codetext"><span class="codetext">Driver</span> </span>
+ = the TimesTen Direct Linked ODBC Driver <br />
+	<span class="codetext"><span class="codetext">DataStore</span> </span> = the location and the name of the database files <br />
+	<span class="codetext"><span class="codetext">LogDir</span> </span> = the directory for the transaction logs <br />
+	<span class="codetext"><span class="codetext">PermSize</span> </span> = the size of the permanent region of  the database. In the above example, this is configured for 512MB<br />
+	<span class="codetext"><span class="codetext">TempSize</span> </span> = the size of the temporary region of the database. In the above example, this is configured for 128MB<br />
+    <span class="codetext"><span class="codetext">LogBufMB</span> </span> = the size of the transaction log buffer. In the above example, this is configured for 256MB<br />
+    <span class="codetext"><span class="codetext">LogFileSize</span> </span> = the size of the transaction log file. In the above example, this is configured for 256MB<br />
+	<span class="codetext"><span class="codetext">DatabaseCharacterSet</span> </span> = the character set used by the database<br />
+    	<span class="codetext"><span class="codetext">PLSQL</span> </span> = enables PL/SQL use in the database. Specifying PLSQL=0 disables PL/SQL use in the database.<br />
+    <span class="codetext"><span class="codetext">OracleNetServiceName</span>  </span> = the TNS service name to the Oracle database. This attribute is required only for  <a href="timesten_cache.html" class="compilerun">TimesTen Cache</a>  or the built-in procedures <a href="../tools/howto_util_ttloadfromoracle.html" class="compilerun">ttLoadFromOracle</a> 
+		</p>
+    <p><b>Note:</b> If you are using TimesTen Cache to cache  Oracle database tables, 
+	the database character set must be set to the same value as the  Oracle database. 
+	To determine the Oracle database character set, execute the following query on the Oracle database:</p>
+	<p class="codetext">select value from nls_database_parameters<br />
+	where parameter='NLS_CHARACTERSET';</p>
+</li><br/>
+</ol></blockquote> 
+  <p class="normal">Go    <a href="db_ops_createdb.html" class="compilerun">back</a> to learn how to create a TimesTen database.</p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Best Practices for Hardware Configuration</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Best Practices for Hardware Configurations</span>
+<p class="normal">This page contains recommendations for your hardware configurations to achieve optimal performance in using the Oracle TimesTen product. </p>
+<table width="690" border="0">
+  <tr>
+    <td colspan="2" ><div align="center"><img src="../images/network.jpg" alt="network" width="136" height="83" /></div></td>
+    <td width="525" rowspan="2"><table width="513" border="0">
+      <tr>
+        <td width="519" colspan="2" ><table width="507" height="100" border="0"><tr><td width="501" class="normal"><div align="center">
+          <table width="494" height="100" border="0">
+            <tr> </tr>
+            <tr>
+              <td class="normal"><div align="center">-</div></td>
+              <td width="580" class="normal">Separate transaction logs and checkpoint files on separate disk drives</td>
+            </tr>
+            <tr>
+              <td class="normal"><div align="center">-</div></td>
+              <td class="normal">Disk speed matters - use faster disks for write intensive applications</td>
+            </tr>
+            <tr>
+              <td class="normal"><div align="center">-</div></td>
+              <td class="normal">Faster processor improves transaction response time and throughput</td>
+            </tr>
+            <tr>
+              <td class="normal"><div align="center">-</div></td>
+              <td class="normal">High network bandwidth and low network latency for consistent replication performance</td>
+            </tr>
+          </table>
+        </div></td>
+            </tr>
+        </table></td>
+      </tr>
+    </table></td>
+  </tr>
+  <tr>
+    <td width="84" ><div align="center"><img src="../images/disk.gif" alt="disks" width="84" height="46" /></div></td>
+    <td width="79" ><img src="../images/cpu.jpg" alt="cpu" width="79" height="66" /></td>
+  </tr>
+</table>
+<p class="section1">Separate transaction logs and checkpoint files on different disk drives</p>
+<p class="normal">For write intensive applications, put your transaction  logs and checkpoint files on separate disks to reduce I/O contention. This is  particularly important if you need to have consistent response times and  throughput for your application requests. If your checkpoint files are on the  same disk spindle, the checkpoint operation competes with the transaction  logging activities going to the same disk.</p>
+<p class="normal-bold"><strong>Disk speed matters - use faster disks for write intensive applications</strong></p>
+<p class="normal">Faster disks play a role in your application update  throughput. Keep in mind that log records are generated as a result of your  application executing INSERT, UPDATE and DELETE operations. Log records are  also generated if you are caching read-only data from the Oracle Database with  AutoRefresh. When the Cache Connect agent refreshes the TimesTen database with  updates from the Oracle Database, the refresh operations generate log records  as the updates are applied to the TimesTen cache tables. Faster disks allow the  TimesTen log manager to complete the write to disk faster, thus reducing the possibility  that the application is waiting for the log buffer to be available. You can  monitor LOG_BUFFER_WAIT in the system MONITOR table  for I/O contention.</p>
+<p class="section1">Faster processor improves transaction response time and throughput</p>
+<p class="normal">With an in-memory database, the TimesTen data manager makes optimal use of processor power - the faster the processor speed is, the faster the TimesTen database runs. This is particularly true when the application runs in direct-linked connection mode, since there are no application wait-time for network round trips, no overhead for inter-process communication and process dispatches, and there is no disk I/O wait time. Faster processors yield lower response time and consequently the application would achieve higher throughput.</p>
+<p class="normal">If the application uses the client/server connection mode, the faster processors will still be helpful for the database operations even though the network round trips would typically account for a major part of the response time. </p>
+<p class="normal-bold"><span class="section1">High network bandwidth and low network latency for consistent replication performance</span></p>
+<p class="normal">When using Replication, network bandwidth and latency are important factors for consistent replication performance between the systems where the TimesTen database is  replicated. </p>
+<p class="normal">TimesTen Replication supports both LAN and WAN configurations; however, reliable and consistent network performance is critical for Replication to keep up on data transmission between the replicated systems. </p>
+<p class="normal">&nbsp;</p>
+
+
+
+</div>
+<div id="footer"/>
+
+</body>
+</html>

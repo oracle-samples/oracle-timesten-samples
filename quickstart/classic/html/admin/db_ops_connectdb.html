@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Connecting to a TimesTen Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Connecting to a TimesTen Database</span>
+<p>This tutorial introduces how to configure and connect to a TimesTen database via either direct or client/server connections on any supported platforms.</p>  
+
+<span class="section1"> Connecting to a TimesTen database</span><br/>
+<p>There are two basic types of connection available for a user to connect to a TimesTen database. In this section we will consider how to use both types.</p>  
+ <p>If an application is running on the same host as the TimesTen database, the most efficient form of connecting is by using a <b>Direct connection</b>. </p>  
+<p> In a Direct connection the shared memory image of the database is mapped into the user’s application process. Since the network and inter-process communications are eliminated, this means Direct connections provide optimal response time. To take advantage of a Direct connection the application must run on the same machine as the database, and be at the same bitlevel (64bit) as the TimesTen database software.</p> 
+  
+<p> The second type of connection is <b>client/server</b>. A client/server connection allows an application to connect remotely to the host on which the TimesTen database exists. While connecting over the network is less performant than using a Direct connection, client/server enables connections to be made between TimesTen Clients and Servers which are at different release versions, or running on different platforms, or at different bitlevels.
+ </p> 
+ 
+<p>There are three forms of client/server connection you can use:
+ </p> 
+ 
+  <ol type=a>
+     <p>1. TCP/IP connection
+    </p> 
+   <p> This is the only mode of connection you can use if you are connecting from a remote machine to the host on which the TimesTen database exists. We will be using a TCP/IP connection in the client/server examples which follow.</p> 
+   <p>The other two types of client/server communication are:</p>
+  
+   <p>2. Shared memory connection
+    </p> 
+   <p>3. Unix Domain Sockets connection</p> 
+   <p>These are used if the client runs on the same host as the TimesTen database but cannot use a Direct connection. For example, either could be used if a 32bit application process needs to connect to a 64bit TimesTen database. Refer to the documentation <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61195/client_server.htm#TTOPR178">here</a></span> for more information on these types of connection.</p>
+  </ol>
+  <p><br /> 
+   </p>
+  </blockquote>
+<span class="section1"> Making a Direct connection on Linux and Unix platform</span><br/>
+<p>A Direct connection relies on a DSN which defines the database. This includes the Driver attribute which specifies the ODBC library needed for a Direct connection. Click <span class="doclink"><a href="dsn_setup_unix_linux.html">here</a></span> for a recap on configuring a DSN on Linux and Unix platform. <!--, and <span class="doclink"><a href="dsn_setup_windows.html">here</a></span> for a recap on configuring a DSN on Windows.--></p>
+  
+  <p>Oracle provides the ttIsql binary on Linux to make a Direct connection to a TimesTen database. For example, it can connect to a database as user  <span class="codetext">appuser</span> with the connection string:</p>
+<p><span class="codetext">ttIsql -connStr "dsn=sampledb;uid=appuser;pwd=appuser"</span></p>
+  
+  <p> This can also be separated out to be a connect statement:</p>
+  <p><span class="codetext">ttIsql</span></p>
+  <p><span class="codetext">Command> connect "dsn=sampledb;uid=appuser;pwd=appuser";</span></p>
+  
+   <p> Here are examples of making a Direct connection using other languages:</p>
+  <ul>
+    <p> <u>JDBC Connection String</u><br/> 
+    <br/> <span class="codetext">jdbc:timesten:direct:DSN=sampledb</span></p></ul>  
+  <ul><p> <u>OCI applications through a TNS name</u><br/> 
+      <br/> <span class="codetext">sampledb_TNS = (DESCRIPTION=(CONNECT_DATA = (SERVICE_NAME = sampledb)<br/>
+  (SERVER= timesten_direct)))  
+    <br/>
+  OCIserverAttach(srvhp, errhp, (text *) “sampledb_TNS”,(sb4)srvlen,(ub4)OCI_DEFAULT)</span></p></ul>  
+  <!-- <ul><p> <u>ODP.NET</u><br/><br/> <span class="codetext">sampledb_TNS = (DESCRIPTION=(CONNECT_DATA = (SERVICE_NAME = sampledb)<br/>
+  (SERVER = timesten_direct)))  
+    <br/>
+  GetConnection(“User Id=/;Data Source=sampledb_TNS”)</span></p></ul>    -->
+  <ul><p> <u>ODBC applications connect through database DSN</u><br/><br/> <span class="codetext">SQLDriverConnect(hdbc, NULL, (STR) "DSN=sampledb", SQL_NTS, NULL, 0, NULL,SQL_DRIVER_COMPLETE);</span></p></ul>
+
+<p><br/> 
+   </p>
+  </blockquote>
+<span class="section1">Making a Client/Server Connection on Supported Platforms</span><br/>
+<p>Client connection requests are handled by a single TimesTen Server process for all databases contained in a TimesTen instance. For a client to know how to make a connection request to this process, there are two tasks which must be completed:</p>
+  
+  <p>1. Configure a Logical Server entry to describe how to connect to the TimesTen Server process.</p>
+<p>2. Configure a client DSN to connect to a specific TimesTen database within the TimesTen instance.</p>
+  
+  <p>A Logical Server name encapsulates the network details a client needs to reach a remote TimesTen Server. A client DSN adds information about the remote database to the Logical Server name. We will walk through configuring both in the following sections:</p>
+  
+  <ul><li><a href="db_ops_connectdb_linux.html">How to Configure Client/Server Connections on Linux and UNIX systems</a> </li></ul>  
+<!-- <ul><li><a href="db_ops_connectdb_windows.html">How to Configure Client/Server Connections on Windows</a></li></ul> -->
+<br/>
+ 
+   <p> After configuring the client/server connection entries, these can be tested using the following commands.  As with the Direct connection example, we are going to connect as user <span class="codetext">appuser</span>:</p>
+  <ul><p> On Linux and UNIX systems:<br/> <br/><span class="codetext">ttIsqlCS -connStr "dsn=sampledbCS;uid=appuser;pwd=appuser"</span></p></ul>
+    <!--<ul><p> On Windows:<br/> <br/><span class="codetext">ttIsql -connStr "dsn=sampledbCS;uid=appuser;pwd=appuser"</span></p></ul> -->
+        
+<!--<p> Note that on Windows ttIsql is linked with both libraries and so can be used for both Direct and client/server connections. On Linux it’s necessary to use a different binary, ttIsqlCS, for client/server connections.
+</p> -->
+
+ <p><br /> 
+   </p>
+  </blockquote>
+<span class="section1"> Client/server connections in other languages</span><br/>
+<p>All the examples so far have used ttIsql as the means to connect. However here are examples of creating client/server connections using other languages:</p>
+
+  <ul><p> <u>JDBC Connection String:</u><br/> <br/><span class="codetext">Client/Server Connection: jdbc:timesten:client:DSN=sampledbCS</span></p></ul> 
+   <ul><p> <u>OCI applications through a TNS name</u><br/> <br/><span class="codetext">sampledbCS_TNS =(DESCRIPTION=(CONNECT_DATA = (SERVICE_NAME = sampledbCS)<br/>
+   (SERVER= timesten_client)))  
+    <br/>
+  OCIserverAttach(srvhp, errhp, (text *) “sampledbCS_TNS”,(sb4)srvlen,(ub4)OCI_DEFAULT)</span></p></ul> 
+<!--      <ul><p> <u>ODP.NET</u><br/> <br/><span class="codetext">  sampledbCS_TNS =(DESCRIPTION=(CONNECT_DATA = (SERVICE_NAME = sampledbCS)<br/>
+    (SERVER = timesten_client)))
+    <br/>  
+  GetConnection(“User Id=/;Data Source=sampledbCS_TNS”)</span></p></ul> -->
+  <ul><p> <u>ODBC applications connect through database DSN</u><br/> <br/><span class="codetext">SQLDriverConnect(hdbc, NULL, (STR) "DSN=sampledbCS", SQL_NTS, NULL, 0, NULL,SQL_DRIVER_COMPLETE);</span></p></ul>
+  
+<p><br/></p>
+<p>&nbsp;</p>
+</div>
+
+<div id="footer"/>
+</body>
+</html>

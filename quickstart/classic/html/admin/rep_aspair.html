@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Active Standby Pair with TimesTen In-Memory Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Active Standby Pair<br/> with TimesTen In-Memory Database </span>
+<p > An <span class="doclink">active standby pair</span> 
+configuration includes an active database, a standby  database, and optional read-only subscriber databases. 
+The standby database receives the updates from the active database, and forwards the changes to optional read-only subscriber databases. 
+All updates go directly to the active  database. The standby database is also available for read-only applications, 
+for example a  reporting server. </p>
+<p >This section describes how you can set up and administer an   active standby pair. 
+Before you can set up an active standby pair,  the TimesTen 18.1 database software needs to be installed on both 
+the active and standby servers, and the instance administrator user name must be the same on   both installations. </p>
+
+<p class="section1"> Setting Up an Active Standby Pair</p>
+<p >Here is an overview of the configuration steps for setting up an active standby pair with a TimesTen in-memory database:</p>
+<table class="steps" border="1">  
+<tr class="r0">
+	<td class="c0" >1.</td>
+	<td class="c1" >Create a database </td>
+	<td class="c2" >In order to set up an active standby pair configuration, you need to first have a running database. 
+	This database should include one or more tables owned by an application user. All tables must also have a primary key index.<br />
+	If you have an existing  database, this step can be skipped.</td>
+</tr>
+<tr class="r1">
+<td class="c0" >2.</td>
+<td class="c1" >Create a user to administer the active standby pair </td>
+<td class="c2">This database must include a user with <span class="codetext">ADMIN</span> privilege. This user is the replication administrator responsible for managing the active standby configuration.</td>
+</tr>
+<tr class="r0">
+	<td class="c0" >3.</td>
+	<td class="c1" >Define an active standby pair replication scheme </td>
+	<td class="c2">Define the configuration of the active standby pair including the hostnames and the data store names of both 
+	the active and standby databases using the 
+	  <span class="doclink">CREATE ACTIVE STANDBY PAIR</span> SQL statement. </td>
+</tr>
+<tr class="r1">
+	<td class="c0" >4.</td>
+	<td class="c1" >Set the state of the database to active </td>
+	<td class="c2" >Use the built-in procedure 
+	  <span class="doclink">ttRepStateSet</span> 
+	to designate the current database as the active database. </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >5.</td>
+	<td class="c1" >Start the replication agent </td>
+	<td class="c2" >The replication agent process is responsible for replicating data between TimesTen databases. 
+	Use the built-in procedure <span class="doclink">ttRepStart</span> 
+	to start the replication agent.</td>
+</tr>
+<tr class="r1">
+	<td class="c0" >6.</td>
+	<td class="c1" >Duplicate the active database to a standby server </td>
+	<td class="c2" >The standby database is created by cloning the active database to the standby server. Use the 
+	  <span class="doclink">ttRepAdmin</span> utility 
+	to duplicate  the active   database to the standby server. </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >7.</td>
+	<td class="c1" >Start the replication agent on the standby database </td>
+	<td class="c2" >The replication agent process on the standby is responsible for receiving  data   from the active database. 
+	Use the built-in procedure <span class="doclink">ttRepStart</span> 
+	to start the replication agent.<br/>
+	Once the agent is up, the database will automatically enter "standby" mode. 
+	Changes from the active database will be propagated to the standby database. </td>
+</tr>
+<tr class="r1">
+	<td class="c0" >8.</td>
+	<td class="c1" >Verify  the replication between active and standby </td>
+	<td class="c2" >Perform updates on the active database and ensure the changes are being replicated to the standby database. </td>
+</tr>
+</table>
+<p>Follow the examples below to set up 
+an active standby pair using the configuration steps described above:</p>
+<ol>
+	<li><a href="rep_aspair_config_db.html" class="example">Setting up an Active Master Database</a> </li>
+	<li><a href="rep_aspair_define_activedb.html" class="example">Defining an Active Standby Pair Configuration</a></li>
+	<li><a href="rep_aspair_create_standby.html" class="example">Creating a Standby Database</a></li>
+</ol>	
+<br />
+<p class="section1">Recovering from a Failure on the Active Database</p>
+<p>Here is an overview of the configuration steps for recovering from a failure on the active database. 
+This will perform a failover to the standby database, and recover the failed  active  database. 
+The steps below are appropriate for both asynchronous and return receipt replication.</p>
+<table class="steps" border="1">
+<tr class="r0">
+	<td class="c0" >1.</td>
+	<td class="c1">Stop the replication agent on the failed active database </td>
+	<td class="c2">Use the built-in procedure 
+	  <span class="doclink">ttRepStop</span> 
+	to stop the replication agent process on the failed database, if it has not already been stopped.</td>
+</tr>
+<tr class="r1">
+	<td class="c0" >2. </td>
+	<td class="c1" >Set the state of the standby database to active </td>
+	<td class="c2" >Use the built-in procedure 
+	  <span class="doclink">ttRepStateSet</span> 
+	to designate the current standby database as the new active database in the active standby pair. </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >3.</td>
+	<td class="c1" >Mark the previous active database as failed </td>
+	<td class="c2">Execute the built-in procedure 
+	  <span class="doclink">ttRepStateSave</span> 
+	on the new active database to register the former active database as failed. </td>
+</tr>
+<tr class="r1">
+	<td class="c0" >4.</td>
+	<td class="c1" >Destroy the failed database </td>
+	<td class="c2" >Use the <span class="doclink">ttDestroy</span> 
+	utility  to remove the failed database. </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >5. </td>
+	<td class="c1" >Duplicate the new active database to create a new standby database </td>
+	<td class="c2" >Use <span class="doclink">ttRepAdmin</span> 
+	to duplicate from the   new active database to the new standby database. </td>
+</tr>
+<tr class="r1">
+	<td class="c0" >6. </td>
+	<td class="c1" >Start the replication agent on the standby database </td>
+	<td class="c2" >Use the built-in procedure 
+	  <span class="doclink">ttRepStart</span> to start the replication agent. 
+	Once the agent is up, the database will automatically enter the "standby" state. 
+	Changes from the new active will be propagated to the new standby. </td>
+</tr>
+</table>
+<p >Follow the example below to failover to a standby database using the steps described above:<br /> 
+  <br />
+  <a href="rep_aspair_failover_to_standby.html" class="example">Recovering from a Failure on the Active Database example</a></p>
+<p >&nbsp;</p>
+<p class="section1">Dropping an Active Standby Pair</p>
+<p>Here is an overview of the  steps needed to  remove an active standby pair configuration from a TimesTen in-memory database. 
+ This will remove the standby database, and revert back to a single standalone database.</p>
+<table class="steps" border="1">  
+<tr class="r0">
+	<td class="c0" >1. </td>
+	<td class="c1" >Stop the replication agents </td>
+	<td class="c2" >Use the built-in procedure 
+	  <span class="doclink">ttRepStop</span> 
+	to stop the replication agent on each database.</td>
+</tr>
+<tr class="r1">
+	<td class="c0" >2.</td>
+	<td class="c1" >Remove the active standby pair scheme </td>
+	<td class="c2" >Remove the active standby pair schema by using the  
+	  <span class="doclink">DROP ACTIVE STANDBY PAIR</span> 
+	SQL statement on each database. </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >3.</td>
+	<td class="c1">Destroy the standby database </td>
+	<td class="c2">Use the <span class="doclink">ttDestroy</span> 
+	utility to remove the redundant standby database. </td>
+</tr>
+</table>
+<p >Follow the example below to remove an active standby pair, and revert back to a standalone database using the steps described above:<br /> 
+  <br />
+  <a href="rep_aspair_drop.html" class="example">Dropping an Active Standby Pair Configuration example</a></p>
+<p >&nbsp;</p>
+
+</div>
+<div id="footer" />
+
+</body>
+
+</html>

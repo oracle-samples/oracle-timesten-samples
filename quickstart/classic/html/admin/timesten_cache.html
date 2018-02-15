@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Configuring TimesTen Application-Tier Database Cache</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit('timestencache');">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Configuring TimesTen Application-Tier Database Cache </span>
+<p> The Oracle Database option 
+  <span class="doclink">Application-Tier Database Cache </span> (TimesTen Cache) allows you to cache tables from an Oracle database into a TimesTen in-memory database. An application will typically choose to cache 
+frequently-accessed data or performance-sensitive data. TimesTen Cache uses the concept of a 
+  <span class="doclink">cache group</span>, which  is a 
+collection of cached tables related to each other by foreign key constraints. 
+This is an important feature as the unit of caching and aging becomes a set of records related by foreign key constraints. 
+Each cached table maps to either a full table or a subset of a table in the Oracle database.  
+
+<p>The examples on this page  use the <span class="codetext">HR</span>  
+<a href="https://github.com/oracle/db-sample-schemas" target="_blank"  class="doclink">sample schema</a> 
+in the Oracle database. The examples  provide a step by step tutorial on how to set up TimesTen Cache 
+in order to cache tables from the Oracle <span class="codetext">HR</span> schema into a TimesTen database.</p>
+
+<p class="section1">Required configuration on the Oracle database</p>
+<p>Before you can cache tables from an Oracle database into TimesTen Cache,  
+a cache administration user and  TimesTen system tables must be created in the  Oracle database. 
+Here is an overview of the configuration steps required on the Oracle database:</p>
+<table class="steps" border="1">
+<tr class="r0">
+	<td class="c0">1.</td>
+	<td class="c1" >Create a new tablespace </td>
+	<td class="c2" > Use the <span class="codetext">CREATE TABLESPACE</span> statement to create a separate tablespace 
+	for managing the TimesTen Cache objects.</td>
+</tr>
+<tr class="r1">
+	<td class="c0" >2.</td>
+	<td class="c1" >Create a cache administration user in the Oracle Database </td>
+	<td class="c2" >Use the <span class="codetext">CREATE USER</span> statement to create a cache administration user. 
+	This user is responsible for tracking the changes between the Oracle database and a cache database.</td>
+</tr>
+<tr class="r0">
+	<td class="c0" >3.</td>
+	<td class="c1" >Create the Cache objects in the Oracle database </td>
+	<td class="c2" >Run the script <span class="codetext"> initCacheAdminSchema.sql</span> to create all the Cache objects in the Oracle database under the cache admin user.  </td>
+</tr>
+<tr class="r1">
+	<td class="c0" >4. </td>
+	<td class="c1" >Grant system privileges to the cache administration user</td>
+	<td class="c2" >Run the script <span class="codetext">grantCacheAdminPrivileges.sql </span>to <span class="doclink">grant system privileges</span> to the cache administration user. This allows the objects to be  created by the cache administration user, for managing the  caching of Oracle tables.    </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >5. </td>
+	<td class="c1" >Grant data access privileges to the cache administration user </td>
+	<td class="c2" >The cache administration user must have access to the tables being cached. Use the <span class="codetext">GRANT</span> statement to grant the necessary object privileges to the cache administration user. </td>
+</tr>
+</table>
+<p>Follow the example below to configure an Oracle database for use with TimesTen Cache using the configuration steps <br />
+  described above: <br />
+  <br />
+  <a href="timesten_cache_config_oracle.html" class="example">Required Configuration on the Oracle Database example</a></p>
+<br />
+
+
+<p class="section1"><a name="SettingUp" id="SettingUp"></a>Setting up the cache database</p>
+<p>Here are the steps for configuring a cache database where TimesTen is installed and run:</p>
+<table class="steps" border="1">
+<tr class="r0">
+	<td class="c0" >1.</td>
+	<td class="c1">Create a cache database</td>
+	<td class="c2">In order to  cache  Oracle tables,  the 
+	  <span class="doclink">DatabaseCharacterSet</span> 
+	of the cache database must be identical  to the database character set  defined in the   Oracle database. 
+	The DSN attribute 
+	<span class="doclink">OracleNetServiceName</span>
+	 must contain a TNS service name  pointing to the Oracle database.  </td>
+</tr>
+<tr class="r1">
+	<td class="c0" >2. </td>
+	<td class="c1" >Create a cache manager user</td>
+	<td class="c2" >Use the 
+	  <span class="doclink">CREATE USER</span>
+	statement to create a <span class="doclink">cache manager user</span>. 
+	This user must be granted  either  <span class="codetext">ADMIN</span> or <span class="codetext">CACHE_MANAGER</span> privilege. 
+	A cache manager user  is responsible for setting up and managing  cache, and  cache group operations. </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >3.</td>
+	<td class="c1" >Create a cache table user </td>
+	<td class="c2" > The user who owns the Oracle tables to be cached must  also exist in the cache database. 
+	Use the <span class="doclink">CREATE USER</span>
+	statement to create a cache table user.</td>
+</tr>
+<tr class="r1">
+	<td class="c0" >4. </td>
+	<td class="c1" >Associate the Oracle cache administration user with the database</td>
+	<td class="c2">Use the procedure  
+	  <span class="doclink">ttCacheUidPwdSet</span> 
+	to set the Oracle cache administration user name and password in the cache database. </td>
+</tr>
+
+</table>
+<p > Follow the example below to setup a TimesTen database for caching using the configuration steps described above: <br />
+  <br />
+  <a href="cache_create.html" class="example">Setting Up a Cache Database example</a></p>
+<br />
+
+<p class="section1"><a name="Adding" id="Adding"></a>Adding cache groups to a cache database</p>
+<p>Here are the steps for adding cache groups to a cache database where TimesTen is installed and run:</p>
+<table class="steps" border="1">
+<tr class="r0">
+	<td class="c0" >1.</td>
+	<td class="c1" >Start the cache agent </td>
+	<td class="c2" >Use the built-in procedure 
+	  <span class="doclink">ttCacheStart</span> 
+	to start the cache  agent process, if not already started. </td>
+</tr>
+<tr class="r1">
+	<td class="c0" >2. </td>
+	<td class="c1" >Define the cache groups </td>
+	<td class="c2" >Use the 
+	  <span class="doclink">CREATE CACHE GROUP</span> 
+	statement to define the 
+	<span class="doclink">cache groups</span> and 
+	the cache tables. </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >3.</td>
+	<td class="c1" >Start the replication agent </td>
+	<td class="c2" >Use the built-in procedure 
+	  <span class="doclink">ttRepStart</span> 
+	to start the replication agent process. This step is needed if there are 
+	<span class="doclink">asynchronous writethrough cache groups</span> 
+	in the database. </td>
+</tr>
+<tr class="r1">
+	<td class="c0" >4. </td>
+	<td class="c1" >Preload data into cache groups</td>
+	<td class="c2" >Use the 
+	  <span class="doclink">LOAD CACHE GROUP</span> 
+	statement to preload the cache groups with data from the Oracle database. </td>
+</tr>
+</table>
+<p >Follow these examples to learn how to create and populate cache groups into a cache database using the above  steps:</p>
+<ol>
+	<li><a href="cache_create_cache_group.html" class="example">Adding Cache Groups to a Cache Databas examplee</a></li>
+	<li><a href="cache_load_cache.html" class="example">Loading Data into Cache Groups example</a></li>
+</ol>
+ 
+ 
+<p >&nbsp;</p>
+<p class="section1">Removing cache groups from a  cache database</p>
+<p>Here are the steps required to  remove cache groups rom a cache database:</p>
+<table class="steps" border="1">
+<tr class="r0">
+	<td class="c0">1.</td>
+	<td class="c1" >Stop  the replication  agent </td>
+	<td class="c2" >Use the built-in procedure 
+	  <span class="doclink">ttRepStop</span> 
+	to stop  the replication agent process, if not already stopped.</td>
+</tr>
+<tr class="r1">
+	<td class="c0" >2. </td>
+	<td class="c1" >Remove the cache groups </td>
+	<td class="c2" >Use the <span class="doclink">DROP CACHE GROUP</span>
+	statement to remove all the <span class="doclink">cache groups</span> 
+	and the cache tables from the  cache database. </td>
+</tr>
+<tr class="r0">
+	<td class="c0" >3. </td>
+	<td class="c1" >Stop the cache agent </td>
+	<td class="c2" >Use the built-in procedure 
+	  <span class="doclink">ttCacheStop</span> 
+	to stop the cache  agent process.</td>
+</tr>
+</table>
+<p > Follow the example below to remove cache groups from a cache database using the steps described above: <br />
+  <br />
+  <a href="cache_remove.html" class="example">Removing cache groups from a cache database example</a></p>  
+ 
+<p>&nbsp;</p>
+<p>For more information about TimesTen Cache, refer to  <a href="http://docs.oracle.com/database/timesten-18.1/e61192/toc.htm" target="_blank" class="doclink">Oracle TimesTen Application-Tier Database Cache Introduction</a> 
+  and <br />
+  <a href="http://docs.oracle.com/database/timesten-18.1/e61196/toc.htm" target="_blank"  class="doclink">Oracle TimesTen Application-Tier Database Cache User's Guide</a>.</p>
+<p>High availability for the data in the cache is provided via TimesTen replication, using the active standby pair scheme. 
+For more <br />
+information about  active standby pair, refer to the 
+<a href="rep_aspair_cache.html">Active Standby Pair with TimesTen Application-Tier Database Cache</a> section.</p>
+<p >&nbsp;</p>
+
+ 
+
+<p>&nbsp;</p>  
+</div>
+<div id="footer" />
+
+</body>
+</html>

@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Configuring an Active Standby Pair with TimesTen Application-Tier Database Cache and Clusterware</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Configuring an Active Standby Pair<br/> 
+with TimesTen Application-Tier Database Cache and Clusterware</span>
+<p>This tutorial will make use of the DSN <em class="codetext">cachedb1_1211</em> as the active master database. The hostnames of the two machines in the examples are <span class="codetext">ttcwnode1</span> and 
+<span class="codetext">ttcwnode2</span>.  On <span class="codetext">ttcwnode1</span> will be the active cache database, 
+and on <span class="codetext">ttcwnode2</span> the standby cache database.</p>
+<p> The following steps are required to configure an Active Standby Pair with Oracle TimesTen Application-Tier Database Cache (TimesTen Cache) and Clusterware:</p>
+
+<p class="section1">1. Create a cache database </p>
+<blockquote><ol type=a>
+<li>
+	<p>Follow the tutorials below to create an initial 
+	cache database <span class="codetext">cachedb1_1211</span> on <em>ttcwnode1</em>:</p> 
+	<ol>
+		<li><a href="timesten_cache_config_oracle.html">Required Configuration on the Oracle Database</a></li>
+		<li><a href="cache_create.html">Setting Up a Cache Database</a></li>
+	 </ol>
+</li><br/>
+
+<li>
+	<p>On <em>ttcwnode2</em>, ensure that an identical system DSN (i.e. <span class="codetext">[cachedb1_1211]</span>) and database file name (<span class="codetext">cachedb1_1211</span>) is defined. This is necessary for the successful creation of the standby database on <em>ttcwnode2</em>.</p>
+</li><br/>
+</ol></blockquote>		
+
+<span class="section1">2. Create a database user to administer the active standby pair</span>
+<blockquote><ol type=a>
+<li>
+	<p>On <em>ttcwnode1</em>, create a database user and assign to be the database and replication administrator 
+	by granting the user the <span class="doclink">admin</span> 
+	privilege. This user is responsible for setting up and managing the active standby pair.</p>
+	<p>Instead of creating a new  database user, you can also  grant the required privilege to the previously created cache manager user
+	<span class="codetext">cacheadm</span>. This will make <span class="codetext">cacheadm</span> responsible for managing both 
+	replication and cache operations.</p>
+	<p>Using <span class="codetext">ttIsql</span>, log into the database <span class="codetext">cachedb1_1211</span> as the 
+	instance administrator and execute:</p>
+	<p class="codetext">grant admin to cacheadm;</p>
+	<p><b>Note:</b> In the <a href="cache_create.html">Setting Up a Cache Database</a> tutorial, we have already granted the 
+	<span class="codetext">ADMIN</span> privilege to <span class="codetext">cacheadm</span>, 
+	hence this step is not needed.</p>
+</li><br/>
+</ol></blockquote>
+
+ 
+
+<span class="section1">3. Start the cache agent </span>
+<blockquote ><ol type=a>
+<li>
+	<p>On <em>ttcwnode1</em>, log in to <span class="codetext">ttIsql</span> as the user <span class="codetext">cacheadm</span>, 
+	passing in the TimesTen and Oracle user passwords for <span class="codetext">cacheadm</span>. </p>
+	<p class="codetext">ttIsql</p>
+    <p class="codetext">connect &quot;dsn=cachedb1_1211;uid=cacheadm;pwd=cacheadm;oraclepwd=cacheadm&quot;; </p>
+</li><br/>
+<li>
+	<p>Call the built-in procedure 
+	  <span class="doclink">ttCacheStart</span> 
+	to start the cache agent for the current database.</p>
+	<p class="codetext">call ttcachestart; </p>
+	<p>The cache agent process is responsible for managing the communication between 
+	cache databases, as well as controlling the data flow from an Oracle database to a TimesTen Application-Tier Database Cache.</p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">4. Define cache groups</span>
+<blockquote><ol type=a>
+<li>
+	<p><span class="codetext">ttCWAdmin </span> supports 
+	  <span class="doclink">Read Only</span>, 
+	  <span class="doclink">AWT</span>, 
+	  <span class="doclink">SWT</span>, 
+	  <span class="doclink">dynamic</span> 
+	and non-dynamic local 
+	<span class="doclink">cache groups</span>.</p>
+	<p>On <em>ttcwnode1</em> run the script <a href="../../sample_scripts/cache/create_local_ro.sql">create_local_ro.sql</a> 
+	or enter the following  <span class="codetext">CREATE CACHE GROUP</span> statement,
+	located in the <span class="codetext">&lt;QUICKSTART_HOME&gt;/sample_scripts/cache </span> directory to 
+	create a read-only local cache group named <span class="codetext">ro</span> to cache 
+	the <span class="codetext">HR.DEPARTMENTS</span> table. </p>
+	<p>Either run the <a href="../../sample_scripts/cache/create_local_ro.sql">create_local_ro.sql</a> script:
+	<p class="codetext">@&lt;QUICKSTART_HOME&gt;/sample_scripts/cache/create_local_ro.sql;</p>
+	<p>or run the following code:</p>
+    <p class="codetext">create readonly cache group ro<br />
+          autorefresh<br />
+          interval  5 seconds <br />
+          mode incremental<br />
+          from<br />
+          hr.departments ( department_id   number(4) not null primary key,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;department_name varchar2(30) not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;manager_id      number(6),<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;location_id     number(4));</p>      </td>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">5. Register the TimesTen Instance Information </p>
+<blockquote ><ol type=a>
+<li>
+	<p>TimesTen instance information is stored in the Oracle Cluster Registry. As the root user on UNIX or Linux platforms, register the TimesTen instance information by executing the 
+	  <span class="doclink">ttCWAdmin -ocrConfig</span> command 
+	on one of the hosts. For example, on <em>ttcwnode1</em>:</p>
+	<p class="codetext">ttcwadmin -ocrconfig</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_ocrconfig.gif"  /></p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">6. Start the Cluster Agent</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Start the TimesTen cluster agent by executing the 
+	  <span class="doclink">ttCWAdmin -init</span> 
+	command on one of the hosts. For example on <em>ttcwnode1</em>:</p>
+	<p class="codetext">ttCWAdmin -init</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_init.gif" alt="ttCWAdmin -init" /></p>
+	<p>This command starts TimesTen Clusterware agents and TimesTen daemons on all nodes in the cluster 
+	and starts monitoring them through Oracle Clusterware.</p>
+</li><br/>
+</ol></blockquote>
+  
+<p class="section1">7. Create the TimesTen cluster.oracle.ini configuration file</p>
+<blockquote><ol type=a>
+<li>
+	<p>For a <span class="doclink">basic</span> 
+	active standby pair configuration with local cache groups, only the 
+	  <span class="doclink">MasterHosts</span> 
+	and <span class="doclink">CacheConnect</span> 
+	attributes are needed.</p>
+	<p><img class="cmdscnshot" src="../images/cw_cluster_ini_cachedb1_1211.gif" alt="cachedb1_1211 cluster entry" /></p>
+	<p>The <span class="doclink">cluster.oracle.ini</span> 
+	entry name (eg <span class="codetext">[cachedb1_1211]</span>) must correspond to the system 
+	<span class="doclink">DSN</span> for the 
+	active and standby databases.</p>
+	 
+ 
+	<p><b>Note:</b> When you use the <span class="codetext">ttInstanceCreate</span> or <span class="codetext">ttInstanceModify</span> to 
+	add support for Oracle Clusterware, the mandatory <span class="codetext">MasterHosts </span> attribute will be created in the 
+	<span class="codetext">cluster.oracle.ini</span> file for you.  For more complex configurations, 
+	you need to add the relevant attributes yourself in the <span class="codetext">cluster.oracle.ini</span> 
+	file on every node in the cluster.</p>
+</li><br/>
+</ol></blockquote>
+  
+<p class="section1">8. Create an Active Standby Pair</p>
+<blockquote><ol type=a>
+<li>
+	<p><span class="doclink">Drop any existing [SQL] 
+	Active Standby Pair</span>	for the <span class="codetext">cachedb1_1211</span> database.</p>
+	<p class="codetext" >drop active standby pair;</p>
+	<p>You <b>cannot</b> mix Active Standby Pairs managed by 
+	  <span class="doclink">SQL</span> and managed 
+	by <span class="doclink">ttCWAdmin</span>. 
+	An Active Standby Pair for a cache database should be managed by either SQL or by ttCWAdmin, and not by both.</p>
+</li><br/>
+<li>
+	<p>Create an Active Standby Pair replication scheme by executing the 
+	  <span class="doclink">ttCWAdmin -create</span> 
+	command on any host. For example on <em>ttcwnode1</em>:</p>
+	<p class="codetext">ttcwadmin -create -dsn cachedb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_create_cachedb1_1211.gif" alt="ttCWAdmin create [cache]"/></p>
+	<p>Based on the <span class="codetext">cachedb1_1211</span> entries in the system 
+	  <span class="doclink">DSN</span> 
+	and the <span class="doclink">cluster.oracle.ini</span>, 
+	this command created the replication scheme for the <span class="codetext">cachedb1_1211</span> database on the <em>ttcwnode1</em> 
+	and <em>ttcwnode2</em> machines.</p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">9. Start the Active Standby Pair</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Start the Active Standby Pair replication scheme by executing the 
+	  <span class="doclink">ttCWAdmin -start</span> 
+	command on any host. For example on <em>ttcwnode2</em>:</p>
+	<p class="codetext" >ttcwadmin -start -dsn cachedb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_start_cachedb1_1211.gif" alt="ttcwadmin start [cachegroup]" /></p>
+	<p><b>Notes:</b>
+	<ul>
+		<li><span class="codetext">ttCWAdmin -start</span> will automatically start the replication agent on the standby machine 
+		and duplicate the active database into the standby host.</li>
+		<li>The time taken to duplicate the active database will be proportional to the size of the active database and 
+		the performance of the hardware used.</li>
+		<li>Once the Active Standby Pair has be started by <span class="codetext">ttCWAdmin</span>, committed writes to the active database 
+		will be written to its local transaction logs, but they will not get replicated to the standby database 
+		until the duplicate operation is complete.</li>
+		<li>The <span class="codetext">ttCWAdmin -status -dsn &lt;your_DSN&gt;</span> command enables you to check the 
+		progress of the database duplication.</li>
+	<li>You can login to the <span class="codetext">cachedb1_1211</span> database using <span class="codetext">ttIsql</span> 
+		and use the built-in procedure 
+		  <span class="doclink">ttRepStateGet</span> 
+		to determine to current replication and the state of a database in an  active standby pair. 
+		If the output from <span class="codetext">ttRepStateGet</span> is:<br/>
+		<span class="codetext">&lt;&nbsp;ACTIVE,&nbsp;NO&nbsp;GRID&nbsp;&gt;</span> 
+		in <em>ttcwnode1</em><br/>
+		<span class="codetext">&lt;&nbsp;STANDBY,&nbsp;NO&nbsp;GRID&nbsp;&gt;</span> in <em>ttcwnode2</em><br/>
+		then the configuration of the active standby pair is complete.</li>
+	</ul>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">10. Preload data into cache groups</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Populate the cache group by 
+	  <span class="doclink">loading</span> the rows from Oracle.</p>
+	This command <b>must</b> be run on the active node, which in this example was initially set to <em>ttcwnode1</em>.</p>
+	<p class="codetext" >load cache group ro commit every 256 rows;</p>
+	<p><img class="cmdscnshot" src="../images/cw_cg_load_cg_ro.gif" alt="Load read only cache group" /></p>          
+</li><br/>
+</ol></blockquote>
+
+<p>Click <a href="cw_aspair_admin_timesten_cache.html" class="compilerun">here</a> to learn how to manage the Active Standby Pair
+with Application-Tier Database Cache and Clusterware.</p>
+
+<p>For more information about Using and Configuring an Active Standby Pair with TimesTen Cache and Oracle Clusterware refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/cluster.htm#TTREP257" target="_blank" class="doclink">here</a> </p>
+</div>
+<div id="footer"/>
+</body>
+</html>

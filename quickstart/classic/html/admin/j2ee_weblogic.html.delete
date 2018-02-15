@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to Configure Weblogic Application Server with Oracle TimesTen</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to Configure WebLogic Application Server 10.3.5</span>
+<p class="normal">This section provides descriptions and examples of configuring the TimesTen JDBC driver for use with Oracle WebLogic  Server 
+  10.3.5.</p>
+<p class="normal"><strong>Assumption</strong>:  Oracle TimesTen and Weblogic  Server have been successfully installed on the same host machine and that both instances are running.</p>
+<p class="normal"><img src="images/view_image.gif" alt="" width="24" height="24" align="absmiddle" /></a></a> <b><font color="#ff0000">Place the cursor over this icon to view  images in this tutorial.</font></b></p>
+<p class="normal"><span class="section1">Configuring the TimesTen JDBC driver</span><br />
+</p>
+<p class="normal">Before you can use WebLogic Server to access the TimesTen databases, the server  environment must have access to the TimesTen JDBC driver jar file and the TimesTen shared libraries. Here are the steps:</p>
+<table width="725" border="0">
+  <tr>
+    <td width="74" height="109" valign="top" class="normal"><div align="center">Step 1</div></td>
+    <td width="641" valign="top" class="normal">Edit the <span class="codetext">&lt;WL_install_dir&gt;/common/bin/commEnv.sh</span> script on UNIX/Linux or the <span class="codetext">
+      &lt;WL_install_dir&gt;/common/bin/commEnv.cmd</span> script on Windows. Append the path to the TimesTen JDBC driver jar file to the <span class="codetext">WEBLOGIC_CLASSPATH</span> variable defined in the file. The TimesTen driver jar file JDK 6 is located in <em>&lt;timesten_install_dir&gt;/lib/ttjdbc6.jar</em>.
+      <p>&lt;timesten_install_dir&gt; is the home directory where you installed Oracle TimesTen, and &lt;WL_install_dir&gt; is the home directory where you installed the WebLogic  Server.<br />
+      <br />
+    </p></td>
+  </tr>
+  <tr>
+    <td height="104" valign="top" class="normal"><div align="center">Step 2</div></td>
+    <td valign="top" class="normal">Modify  the LD_LIBRARY_PATH environment variable (or the equivalent variable for your OS) to include the TimesTen shared library. Append <span class="codetext">
+      &lt;timesten_install_dir&gt;/lib</span> to the <span class="codetext">LD_LIBRARY_PATH</span> (or equivalent) environment variable found in the 
+      <span class="codetext">&lt;WL_install_dir&gt;/common/bin/commEnv.sh</span> file. 
+    <p>On Windows, set the PATH environment variable to include the <span class="codetext">
+      &lt;timesten_install_dir&gt;/bin</span> directory where the TimesTen DLLs are located. The PATH variable must be set for the environment where WebLogic Server runs.<br />
+      <br />
+</p></td>
+  </tr>
+  <tr>
+    <td height="27" valign="top" class="normal"><div align="center">Step 3</div></td>
+    <td valign="top" class="normal">Restart the WebLogic Server for the changes to take effect.</td>
+  </tr>
+</table>
+<p class="normal"><span class="section1">Configuring TimesTen Data Sources</span></p>
+<p><span class="normal">The TimesTen JDBC driver supports four different types of connections to access the TimesTen database. The table below shows the connection types and the connection properties. Each type of TimesTen JDBC driver connection requires a unique data source configuration. The examples below reference a TimesTen DSN, </span><span class="codetext">sampledb </span><span class="normal">for  direct-linked connection mode, and </span><span class="codetext"><span class="codetext">sampledbCS_1122</span></span><span class="normal"> for client/server connection mode. These TimesTen DSNs need to be configured in the </span><span class="codetext">odbc.ini</span><span class="normal"> or </span><span class="codetext">sys.odbc.ini</span><span class="normal"> file on Unix/Linux platforms, or configured in the Windows Data Source Administrator.</span></p>
+<table width="758" border="1">
+  <tr>
+    <td width="144" height="124" valign="top" class="normal"><div align="left"><em><strong>Direct-linked connections  with local transactions only</strong></em></div></td>
+    <td width="598" valign="top" class="normal">This configuration is an in-process linked to the TimesTen database libraries; direct-linked connection provides the best response time for database operations and results in higher transaction throughput. To use this configuration, the WebLogic server and the TimesTen database must be  running in the same machine.
+        <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span><br />
+        </p>
+    Example <span class="codetext">URL Property: <span class="codetext">jdbc:timesten:direct:sampledb</span></span></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">
+    <td height="123" valign="top" bgcolor="#EEEEEE" class="normal"><div align="left"><em><strong>Direct-linked connection  with XA distributed transaction</strong></em><strong>s</strong></div></td>
+    <td valign="top" class="normal">The JDBC driver supports XA distributed transactions. For directed-link connections, the TimesTen database must reside on the same machine as the WebLogic Server. This connection type incurs distributed transaction overhead.
+      <p>TimesTen Class: <span class="codetext"><em>com.timesten.jdbc.xa.TimesTenXADataSource</em></span><br />
+        </p>
+    <p>Example <span class="codetext">URL Property: <span class="codetext">jdbc:timesten:direct:sampledb</span></span></p></td>
+  </tr>
+  <tr>
+    <td height="140" valign="top" class="normal"><div align="left"><em><strong>Client/server access with local transactions only</strong></em></div></td>
+    <td valign="top" class="normal">Client/Server connections are intended for applications not running in the same machine as the TimesTen database. Here, the WebLogic Server can access the TimesTen database from a remote machine. This connection mode  incurs network (TCP/IP) overhead and is less responsive as the direct-linked connection mode.
+        <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span><br />
+        </p>
+    <p>Example <span class="codetext">URL Property: <span class="codetext">jdbc:timesten:client:sampledb</span></span></p></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">
+    <td height="131" valign="top" bgcolor="#EEEEEE" class="normal"><div align="left"><em><strong>Client/server access with XA distributed transactions</strong></em></div></td>
+    <td valign="top" class="normal">The JDBC driver supports XA distributed transactions. For client/server connections, the WebLogic Server may access the TimesTen database from a remote machine.This connection type incurs network overhead in addition to the distributed transaction overhead.
+        <p>TimesTen Class:<span class="codetext"> com.timesten.jdbc.xa.TimesTenXADataSource</span><br />
+        </p>
+    <p>Example <span class="codetext">URL Property: <span class="codetext">jdbc:timesten:client:sampledb</span></span></p></td>
+  </tr>
+</table>
+<p class="normal">A data source is usually configured using the WebLogic console. Below is a sample procedure for configuring a TimesTen data source using the WebLogic console.</p>
+<table width="760" border="0">
+  <tr>
+    <td width="23" height="25" align="center" valign="top" class="normal"><div align="center">1.</div></td>
+    <td width="652" valign="top" class="normal">Connect to the WebLogic Server Administration Console and click <strong>Data Sources</strong></td>
+  </tr>
+  <tr>
+    <td height="23" align="center" valign="top" class="normal"><div align="center">
+      2.</div></td>
+    <td valign="top" class="normal">Click <strong>New</strong></td>
+  </tr>
+  <tr>
+    <td height="114" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>3.</div></td>
+    <td valign="top" class="normal"><p>At the <strong>JDBC Data Source Properties </strong>screen, type a name and JNDI name for the data source. The screen should look similar to Figures 1a below.<br />
+      <br/>
+      <img src="images/view_image.gif" alt="" name="wl_new_ds_1" class="imgborder_off" id="wl_new_ds_1" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 1a</span></p>
+      <p>Click <span class="normal"><strong>Next</strong></span></span></span></span></p>
+      <p><img src="images/view_image.gif" alt="" name="wl_new_ds_2" class="imgborder_off" id="wl_new_ds_2" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+        Figure 1b</p>
+      <p>In the <strong>Database Type</strong> and the <strong>Database Driver</strong> drop down list boxes select Other. <br />
+        <br/>
+        Click <strong>Next</strong><br/> 
+        <br/>
+      </p></td>
+  </tr>
+  <tr>
+    <td height="25" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>4.</div></td>
+    <td valign="top" class="normal">At the Transaction Options screen, make sure the Supports Global Transactions check box is checked. If you desire a non-XA TimesTen connection, select one of the three transaction protocol options. The screen should look similar to Figure 2 below.<br />
+      <br/>
+    <img src="images/view_image.gif" alt="" name="wl_ds_tx_option" class="imgborder_off" id="wl_ds_tx_option" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 2</span><br /><br />
+    Click <strong>Next</strong>. (Note: If you desire a TimesTen XA connection, the transaction protocol options on this screen are ignored. Instead, WebLogic uses the TimesTen implementation of XAResource to control transactions.)<br/>
+    <br/></td>
+  </tr>
+  <tr>
+    <td height="23" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>5.</div></td>
+    <td valign="top" class="normal">At the <strong>Connection Properties</strong> screen enter a database name, host name and port. These attributes are required by WebLogic but are not used by the TimesTen JDBC driver. The screen should look similar to Figure 3 below.<br />
+      <br/>
+    <img src="images/view_image.gif" alt="" name="wl_connprops" class="imgborder_off" id="wl_connprops" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 3</span><br /><br />
+    Click <strong>Next</strong><br/> <br/></td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>6.</div></td>
+    <td valign="top" class="normal">At the <strong>Test Database Connection</strong> screen enter the name of the TimesTen JDBC driver. If you desire a non-XA connection, specify the <span class="codetext">com.timesten.jdbc.TimesTenDriver</span> class. If you desire a TimesTen XA connection, specify the <span class="codetext">com.timesten.jdbc.xa.TimesTenXADataSource</span> class. Enter a TimesTen JDBC URL for the TimesTen DSN that the data source should connect to. A TimesTen URL takes the form of <span class="codetext">jdbc:timesten:[direct|client]:&lt;DSN&gt;</span>. </p>
+      <p>For a direct DSN named sampledb the screen should look similar to Figure 4 below<br />
+        <br />
+        .     <img src="images/view_image.gif" alt="" name="wl_test_conn" class="imgborder_off" id="wl_testconn" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 4</span>
+    <p>Click <strong>Next</strong><br/> <br/></p></td>
+  </tr>
+  <tr>
+    <td height="30" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>7.</div></td>
+    <td valign="top" class="normal">At the <strong>Select Targets</strong> screen, select which WebLogic servers should be associated with the data source. Click <strong>Finish</strong>.</p></td>
+  </tr>
+  </table>
+<p class="section1">TimesTen Data Source Configuration Files</p> 
+<p class="normal">Every data source configured via the WebLogic console generates an XML file with the file name pattern of <span class="codetext">*-jdbc.xml</span><span class="normal"> in the< in the</span><span class="codetext"> 
+  &lt;WL_install_dir&gt;/config/jdbc</span> directory, where <span class="codetext">&lt;WL_install_dir&gt;</span> is the directory containing the WebLogic Server domain. </p>
+<p class="normal">Sample configuration files for the four TimesTen connection types are available at the<span class="codetext"> quickstart/classic/sample_config/j2ee_weblogic</span></span> directory as shown below:</p>
+<table width="663" border="1">
+  <tr>
+    <td height="27" class="normal-bold">Connection Type</td>
+    <td class="normal"><strong class="normal-bold">Sample Data Source Configuration File</strong></td>
+  </tr>
+  <tr>
+    <td width="409" height="27" class="normal"><p>Direct-linked connections  with local transactions only</p>
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.TimesTenDriver</span><br />
+    Example URL: <span class="codetext">jdbc:timesten:direct:sampledb</span><br/>
+    </p>
+    </td>
+    <td width="238" class="codetext"><a href="../../sample_config/j2ee_weblogic/SampledbDirectDS-jdbc.xml">SampledbDirectDS-jdbc.xml</a></td>
+  </tr>
+  <tr>
+    <td class="normal"><p>Direct-linked connection  with XA distributed transactions</p>
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.xa.TimesTenXADataSource</span><br />
+Example URL: <span class="codetext">jdbc:timesten:direct:sampledb</span><br/>
+     </p></td>
+    <td class="codetext"><a href="../../sample_config/j2ee_weblogic/SampledbDirectXADS-jdbc.xml">SampledbDirectXADS-jdbc.xml</a></td>
+  </tr>
+  <tr>
+    <td class="normal"><p>Client/server access with local transactions only</p>
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.TimesTenDriver</span><br />
+Example URL: <span class="codetext">jdbc:timesten:client:sampledbCS_1122</span><br />
+<br/>
+    </p></td>
+    <td class="codetext"><a href="../../sample_config/j2ee_weblogic/SampledbClientDS-jdbc.xml">SampledbClientDS-jdbc.xml</a></td>
+  </tr>
+  <tr>
+    <td class="normal"><p>Client/server access with XA distributed transactions</p>
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.xa.TimesTenXADatatSource</span><br />
+Example URL: <span class="codetext">jdbc:timesten:client:sampledbCS_1122</span><br/>
+    </p></td>
+    <td class="codetext"><a href="../../sample_config/j2ee_weblogic/SampledbClientXADS-jdbc.xml">SampledbClientXADS-jdbc.xml</a></td>
+  </tr>
+</table>
+<p class="normal">To use these configuration files, follow the following steps:</p>
+<p class="normal">-  Copy the above *-jdbc.xml files to the <span class="codetext">
+  &lt;wl_install_dir&gt;/config/jdbc</span> directory. <br />
+- Edit the <span class="codetext">&lt;WL_install_dir&gt;/config/config.xml, </span>include a reference to the data source configuration file under the <span class="codetext">&lt;domain&gt; </span>section. </p>
+<p class="normal">&lt;domain&gt; section:<br />
+</p>
+<p class="codetext">&lt;jdbc-system-resource&gt;<br />
+ &nbsp;&nbsp;  &lt;name&gt;SampledbDirectDS&lt;/name&gt;<br />
+ &nbsp;&nbsp; &lt;target&gt;AdminServer&lt;/target&gt;<br />
+ &nbsp;&nbsp; &lt;descriptor-file-name&gt;jdbc/SampledbDirectDS-jdbc.xml&lt;/descriptor-file-name&gt;<br />
+  &lt;/jdbc-system-resource&gt;</p>
+  <p>Note that 'AdminServer' should be replaced with the name of your target server.
+  <p>- The server should be restarted after these changes. The server will read the new configuration when it starts up and then add the data source to its JNDI tree.
+<p class="normal"><img src="images/view_image.gif" width="24" height="24" align="absmiddle" onMouseOver="hideAllImages()"> </a> 
+  <b class="normal"><font color="#ff0000">Place the cursor over this icon to hide all screenshots.</font></b></p>
+
+<p class="normal">&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+<script language="JavaScript" type="text/JavaScript">
+<!--
+preLoadImages();
+//-->
+</script>
+</html>
+<SCRIPT  SRC="/oracle_smp_chronos/oracle_smp_chronos.js"></SCRIPT>

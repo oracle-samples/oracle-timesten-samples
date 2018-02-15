@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TimesTen Pro*C Sample Programs</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Pro*C Sample Programs</span>
+<p class="normal">The following Pro*C sample programs are  available in the <span class="doclink">quickstart/classic/sample_code/proc</span> directory.</p>
+<table width="760" border="1">
+  <tr>
+    <td width="136" valign="top" class="table-header" >&nbsp;&nbsp;Program</td>
+    <td width="608" valign="top" class="table-header">Description</td>
+  </tr>
+  
+<tr>
+    <td height="127" valign="top" class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/proc/addempPROC.pc" class="codetext">addempPROC.pc</a></span></td>
+    <td valign="top" class="normal">This Pro*C sample program prompts the user for information and inserts the corresponding data as a new employee into the EMP table.<br />
+      <br />
+        This program is based on the Oracle Pro*C sample.pc program and minimal error checking is performed on the data to be inserted.<br />
+        <br />
+        The <span class="codetext">EMP</span> table needs to exist for this program to work.    </td>
+  </tr>  
+  <tr>
+    <td height="127" valign="top" bgcolor="#F6F6F6" class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/proc/ansidyn1.pc" class="codetext">ansidyn1.pc</a></span></td>
+    <td valign="top" bgcolor="#F6F6F6" class="normal">Ansidyn1.pc is an Oracle Pro*C program that implements a dynamic  SQL interpreter. Using the ANSI embedded SQL  syntax, Ansidyn1.pc accepts dynamic SQL at the input command prompt (SQL&gt;)</p>
+      <p>You are prompted for the username and password at runtime. The ‘servicename’ can be either an entry in the TNSnames.ora file  or an easy connect  string.</p>
+    <p>No existing tables need to exist for this program to work.</td>
+  </tr>
+ 
+  
+   <tr>
+    <td height="83" valign="top" class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/proc/batchfetchPROC.pc" class="codetext">batchfetchPROC.pc</a></span></td>
+    <td valign="top" class="normal">This Pro*C sample program connects to the database and then declares and opens a cursor, 
+      fetches in batches using arrays, and prints the results using the function print_rows().
+      <br />
+      <br />
+     The <span class="codetext">EMP</span> table needs to exist for this program to work.</td>
+  </tr> 
+   <tr>
+    <td height="86" valign="top" bgcolor="#F6F6F6" class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/proc/cursorPROC.pc" class="codetext">cursorPROC.pc</a></span></td>
+    <td valign="top" bgcolor="#F6F6F6" class="normal">This Pro*C sample program connects to the database and then declares and opens a cursor. 
+      The cursor fetches the names, salaries, and commissions of all salespeople, displays the results, then closes the cursor.</p>
+      <p>The <span class="codetext">EMP</span> table needs to exist for this program to work.</td>
+  </tr>
+
+  
+   <tr>
+    <td height="159" valign="top" class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/proc/getempPROC.pc" class="codetext">getempPROC.pc</a></span></td>
+    <td valign="top" class="normal">This Pro*C sample program prompts the user for an employee number and then:<br />
+      <br />
+      - Queries the emp table for the employee's name, salary and commission. <br />
+      - Uses indicator variables (in an indicator struct) to determine if the commission is NULL.</p>
+      <p>The employee numbers can be found by running the Pro*C <span class="codetext">batchfetchPROC</span> sample program or via the EMP table.</p>
+     <p>The <span class="codetext">EMP</span> table needs to exist for this program to work.</td>
+  </tr>
+
+  <tr>
+    <td height="127" valign="top" bgcolor="#F6F6F6"  class="normal"> &nbsp;&nbsp;<span class="style120"><a href="../../../sample_code/proc/plsqlPROC.pc" class="codetext">plsqlPROC.pc</a></span></td>
+    <td valign="top" bgcolor="#F6F6F6" class="normal">This sample program uses Pro*C to access common PL/SQL packages (<span class="codetext">emp_pkg</span> and <span class="codetext">sample_pkg</span>) in four different ways:</p>
+      <p>- Calls a stored procedure with IN and OUT parameters<br />
+        - Calls a stored function with IN and OUT parameters<br />
+        - Calls an anonymous block and passes host variables into and out of the block<br />
+        - Calls a store procedure to open a ref cursor and uses Pro*C to process the result-set of the ref cursor
+        <br />
+        <br />
+        The <span class="codetext">EMP</span> table and the <span class="codetext">emp_pkg</span> and <span class="codetext">sample_pkg</span> PL/SQL packages need to exist for this program to work.<br />
+    </td>
+  </tr>
+</table>
+
+<p class="section1">Compile and Run</p>
+<p class="normal">Click <a href="howto_proc.html" class="compilerun">here</a> to learn how to compile and run the sample programs on your installed platform.</p>
+<p class="normal">For more information on Pro*C/C++ support in TimesTen,, refer to the Pro*C/C++ chapter in the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61199/pro_c.htm#TTCDV222" target="_blank" class="doclink"><span class="doclink">Oracle TimesTen In-Memory Database C Developer's Guide</font></span>.</a></p>
+
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+
+</html>

@@ -1,0 +1,279 @@
+/*
+ * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ *
+ * Licensed under the Universal Permissive License v 1.0 as shown
+ * at http://oss.oracle.com/licenses/upl
+ */
+
+/*
+
+NAME
+plsqlPROC.pc - Pro*C sample code that uses PLSQL
+
+DESCRIPTION
+This Pro*C program does the following:
+1. Uses a PLSQL package procedure
+2. Uses a PLSQL package function
+3. Uses a PLSQL anonymous block with host variables
+4. Opens a Ref cursor in a PLSQL procedure
+   and processes the resultset in Pro*C
+
+EXPORT FUNCTION(S)
+<external functions defined for use outside package - one-line descriptions>
+
+INTERNAL FUNCTION(S)
+<other external functions defined - one-line descriptions>
+
+STATIC FUNCTION(S)
+<static functions defined - one-line descriptions>
+
+NOTES
+<other useful comments, qualifications, etc.>
+
+ */
+
+ 
+#include <stdio.h>
+#include <sqlca.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sqlda.h>
+#include <sqlcpr.h>
+ 
+/* Prototypes */
+#if defined(__STDC__)
+  void usage(char *prog);
+  void parse_args(int argc, char **argv);
+extern  int chg_echo(int echo_on);
+#else
+  void usage(char *);
+  void parse_args(int, char **);
+extern  int chg_echo(int echo_on);
+#endif
+
+#define MAX_USERNAME     31
+#define MAX_SERVICENAME 128
+
+extern char  username[];
+extern char  password[];
+extern char  service[ ];
+
+
+/* Error handling function. */
+void sql_error(msg)
+    char *msg;
+{
+    size_t clen, fc;
+    char cbuf[256];
+ 
+    clen = sizeof (cbuf);
+    sqlgls((char *)cbuf, (size_t *)&clen, (size_t *)&fc);
+ 
+    printf("\n%s\n", msg);
+    printf("Statement is--\n%.*s\n", (int) clen, cbuf);
+    printf("Function code is %ld\n\n", fc);
+ 
+    sqlglm((unsigned char *) cbuf, (size_t *) &clen, (size_t *) &clen);
+    printf ("\n%.*s\n", (int) clen, cbuf);
+  
+    EXEC SQL WHENEVER SQLERROR CONTINUE;
+    EXEC SQL ROLLBACK WORK RELEASE;
+    exit(EXIT_FAILURE);
+}
+
+int main(int argc, char** argv)
+{
+  EXEC SQL BEGIN DECLARE SECTION;
+
+  VARCHAR     user[ MAX_USERNAME ];      /* VARCHAR is an Oracle-supplied struct */
+  varchar     pass[ MAX_USERNAME ];      /* varchar can be in lower case also. */
+  VARCHAR     svc[  MAX_SERVICENAME];
+
+  int         numEmps = 5;     /* The number of lowest paid employees to choose from */
+  int         empNo   = 0;     /* The emnployee ID of interest */
+  varchar     empName[11];
+
+  int         errCode = 0;
+  char        errText[256];
+
+  char        jobtype[ 9 + 1];
+  char        hired[  20 + 1];
+  double      salary;
+  int         dept;
+  int         worked_longer;
+  int         higher_sal;
+  int         total_in_dept;
+
+  SQL_CURSOR salesPeople;
+
+  EXEC SQL END DECLARE SECTION;
+    
+  EXEC SQL WHENEVER SQLERROR do sql_error("Oracle error");
+    
+
+  /* parse the command line arguments */
+  parse_args(argc, argv); 
+
+  /* Assign the VARCHAR char array components */
+  strncpy((char *) user.arr, (const char *) username, MAX_USERNAME);
+  strncpy((char *) svc.arr,  (const char *) service,  MAX_SERVICENAME);
+  strncpy((char *) pass.arr, (const char *) password, MAX_USERNAME);
+
+  /* hide password */
+  memset(password, 0, MAX_USERNAME);
+
+  /* Assign the VARCHAR length components */
+  user.len =  (unsigned short) strlen((char *) user.arr);
+  pass.len =  (unsigned short) strlen((char *) pass.arr);
+  svc.len  =  (unsigned short) strlen((char *)  svc.arr);
+
+  printf("\nConnecting as %s@%s\n", user.arr, svc.arr);
+
+  /* Connect to TimesTen or Oracle DB. */
+  EXEC SQL CONNECT :user IDENTIFIED BY :pass USING :svc;
+
+  /* hide password */
+  memset(pass.arr, 0, MAX_USERNAME);
+  pass.len = 0;
+
+  printf("Connected\n\n");
+
+
+  /* Initialize the input and output parameters for procedure emp_pkg.givePayRaise */
+  memset(empName.arr, 0 , sizeof(empName.arr));
+  empName.len = 0;
+  memset(errText, 0 , sizeof(errText));
+  errCode =  0;
+  numEmps = 10;
+ 
+  /* Call the emp_pkg.givePayRaise stored procedure */
+  EXEC SQL EXECUTE
+     begin
+       emp_pkg.givePayRaise(:numEmps, :empName, :errCode, :errText);
+     end;
+  END-EXEC;
+
+  printf("The employee who got the 10%% pay raise was %s\n", empName.arr);
+
+  memset(jobtype,  0, sizeof(jobtype));
+  memset(hired,    0, sizeof(hired));
+  salary         = 0.0;
+  dept           = 0;
+  worked_longer  = 0;
+  higher_sal     = 0;
+  total_in_dept  = 0;
+  errCode        = 0;
+  memset(errText,  0, sizeof(errText));
+  strcpy(errText, "OK");
+
+
+  EXEC SQL EXECUTE
+
+     begin
+
+        SELECT job, hiredate, sal, deptno
+          INTO :jobtype, :hired, :salary, :dept
+          FROM emp
+          WHERE ename = :empName;
+
+        SELECT count(*) 
+          INTO :worked_longer 
+          FROM emp
+          WHERE hiredate < :hired;
+
+        SELECT count(*) 
+          INTO :higher_sal 
+          FROM emp
+          WHERE sal > :salary;
+
+        SELECT count(*) 
+           INTO :total_in_dept 
+           FROM emp
+           WHERE deptno = :dept;
+
+     exception
+      
+        WHEN OTHERS THEN
+          :errCode  := SQLCODE;
+          :errText  := SUBSTR(SQLERRM, 1, 200);
+
+     end;
+
+  END-EXEC;
+
+  /* Display all the information */
+  printf("\n");
+  printf("Name:        %s\n", empName.arr);
+  printf("Job:         %s\n", jobtype);
+  printf("Hired:       %s\t(%2d people have served longer).\n", hired, worked_longer);
+  printf("Salary:      $%.2f\t\t\t(%2d people have a higher salary).\n", salary, higher_sal);
+  printf("Department:  %d\t\t\t\t(%2d people in the department).\n\n", dept, total_in_dept);
+
+
+  /* Initialize the input and output parameters for function sample_pkg.getEmpName */
+  memset(empName.arr, 0 , sizeof(empName.arr));
+  memset(errText, 0 , sizeof(errText));
+  errCode = 0;
+  empNo = 7839;
+ 
+  /* Call the emp_pkg.givePayRaise stored procedure */
+  EXEC SQL EXECUTE
+     begin
+       :empName := sample_pkg.getEmpName(:empNo, :errCode, :errText);
+     end;
+  END-EXEC;
+ 
+  printf("The employee for empid %d is %s\n", empNo, empName.arr);
+
+
+ 
+  /* Initialize the output parameters for procedure emp_pkg.OpenSalesPeopleCursor */
+  memset(errText, 0 , sizeof(errText));
+  errCode = 0;
+
+  /* Allocate the cursor variable. */
+  EXEC SQL ALLOCATE :salesPeople;
+
+
+  /* Call the emp_pkg.OpenSalesPeopleCursor stored procedure */
+  /* to open the ref cursor */
+  EXEC SQL EXECUTE
+     begin
+       emp_pkg.OpenSalesPeopleCursor(:salesPeople, :errCode, :errText);
+     end;
+  END-EXEC;
+ 
+
+  /* Iterate over the sales people ref cursor result set */
+  EXEC SQL WHENEVER NOT FOUND DO break; 
+
+  printf("\nThe sales people are:\n\n");
+  printf("  EMPNO ENAME      SALARY\n");
+  printf("  ===== ========== ==========\n");
+
+  for (;;) {
+
+    /* Initialize the output string each time */
+    memset(empName.arr, 0 , sizeof(empName.arr));
+
+    EXEC SQL FETCH :salesPeople 
+      INTO :empNo, :empName, :salary;
+
+    printf("  %5.0d %-10s %10.2f\n", empNo, empName.arr, salary);
+  }
+
+
+  /* Close the ref cursor */
+  EXEC SQL CLOSE :salesPeople;
+
+
+  printf("\nDisconnecting\n");
+
+  /* Disconnect from TimesTen or Oracle DB. */
+  EXEC SQL COMMIT WORK RELEASE;
+
+  printf("Disconnected\n\n");
+  exit(EXIT_SUCCESS);
+
+}
+ 

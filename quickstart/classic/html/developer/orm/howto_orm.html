@@ -1,0 +1,271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Compile and Run application with different ORM frameworks</title>
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Compile and Run application with different ORM frameworks</span>
+<p class="normal"><span class="section1"><br />
+IMPORTANT PRE-REQUISITES</span> </p>
+<blockquote>
+<p class="normal-bold">1. <a href="../sample_dsn_setup.html">Manually Configure Sample DSN for Sample Programs</a> </span></p>
+ <p class="normal-bold">2. Set up  environment to compile and run the sample application</p>
+  <p class="normal">The following script must be run for each of the terminal session:</p>
+    <li><p class="normal">Set up the Instance environment variables:<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></p></li>
+ 
+  <li><p class="normal">Set up quickstart environment variables:</p> 
+  <table width="606" border="0">
+  
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ . quickstart/classic/ttquickstartenv.sh <span class="normal-bold">OR</span><br />
+        $ source 
+        quickstart/classic/ttquickstartenv.csh</td>
+    </tr>
+  </table>
+  </li>
+  <p class="normal-bold">3. Set up sample database, user accounts and the TPTBM table</p>
+  <p class="normal">The following command should be run once to set up the sample database, user accounts and the TPTBM table.</p>
+  <table width="608" border="0">
+    <tr>
+      <td width="62" valign="top" class="normal">Unix/Linux:</td>
+      <td width="3" class="codetext">&nbsp;</td>
+      <td width="529" class="codetext">&gt; cd quickstart/classic/sample_code/j2ee_orm<br />
+        &gt; ttIsql -connStr "DSN=sampledb" -f tptbm.sql</td>
+    </tr>
+  </table>
+  <p class="normal-bold">3. If necessary, install the Apache Ant build tool.</p>
+  <p class="normal">For each ORM framework, an Ant build script is provided to configure, build and execute the application based on the properties of the ORM framework installation. The Apache Ant build tool has to be installed if not present.
+  <p class="normal">After installation, make sure the Operating System environment variable PATH includes the path to the 'ant' executable.
+  <p class="normal">The Ant build scripts have been tested with Apache Ant version 1.9.2.<p>
+  <p class="normal-bold">4. install ORM framework and configure build.properties </p>
+  <p class="normal">Each Ant build script reads values from file <span class="codetext">quickstart/classic/sample_code/j2ee_orm/build.properties</span>. This file specifies the locations of build dependencies including the location of the TimesTen JDBC driver jar file and the location of the ORM installation. This file also specifies the common benchmark execution parameters.</p>
+  <p class="normal">Make sure property <span class="codetext">timesten.jdbc.driver.jar</span> and the <span class="codetext">home.dir</span> of the ORM installation are set correctly in file <span class="codetext">build.properties</span>:
+  <ul>
+    <li>timesten.jdbc.driver.jar=&lt;path to TimesTen JDBC jar file, e.g. D:/TimesTen/tt1122_32/lib/ttjdbc6.jar&gt;
+    <li>eclipselink.home.dir=&lt;EclipseLink installation home&gt;, or
+    <li>openjpa.home.dir=&lt;OpenJPA installation home&gt;, or
+    <li>hibernate.home.dir=&lt;Hibernate installation home&gt;
+  </ul>
+  <p class="normal">This application has been tested with EclipseLink 2.0.2, 2.1.1, 2.4.0 and 2.5.1, OpenJPA 2.0.1, 2.2.0 and 2.2.2, and Hibernate 3.6.0, 3.6.10.Final, 4.1.5.SP1 and 4.3.1.Final.</p>
+</blockquote>
+<p class="normal"> &nbsp;&nbsp; </p>
+<p class="normal"><span class="section1">How to compile and run the sample ORM application</span></p>
+
+<p>
+<table width="800" border="1">
+  <tr>
+    <td width="120" height="22" valign="top" class="normal"><strong>ORM Framework</strong></td>
+    <td width="150" valign="top" class="normal"><strong>Ant build script</strong></td>
+    <td width="150" valign="top" class="normal"><strong>Persistence configuration</strong></td>
+    <td width="380" valign="top" class="normal"><strong>Compile and Run</strong></td>
+  </tr>
+  <tr>
+    <td height="62" valign="top" class="normal"><strong>JPA with EclipseLink</strong></td>
+    <td valign="top" class="normal">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/build-jpa-eclipselink2.xml" class="codetext">build-jpa-eclipselink2.xml</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/META-INF/persistence-eclipselink2.xml" class="codetext">persistence-eclipselink2.xml</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">1. Install EclipseLink 2 and then set the required properties listed above in build.properties based on the installation.
+      <p>2. To build and run the demo execute this sequence of Ant tasks under directory <span class="codetext">quickstart/classic/sample_code/j2ee_orm</span>:<br>
+
+   <br>ant -f build-jpa-eclipselink2.xml clean
+   <br>ant -f build-jpa-eclipselink2.xml package
+   <br>ant -f build-jpa-eclipselink2.xml run
+
+    </td>
+  </tr>
+  <tr>
+    <td height="62" valign="top" class="normal"><strong>JPA with OpenJPA</strong></td>
+    <td valign="top" class="normal">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/build-jpa-openjpa2.xml" class="codetext">build-jpa-openjpa2.xml</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/META-INF/persistence-openjpa2.xml" class="codetext">persistence-openjpa2.xml</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">1. Install the OpenJPA 2 distribution and set the required properties listed above in build.properties based on the installation.
+   <p>2. To build and run the demo execute this sequence of Ant tasks under directory <span class="codetext">quickstart/classic/sample_code/j2ee_orm</span>:<br>
+   <br>ant -f build-jpa-openjpa2.xml clean
+   <br>ant -f build-jpa-openjpa2.xml package
+   <br>ant -f build-jpa-openjpa2.xml run
+    </td>
+  </tr>
+  <tr>
+    <td height="62" valign="top" class="normal"><strong>JPA with Hibernate 3 (or Hibernate 4)</strong></td>
+    <td valign="top" class="normal">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/build-jpa-hibernate3.xml" class="codetext">build-jpa-hibernate3.xml</a></em></span></div>
+    <br>
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/build-jpa-hibernate4.xml" class="codetext">build-jpa-hibernate4.xml</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/META-INF/persistence-hibernate.xml" class="codetext">persistence-hibernate.xml</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">1. Install the Hibernate 3 (or Hibernate 4) distribution and set the required properties listed above in build.properties based on the installation.
+      <p>2. Note that this configuration uses the included Hibernate dialect 
+   called TimesTenDialect1122. This dialect is not included in current versions
+   of the Hibernate distribution. The TimesTenDialect1122 class is compiled and 
+   packaged into this application. This is the recommended 
+   Hibernate dialect for TimesTen 11.2.2 applications.
+
+   <p>3. To build and run the demo execute this sequence of Ant tasks under directory <span class="codetext">quickstart/classic/sample_code/j2ee_orm</span>:<br>
+
+   <br>ant -f build-jpa-hibernate3.xml clean
+   <br>ant -f build-jpa-hibernate3.xml package
+   <br>ant -f build-jpa-hibernate3.xml run
+
+   <p><b>or, if Hibernate 4 is used: </b><br>
+   <br>ant -f build-jpa-hibernate4.xml clean
+   <br>ant -f build-jpa-hibernate4.xml package
+   <br>ant -f build-jpa-hibernate4.xml run
+
+   <br><br>Refer to the <a href="#TROUBLESHOOTING">Troubleshooting</a> section if any error about SLF4J pops up.
+    </td>
+  </tr>
+  <tr>
+    <td height="62" valign="top" class="normal"><strong>Hibernate 3 (or Hibernate 4)</strong></td>
+    <td valign="top" class="normal">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/build-hibernate3.xml" class="codetext">build-hibernate3.xml</a></em></span></div>
+      <br>
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/build-hibernate4.xml" class="codetext">build-hibernate4.xml</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/META-INF/hibernate.cfg.xml" class="codetext">hibernate.cfg.xml</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">1. Install the Hibernate 3 distribution and then set the required properties listed above in build.properties based on the installation.
+
+   <p>2. Note that this configuration uses the included Hibernate dialect 
+   class called TimesTenDialect1122. It has been optimized for SQL features in 
+   TimesTen version 11.2.2. This dialect is not included in current versions 
+   of the Hibernate distribution. The TimesTenDialect1122 class is compiled and 
+   packaged into this application. This is the recommended 
+   dialect for applications that use TimesTen version 11.2.2 or greater.
+   
+   <p>3. To build and run the demo execute this sequence of Ant tasks under directory <span class="codetext">quickstart/classic/sample_code/j2ee_orm</span>:<br>
+
+   <br>ant -f build-hibernate3.xml clean
+   <br>ant -f build-hibernate3.xml package
+   <br>ant -f build-hibernate3.xml run 
+
+   <p><b>or, if Hibernate 4 is used: </b><br>
+   <br>ant -f build-jpa-hibernate4.xml clean
+   <br>ant -f build-jpa-hibernate4.xml package
+   <br>ant -f build-jpa-hibernate4.xml run
+
+   <br><br>Refer to the <a href="#TROUBLESHOOTING">Troubleshooting</a> section if any error about SLF4J pops up.
+    </td>
+  </tr>
+
+</table>
+
+<p>&nbsp;</p>
+<A name="TROUBLESHOOTING"></A>
+<p class="normal"><span class="section1">Troubleshooting</span></p>
+<p>While building the application with newer versions of the Hibernate distribution, the following error may occur:
+  <p>&nbsp;&nbsp;SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+  <p>The reason is that newer versions of the Hibernate distribution use the SLF4J logging facade. SLF4J requires at least one of several available log framework adapter jar files that may not be included in the Hibernate distribution. The error occurs if an SLF4J log adapter jar file is not on the CLASSPATH when running this configuration.
+   
+  <p>To solve this problem download the SLF4J JDK 1.4 logging adapter jar file
+   for the same version of SLF4J that is included in the Hibernate distribution.
+   SLF4J distributions are available at http://www.slf4j.org/dist/. 
+   
+   <p>For example, if the Hibernate distribution includes the slf4j-api-1.5.8.jar file then download the corresponding SLF4J 1.5.8 distribution. Extract the slf4j-jdk14-1.5.8.jar file from the distribution and place it in the same Hibernate directory as the slf4j-api-1.5.8.jar file. Additional information on logging can be found at http://www.slf4j.org/ and in the Hibernate documentation.
+<p>&nbsp;</p>
+<a name="HIBERNATE_DIALECT"></a> <!-- link from html/developer/j2ee.html -->
+<p class="normal"><span class="section1">Hibernate SQL Dialect for TimesTen 11.2.2</span></p>
+<p>TimesTen Quick Start Guide provides a Hibernate SQL Dialect class that helps to avoid SQL syntax incompatibilities for Hibernate applications that use TimesTen.
+
+<p>To compile and configure the TimesTenDialect1122 class for your application, follow these steps:
+<ol>
+  <li>Go to directory <span class="codetext">quickstart/classic/sample_code/j2ee_orm/config/hibernate3</span> <br>(or <span class="codetext">quickstart/classic/sample_code/j2ee_orm/config/hibernate4</span> if Hibernate 4 is used)
+  <li>Edit the build.properties file in this directory. Set the <span class="codetext">hibernate.home.dir</span> property to reference the location of the local Hibernate distribution.
+
+<li>The Apache Ant build tool is used to compile the class. Make sure that the
+directory containing the ant executable is included on the PATH environment
+variable. Execute these commands from this directory to compile the class.
+
+<br><br>ant clean
+<br>ant
+<br><br>
+    
+<li>If the dialect class compiles successfully it will be located in a
+subdirectory as 'build/org/hibernate/dialect/TimesTenDialect1122.class'. This
+class must be included in the Hibernate application's CLASSPATH environment
+variable in order for it to be used by the application.
+
+<li>To configure a Hibernate application to use the TimesTenDialect1122 class
+the hibernate.dialect session property must be set to
+'org.hibernate.dialect.TimesTenDialect1122'. The example hibernate.cfg.xml 
+configuration file below demonstrates a TimesTen Hibernate session configuration
+that uses the TimesTenDialect1122 class.
+
+<pre>
+&lt;?xml version='1.0' encoding='utf-8'?&gt;
+&lt;!DOCTYPE hibernate-configuration PUBLIC
+    "-//Hibernate/Hibernate Configuration DTD//EN"
+    "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd"&gt;
+
+&lt;hibernate-configuration&gt;
+
+  &lt;!-- a SessionFactory instance --&gt;
+  &lt;session-factory name="Tptbm"&gt;
+
+    &lt;!-- properties --&gt;
+    &lt;property name="hibernate.connection.url"&gt;jdbc:timesten:TPTBM&lt;/property&gt;
+    &lt;property name="hibernate.connection.username"&gt;&lt;/property&gt;
+    &lt;property name="hibernate.connection.password"&gt;&lt;/property&gt;
+    &lt;property name="hibernate.connection.driver_class"&gt;com.timesten.jdbc.TimesTenDriver&lt;/property&gt;
+
+    &lt;property name="hibernate.dialect"&gt;org.hibernate.dialect.TimesTenDialect1122&lt;/property&gt;
+    &lt;property name="hibernate.connection.isolation"&gt;2&lt;/property&gt;
+
+    &lt;property name="hibernate.jdbc.fetch_size"&gt;32&lt;/property&gt;
+    &lt;property name="hibernate.jdbc.batch_size"&gt;256&lt;/property&gt;
+    &lt;property name="hibernate.jdbc.batch_versioned_data"&gt;true&lt;/property&gt;
+
+    &lt;property name="hibernate.jdbc.use_streams_for_binary"&gt;false&lt;/property&gt;
+    &lt;property name="hibernate.jdbc.use_get_generated_keys"&gt;false&lt;/property&gt;
+    &lt;property name="hibernate.jdbc.use_scrollable_resultset"&gt;false&lt;/property&gt;
+
+    &lt;property name="hibernate.cache.use_query_cache"&gt;false&lt;/property&gt;
+    &lt;property name="hibernate.cache.use_second_level_cache"&gt;false&lt;/property&gt;
+
+    &lt;property name="hibernate.show_sql"&gt;false&lt;/property&gt;
+    &lt;property name="hibernate.connection.pool_size"&gt;4&lt;/property&gt;
+
+    &lt;!-- mapping file --&gt;
+    &lt;mapping resource="META-INF/Tptbm.hbm.xml"/&gt;
+
+  &lt;/session-factory&gt;
+
+&lt;/hibernate-configuration&gt;
+
+</pre>
+</ol>
+
+
+<p class="normal">&nbsp;</p>
+<p class="normal">For more information on Java programming with Oracle TimesTen, refer to the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61200/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database Java Developer's Guide</font></a>. </p>
+<p class="normal"><br />
+</p>
+<!-- Footner -->
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Recovering from a Failure on the Active Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Recovering from a Failure on the Active Database</span>
+<p >This section describes how to perform a failover to the standby database after a failure on the active database or server. 
+This includes how to rebuild the previous active database from a  standby database.</p>
+<p>This tutorial uses the DSNs <em>repdb1_1211</em> and <em>repdb2_1211</em>. 
+The hostnames of the  two machines are <em>tthost1</em> and <em>tthost2</em>. <em>repdb1_1211</em> was the active database on <em>tthost1</em>,  
+and in this section, <em>repdb2_1211</em> on <em>tthost2</em> will be converted to  become the new active database.</p>
+
+<span class="section1">1. Stop the replication agent on the failed active database </span>
+<blockquote ><ol type=a>
+<li>
+	<p>Stop the replication agent on the failed database, if it has not already been stopped. </p>
+	<p>Log in to server 1 (<em>tthost1</em>) as the instance administrator, and use the 
+	  <span class="doclink">ttAdmin</span> 
+	utility to stop replication agent on <span class="codetext">repdb1_1211</span>.</p>
+	<p class="codetext">ttadmin -repstop repdb1_1211</p>
+
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">2. Set the state of the standby database to active</span>
+<blockquote ><ol type=a>
+<li>
+	<p>Using <span class="codetext">ttIsql</span>, 
+	connect to the database <span class="codetext">repdb2_1211</span> on <em>tthost2</em> 
+	as the replication administrator <span class="codetext">adm</span>.</p>
+	<p class="codetext">ttisql</p>
+	<p class="codetext">connect &quot;dsn=repdb2_1211;uid=adm&quot;;</p>
+</li><br/>
+<li>
+	<p>Use the built-in procedure 
+	  <span class="doclink">ttRepStateSet</span> 
+	to designate the current  database  as the new active database in the active standby pair. 
+	Afterwards, verify the current replication state by calling the  built-in procedure 
+	<span class="doclink">ttRepStateGet</span>.</p>
+	<p class="codetext">call ttrepstateset('active');<br/>
+	call ttrepstateget;</p>
+	<p><img class="cmdscnshot" src="../images/rep_failover_make_active_repdb2.gif" /></p>
+	<p>Once the  database has entered the active state, it has been converted to an active database. 
+	Applications  that were previously connected to the failed database can now be diverted to the new active database. 
+	See the section on 
+	  <span class="doclink">Replication failover and recovery</span> 
+	for more information. </p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">3. Mark the previous active database as failed </span>
+<blockquote ><ol type=a>
+<li>
+	<p>Still logged in as <span class="codetext">adm</span> in <em>tthost2</em>, use the procedure 
+	  <span class="doclink">ttRepStateSave</span> 
+	to register the former active database as failed. </p>
+	<p class="codetext">call ttrepstatesave ('failed','repdb1_1211','tthost1');</p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">4. Destroy the failed database</span>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in as the instance administrator on server 1 (<span class="codetext">tthost1</span>), 
+	use the <span class="doclink">ttDestroy</span> 
+	utility to remove the failed database <span class="codetext">repdb1_1211</span>.</p>
+	<p class="codetext">ttdestroy repdb1_1211</p>
+ </li><br/>
+</ol></blockquote>
+
+<span class="section1">5. Duplicate the new active database to create a new standby database </span>
+<blockquote ><ol type=a>
+<li>
+	<p>Use the utility <span class="doclink">ttRepAdmin</span> 
+	to create the standby database by duplicating from the new active database.</p>
+	<p class="codetext">ttrepadmin -duplicate -from repdb2_1211 -host &quot;tthost2&quot; -uid adm -pwd adm &quot;dsn=repdb1_1211&quot; </p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">6. Start the Replication Agent on the Standby Database </span>
+<blockquote ><ol type=a>
+<li>
+	<p>Using <span class="codetext">ttIsq</span>l, connect to <span class="codetext">repdb1_1211</span> as the 
+	replication administrator <span class="codetext">adm</span>. Call the built-in procedure 
+	<span class="doclink">ttRepStart</span> 
+	to start the replication agent.</p>
+	<p class="codetext">ttisql</p>
+	<p class="codetext">connect &quot;dsn=repdb1_1211;uid=adm&quot;;</p>
+	<p class="codetext">call ttrepstart; </p>
+</li><br/>
+<li>
+	<p>Verify that the standby database has entered the standby state by using the 
+	  <span class="doclink">ttRepStateGet</span> 
+	built-in procedure. </p>
+	<p class="codetext">call ttrepstateget; </p>
+	<p><img class="cmdscnshot" src="../images/rep_failover_repstateget_repdb1.gif" /></p>
+	<p>Once the  old active (now new standby) database has entered the "standby" state, the configuration of an active standby pair is  completed. 
+	Changes to the data in the new active database will be automatically replicated to the new standby database. </p>
+</li><br/>
+</ol></blockquote>
+
+<p>For more information about Recovering from a Failure on the Active Database refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/standby.htm#TTREP214" target="_blank" class="doclink">here</a> </p>
+<p>&nbsp;</p>
+</div>
+
+<div id="footer" />
+</body>
+
+</html>

@@ -1,0 +1,128 @@
+#######################################################################
+#
+# Mac os X x86_64 (64-bit) Makefile for the 
+# TimesTen TTCLASSES sample programs.
+#
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+#######################################################################
+
+INSTDIR       = $(TIMESTEN_HOME)/install
+COMMON        = $(QUICKSTART_HOME)/sample_code/common
+SAMPLES       = $(QUICKSTART_HOME)/sample_code/ttclasses
+TTCLASSESDIR  = $(TIMESTEN_HOME)/ttclasses
+TTDMDIR       = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
+
+USING_GCC_64    = -m64
+USING_GCC_64_LD = -m64
+
+THREAD_SAFE     = -D_THREAD_SAFE -D_REENTRANT
+POSIX_THREADS   = -D_POSIX_PTHREAD_SEMANTICS -D_POSIX_THREADS_CALLS
+CSDEFS          = -DTTCLIENTSERVER
+64BIT           = -DTT_64BIT
+OPTFLAG         = -O -Wuninitialized
+DEBUGFLAG       = -g -Wall -W -Wcast-qual -Wshadow -Wpointer-arith \
+                  -Wno-return-type -DTTDEBUG
+
+CFLAGS          = -fPIC $(OPTFLAG) -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) -Ilib -DTTEXCEPT $(64BIT) -DGCC $(USING_GCC_64) $(THREAD_SAFE) -I$(COMMON)
+
+LDFLAGS         = $(USING_GCC_64_LD) -Wl,-rpath -Wl,$(INSTDIR)/lib
+CSLIBS          = -lpthread -L$(INSTDIR)/lib -lttclient -lttclassesCS
+
+CPLUSPLUS       = g++
+CC              = gcc
+
+ARFLAGS         =
+SHLDEXT         = dylib
+AREXT           = a
+
+OBJ_DIR = obj
+
+# used to determine what targets to build
+TT_CLIENTLIB  = $(wildcard $(INSTDIR)/lib/libttclient.$(SHLDEXT))
+TT_LIBTTEN    = $(wildcard $(INSTDIR)/lib/libtten.$(SHLDEXT))
+
+#
+# TimesTen ttClasses Driver Manager Shared Library
+#
+TTCLASSES_TTDM_SHLIB  = $(INSTDIR)/lib/libttclassesTTDM.$(SHLDEXT)
+
+#
+# TimesTen Driver Manager Shared Library
+#
+TTDM_SHARED_LIB       = $(INSTDIR)/lib/libttdrvmgr.$(SHLDEXT)
+# -----------------------------------------------------------------------------------
+# file lists
+# -----------------------------------------------------------------------------------
+
+TTC_INCLUDEDIR  =  $(INSTDIR)/include/ttclasses
+
+TTC_DEMO_CPP_OBJS = \
+$(OBJ_DIR)/ttXlaAdmin.o \
+$(OBJ_DIR)/xlasubscriber1.o \
+$(OBJ_DIR)/xlasubscriber2.o
+
+TTC_DEMO_C_OBJS = \
+UTILS = \
+$(SAMPLES)/$(OBJ_DIR)/portable_thread_unix.o
+
+TESTPROGS = \
+ttXlaAdmin \
+xlasubscriber1 \
+xlasubscriber2
+
+UTILS = \
+$(SAMPLES)/$(OBJ_DIR)/testprog_utils.o
+
+# -----------------------------------------------------------------------------------
+#  Top-level targets
+# -----------------------------------------------------------------------------------
+ifneq ($(strip $(TT_LIBTTEN)),)
+PROGS = $(TESTPROGS) $(TESTPROGS_TTDM)
+endif
+
+ifneq ($(strip $(TT_CLIENTLIB)),)
+PROGS += $(TESTPROGS_CS) $(TESTPROGS_TTDM)
+endif
+
+all: $(PROGS)
+
+clean:
+		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS) $(TESTPROGS_CS) $(TESTPROGS_TTDM)
+		$(PLAT_SPECIFIC_CLEAN)
+
+# -----------------------------------------------------------------------------------
+# build targets
+# -----------------------------------------------------------------------------------
+
+.SUFFIXES: .cpp $(SUFFIXES)
+
+.KEEP.STATE:
+
+$(OBJ_DIR)/%.o:%.c
+	$(CC) $(CFLAGS) -c $*.c -o $@
+
+$(OBJ_DIR)/%_client.o:%.c
+	$(CC) $(CFLAGS) $(CSDEFS) -c $*.c -o $@
+
+$(OBJ_DIR)/%.o:%.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c $*.cpp -o $@
+
+$(OBJ_DIR)/%_client.o:%.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c $*.cpp -o $@
+
+#
+# TTClasses direct linked sample programs
+#
+
+ttXlaAdmin: $(UTILS) $(OBJ_DIR)/ttXlaAdmin.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttXlaAdmin.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+xlasubscriber1: $(UTILS) $(OBJ_DIR)/xlasubscriber1.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/xlasubscriber1.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+xlasubscriber2: $(UTILS) $(OBJ_DIR)/xlasubscriber2.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/xlasubscriber2.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)

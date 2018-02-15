@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Creating a TimesTen Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Creating a TimesTen Database </span>
+<p>This tutorial provides a step-by-step guide on how to set up and create a  TimesTen database. 
+You need to be the user that  created TimesTen Instance to create a database. This user is  known as the instance administrator.</p>
+<br/>
+<span class="section1">1. Setting up a Data Source Name (DSN)</span>
+<p>TimesTen  databases are accessed through Data Source Names(DSNs). 
+A DSN is a logical name that identifies a TimesTen  database.  Each DSN contains attributes
+that specify the properties of the database being created or accessed.</p>
+<p>On Linux and UNIX systems, system DSNs are defined in the   <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini</span> file. 
+This file is   referred to as the system ODBC.INI file.<!-- On Microsoft Windows, DSNs are maintained using 
+the Windows ODBC Data Source Administrator.--></p>
+<ul>
+	<li><a href="dsn_setup_unix_linux.html">How to set up a DSN on Linux and UNIX Platforms</a></li>
+	<!-- <li><a href="dsn_setup_windows.html">How to set up a DSN on Windows</a></li> -->
+</ul>
+<br/><br/>
+<span class="section1">2. Creating a TimesTen Database</span><br/>
+<p>A TimesTen database is simply created by connecting to it. A first connection to an already-existing database 
+results in loading the database in memory. Database objects can be created once a connection has been established to the database. 
+Only the instance administrator can create a TimesTen database.</p>
+<p>As an example, let us use <span class="codetext">ttIsql</span> to create and connect to the database <span class="codetext">sampledb</span>.</p>
+<blockquote><ol type=a>
+<li>
+	<p>The main TimesTen daemon process <!--or the TimesTen Windows service--> must be running before you can create a database. 
+	Only the instance administrator is authorized to start  the daemon. The  utility <span class="codetext">ttDaemonAdmin</span> 
+	is used to start  the daemon. Enter the following command on the OS command line to start the daemon, 
+	if it  has not yet been started:</p>
+    <p class="codetext">ttdaemonadmin -start</p>
+    or
+     <p class="codetext">ttdaemonadmin -start -force</p>
+    <p><b>Note:</b> <span class="codetext">ttdaemonadmin</span> and other TimesTen 
+	<a href="../tools/util.html">database utilities</a> are located in the <span class="codetext">&lt;instance_dir&gt;/bin</span> 
+	directory. To make these utilities readily available, include the <span class="codetext">bin</span> directory 
+	in the <span class="codetext">PATH</span> environment variable, or run the <span class="codetext">ttenv.*</span> script 
+	to set up your TimesTen environment. Refer to  the section 
+	&quot;<a href="http://docs.oracle.com/database/timesten-18.1/e61193/ovwreqts.htm#TTINS178" target="_blank" class="doclink">Environment variables</a>&quot; 
+	in the Oracle TimesTen In-Memory Database Installation Guide for more information.</p>
+</li><br/>
+<li>
+	<p>Enter <span class="codetext">ttisql</span> at the OS command prompt to launch <span class="codetext">ttIsql</span>.
+    <p class="codetext">ttisql</p>
+</li><br/>
+<li>
+	<p>Enter the following command at the <span class="codetext">ttIsql</span> command prompt to connect to the database.</p>
+	<p><span class="codetext">connect &quot;dsn=sampledb&quot;;</span></p>
+	<p>When the command returns, the <span class="codetext">sampledb</span> database
+	has been created and loaded into  memory.</p>
+	<p><img class="cmdscnshot" src="../images/db_ops_createdb_connect_db.gif"/></p>
+</li><br/>
+<li>
+	<p>Enter the following command to change the RamPolicy from the default  <span class="codetext">InUse</span> to <span class="codetext">Manual</span>.
+    <p class="codetext">host ttAdmin -ramPolicy manual;</p>
+    	<p><img class="cmdscnshot" src="../images/db_ops_createdb_manual.gif"/></p>
+    For more information, please refer to <a href="db_ops_startdb.html">RAM Policy Setting</a> section.
+</li><br/>
+</ol></blockquote>
+<p>&nbsp;</p>
+</div>
+
+<div id="footer"/>
+</body>
+</html>

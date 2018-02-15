@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TimesTen ODBC Sample Programs</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">ODBC Sample Programs</span>
+<p class="normal">This page provides a set of ODBC sample programs that demonstrate how to work with  Oracle TimesTen In-Memory Database and Oracle TimesTen Application-Tier Database Cache (TimesTen Cache). </p>
+<p class="normal">The following ODBC sample programs are available in the <span class="codetext">quickstart/classic/sample_code/odbc</span> directory.</p>
+<table width="760" border="1">
+  <tr class="table-header">
+    <td width="110" valign="top" class="normal-bold">&nbsp;&nbsp;<span class="table-header">Program</span></td>
+    <td width="634" valign="top" class="normal"><span class="table-header"><strong>Description</strong></span></td>
+  </tr>
+  <tr>
+    <td height="58" valign="top" class="codetext"><div align="left"><span class="style120"><a href="../../../sample_code/odbc/bulkinsert.c" class="codetext">&nbsp;&nbsp;bulkinsert.c</a></em></span></div></td>
+    <td valign="top" class="normal">This program implements and measures time needed to insert many rows into a table. Parameters allow you to specify whether there are indexes on the table and whether statistics should be computed after doing the inserts. You can also specify insertion of the rows in batches to achieve better performance.</td>
+  </tr>
+  <tr>
+    <td height="149" valign="top" bgcolor="F6F6F6" class="codetext"><div align="left"><a href="../../../sample_code/odbc/plsqlODBC.c"><em>&nbsp;&nbsp;plsqlODBC.c</em></a></div></td>
+    <td valign="top" bgcolor="F6F6F6" class="normal">This sample program uses ODBC to access common PL/SQL packages (emp_pkg and sample_pkg) in four different ways:<br />
+      <br />
+      - Calls a stored procedure with IN and OUT parameters<br />
+      - Calls a stored function with IN and OUT parameters<br />
+      - Calls an anonymous block and passes host variables into and out of the block<br />
+      - Calls a store procedure to open a ref cursor and uses ODBC to process the result-set of the ref cursor
+      <br />
+      <br />
+    The EMP table and the emp_pkg and sample_pkg PL/SQL packages need to exist for this program to work.</td>
+  </tr>  
+  <tr >
+    <td height="104" valign="top" class="codetext"><div align="left"><em><a href="../../../sample_code/odbc/tpcb.c">&nbsp;&nbsp;tpcb.c</a></em></div></td>
+    <td valign="top" class="normal">This program implements a TPCB-like workload benchmark. The code populates the <span class="style121">ACCOUNTS</span>, <span class="style121">BRANCHES</span>, and <span class="style121">TELLERS</span>  tables. It then executes a modified version of the TPCB benchmark, performing 25,000 transactions. <br />
+      <br />
+    Each transaction updates the balance in the <span class="style121">ACCOUNTS</span>, <span class="style121">BRANCHES</span> and TELLERS tables, fetches the new balance from the <span class="style121">ACCOUNTS </span> table, and appends a record to the <span class="style121">HISTORY </span> table. At termination, it prints the measured  performance.</td>
+  </tr>
+  <tr>
+    <td height="209" valign="top" bgcolor="#F6F6F6" class="codetext"><div align="left"><em><a href="../../../sample_code/odbc/tptbm.c">&nbsp;&nbsp;tptbm.c</a></em></div></td>
+    <td valign="top" bgcolor="#F6F6F6" class="normal">This program implements a multi-user throughput benchmark. By default, the transaction mix consists of 80% <span class="style121">SELECT</span> (read) transactions and 20% <span class="style121">UPDATE</span> (write) transactions. In addition to <span class="style121">SELECTs</span> and <span class="style121">UPDATEs</span>, <span class="style121">INSERTs</span> can also be included in the transaction mix. The ratio of <span class="style121">SELECTs</span>, <span class="style121">UPDATEs</span> and <span class="style121">INSERTs</span> is specified at the command line. Each transaction consists of one or more SQL operations.<br/>
+      <br/>
+      The benchmark initially populates the data store, and then executes the transaction mix on it. The number of rows inserted as part of the transaction mix cannot exceed the number of rows with which the database is populated initially.<br/><br/>
+      The measurement error for the benchmark is at most 2 seconds. This will be negligible at loads with a duration in excess of 200 seconds. A suggested load for the benchmark is one which lasts at least 600 seconds.<br/><br/>
+    The schema for this test  is described in the program source file <span class="codetext">tptbm.c</span>.</td>
+  </tr>
+  <tr>
+    <td height="56" valign="top" class="codetext"><div align="left"><em><a href="../../../sample_code/odbc/wiscbm.c">&nbsp;&nbsp;wiscbm.c</a></em></div></td>
+    <td valign="top" class="normal">This program implements and measures  a subset of queries from the Wisconsin benchmark. It will run about 30 queries, the first batch without indexes and the second batch with indexes. When finished, a report of the response time per query is generated.</td>
+  </tr>
+  <tr>
+    <td height="138" valign="top" bgcolor="#F6F6F6" class="codetext"><div align="left"><a href="../../../sample_code/odbc/xla/xlaSimple.c"><em>&nbsp;&nbsp;xlaSimple.c</em></a></div></td>
+    <td valign="top" bgcolor="#F6F6F6" class="normal">This particular ODBC sample program is available in the <span class="codetext">quickstart/classic/sample_code/odbc/xla</span> directory.<br />
+	<br />
+	This program demonstrates the usage of the TimesTen Transaction Log  API (XLA) for  C developers using ODBC. This program requires a user with XLA privilege to subscribe to changes in the database.<br />
+      <br />
+This program subscribes to the table APPUSER.MYDATA in the sampledb database. 
+      If running the program without any parameters, the program uses the default <span class="codetext">xlauser</span> (created in the build_sampledb script). <br />
+      <br />
+To generate changes to the APPUSER.MYDATA, use ttIsql to connect to sampledb under <span class="codetext">appuser</span>.  Then execute database transactions on MYDATA.</td>
+  </tr>
+
+</table>
+<p class="section1">Compile and Run</p>
+<p>Click <a href="howto_odbc.html" class="compilerun">here</a> to learn how to compile and run the sample programs on your installed platform.</p>
+<p class="normal">For more information on how to use  ODBC to develop database programs for the TimesTen database, see the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61199/toc.htm" target="_blank" class="doclink"><em>TimesTen C Developer's Guide</em></font></a>. </p>
+<p class="normal">&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

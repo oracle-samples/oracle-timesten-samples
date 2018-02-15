@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Removing Cache Groups from a Cache Database</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Removing Cache Groups from a Cache Database</span>
+<p >The steps below show how you can remove cache groups from the cache database  <span class="codetext">cachedb1_1211</span>.</p>
+<p>The steps in this example must be performed as the cache manager user in the cache database. 
+Log in to <span class="codetext">ttIsql</span> as the cache manager user  <em>cacheadm</em>, 
+passing in both the TimesTen and Oracle  passwords.</p>
+<blockquote><p class="codetext">ttisql</p>
+<p class="codetext">connect &quot;dsn=cachedb1_1211; uid=cacheadm; pwd=cacheadm; oraclepwd=cacheadm&quot;;</p></blockquote>
+<br/>
+
+ 
+
+<p class="section1">1. Stop the Replication Agent</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Use the built-in procedure 
+	  <span class="doclink">ttRepStop</span>  
+	to stop the replication agent, if it has not already been stopped.</p>
+	<p class="codetext">call ttrepstop; </p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1"> 2. Remove the Cache Groups</p>
+<p>The example below shows how you can remove the two cache groups that were created in the earlier section.</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Enter the following  <span class="doclink">DROP CACHE GROUP</span> 
+	statements in <span class="codetext">ttIsql,</span> to remove the cache groups <span class="codetext">cacheadm.d_awt</span> and 
+	<span class="codetext">cacheadm.ro</span>, and their corresponding cache tables.</p>
+    <p class="codetext">drop cache group d_awt; <br />
+      drop cache group ro; </p>
+</li><br/>
+<li>
+	<p>Use the <span class="codetext">ttIsql</span> command 
+	  <span class="doclink">cachegroups</span>  
+	to verify the removal of both cache groups from the cache database. </p>
+	<p class="codetext">cachegroups;</p>
+	<p><img class="cmdscnshot" src="../images/cg_create_cg_drop_ttisql_cachegroups.gif" alt="cachegroups after drop"/></p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1"> 3. Stop the Cache Agent </p>
+<blockquote ><ol type=a>
+<li>
+	<p>Use the built-in procedure ttCacheStop
+	to stop the cache agent process.</p>
+	<p class="codetext">call ttcachestop; </p>
+</li><br/>
+</ol></blockquote>
+
+ 
+<p >&nbsp;
+
+For more information on removing cache groups from a cache database, refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61196/cleanup.htm#TTCAC328" target="_blank" class="doclink">here</a> </p>
+<p >&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

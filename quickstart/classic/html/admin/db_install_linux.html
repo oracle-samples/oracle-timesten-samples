@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Installing TimesTen Database on Linux and UNIX systems</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Installing TimesTen Database on Linux and UNIX systems </span>
+<p>This tutorial provides a step-by-step guide on how to install TimesTen databaes on Linux and UNIX systems.<br />
+  Before installing TimesTen, ensure the <a href="http://docs.oracle.com/database/timesten-18.1/e61193/instlunix.htm#TTINS163" target="_blank" class="doclink">appropriate requirements </a> are met for your operating system.</p> 
+<br/>
+ <span class="section1"> 1. Installing TimesTen Database on Linux and UNIX systems</span></dt>
+
+ <p>To install TimesTen on your Linux and UNIX system, use the following steps:<br />
+
+  <ol type=a>
+  <li>
+    <p><b>   Download the  TimesTen Database Distribution Medium from<a href="https://edelivery.oracle.com/"> Oracle Software Delivery Cloud </a>or <a href="http://www.oracle.com/technetwork/database/database-technologies/timesten/downloads/index.html"> OTN </a></b>  
+    <p><b>Note:</b> In this tutorial,we will download the <span class="codetext">timesten181110.server.linux8664.tar.gz</span> file under <span class="codetext">/tmp</span> directory.</li>
+  <li><b>   Create  TimesTen Installation Administrator and  an Installation Directory<br />
+    <br />
+  </b><b>Note:</b> The user that installs TimesTen is the installation administrator. In this example, the installation administrator is <span class="codetext">timesten</span> who owns the installation directory under <span class="codetext">/home/timesten/install</span> directory. <br />
+     <br />        
+  </li>
+   <li> <b> Extract the TimesTen Distribution Medium</b></p> 
+      </span><span class="codetext">$ tar -zvxf /tmp/timesten181110.server.linux8664.tar.gz -C /home/timesten/install</span>
+      <p> <b> Note:</b> On Linux and UNIX systems, after extracting the TimesTen Distribution Medium, an Installation is created. A TimesTen installation is read-only which means only the TimesTen installation administrator can make changes to an Installation. <br/>
+       <br/>
+    </p></li>
+  </ol>
+  </blockquote>
+<span class="section1"> 2. Creating a TimesTen Instance</span><br/>
+<p>  To create a TimesTen instance on your Linux and UNIX system, use the following steps:</p>
+<ol type=a>
+  <li><b> Instance Administrator</b><br />
+    <br />
+    <b>Note:</b> The user that creates TimesTen instance is the instance administrator. In this example, we will use the  OS user <span class="codetext">timesten</span> as both the installation and instance administrator who owns the  Instance Home under  <span class="codetext">/home/timesten/install/tt18.1.1.1.0</span> directory. <br />
+    <br /></li>
+   <li>
+    <b> Create an Instance</b><br />
+    <br />
+      <span class="codetext">$ cd /home/timesten/install/tt18.1.1.1.0/bin</span><br />
+    <span class="codetext">$ ./ttInstanceCreate </span></p>
+    <p>You should follow the instructions and response to the prompt:</p>
+  <p> Please choose an instance name for this installation? [ tt181 ]<span class="codetext"> tt181 </span></p>
+  <p> Instance name will be 'tt181'.<br />
+Is this correct? [ yes ]<span class="codetext"> yes </span></p>
+  <p>Where would you like to install the tt181 instance of TimesTen? [ /home/timesten ]<span class="codetext"> /home/timesten/instance </span><br />
+    <br />
+    The directory /home/timesten/instance does not exist.    <br />
+    Do you want to create it? [ yes ] <span class="codetext"> yes </span> <br />
+      <br />
+    The default port number is 6624.
+    <br />
+    Do you want to use the default port number for the TimesTen daemon? [ yes ]<span class="codetext"> yes </span></p>
+  
+  <p>Please enter a value for TNS_ADMIN (s=skip)? [  ] <span class="codetext">  s </span></p>
+  <p>What is the TCP/IP port number that you want the TimesTen Server to listen on? [ 6625 ]<span class="codetext"> 6625 </span> </p>
+  <p>Would you like to use TimesTen Replication with Oracle Clusterware? [ no ]<span class="codetext"> no </span>  <br />
+    <br />
+    <b>Note:</b> Now, the TimesTen instance is created.</p></li>
+   <li>
+  <p><b> Set the Instance Environment Variables</b></p>
+  <p> <span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh</span><br />
+    <br />
+    <b>Note:</b> The  <span class="codetext"><a href="http://docs.oracle.com/database/timesten-18.1/e61193/ovwreqts.htm#TTINS179" target="_blank" class="doclink">ttenv.* </a></span>script will set TimesTen Instance environment  including the Instance Home directory environment variable - <span class="codetext">TIMESTEN_HOME</span>  .
+   If you want to change the configuration of the instance created, please execute <span class="codetext">ttInstanceModify </span> command.  <br />
+  <li><p><b> Verify the Instance Status</b></p>
+    <span class="codetext">$ ttStatus </span></p>
+    <p><b>Note:</b> To confirm that the instance has been created correctly, check whether the database daemon
+and processes are running by entering the <span class="codetext">ttStatus </span> command.<br />
+  </p>
+  
+  </ol> 
+<p class="normal">&nbsp;</p>  
+  <p class="normal">Click  <a href="db_ops.html" class="compilerun">here</a> to learn how to configure and setup TimesTen database.</p>
+<p class="normal">For more information on Oracle TimesTen Database Installation, refer to the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61193/toc.htm" target="_blank" class="doclink">TimesTen In-Memory Database Installation Guide</font></a>. </p>
+<p class="normal">&nbsp;</p>
+<p class="normal">&nbsp;</p>  
+</div>
+
+<div id="footer"/>
+</body>
+</html>

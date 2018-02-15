@@ -1,0 +1,161 @@
+
+<project name="tptbmas-jboss6" default="run" basedir=".">
+
+    <property file="build.properties"/>
+
+    <property name="src.dir"   value="${basedir}/src"/>
+    <property name="metainf.dir"   value="${src.dir}/META-INF"/>
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="dist.dir" value="${basedir}/dist"/>
+
+
+    <!-- The classpath for running the client -->
+    <path id="client.classpath">
+        <fileset dir="${jboss.home.dir}/bin/client">
+            <include name="**/jboss-client.jar"/>
+        </fileset>
+    </path>
+
+
+    <!-- The build classpath requires the Hibernate jar files -->
+    <path id="build.classpath">
+        <path refid="client.classpath"/>
+        <pathelement location="${build.dir}"/>
+        <fileset dir="${jboss.home.dir}/modules/system/layers/base/org/hibernate/main">
+            <include name="**/hibernate*.jar"/>
+        </fileset>        
+        <fileset dir="${jboss.home.dir}/modules/system/layers/base/javax/persistence/api/main">
+            <include name="**/hibernate*.jar"/>
+        </fileset>
+    </path>
+
+
+    <!-- Initialize the build -->
+    <target name="prepare">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+
+
+    <!-- Compile  -->
+    <target name="compile" depends="prepare">
+        <javac destdir="${build.dir}" classpathref="build.classpath"
+               includes="**/ASClient.java **/CommonClient.java **/Tptbm*.java 
+                  **/TimesTenDialect1122.java">
+            <src path="${src.dir}" />
+            <src path="${basedir}/config/hibernate4" />
+        </javac>
+    </target>
+    
+    
+    <!-- Package the ejb jar and the client jar -->
+    <target name="package" depends="compile">
+    
+      <copy file="${metainf.dir}/persistence-jboss6.xml" 
+        tofile="${build.dir}/persistence.xml" overwrite="true"/>  
+       
+       <jar destfile="${dist.dir}/tptbmas-ejb3.jar" basedir="${build.dir}"
+         includes="**/Tptbm*.class **/TimesTenDialect1122.class">
+            <metainf dir="${build.dir}" includes="persistence.xml"/>
+       </jar>
+              
+      <delete file="${build.dir}/persistence.xml"/>      
+      
+      <jar destfile="${dist.dir}/tptbmas-ejb3-client.jar"
+          includes="**/ASClient.class **/CommonClient.class **/Tptbm.class 
+            **/TptbmPKey.class **/TptbmSession.class">
+
+          
+          <manifest>
+              <attribute name="Main-Class" 
+                value="com.timesten.tptbmas.ASClient"/>
+          </manifest>
+
+          <fileset dir="${build.dir}"/>
+      </jar>
+  
+    </target>
+    
+    <!-- Deploy the jar to the JBoss server -->
+    <target name="deploy" depends="package">
+        <copy file="${dist.dir}/tptbmas-ejb3.jar" todir="${jboss.deploy.dir}"/>
+    </target>
+
+    <!-- Run the client  -->
+    <target name="run">
+        <java classname="com.timesten.tptbmas.ASClient" fork="yes">
+
+        <!-- J2EE client JNDI lookup system properties -->
+        <jvmarg value="-Djava.naming.provider.url=remote://${jboss.host}:${jboss.port}"/>
+
+        <jvmarg value="-Djava.naming.factory.initial=org.jboss.naming.remote.client.InitialContextFactory"/>
+        <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.ejb.client.naming"/>
+ 
+        <jvmarg value="-Djboss.naming.client.ejb.context=true"/>
+        <jvmarg value="-Dj2ee.clientName=ASClient"/>
+
+             <!-- the JNDI context lookup string for the Tptbm session interface -->
+            <arg value="-sessionLookup"/>
+            <arg value="ejb:/tptbmas-ejb3//TptbmSessionBean!com.timesten.tptbmas.TptbmSession"/>
+
+            <!-- the number of rows squared to initially populate the TPTBM
+                 table with, for example, if -keyCount is specified as 100 then
+                 the TPTBM table will contain 100^2 = 10000 rows when the
+                 benchmark starts -->
+            <arg value="-keyCount"/>
+            <arg value="${tptbmas.arg.keycount}"/>
+
+            <!-- the number of transactions to execute per thread during the
+                 benchmark run -->
+            <arg value="-numXacts"/>
+            <arg value="${tptbmas.arg.numxacts}"/>
+
+            <!-- the number of concurrently executing threads during the
+                 benchmark run -->
+            <arg value="-numThreads"/>
+            <arg value="${tptbmas.arg.numthreads}"/>
+
+            <!-- the transaction mix of read, update and insert operations
+                 during the benchmark run - the update operation percent is
+                 not specified on the command line - it is calculated as:
+                 %update = 100 - (%read + %insert) -->
+            <arg value="-percentReads"/>
+            <arg value="${tptbmas.arg.percentreads}"/>
+
+            <arg value="-percentInserts"/>
+            <arg value="${tptbmas.arg.percentinserts}"/>
+
+            <!-- if -seed is not specified then the random number seed
+                 is based on the system time -->
+            <arg value="-seed"/>
+            <arg value="${tptbmas.arg.seed}"/>
+
+
+            <!-- if -quiet is not specified then the primary key values
+                 of all Tptbm objects manipulated by the program are printed -->
+            <arg value="-quiet"/>
+
+            <!-- if -debug is specified then the state of all Tptbm objects
+                 manipulated by the program is printed -->
+            <!-- <arg value="-debug"/> -->
+
+            <classpath>
+                <pathelement location="${dist.dir}/tptbmas-ejb3-client.jar"/>
+                <pathelement location="${basedir}/config/jbosseap6"/>
+                <path refid="client.classpath"/>
+            </classpath>
+
+        </java>
+    </target>
+
+
+    <!-- Clean -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+</project>
+
+

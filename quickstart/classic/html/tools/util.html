@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TimesTen Utilities and Built-In Procedures</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">TimesTen Utilities and Built-In Procedures</span>
+<p >In addition to providing standard relational SQL functionality available through a number of 
+programming interfaces (JDBC, ODBC, OCI, Pro*C, PL/SQL), the TimesTen product provides a large set of built-in procedures 
+that are callable programmatically from  applications, and a set of utilities for operating and managing the TimesTen databases.</p>
+
+<p class="section1">Commonly Used TimesTen Utilities</p>
+<p >To help you get started, the table below shows a number of utilities commonly used by system administrators on TimesTen:</p>
+<table width="700" border="1">
+<tr valign="top" class="r0">
+	<th width="150" class="table-header" align="center">Utility</th>
+    <th width="550" class="table-header" align="center">Description</th>
+</tr>
+<tr valign="top" class="r1">
+    <td class="codetext">&nbsp;&nbsp;<a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF342" target="_blank" class="doclink">ttIsql</a></td>
+    <td ><span class="codetext">ttIsql</span></a> is a robust and powerful  interactive SQL command-line utility 
+	that enables you to connect to the TimesTen  database and execute SQL statements and PL/SQL blocks/functions/procedures. 
+	In addition, <span class="codetext">ttIsql</span> provides a very large set of features  for any system administrator 
+	working with a TimesTen system. A subset of its capabilities include:<br/>
+	<ul>
+		<li>Execute  SQL DDLs, SQL DMLs, and PL/SQL statements</li>
+		<li>Perform admin tasks like create users, grant/revoke privileges, start/stop replication and cache agents</li>
+		<li>Execute  TimesTen built-in procedures</li>
+		<li>Invoke  OS host commands without leaving ttIsql</li>
+		<li>Explain a SQL query plan</li>
+		<li>Display  information in the  System Monitor table to monitor performance matrix of your choice</li>
+	</ul>
+	</td>
+</tr>
+<tr class="r0">
+	<td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF321" target="_blank" class="doclink">ttAdmin</a></td>
+    <td valign="top" ><span class="codetext">ttAdmin</span></a> enables a system administrator to control the 
+	RAM policy for loading/unloading a TimesTen database, or the policy for automatic or manual restart of the 
+	TimesTen replication agent and cache agent processes</td>
+</tr>
+<tr class="r1">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF323" target="_blank" class="doclink">ttBackup</a></td>
+    <td valign="top" ><span class="codetext">ttBackup</span> allows a system administrator to create a backup copy of the TimesTen database. 
+	Both full backup and incremental backup are supported.</td>
+</tr>
+<tr class="r0">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF337" target="_blank" class="doclink">ttDaemonAdmin</a></td>
+    <td valign="top" ><em>ttDaemonAdmin</em> is used to start and stop the TimesTen daemon process. 
+	Before stopping the daemon process, it's important to disconnect all application connections to the TimesTen database 
+	in order to have a graceful shutdown. If you stop the daemon process when there are existing connections, 
+	the database will be aborted without performing the final checkpoint operation. When you later restart the database, 
+	the first connection will need to  go through a recovery process to recover the  transactions 
+	that did not make it to the last checkpoint file. A restart with the recovery process takes longer than a restart from a graceful shutdown. </td>
+</tr>
+<tr class="r1">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF353" target="_blank" class="doclink">ttRepAdmin</a></td>
+    <td valign="top" ><span class="codetext">ttRepAdmin</span></a> enables a system administrator to perform operations 
+	such as duplicating a TimesTen database, setting subscriber attributes and operations, monitoring replication status, etc.</td>
+</tr>
+<tr class="r0">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF363" target="_blank" class="doclink">ttRestore</a></td>
+    <td valign="top" ><span class="codetext">ttRestore</span> allows a system administrator to create a TimesTen database 
+	from the backup file of a <span class="codetext">ttBackup</span> operation.</td>
+</tr>
+<tr class="r1">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF369" target="_blank" class="doclink">ttSize</a></td>
+    <td valign="top" ><span class="codetext">ttSize</span> estimates the amount of space that a given table, including any views will consume. 
+	It can be used on existing tables or to estimate table sizes when creating tables. If no owner is specified, 
+	the size information is printed for all tables of the given name. The size information includes 
+	space occupied by any indexes defined on the table.</td>
+</tr>
+<tr class="r0">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF370" target="_blank" class="doclink">ttStatus</a></td>
+    <td valign="top" ><span class="codetext">ttStatus</span> displays  information for the current state of a TimesTen installation, 
+	including the state of the TimesTen system processes, names of all existing TimesTen databases, number of user connections, 
+	status of the replication and cache agents, etc.</td>
+</tr>
+<tr class="r1">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF376" target="_blank" class="doclink">ttXactAdmin</a></td>
+    <td valign="top" ><span class="codetext">ttXactAdmin</span> lists ownership, status, log and lock information for each outstanding transaction. This  utility also allows you to   heuristically commit, abort or forget an XA transaction branch.</td>
+</tr>
+<tr class="r0">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF802" target="_blank" class="doclink">ttStats</a></td>
+    <td valign="top" ><span class="codetext">ttStats</span> captures real-time system statistics. It can be used to monitor and collect critical TimesTen metrics and display them in a readable format on the command line, or to generate comparisons (reports) of the conditions of a database at two periods of time (snapshots), rendered as an html file.</td>
+</tr>
+</table>
+<p>Click <a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF316" target="_blank" class="doclink" ><u>here</u></a> for a complete list of  
+TimesTen utilities.</p>
+<p >&nbsp;</p>
+
+<p><span class="section1">Commonly used TimesTen Built-in Procedures</span></p>
+<p>The table below shows a number of commonly used built-in procedures for system administration:</p>
+<table width="700" border="1">
+<tr valign="top" class="r0">
+    <th width="150" class="table-header" align="center">Built-in Procedures</th>
+    <th width="550" class="table-header" align="center">Description</th>
+</tr>
+<tr class="r1">
+    <td  valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF234" target="_blank" class="doclink">ttCacheStart</a></td>
+    <td valign="top" ><span class="codetext">ttCacheStart</span>  starts the TimesTen cache agent responsible for  
+	caching operations and data synchronization between the TimesTen in-memory cache database and the Oracle database.</td>
+</tr>
+<tr class="r0">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF244" target="_blank" class="doclink">ttConfiguration</a></td>
+    <td valign="top" ><span class="codetext">ttConfiguration</span> returns the attribute values for the 
+	current connection to the TimesTen database.</td>
+</tr>
+<tr class="r1">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF246" target="_blank" class="doclink">ttDataStoreStatus</a></td>
+    <td valign="top" ><span class="codetext">ttDataStoreStatus</span> returns the list of processes 
+	connected to the TimesTen database specified. If the "datastore" parameter is null, the procedure returns connections for active databases. </td>
+</tr>
+<tr class="r0">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF277" target="_blank" class="doclink">ttOptUpdateStats</a></td>
+    <td valign="top" ><span class="codetext">ttOptUpdateStats</span> updates the statistics for the specified table. 
+	The optimizer relies on updated statistics to select the optimum path for SQL processing. 
+	For best performance, please update statistics regularly, particularly if the table content changes significantly. </td>
+</tr>
+<tr class="r1">
+    <td valign="top" class="codetext">&nbsp;&nbsp; <a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF281" target="_blank" class="doclink">ttRamPolicySet</a></td>
+    <td valign="top" ><span class="codetext">ttRamPolicySet</span> sets the policy for loading/unloading of the TimesTen database into RAM. 
+	For example, if you want to keep the database in memory at all time, you would set the ramPolicy to 
+	<span class="codetext">"always"</span>.</td>
+</tr>
+
+</table>
+<p>Click <a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF213" target="_blank" class="doclink" ><u>here</u></a> 
+for a complete list of TimesTen built-in procedures.</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

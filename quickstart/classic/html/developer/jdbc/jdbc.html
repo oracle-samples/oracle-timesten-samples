@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TimesTen JDBC Sample Programs</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">JDBC Sample Programs</span>
+<p class="normal"><strong>JDBC </strong>is an industry standard Java API for SQL query and data management.  This page provides a set of  sample programs using  JDBC  to access  the Oracle TimesTen in-memory database. See the Oracle TimesTen In-Memory Database Installation Guide for supported JDK versions.</p>
+<table width="760" border="1">
+  <tr>
+    <td width="150" valign="top" class="table-header">&nbsp;&nbsp;<span class="table_header">Program</span></td>
+    <td width="594" valign="top" class="table-header"><span class="table_header"><strong>Description</strong></span></td>
+  </tr>
+  <tr>
+    <td height="186" valign="top" class="style122">&nbsp;<a href="../../../sample_code/jdbc/asyncJMS.java" class="codetext">asyncJMS.java</a>&nbsp;</td>
+    <td valign="top" class="normal"><p>This program uses the TimesTen JMS/XLA implementation to process   messages:<br />
+      <br />
+      a) Connect to the database as an XLA user<br />
+      b) Listen to committed   changes to the CUSTOMER table<br />
+      c) Use a JMS Subscriber<br />
+      d) ASYNCHRONOUSLY   receive messages via onMessage() and a JMS MessageListener<br />
+      e) Display the   change records to the console<br />
+      f) Disconnect from the database when the used   enters CTRL-C</p>
+    Either the level1 - level4 JDBC programs or ttIsql can be used to apply committed changes to the CUSTOMER table.</td>
+  </tr>  
+  <tr>
+    <td height="119" valign="top" bgcolor="#F6F6F6" class="style122">&nbsp;<a href="../../../sample_code/jdbc/level1.java" class="codetext">level1.java</a>&nbsp;</td>
+    <td valign="top" bgcolor="#F6F6F6" class="normal">This program uses the TimesTen JDBC DriverManager interface   to show  basic operations on a TimesTen database: <br />
+      a) Connect using the<span class="codetext"> com.timesten.jdbc.timesTenDriver</span> interface<br />
+      b) Insert into the CUSTOMER table all the data read from input file <span class="codetext"><em>input1.dat</em></span> file<br />
+      c) Call ttOptUpdateStats to update statistics<br />
+      d) SELECT   from the CUSTOMER table, fetch, and print the result set to stdout<br />
+    e) Disconnect from the database</td>
+  </tr>
+  <tr >
+    <td height="146" valign="top"  class="style122">&nbsp;<a href="../../../sample_code/jdbc/level2.java" class="codetext">level2.java</a>&nbsp;</td>
+    <td valign="top"  class="normal">This program uses the TimesTen DataSource interface to show  basic operations on a TimesTen database: <br />
+      a) Connect using the <span class="codetext">TimesTenDataSource</span> interface<br />
+      b) Insert all the data read from the <span class="codetext"><em>input2.dat</em></span> file located in the <span class="codetext">datfiles</span> subdirectory<br />
+      c) Call ttOptUpdateStats to update statistics<br />
+      d) DELETE duplicate product data from the PRODUCT table<br />
+      e) Update the PRODUCT table by increasing the product price by 10% <br />
+      f) SELECT the data from the PRODUCT table, fetch and print the result set to stdout; and <br />
+    g) Disconnect from the database</td>
+  </tr>
+  <tr>
+    <td height="118" valign="top" bgcolor="#F6F6F6" class="style122">&nbsp;<a href="../../../sample_code/jdbc/level3.java" class="codetext">level3.java</a>&nbsp;</td>
+    <td valign="top" bgcolor="#F6F6F6" class="normal">This program uses the TimesTen JDBC driver to perform order processing operations: <br />
+      a) Connect to the database using the <span class="codetext">TimesTenDataSource</span> interface<br />
+      b) Process all orders in the i<span class="codetext">nput3.dat</span> file by inserting into the ORDERS and ORDER_ITEM tables, select from the Inventory table to check available quantity, and update the INVENTORY table to debit the quantity from the order. If there is not enough quantity in the inventory, the program rolls back the transaction and issues the message. <br />
+    c) Disconnect from the database.</td>
+  </tr>
+  <tr >
+    <td height="40" valign="top" class="style122">&nbsp;<a href="../../../sample_code/jdbc/level4.java" class="codetext">level4.java</a>&nbsp;</td>
+    <td valign="top" class="normal">This program is the multi-threaded version of the <span class="codetext">level3.java</span> program. This program uses multiple threads to increase the application throughput. <br />
+    </td>
+  </tr>
+   <tr>
+    <td height="162" valign="top" bgcolor="#F6F6F6" class="normal">&nbsp;&nbsp;<a href="../../../sample_code/jdbc/plsqlJDBC.java" class="codetext">plsqlJDBC.java</a></td>
+    <td valign="top" bgcolor="#F6F6F6" class="normal"><p>This sample program uses JDBC to access common PL/SQL packages (emp_pkg and sample_pkg) in four different ways:<br />
+      <br />
+      - Calls a stored procedure with IN and OUT parameters<br />
+        - Calls a stored function with IN and OUT parameters<br />
+        - Calls an anonymous block and passes host variables into and out of the block<br />
+        - Calls a store procedure to open a ref cursor and uses JDBC to process the result-set of the ref cursor</p>
+      <p>The EMP table and the emp_pkg and sample_pkg PL/SQL packages need to exist for this program to work.</p>
+      <p><br />
+     </p></td>
+  </tr>
+  
+   <tr>
+    <td height="176" valign="top" class="normal">&nbsp;&nbsp;<a href="../../../sample_code/jdbc/syncJMS.java" class="codetext">syncJMS.java</a></td>
+    <td valign="top" class="normal"><p>This program uses the TimesTen JMS/XLA implementation to process   messages:<br />
+      <br />
+      a) Connects to the database as an XLA user<br />
+      b) Listen to   committed changes for ANY table (defaults to the appuser.customer table).<br />
+      c)   Use a JMS Subscriber<br />
+      d) SYNCHRONOUSLY receive messages via the receive method   in the get routine.<br />
+      e) Display the change records to the console<br />
+      f)   Disconnect from the database when the used enters CTRL-C</p>
+    Either the level1 -   level4 JDBC programs or ttIsql can be used to apply   committed changes to the CUSTOMER, PRODUCT, ORDERS, ORDER_ITEM and INVENTORY   tables<br /></td>
+  </tr>  
+  
+ 
+  <tr bgcolor="#F6F6F6">
+    <td height="234" valign="top" class="normal">&nbsp;&nbsp;<a href="../../../sample_code/jdbc/Tptbm.java" class="codetext">Tptbm.java</a></td>
+    <td valign="top" class="normal">This program implements a multi-user throughput benchmark. By default, the transaction mix consists of 80% <span class="style123">SELECT</span> (read) transactions and 20% <span class="style123">UPDATE</span> (write) transactions. In addition to <span class="style123">SELECTs</span> and <span class="style123">UPDATEs</span>, <span class="style123">INSERTs</span> can also be included in the transaction mix. The ratio of <span class="style123">SELECTs</span>, <span class="style123">UPDATEs</span> and <span class="style123">INSERTs</span> is specified at the command line. Each transaction consists of one or more SQL operations.
+        <p>The benchmark initially populates the data store, and then executes the transaction mix on it. The number of tuples inserted as part of the transaction mix cannot exceed the number of tuples with which the database is populated initially.</p>
+      The measurement error for the benchmark is at most 2 seconds. This will be negligible at loads with a duration in excess of 200 seconds. A suggested load for the benchmark is one that lasts at least 600 seconds.
+      <br />
+      <br />
+    The schema for this test is described in the program source file <span class="codetext">tptbm.java</span>.</td>
+  </tr> 
+
+  <tr>
+    <td height="100" valign="top" class="style122">&nbsp;<a href="../../../sample_code/jdbc/TTJdbcExamples.java" class="codetext">TTJdbcExamples.java</a>&nbsp;</td>
+    <td valign="top" class="normal">This program demonstrates the following operations using the TimesTen JDBC DriverManager interface to:<br />
+      a) Connect and disconnect<br />
+      b) 
+      Perform some DDL and DML operations: create table, create index, prepare statements, insert into and select from a table<br />
+      c) Make changes to influence the query plan<br />
+      d) Execute batch updates</td>
+  </tr>
+ 
+</table>
+<p class="normal">The above JDBC sample programs are available in the <span class="style111"><em>quickstart/classic/sample_code/jdbc</em></span> directory.</p>
+
+<p class="section1">Compile and Run</p>
+<p class="normal">Click <a href="howto_jdbc.html" class="compilerun">here</a> to learn how to compile and run the sample programs on your installed platform.</p>
+<p class="normal">For more information on Java programming with Oracle TimesTen, refer to the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61200/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database Java Developer's Guide</font></a>. </p>
+<p class="normal">&nbsp;</p>
+<p class="normal">&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

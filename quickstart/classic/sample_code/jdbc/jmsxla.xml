@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<!-- JMS/XLA configuration file                                  -->
+<!-- Contains topic definitions                                  -->
+
+<!-- Each topic consists of a name, a JDBC connection string,    -->
+<!-- and a prefetch value, which is the number of updates that   -->
+<!-- will be retrieved at a time.                                -->
+
+<!-- Use built-in procedures to administer XLA bookmarks -->
+
+<xlaconfig>
+
+  <topics>
+
+    <!-- default topic for asyncJMS demo -->
+    <topic name="asyncJMS"
+           connectionString="DSN=sampledb" 
+           xlaPrefetch="100"
+    />
+
+    <!-- default topic for syncJMS demo, no tables specified here -->
+    <topic name="syncJMS"
+           connectionString="DSN=sampledb"
+           xlaPrefetch="100"
+    />
+
+    <!-- Alternative topic for asyncJMS or syncJMS demos -->
+    <topic name="foo"
+           connectionString="DSN=sampledb" 
+           xlaPrefetch="20"
+    />
+
+  </topics>
+
+</xlaconfig>

@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jdbc-data-source xmlns="http://xmlns.oracle.com/weblogic/jdbc-data-source" xmlns:sec="http://xmlns.oracle.com/weblogic/security" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.oracle.com/weblogic/jdbc-data-source http://xmlns.oracle.com/weblogic/jdbc-data-source/1.0/jdbc-data-source.xsd">
+  <name>SampledbDirectXADS</name>
+  <jdbc-driver-params>
+    <url>jdbc:timesten:direct:sampledb</url>
+    <driver-name>com.timesten.jdbc.xa.TimesTenXADataSource</driver-name>
+    <properties>
+      <property>
+        <name>user</name>
+        <value>scott</value>
+      </property>
+      <property>
+        <name>password</name>
+        <value>tiger</value>
+      </property>      
+    </properties>
+  </jdbc-driver-params>
+  <jdbc-connection-pool-params>
+    <test-table-name>SQL SELECT 1 from DUAL</test-table-name>
+  </jdbc-connection-pool-params>
+  <jdbc-data-source-params>
+    <jndi-name>jdbc/SampledbDirectXADS</jndi-name>
+    <global-transactions-protocol>TwoPhaseCommit</global-transactions-protocol>
+  </jdbc-data-source-params>
+</jdbc-data-source>

@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Starting and Stopping a TimesTen Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Starting and Stopping a TimesTen Database</span>
+<p >The concept of starting and stopping a TimesTen in-memory database is different from that of a disk-based RDBMS. 
+For TimesTen, a database is ready for use  by an application after the database is loaded into memory. </p>
+
+<p class="section1">Starting TimesTen</p>
+<p >Before you can connect to a TimesTen database, the TimesTen main daemon process needs to be started. 
+Use the <span class="codetext">ttDaemonAdmin</span> 
+utility as shown below:</p>
+<blockquote><p class="codetext">ttDaemonAdmin -start</p></blockquote>
+
+<p class="section1">Database Loading and Unloading</p>
+<p > The very first connection to a TimesTen database triggers the loading of the database to memory. The time it takes to load the database depends on the size of the database and the disk storage speed. The database resides in memory until the last connection disconnects, which automatically unloads the database from memory unless a RAM policy was set to keep the database loaded. The RAM policy setting is explained in the latter part of this section.</p>
+
+<blockquote><p class="codetext">ttIsql 
+&lt;DSN&gt;</p></blockquote>
+
+<p >TimesTen databases are automatically persisted to disk storage using periodic checkpoints to keep snapshots of the database. Checkpoint files are used to load the database to memory. Before unloading a database, a final checkpoint is performed.</p>
+<p ><b>Note:</b> Consider to change the RAM Policy from the default <span class="codetext">InUse</span> to <span class="codetext">Manual</span> to keep database in the RAM in production system.</p>
+<p >To change the RAM Policy from the default <span class="codetext">InUse</span> to <span class="codetext">Manual</span>, use the <span class="codetext">ttAdmin</span> 
+utility as shown below:</p>
+<blockquote><p class="codetext">ttAdmin -ramPolicy 
+manual;</p></blockquote>
+<p >After changing the RAM Policy to <span class="codetext">manual</span>, use the <span class="codetext">ttAdmin</span> 
+utility to load the database:</p>
+<blockquote><p class="codetext">ttAdmin -ramLoad 
+&lt;DSN&gt;</p></blockquote>
+<p>The time it takes to load the database depends on the size of the database and the disk storage speed.  The database resides in memory until manually 
+  unloading the database from memory.  </p>
+<p>To unload the TimesTen database, use the <span class="codetext">ttAdmin</span> 
+utility as shown below: </p>
+<blockquote><p class="codetext">ttAdmin -ramUnload 
+&lt;DSN&gt;</p></blockquote>
+
+
+<p class="section1">Stopping TimesTen</p>
+<p >To gracefully  shutdown  a TimesTen database, disconnect all applications and agent processes from the database, unload the database
+and then execute the following command:</p>
+<blockquote><p class="codetext">ttDaemonAdmin -stop</p></blockquote>
+<p ><b>Note:</b></p>
+<ul>
+	<li>The TimesTen main daemon process manages all databases under the same TimesTen installation. 
+	Be sure to disconnect all connections from all databases before running the above command. </li>
+	<li>If  the  main daemon process is stopped while there are active agent processes, connections and transactions, 
+	the database is invalidated and will require a recovery procedure upon restart. 
+	Recovery of a failed database involves getting data from the checkpoint file and the transaction logs. 
+	Restarting a database that requires recovery takes longer time than restarting from a graceful shutdown. </li>
+</ul>
+<p class="section1">RAM Policy Setting</p>
+<p >TimesTen allows you to specify a RAM policy that determines when the database is loaded and unloaded from main memory. 
+The policy options are:<br />
+<blockquote>
+<dl>
+<br/>
+<dt><span class="codetext">InUse</span>:</dt>
+<dd><b>This is the default policy setting.</b> <br />
+ This policy keeps the database in memory for a &quot;grace period&quot; after the last disconnect which is particularly for development use. 
+	  </dd>
+	<br/>
+	<dt><span class="codetext">Manual</span>:</dt>
+		
+	 <dd> This policy gives the database administrator more control over when the TimesTen database is loaded and unloaded.</dd><br/>
+	
+ 
+	<dt><span class="codetext">Inuse with RamGrace</span>:</dt>
+		<dd>This policy is useful for applications with frequent periods of "idle" time when 
+	  there is no connection to the database at all.</dd>
+	<br/>
+	<dt><span class="codetext">Always</span>:</dt>
+		<dd>This policy keeps the database in memory whenever the server is up or rebooted, 
+		independent of the applications. This policy is useful if you have multiple applications sharing the database.</dd>
+	
+</dl>
+</blockquote>
+</p>
+<!--blockquote>
+<dl>
+	<dt><span class="codetext">InUse</span>:</dt>
+		<dd>Load the database on first connection and unload on last disconnect. This is the default policy.</dd>
+	<br/>
+	<dt><span class="codetext">Inuse with RamGrace</span>:</dt>
+		<dd>Keep the database in memory for a &quot;grace period&quot; after the last disconnect.</dd>
+	<br/>
+	<dt><span class="codetext">Always</span>:</dt>
+		<dd>Keep the database in memory at all times and automatically load the database upon restart of the TimesTen daemon process.</dd>
+	<br/>
+	<dt><span class="codetext">Manual</span>:</dt>
+		<dd>Load and unload the database manually.</dd>
+</dl>
+</blockquote -->
+
+<p>Use the <span class="codetext">ttAdmin</span> utility to set the RAM policy. Refer to the 
+<a href="http://docs.oracle.com/database/timesten-18.1/e61195/using.htm#TTOPR728" target="_blank" class="doclink">documentation on Ram Policy</a> for more details.</p>
+
+<!-- p class="section1">Choosing the RAM policy for your environment</p>
+<p >Depending on your company's operational procedure and application characteristics, 
+you should evaluate which RAM policy option is best for your production environment.</p>
+
+<dl>
+	<dt><span class="codetext">InUse</span>:</dt>
+		<dd>This is the default policy setting and is convenient, particularly for development use. 
+		A disadvantage of  this policy is that the first connection of the application needs to wait for the database to be loaded. 
+		If you have a relatively large database and the application does not always have a connection to the database, 
+		you may incur unnecessary wait time if the database needs to be loaded.</dd>
+	<br/>
+	<dt><span class="codetext">Inuse with RamGrace</span>:</dt>
+		<dd>This policy is useful for applications with frequent periods of "idle" time when 
+		there is no connection to the database at all. Setting a "grace period" to keep the database in memory 
+		can avoid unnecessary load / unload operations. </dd>
+	<br/>
+	<dt><span class="codetext">Always</span>:</dt>
+		<dd>This policy keeps the database in memory whenever the server is up or rebooted, 
+		independent of the applications. This policy is useful if you have multiple applications sharing the database.</dd>
+	<br/>
+	<dt><span class="codetext">Manual</span>:</dt>
+		<dd>This policy gives the database administrator more control over when the TimesTen database is loaded and unloaded. 
+		For enterprise companies where the TimesTen database is managed as part of their operational procedure 
+		to support the TimesTen applications, this policy is commonly used in system startup and shutdown procedures.</dd>
+</dl>
+</blockquote -->
+<p >&nbsp;</p>
+<p >&nbsp;</p>
+<p >&nbsp;</p>
+
+</div>
+<div id="footer"/>
+</body>
+</html>

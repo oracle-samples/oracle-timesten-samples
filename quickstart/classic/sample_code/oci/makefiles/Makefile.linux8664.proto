@@ -1,0 +1,68 @@
+#
+# Build TimesTen Sample Programs (Unix)
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# $Revision
+#
+
+TT_MVL_LINUX    = 0
+
+INSTDIR         = $(TIMESTEN_HOME)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
+TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_11_2
+OCIINCS         = $(TTORACLE_HOME)/sdk/include
+
+CC              = gcc
+
+PLATCFLAGS      = -Os -finline-functions
+LDFLAGS         = 
+
+INCS            = -I$(OCIINCS) -I$(INSTDIR)/include -I$(COMMDIR)
+
+CFLAGS          = $(PLATCFLAGS) $(INCS)
+
+TTLINK          = -L$(INSTDIR)/lib -L$(TTORACLE_HOME) -Wl,-rpath,$(INSTDIR)/lib,-rpath,$(TTORACLE_HOME)
+ifeq ($(TT_MVL_LINUX),1)
+EXTRALIBS       = -ldl -lnsl -lstdc++
+endif
+
+ICLIBS          = $(TTLINK) -lc -lclntsh -lpthread -lm -lrt $(EXTRALIBS)
+
+ADDEMP          = addemp
+ADDEMPOBJS      = addemp.o psswds.o
+TPTBM           = tptbmOCI
+TPTBMOBJS       = tptbmOCI.o psswds.o
+PLSQLOCI        = plsqlOCI
+PLSQLOCIOBJS    = plsqlOCI.o psswds.o
+
+PROGS           = $(ADDEMP) $(TPTBM) $(PLSQLOCI)
+
+#
+# Top level targets
+#
+
+all: $(PROGS)
+
+clean:
+	rm -f $(PROGS) *.o
+
+
+#
+# Targets for building executables
+#
+
+$(ADDEMP): $(ADDEMPOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(ADDEMPOBJS) $(ICLIBS)
+
+$(TPTBM): $(TPTBMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMOBJS) $(ICLIBS)
+
+$(PLSQLOCI): $(PLSQLOCIOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(PLSQLOCIOBJS) $(ICLIBS)
+
+#
+# Target for building object files
+#
+.c.o:
+	$(CC) $(CFLAGS) -o $@ -c $<
+

@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Managing an Active Standby Pair with TimesTen Application-Tier Database Cache and Clusterware</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Managing an Active Standby Pair<br/>
+with Application-Tier Database Cache and Clusterware</span>
+<p> The following three steps are the most common management tasks once the active standby pair has been created by 
+<span class="codetext">ttCWAdmin</span>:</p>
+
+<p class="section1">1. Check the cluster agent status</p>
+<blockquote><ol type=a>
+<li>
+	<p>Check the TimesTen cluster agent status by executing the 
+	  <span class="doclink">ttCWAdmin -status</span> 
+	command on one of the hosts. For example, on <em>ttcwnode2</em>:</p>
+	<p class="codetext">ttcwadmin -status -dsn cachedb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_status_after_start_cachedb1_1211.gif" alt="ttCWAdmin -status [cache]" /></p>
+</li><br/>
+</ol></blockquote>
+  
+  
+<p class="section1">2. Stop the cluster agents for the active standby pair</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Stop the cluster agents by executing the 
+	  <span class="doclink">ttCWAdmin -stop</span> 
+	command on one of the hosts. For example, on <em>ttcwnode1</em>:</td>
+	<p class="codetext">ttcwadmin -stop -dsn cachedb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_stop_cachedb1_1211.gif" alt="ttCWAdmin -stop [cache]" /></p>
+</li><br/>
+</ol></blockquote>
+
+
+<p class="section1">3. Drop the active standby pair</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Drop the active standby pair and de-register the cluster agents by executing the 
+	  <span class="doclink">ttCWAdmin -drop</span> command 
+	on one of the hosts. For example, on <em>ttcwnode2</em>:
+	<p class="codetext">ttcwadmin -drop -dsn cachedb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_drop_cachedb1_1211.gif" alt="ttCWAdmin -drop [cache]" /></p>
+</li><br/>
+</ol></blockquote>
+
+<p >&nbsp;</p>
+<p >For more information about using, configuring and managing an active standby pair with TimesTen Cache and Oracle Clusterware refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/cluster.htm#TTREP257" target="_blank" class="doclink">here</a> </p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

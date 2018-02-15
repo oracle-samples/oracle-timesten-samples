@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+             version="1.0">
+
+  <persistence-unit name="TptbmOpenJPA" transaction-type="RESOURCE_LOCAL">
+
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <class>com.timesten.tptbmas.Tptbm</class>
+    <class>com.timesten.tptbmas.TptbmPKey</class>
+
+    <properties>
+      <property name="openjpa.ConnectionUserName" value="SCOTT"/>
+      <property name="openjpa.ConnectionPassword" value="tiger"/>
+      <property name="openjpa.ConnectionURL" value="jdbc:timesten:direct:sampledb"/>
+      <property name="openjpa.ConnectionDriverName" value="com.timesten.jdbc.TimesTenDriver"/>
+
+      <property name="openjpa.jdbc.DBDictionary" value="oracle"/>
+      <property name="openjpa.ConnectionRetainMode" value="always"/>
+      <property name="openjpa.Multithreaded" value="true"/>
+    </properties>
+    
+  </persistence-unit>
+
+</persistence>

@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Compile and Run application with JBoss applicaton server</title>
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Compile and Run application with JBoss applicaton server</span>
+<p class="normal"><span class="section1"><br />
+IMPORTANT PRE-REQUISITES</span> </p>
+<blockquote>
+<p class="normal-bold">1. <a href="../sample_dsn_setup.html">Manually Configure Sample DSN for Sample Programs</a> </span></p>
+   <p class="normal-bold">2. Set up  environment to compile and run the sample application</p>
+  <p class="normal">The following script must be run for each of the terminal session:</p>
+    <li><p class="normal">Set up the Instance environment variables:<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></p></li>
+ 
+  <li><p class="normal">Set up quickstart environment variables:</p> 
+  <table width="606" border="0">
+  
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ . quickstart/classic/ttquickstartenv.sh <span class="normal-bold">OR</span><br />
+        $ source 
+        quickstart/classic/ttquickstartenv.csh</td>
+    </tr>
+  </table>
+  </li>
+  <p class="normal-bold">3. Set up sample database, user accounts and the TPTBM table</p>
+  <p class="normal">The following command should be run once to set up the sample database, user accounts and the TPTBM table.</p>
+  <table width="608" border="0">
+    <tr>
+      <td width="62" valign="top" class="normal">Unix/Linux:</td>
+      <td width="3" class="codetext">&nbsp;</td>
+      <td width="529" class="codetext">&gt; cd quickstart/classic/sample_code/j2ee_orm<br />
+        &gt; ttIsql -connStr "DSN=sampledb" -f tptbm.sql</td>
+    </tr>
+  </table>
+
+  <p class="normal-bold">3. If necessary, install the Apache Ant build tool.</p>
+  <p class="normal">For each application server, an Ant build script is provided to configure, build and execute the application based on the properties of the applicaton server installation. The Apache Ant build tool has to be installed if not present.
+  <p class="normal">After installation, make sure the Operating System environment variable PATH includes the path to the 'ant' executable.
+  <p class="normal">The Ant build scripts have been tested with Apache Ant version 1.9.2.<p>
+
+
+</blockquote>
+
+<p class="normal"> &nbsp;&nbsp; </p>
+<p class="normal"><span class="section1">CONFIGURE AND RUN</span></p>
+
+<blockquote>
+  <p class="normal-bold">1. install JBoss application server and configure build.properties </p>
+  <p class="normal">Install JBoss EAP 6 and then set the following properties in file <span class="codetext"><a href="../../../sample_code/j2ee_orm/build.properties">quickstart/classic/sample_code/j2ee_orm/build.properties</a>:</span>
+
+<pre>
+    jboss.home.dir   -- set this to the root installation directory of the local
+                        JBoss EAP installation
+
+    jboss.server.dir -- the location of the JBoss EAP directory for the 
+                        server hosting the Tptbm entity bean
+
+    jboss.deploy.dir -- the directory where application archives can be copied 
+                        and auto deployed to the JBoss EAP
+                              
+    jboss.host       -- the host name of the machine where the server is
+                        installed
+
+    jboss.port       -- the RMI port number used by external clients to 
+                        communicate with the server, the default port number is 
+                        4447
+</pre>
+
+  Each Ant build script reads values from file <span class="codetext">quickstart/classic/sample_code/j2ee_orm/build.properties</span>. This file specifies the locations of build dependencies including the location of the application server installation. This file also specifies the common benchmark execution parameters.</p>
+
+  <p class="normal-bold">2. Configure for JBoss RMI clients</p>
+  <p class="normal">JBoss RMI clients require that a configuration file called 
+  <span class="codetext">jboss-ejb-client.properties</span> exist in the client's <span class="codetext">CLASSPATH</span>. The demo
+  includes this configuration file in the <span class="codetext">config/jbosseap6</span> directory. If the demo is executed on a different machine than the JBoss server then this file will need to be manually edited to reflect the properties of the remote JBoss server.
+  </p>
+
+  <p class="normal-bold">3. LD_LIBRARY_PATH</p>
+  <p class="normal"> 
+   The JBoss server environment will need access to the TimesTen shared libraries. This can be done by setting the <span class="codetext">LD_LIBRARY_PATH</span> environment variable (or the equivalent variable for your OS) to the location of the TimesTen installation's lib directory. On Windows platforms the PATH environment variable should be set to the location of the installation's bin directory where TimesTen DLLs are located. After changing these environment variables the JBoss server should be restarted.</p>
+
+  <p class="normal-bold">4. TimesTen JDBC Driver</p>
+  <p class="normal">
+   The server will require access to the TimesTen JDBC driver jar file. In JBoss EAP 6 this can be done by deploying the TimesTen JDBC driver jar file on the application server via the JBoss management console using this sequence of steps:
+
+   <pre>
+   a. Connect to the JBoss management console. The default web address is 
+      http://localhost:9990/console.
+      
+   b. Select the Runtime tab near the top of the page.
+   
+   c. Expand the Server node on the left hand menu and select Manage 
+      Deployments.
+      
+   d. On the Deployments page click the Add button and then click Choose File
+      in the resulting dialog box.
+      
+   e. Navigate to the location of the TimesTen JDBC drive jar file. If JBoss 
+      server is using JDK 1.7 then the ttjdbc7.jar version of the driver jar 
+      file located in the TimesTen installation's lib subdirectory should be
+      selected. If JBoss server is using JDK 1.6 then select the ttjdbc6.jar 
+      file.
+      
+   f. Click the Next button in the Create Deployment dialog.
+   
+   g. Click the Save button in the Create Deployment dialog.
+   
+   h. On the Deployments page a new deployment called ttjdbc7.jar or 
+      ttjdbc6.jar should appear. Click the En/Disable button and then click 
+      Confirm to enable the TimesTen driver.
+   </pre>
+   </p>
+
+  <p class="normal-bold">4. TimesTen Data Source</p>
+  <p class="normal"> 
+  Before the application can be deployed or executed, a TimesTen data source with the JNDI name of <span class="codetext">java:TbtbmDirectDS</span> must be configured on the server. This can be done by configuring the data source on the application server via the JBoss management console using this sequence of steps:
+  <pre> 
+   a. Connect to the JBoss management console. The default web address is 
+      http://localhost:9990/console.
+      
+   b. Select the Profile tab at the top of the page.  
+   
+   c. Expand the Subsytems and Connector nodes on the left hand menu and then
+      select Datasources.
+      
+   d. Click the Add button.
+   
+   e. In the Datasource Attributes dialog box enter a name and a JNDI name for
+      the new data source. The name should be set to 'TptbmDirectDS' and the 
+      JNDI name should be set to 'java:/TptbmDirectDS'.
+  
+   f. Click the Next button.
+   
+   g. In the JDBC Driver dialog select the TimesTen JDBC driver deployment 
+      called ttjdbc7.jar or ttjdbc6.jar.
+      
+   h. Click Next.
+   
+   i. In the Connection Settings dialog box, enter the TimesTen JDBC URL and
+      TimesTen database user credentials for the connection. The URL should
+      be set to 'jdbc:timesten:direct:SampleDb_1211'. The user should be set
+      to 'scott' and the password 'tiger'.
+      
+   j. Click Done.
+   
+   k. At the JDBC Datasources screen click the Enable button and then click 
+      Confirm to enable the data source.
+      
+   l. To verify that the data source can connect to TimesTen click the 
+      Connection link and then click the Test Connection button.
+  </pre> 
+  <!--
+  An example configuration file for this data source is provided by the sample application at 
+   <span class="codetext"><a href="../../../sample_code/j2ee_orm/config/jboss6/timesten-ds.xml">quickstart/classic/sample_code/j2ee_orm/config/jboss6/timesten-ds.xml</a></span>. This is a stand-alone configuration file. It should be copied to the <span class="codetext">${jboss.deploy.dir}</span> directory of the server. The server will read this configuration file when it starts up and then add the data source to its JNDI tree.
+
+  <p class="normal-bold">5. TimesTen Type Mapping</p>
+  <p class="normal"> 
+  The JBoss <span class="codetext">timesten-ds.xml</span> configuration file has a dependency on a JBoss
+  <span class="codetext">&lt;type-mapping&gt;</span> descriptor called TimesTen. The definition for the 
+     TimesTen <span class="codetext">&lt;type-mapping&gt;</span> descriptor is located in the application's <span class="codetext"><a href="../../../sample_code/j2ee_orm/config/jboss6/timesten-type-mapping.xml">quickstart/classic/sample_code/j2ee_orm/config/jboss6/timesten-type-mapping.xml</a></span> file. This is not a stand-alone file. The contents of this file must be copied and pasted into the
+     <span class="codetext">&lt;type-mappings&gt;</span> section of the JBoss <span class="codetext">standardjbosscmp-jdbc.xml</span> file
+   located at <span class="codetext">${jboss.server.dir}/conf/standardjbosscmp-jdbc.xml</span>.
+  <p class="normal">Restart the JBoss server in order for the changes above to take effect.</p>
+   -->
+
+  <p class="normal-bold">6. build, deploy and run the sample application</p>
+  <p class="normal"> 
+  After the server has been configured to use the <span class="codetext">java:TptbmDirectDS</span> data source and restarted, the application can be built, deployed, and executed, through Ant script <span class="codetext"><a href="../../../sample_code/j2ee_orm/build-jboss6.xml">build-jboss6.xml</a>,</span> with this sequence of Ant tasks under directory <span class="codetext">quickstart/classic/classic/sample_code/j2ee_orm</span>:
+
+   <pre>
+   ant -f build-jboss6.xml clean
+   ant -f build-jboss6.xml package
+   ant -f build-jboss6.xml deploy
+   ant -f build-jboss6.xml run
+   </pre>
+</blockquote>
+
+<p class="normal">Note that this application has been tested with JBoss EAP 6.2.0.GA.</p>
+
+<p class="normal">&nbsp;</p>
+<p class="normal"><span class="section1">TROUBLESHOOTING</span></p>
+<ul>
+  <li>Make sure the TimesTen binary bit version (32-bit or 64-bit) is the same as the bit version of the Java binary used to start JBoss Server. Otherwise you may get a similar error as the following:
+  <br><i>&nbsp;&nbsp;&nbsp;&nbsp;"Problems with loading native library/missing methods: D:\TimesTen\tt1122_32\bin\ttJdbc1122.dll : Can't load IA 32-bit .dll on AMD 64-bit platform" </i>
+  <br><br>
+<li>If the following error pops up in the step of "<span class="codetext">ant -f build-jboss6.xml run</span>",
+<p><i>java.sql.SQLException: Problems with loading native library/missing methods: no ttJdbc1122 in java.library.path
+  </i>
+  <p>it is because the JBoss server need access to the TimesTen shared libraries but env variables are not set correctly before launching the JBoss server. Make sure the LD_LIBRARY_PATH includes the location of the TimesTen installation's lib directory. Or, on Windows platforms the PATH environment variable should include the location of the TimesTen installation's bin directory where TimesTen DDLs are located. (See step No.3 above). </p>
+</ul>
+
+<p class="normal">&nbsp;</p>
+<p class="normal">For more information on Java programming with Oracle TimesTen, refer to the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61200/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database Java Developer's Guide</font></a>. </p>
+<p class="normal"><br />
+</p>
+<!-- Footner -->
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

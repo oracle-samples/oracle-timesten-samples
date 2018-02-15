@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Compile and Run OCI Sample Programs</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Compile and Run OCI Sample Programs</span>
+<p class="normal"><span class="section1"><br />
+IMPORTANT PRE-REQUISITES</span> </p>
+<blockquote>
+<p class="normal-bold">1. <a href="../sample_dsn_setup.html">Manually Configure Sample DSN for Sample Programs</a> </span></p>
+  <p class="normal-bold">2. Set up sample database and user accounts</p>
+  <p class="normal">The following build_sampledb script should be run once to set up the sample database and user accounts </p>
+  <table width="700" border="0">
+      <tr>
+        <td colspan="2" valign="top" >
+        <li> Set up the Instance Environment Variables<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></li>
+<br />
+        <li>Run the <span class="codetext">quickstart/classic/sample_scripts/createdb/build_sampledb</span> script, which creates the sample database and user accounts that are used by the sample programs. This script  creates the TimesTen user accounts and prompts you for the desired user passwords.</li></td>
+      </tr>
+  </table>
+  <br />
+  <table width="608" border="0">
+    
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ cd quickstart/classic/sample_scripts/createdb<br />
+        $
+        ./build_sampledb.sh</td>
+    </tr>
+  </table>
+  <p class="normal-bold">3. Set up  environment to compile and run the sample application</p>
+  <p class="normal">The following script must be run for each of the terminal session:</p>
+    <li><p class="normal">Set up the Instance environment variables:<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></p></li>
+ 
+  <li><p class="normal">Set up quickstart environment variables:</p> 
+  <table width="606" border="0">
+  
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ . quickstart/classic/ttquickstartenv.sh <span class="normal-bold">OR</span><br />
+        $ source 
+        quickstart/classic/ttquickstartenv.csh</td>
+    </tr>
+  </table>
+  </li>
+</blockquote>
+<p class="normal"><span class="section1">How to compile the sample OCI programs</span></p>
+<p class="normal">To compile the sample programs in the sample_code/oci directory, you simply run the makefile supplied in the same directory. Note that the appropriate makefile is made available based on the platform of your TimesTen installation. </p>
+<p class="normal">Firstly, select the platform specific Makefile and copy from <span class="codetext">quickstart/classic/sample_code/oci/makefiles</span> to the upper level directory.
+
+<br/><br/>
+For example, if your platform is Linux x86-64bit, execute the following commands:<br/><br/>
+<span class="codetext">cd quickstart/classic/sample_code/oci/makefiles</span><br/>
+<span class="codetext">cp Makefile.linux8664.proto ../Makefile</span><br/>
+<span class="codetext">cd ..</span><br/>
+</p>
+
+<p><span class="normal">To build a sample program in the sample_code/oci directory, use the following command:</span></p>
+<table width="806" border="0">
+   
+  <tr>
+    <td class="normal"></td>
+    <td class="normal">[Linux/Unix]</td>
+     <td class="codetext">$ make &lt;program-name&gt;</td>
+  </tr>
+  <tr>
+    <td class="normal"></td>
+    <td colspan="2" class="normal">where &lt;program-name&gt; is the program you want to compile.</td>
+  </tr>
+</table>
+<p class="normal">For example, to compile the addemp program, you do:</p>
+<table width="540" border="0">
+ 
+  <tr>
+    <td class="normal"></td>
+    <td class="normal">[Linux/Unix]</td>
+    <td class="codetext">$ make addemp</td>
+  </tr>
+</table>
+ 
+<p class="normal">&nbsp;</p>
+<p class="section1">How to run the sample OCI programs</p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" height="141" valign="top" class="normal">&nbsp; <strong>addemp</strong></td>
+    <td width="608" valign="top" class="normal">This is an OCI program that prompts the users for information  and inserts the corresponding data into a new employee into the EMP table.<br />
+        <br />
+You are prompted for the username and password at runtime.<br />
+The ‘servicename’ can be either an entry in the TNSnames.ora file or an easy connect  string.
+      <p>The EMP table needs to exist for this program to work.</p>
+      <p>A sample tnsnames.ora file is available at &lt;install_dir&gt;/network/admin/samples/tnsnames.ora. </p>
+    </td>
+  </tr>
+</table>
+<p class="normal"> &nbsp; Examples:</p>
+<p class="normal">&nbsp;&nbsp;(run the program using default DSN sampledb and default user <em>appuser</em>. For TNS Service Name,  enter <span class="codetext">sampledb</span>; alternatively, using Easy Connect string, enter <span class="codetext">localhost/sampledb:timesten_direct</span>)<br />
+  <br />
+  <span class="codetext"><strong><em>&nbsp;&nbsp;&gt; addemp</em></strong></span><span class="codetext"><br />
+</span></p>
+<p class="normal"><br />
+</p>
+<table width="800" border="1">
+  <tr>
+    <td width="121" height="141" valign="top" class="normal">&nbsp; <strong>plsqlOCI</strong></td>
+    <td width="608" valign="top" class="normal">This sample program uses OCI to access common PL/SQL packages (emp_pkg and sample_pkg) in four different ways:<br />
+        <br />
+      - Calls a stored procedure with IN and OUT parameters<br />
+      - Calls a stored function with IN and OUT parameters<br />
+      - Calls an anonymous block and passes host variables into and out of the block<br />
+      - Calls a store procedure to open a ref cursor and uses OCI to process the result-set of the ref cursor<br />
+      <br />
+      The EMP table and the emp_pkg and sample_pkg PL/SQL packages need to exist for this program to work. </td>
+  </tr>
+</table>
+<p class="normal"> &nbsp; Examples:</p>
+<p>&nbsp;&nbsp;(run the program using the default user appuser and the default TNS Service Name sampledb, will prompt for the password)<br />
+    <br />
+    <strong class="codetext"><em>&nbsp;&nbsp;&gt; plsqlOCI</em></strong></p>
+<p>&nbsp;&nbsp;(run the program specifying the username, password and service name)<br />
+    <br />
+    <strong class="codetext"><em>&nbsp;&nbsp;&gt; plsqlOCI -user &lt;myuser&gt; -password &lt;mypassword&gt; -service &lt;myservice&gt;</em></strong></p>
+<p>For full syntax of the program, try &quot;<em>plsqlOCI -help</em>&quot;.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>tptbmOCI</strong></td>
+    <td width="608" valign="top" class="normal">This program implements a multi-user throughput benchmark. By default, the   transaction mix consists of 80% SELECT (read)   transactions and 20% UPDATE (write) transactions. In   addition to SELECTs and UPDATEs, INSERTs and DELETES can also be   included in the transaction mix. The ratio of SELECTs, UPDATEs and INSERTs and DELETES is specified at the command line. Each transaction   consists of one or more SQL operations.<br />
+        <br />
+      The benchmark   initially populates the data store, and then executes the transaction mix on it.   The number of rows inserted as part of the transaction mix cannot exceed the   number of rows with which the database is populated initially.<br />
+  <br />
+      The   measurement error for the benchmark is at most 2 seconds. This will be   negligible at loads with a duration in excess of 200 seconds. A suggested load   for the benchmark is one which lasts at least 600 seconds.<br />
+  <br />
+      The schema for this test is described in the program source file <span class="codetext">tptbmOCI.c</span>.    </td>
+  </tr>
+</table>
+<p class="normal"> &nbsp; Examples:</p>
+<p class="normal">(80% reads, 20% updates<span class="codetext"></span> for appuser@sampledb with 10,000 transactions in a database with 10,000 rows.)</p>
+    <span class="codetext"><strong><em>&nbsp;&nbsp;&gt; tptbmOCI</em></strong></span>
+<p class="normal">(60% reads, 10% updates<span class="codetext"></span>, 5% insert and 25% deletes with 1 SQL operation per transation for appuser@sampledb)<br />
+  <br />
+  <span class="codetext"><strong><em>&nbsp;&nbsp;&gt; tptbmOCI -read 60 -update 10 -insert 5 -delete 25</em></strong></span></p>
+<p class="normal">(Use a workload with 3 selects, 1 insert and 1 update per transaction for appuser@sampledb)<br />
+  <br />
+<span class="codetext"><strong><em>&nbsp;&nbsp;&gt; tptbmOCI -multiop</em></strong></span></p>
+<p class="normal">(Use a client/server workload with 10 * (3 reads, 1 insert and 1 update) per transaction for appuser@sampledbCS)<br />
+  <br />
+  <span class="codetext"><strong><em>&nbsp;&nbsp;&gt;<strong><em>tptbmOCI -multiop -min 10 -max 10 -service sampledbCS</em></strong></em></strong></span></p>
+<!--p class="normal">(Use a client/server workload using PLSQL  with 10 * (3 reads, 1 insert and 1 update) per transaction)<br />
+  <br />
+  <span class="codetext"><strong><em>&nbsp;&nbsp;&gt; tptbmOCI -multiop -plsql -min 10 -max 10</em></strong></span></p-->
+ <p class="normal">(80% reads, 20% updates<span class="codetext"></span> for &lt;myuser&gt;@&lt;myservice&gt; with 1,000 transactions in the database with 33<sup>2</sup> (1,089) rows.)<br />
+    <br />
+  <span class="codetext"><strong><em>&nbsp;&nbsp;&gt; tptbmOCI -user &lt;myuser&gt; -service &lt;myservice&gt; -xact 1000 -key 33</em></strong></span> </p>
+<p class="normal">For full syntax of the program, try &quot;<em>tptbmOCI   -help</em>&quot;.<br />
+  <br />
+  <br />
+<p class="normal">&nbsp;</p>
+For more information on OCI, refer to the OCI chapter in the <a href="http://docs.oracle.com/database/timesten-18.1/e61199/oci.htm#TTCDV190" target="_blank" class="doclink"><span class="doclink">Oracle TimesTen In-Memory Database C Developer's Guide</font></span>.</a></p>
+<p class="normal">&nbsp;</p>
+<p class="style2">&nbsp;</p>
+<p class="style2">&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

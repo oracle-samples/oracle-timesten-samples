@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Managing User Accounts and Privileges</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Managing User Accounts and Privileges</span>
+<p>For users to access your TimesTen database, you must create user accounts and grant appropriate database access privileges to those accounts. 
+A user account is identified by a user name and a password. Only the 
+instance administrator and users with the system privilege <span class="codetext">ADMIN</span> can create user accounts.</p>
+
+<p class="section1">Creating a User Account</p>
+<p>To create a new database user, perform the following steps:</p>
+<blockquote><ol type=a>
+<li>
+	<p>Enter <span class="codetext">ttisql</span> with DSN at the OS command prompt to launch <span class="codetext">ttIsql</span> and  connect to your database </p>
+	<p class="codetext">ttIsql &lt;DSN&gt;</p>
+</li><br/>
+<li>
+	<p>Use the SQL statement 
+	<span class="codetext">CREATE USER</span>  to create a database user account.</p> 
+	<p class="codetext">CREATE USER &lt;username&gt; identified by &lt;password&gt;;</p>
+</li><br/>
+</ol></blockquote>
+<p class="section1">User Privileges</p>
+<p>Once a user account has been created, the appropriate user privileges should be granted to the account. 
+They should be granted based on their needs.  For example, an application developer needs privileges to insert into tables 
+and to execute  stored procedures. However, a developer would not typically be allowed to perform administrative tasks 
+such as backing up the database and removing user accounts.</p>
+<p>There are two types of user privileges.</p>
+<blockquote>
+<dl>
+	<dt>1. System privileges</dt>
+		<dd>These privileges give a user the ability to perform system-level activities across multiple objects in the database, 
+		or to perform an action on any schema objects of a particular type.  For example, the system privilege 
+		<span class="codetext">CREATE TABLE</span>
+		permits a user to create tables in the schema associated with that user.</dd>
+	<br/>
+	<dt>2. Object privileges</dt>
+		<dd>These privileges give a user the ability to perform a particular action on a specific schema object. 
+		The privilege to delete rows from the <span class="codetext"> EMPLOYEES</span> table is an  example of object privileges. 
+		The owner (the creator) of the object always has full privileges to the object.</dd>
+</dl>
+</blockquote>
+<p>For a listing of  the available privileges, refer to the  
+<a href="http://docs.oracle.com/database/timesten-18.1/e61203/privileges.htm#TTSQL338" target="_blank" class="doclink">Oracle TimesTen In-Memory Database 
+SQL Reference</a>.</p>
+<br/>
+
+<p class="section1">Granting and Revoking Privileges</p>
+<p>The SQL statements <span class="codetext">GRANT</span>  and 
+<span class="codetext">REVOKE</span> enable system and object privileges to be granted to and revoked from database users. For example:</p>
+<blockquote><ol type=a>
+<li>
+	<p>To grant the 
+	<span class="codetext">CREATE TABLE</span> 
+	privilege to a user called <span class="codetext">HR</span>, run the following command:
+	<p class="codetext">GRANT CREATE TABLE to HR;</p>
+</li><br/>
+<li>
+	<p>To revoke the <span class="codetext">DELETE</span> privilege on <span class="codetext">EMPLOYEES</span> from <span class="codetext">HR</span>, run the following command:
+	<p class="codetext">REVOKE DELETE ON EMPLOYEES from HR;</p>
+</li><br/>
+</ol></blockquote>
+<p>For more information on user accounts and privileges, refer to the 
+<a href="http://docs.oracle.com/database/timesten-18.1/e79756/accesscontrol.htm#TTSEC236" target="_blank" class="doclink">TimesTen In-Memory Database Security Guide</a>.</p>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

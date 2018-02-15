@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Dropping an Active Standby Pair Configuration</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Dropping an Active Standby Pair Configuration</span>
+<p>To remove an existing active standby pair configuration, you must stop the replication agents and drop the active standby pair 
+replication scheme on each cache database. This tutorial  removes the standby cache database, and reverts the configuration 
+back to a single cache database.</p>
+<p>This tutorial uses the DSN <span class="codetext">cachedb1_1211</span>. 
+The hostnames of the two machines are <span class="codetext">tthost1</span> and <span class="codetext">tthost2</span>. 
+<span class="codetext">cachedb2_1211</span> is the current active cache database on <span class="codetext">tthost2</span>, 
+and <span class="codetext">cachedb1_1211</span> on <span class="codetext">tthost1</span> is the standby cache database. </p>
+
+ 
+
+<p class="section1">1. Stop the replication agents</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in to <span class="codetext">ttIsql</span> as the user <span class="codetext">cacheadm</span>, and 
+	connect to the standby cache database <span class="codetext">cachedb1_1211</span>. </p>
+	<p class="codetext">ttIsql</p>
+	<p class="codetext">connect &quot;dsn=cachedb1_1211;uid=cacheadm;pwd=cacheadm;oraclepwd=cacheadm&quot;; </p>
+</li><br/>
+<li>
+	<p>Use the built-in procedure <span class="doclink">ttRepStop</span> 
+	  to stop the replication agent on <span class="codetext">cachedb1_1211.</span> </p>
+	<p class="codetext">call ttrepstop;</p>
+</li><br/>
+<li>
+	<p>Repeat the above step  on <span class="codetext">cachedb2_1211</span>.</p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">2. Remove the active standby scheme</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Remove the active standby pair schema in <span class="codetext">cachedb1_1211</span> by using the 
+	  <span class="doclink">DROP ACTIVE STANDBY PAIR</span> statement. 
+	Use the </span><span class="codetext">ttIsql</span><span > command 
+	<span class="doclink">repschemes</span> to 
+	verify that the active standby replication scheme has been removed.</p>
+	<p class="codetext">drop active standby pair;<br />
+    repschemes;</p>
+	<p><img class="cmdscnshot" src="../images/rep_cache_drop_repschemes_cachedb1.gif" /></p>
+</li><br/>
+<li>
+	<p>Repeat the above step  on <span class="codetext">cachedb2_1211</span>.</p>
+	<p><img class="cmdscnshot" src="../images/rep_cache_drop_repschemes_cachedb2.gif" /></p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">3. Remove cache groups from the previous standby cache database</p>
+<p>The example below shows how to remove the two cache groups that were created in the earlier section from 
+<span class="codetext">cachedb1_1211</span>.</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Enter the following 
+	  <span class="doclink">DROP CACHE GROUP</span> statements in 
+	<span class="codetext">ttIsql,</span> to remove the cache groups <span class="codetext">cacheadm.d_awt</span> 
+	and <span class="codetext">cacheadm.ro</span>, and their corresponding cache tables from the previous standby cache database, 
+	<span class="codetext">cachedb1_1211</span>. </p>
+    <p class="codetext">drop cache group d_awt; <br/>
+	drop cache group ro; </p>
+</li><br/>
+<li>
+	<p>Use the <span class="codetext">ttIsql</span> command 
+	  <span class="doclink">cachegroups</span> 
+	to verify the removal of both cache groups from the cache database. </p>
+	<p class="codetext">cachegroups;</p>
+	<p><img class="cmdscnshot" src="../images/cg_create_cg_drop_ttisql_cachegroups.gif" /></p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">4. Stop the cache agent on the previous standby cache  database </p>
+<blockquote ><ol type=a>
+<li>
+	<p>Stop the cache agent on the previous standby database <span class="codetext">cachedb1_1211</span>. 
+	Afterwards, exit out of <span class="codetext">ttIsql</span>. </p>
+	<p class="codetext">call ttcachestop;<br />
+	exit</p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">5. Destroy the previous standby cache database</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in as the instance administrator, use the 
+	  <span class="doclink">ttDestroy</span> utility 
+	to remove  the redundant standby cache database (<span class="codetext">cachedb1_1211</span>) on server 1 (<em>tthost1</em>).</p>
+	<p class="codetext">ttdestroy cachedb1_1211</p>
+</li><br/>
+</ol></blockquote>
+
+
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+
+</html>

@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>tptbm read chart</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+
+<body onload="javascript:qsInitPopup();" style="width:650px;">
+<!-- the link on the home page from which this page can be reached must contain the proper dimensions for this page -->
+<table width="650" height="600">
+<tr><td align="center" class="section1 style1">100% Read Throughput Results Chart</td></tr>
+<tr><td>
+TimesTen throughput on 100% reads using <span class="codetext">tptbm</span>, which is available in your TimesTen installation.<br/>
+Each <span class="codetext">tptbm</span> application process executes the SELECT from the hash index table as fast as it can. The table has 1 million rows of data. Test system spec shown below.</td></tr>
+<tr><td>
+<span class="tptbmspec">
+	&nbsp;&nbsp;Oracle TimesTen In-Memory Database 11.2.2,<br/>
+	&nbsp;&nbsp;Intel Xeon E5-2680 2.7 Ghz,<br/>
+	&nbsp;&nbsp;2 CPUs, 8 Cores/CPU on Oracle Linux 5.6<br/>
+	&nbsp;&nbsp;Application: tptbm implemented in C using ODBC direct-linked connection</span>
+</td></tr>
+<tr><td align="left">
+<img src="../images/tptbm_chart.png" width="600"/> <!-- originally w x h 744 x 520 -->
+</td></tr>
+<tr><td align="center"class="section1 style1">Running Tptbm on Your Own System</td></tr>
+<tr><td>
+If you are interested in running tptbm on your own TimesTen installation, click here for 
+<a href="../developer/odbc/howto_odbc.html#tptbm"" target="_blank" class="doclink">instructions to run tptbm.</a></td></td>
+</tr>
+<tr><td>
+<div id="popupfooter"/>
+</td></tr>
+</table>
+</body>
+</html>

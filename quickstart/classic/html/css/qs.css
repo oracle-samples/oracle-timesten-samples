@@ -1,0 +1,354 @@
+/*
+ * This file contains all the CSS definitions used 
+ * in the TimesTen Quick Start Guide
+*/
+body {
+	width: 980px;
+	margin: 0 auto;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #000000;
+}
+a:link {
+	color: #0000CC;
+	text-decoration: none;
+}
+a:visited {
+	color: #0000CC;
+	text-decoration: none;
+}
+a:hover {
+	color: #0000CC;
+	text-decoration: underline;
+}
+a:active {
+	color: #0000CC;
+	text-decoration: none;
+}
+/* used all over the quickstart but unnecessary. should be deprecated */
+.normal {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #000000;
+}
+/* used all over the quickstart but unnecessary. should be deprecated */
+.normal-bold {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	color: #000000;
+}
+/* used for title headers in best_practices/bp.html */
+.normal-bold-blue {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	color: #0000CC;
+}
+/* used for the main tag line in the home.html page 'Welcome to the...' */
+.mainTagLine {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	font-style: italic;
+	color: #000000;
+}
+/* used for main title of html pages */
+.PageTitle-navy { 
+    font-family: Arial, Helvetica, sans-serif;
+	font-size: 28px;
+	color: #000066;
+}
+/* used for documentation links */
+.doclink {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 12px;
+	font-style: italic;
+}
+/* used for section labels in list of configuration steps */
+.section1 { 
+    font-family: Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+	color: #000000;
+}
+/* This is for all the code snippets */
+.codetext { 
+	font-family: "Courier New", Courier, monospace;
+	font-size: 12px;
+	font-style: italic;
+	color: #000000;
+}
+/* used in several developer/ pages. */
+.table-header {
+	font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px; 
+	font-weight: bold;
+	color: #000000; 
+}
+/* used in sitemap page */
+.sitemap-header {
+    font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	width: 200px;
+	height: 20px;
+	background: #336699;
+	color: #FFFFFF;
+	font-weight: bold;
+	padding-top: 3px;
+}
+/* used in sitemap page */
+.sitemap-header a {
+	color: #FFFFFF;
+}
+/* used in sitemap page */
+.sitemap-nav1 {
+    font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-weight: bold;
+	margin-left: 2em;
+	margin-top: 0.75em;
+	margin-bottom: 0.75em;
+}
+/* used in sitemap page */
+.sitemap-nav1 a {
+	color: #000066;
+}
+/* used in sitemap page */
+.sitemap-nav2 {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	font-style: italic;
+	margin-left: 3em;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+/* used in sitemap page */
+.sitemap-nav3 {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	margin-left: 5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+}
+/* used in sitemap page */
+.sitemap-nav3 a {
+	color: #000066;
+}
+/* this is for the title at the very top of each page, within top_index.html */
+.mainTitle {
+	color: #000066;
+	font-style: italic;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+/* for nav.html page */
+#nav a {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	color: #000066;
+	font-weight: bold;
+}
+#nav a:hover {
+	text-decoration: underline;
+	color: #0000FF;
+}
+#nav a.nav-red {
+	font-family: Arial, Helvetica, sans-serif; 
+	font-size: 11px; 
+	color: #FF0000;
+}
+/* for specifying menu option selected -- this is currently not used*/
+a.highlighted {
+	border-style: solid;
+	border-width: 1px;
+	padding: 1px;
+	line-height: 2em;
+}
+
+/* added to allow static links for every webpage in the Quick Start Guide */
+/* body --> frame --> pane */
+/* qsfuncs.js file writes the frame into the pane */
+#toppane {
+	position: inherit;
+	left: 0;
+	top: 0;
+	width: 980px;
+	height: 80px;
+	z-index: 1;
+	background: #FFFFFF;
+}
+#topframe {
+	width: 980px;
+	height: 80px;
+	z-index: 1;
+}
+#topTable {
+	width: 980px; /* must be width of left + content */
+}
+#leftpane {
+	position: inherit;
+	top: 70px;
+	width: 180px;
+	height: 60em;
+	float: left;
+	z-index: 2;
+}
+#leftframe {
+	width: 180px;
+	height: 100%;
+	z-index: 2;
+}
+#leftBody {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 175px;
+}
+#content {
+	position: inherit;
+	top: 70px;
+	float: right;
+	width: 800px;
+	z-index: 3;
+}
+#footer {
+	position: inherit;
+	width: 980px;
+	background: #FFFFFF;
+	text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	z-index: 4;
+	clear: both;
+}
+#footer a {
+	color:#666666;
+}
+#popupfooter {
+	position: inherit;
+	width: 550px; /* must equal width of popup window */
+	background: #FFFFFF;
+	text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	z-index: 4;
+}
+#popupfooter a {
+	color:#666666;
+}
+
+/* These methods are for implementing breadcrumbs. */
+/* breadcrumbs are not yet implemented in this version of the quickstart */
+#breadcrumb {
+	position: fixed;
+	left: 180px;
+	top: 70px;
+	z-index: 3;
+	background: #FFFFFF;
+	width: 800px;
+	font-size: 8pt;
+	font-weight: bold;
+}
+#breadcrumb ul {
+	border-bottom: 1px solid #dedede;
+	height: 1.5em;
+	list-style-type: none;
+}
+#breadcrumb ul, li {
+	padding: 0;
+	margin: 0;
+}
+#breadcrumb li {
+	float: left;
+	line-height: 1.5em;
+	padding-left: .75em;
+}
+#breadcrumb li a {
+	display: block;
+	padding: 0 15px 0 0;
+	background:url(../images/breadcrumbs.gif) no-repeat right center;
+}
+/* end of breadcrumb methods */
+
+/* This adds borders to command line screenshots */
+.cmdscnshot{
+	border-top: solid 3px #DCDCDC;
+	border-left: solid 3px #DCDCDC;	
+}
+
+/* This is for the screenshot of a GUI interface */
+.guiscnshot {
+	border-style: ridge;
+	border-color: #DCDCDC;
+	border-width: 5px;
+}
+
+/* This formats the text for the tptbm performance page */
+.tptbmspec {
+	font-family: "Courier New";
+	font-weight: bold;
+	font-size: 14px;
+	color: #000000;
+}
+
+/* This formats the image for the tptbm link to make it more noticeable */
+img#chartImg{
+	border: solid;
+	border-color: #FFFFFF;
+	border-width: 2px;
+}
+img#chartImg:hover{
+	border-color: #DCDCDC;
+}
+
+/* This formats the TimesTen logo image to make it more noticeable */
+img#topIndex{
+	border: groove;
+	border-color: transparent;
+	border-width: 2px;
+}
+img#topIndex:hover{
+	border-color: #DCDCDC;
+}	
+
+/* This is for the tables listing the steps of how to set up TimesTen */
+.steps {
+	width: 700px;
+}
+.r0 {
+	background-color: #F6F6F6;
+}
+.r1 {
+	background-color: white;
+}
+.c0 {
+	width: 15px;
+	vertical-align: text-top;
+	
+}
+.c1 {
+	width: 200px;
+	vertical-align: text-top;
+}
+.c2 {
+	width: 485px;
+	vertical-align: text-top;
+}
+
+/* This is for styling example links */
+.example {
+	/*background-color: #DCDCDC;*/
+	font-weight: bold;
+}
+
+/* This is for the "Compile and Run" links */
+.compilerun {
+	font-weight: bold;
+}
+.compilerun:hover{
+	color: #FFFFFF;
+	text-decoration: none;
+	background-color:#000000; /*white*/
+}

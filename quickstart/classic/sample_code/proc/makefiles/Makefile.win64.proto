@@ -1,0 +1,142 @@
+#
+# Build TimesTen Sample Programs (Windows)
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# $Revision: /main/1 $
+#
+
+INSTDIR         = $(TIMESTEN_HOME)\install
+TTORACLE_HOME   = $(INSTDIR)\ttoracle_home\instantclient_11_2
+OCIINCS         = $(TTORACLE_HOME)\sdk\include
+OCILIBDIR       = $(TTORACLE_HOME)\sdk\lib\msvc
+COMMDIR         = $(QUICKSTART_HOME)\sample_code\common
+
+TTVER           = 1211
+
+CC              = cl.exe /nologo
+
+PLATCFLAGS      = /DWIN64 /DWIN32 /DWINVER=0x400 /MT /EHsc /Ox /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+LDFLAGS         = /link /STACK:3000000 /FIXED:NO bufferoverflowu.lib
+
+
+INCS            = /I$(OCIINCS) /I$(INSTDIR)\include /I$(COMMDIR) /I$(OCIINCS)
+
+CSDEFS          = /DTTCLIENTSERVER
+CFLAGS          = $(PLATCFLAGS) $(INCS)
+
+TTLINK          = /LIBPATH:$(INSTDIR)\lib /LIBPATH:$(TTORACLE_HOME) /LIBPATH:$(OCILIBDIR)
+
+ICLIBS          = $(TTLINK) orasql11.lib
+DMLIBS          = odbc32.lib
+
+ANSIDYN1           = ansidyn1.exe
+ANSIDYN1OBJS       = ansidyn1.obj psswds.obj parseargs.obj
+ADDEMPPROC         = addempPROC.exe
+ADDEMPPROCOBJS     = addempPROC.obj psswds.obj parseargs.obj
+BATCHFETCHPROC     = batchfetchPROC.exe
+BATCHFETCHPROCOBJS = batchfetchPROC.obj psswds.obj parseargs.obj
+CURSORPROC         = cursorPROC.exe
+CURSORPROCOBJS     = cursorPROC.obj psswds.obj parseargs.obj
+GETEMPPROC         = getempPROC.exe
+GETEMPPROCOBJS     = getempPROC.obj psswds.obj parseargs.obj
+PLSQLPROC          = plsqlPROC.exe
+PLSQLPROCOBJS      = plsqlPROC.obj psswds.obj parseargs.obj
+
+PROGS              = $(ANSIDYN1) $(ADDEMPPROC) $(BATCHFETCHPROC) $(CURSORPROC) $(GETEMPPROC) $(PLSQLPROC)
+
+C_FILES            = ansidyn1.c addempPROC.c batchfetchPROC.c cursorPROC.c getempPROC.c plsqlPROC.c
+
+
+CONFIGFILE = pcscfg.cfg
+
+#
+# Top level targets
+#
+
+all:		$(PROGS)
+
+clean:
+	-erase /Q *.exe *.obj *.pdb *.sbr *.lis $(C_FILES) $(CONFIGFILE)
+
+
+#
+# Targets for building executables
+#
+
+$(ANSIDYN1): $(ANSIDYN1OBJS)
+		$(CC) /Fe$@ $(ANSIDYN1OBJS) $(LDFLAGS) $(ICLIBS)
+
+$(ADDEMPPROC): $(ADDEMPPROCOBJS)
+		$(CC) /Fe$@ $(ADDEMPPROCOBJS) $(LDFLAGS) $(ICLIBS)
+
+$(BATCHFETCHPROC): $(BATCHFETCHPROCOBJS)
+		$(CC) /Fe$@ $(BATCHFETCHPROCOBJS) $(LDFLAGS) $(ICLIBS)
+
+$(CURSORPROC): $(CURSORPROCOBJS)
+		$(CC) /Fe$@ $(CURSORPROCOBJS) $(LDFLAGS) $(ICLIBS)
+
+$(GETEMPPROC): $(GETEMPPROCOBJS)
+		$(CC) /Fe$@ $(GETEMPPROCOBJS) $(LDFLAGS) $(ICLIBS)
+
+$(PLSQLPROC): $(PLSQLPROCOBJS)
+		$(CC) /Fe$@ $(PLSQLPROCOBJS) $(LDFLAGS) $(ICLIBS)
+
+
+#
+# Targets for building Pre-compiled C files
+#
+
+
+ansidyn1.c: ansidyn1.pc $(CONFIGFILE)
+	@proc iname=ansidyn1.pc config=pcscfg.cfg mode=ansi DEFINE=_WSTDIO_DEFINED
+
+addempPROC.c: addempPROC.pc $(CONFIGFILE)
+	@proc iname=addempPROC.pc config=pcscfg.cfg DEFINE=_WSTDIO_DEFINED
+
+batchfetchPROC.c: batchfetchPROC.pc $(CONFIGFILE)
+	@proc iname=batchfetchPROC.pc config=pcscfg.cfg DEFINE=_WSTDIO_DEFINED
+
+cursorPROC.c: cursorPROC.pc $(CONFIGFILE)
+	@proc iname=cursorPROC.pc config=pcscfg.cfg DEFINE=_WSTDIO_DEFINED
+
+getempPROC.c: getempPROC.pc $(CONFIGFILE)
+	@proc iname=getempPROC.pc config=pcscfg.cfg DEFINE=_WSTDIO_DEFINED
+
+plsqlPROC.c: plsqlPROC.pc $(CONFIGFILE)
+	set LOCAL=sampledb
+	@proc USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics DEFINE=_WSTDIO_DEFINED
+
+$(CONFIGFILE) :
+	@echo ltype=short > $(CONFIGFILE)
+	@echo parse=full >> $(CONFIGFILE)
+!IF DEFINED(MSVCDIR)
+  @echo sys_include=$(MSVCDIR)\include >> $(CONFIGFILE)
+!ENDIF
+!IF DEFINED(VCINSTALLDIR)
+  @echo sys_include=$(VCINSTALLDIR)\include >> $(CONFIGFILE)
+!ENDIF
+!IF DEFINED(MSSDK)
+  @echo sys_include=$(MSSDK)\include >> $(CONFIGFILE)
+  @echo sys_include=$(MSSDK)\include/crt >> $(CONFIGFILE)
+  @echo sys_include=$(MSSDK)\include/crt/sys >> $(CONFIGFILE)
+!ENDIF
+	@echo sys_include=$(TIMESTEN_HOME)\install\ttoracle_home\instantclient_11_2\sdk\include >> $(CONFIGFILE)
+	@echo close_on_commit=yes >> $(CONFIGFILE)
+	@echo include=$(QUICKSTART_HOME)\sample_code\common >> $(CONFIGFILE)
+
+
+#
+# Targets for building object files
+#
+
+#ansidyn1.obj: ansidyn1.c
+#	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c ansidyn1.c
+
+#psswds.obj: psswds.c
+#	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c psswds.c
+
+
+.c.o:
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c $<
+
+

@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Creating a Standby Cache Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Creating a Standby Cache Database</span>
+<p >After setting up an active master database, you can create the standby database by cloning the active database to the standby server. 
+In order to duplicate the active database, the instance administrator on  the standby machine must be identical to the one on the active server.</p>
+<p>This tutorial will make use of the DSN <em class="codetext">cachedb1_1211</em> and <em class="codetext">cachedb2_1211</em>. 
+The hostnames of the  two machines in the examples are <span class="codetext">tthost1</span> and <span class="codetext">tthost2</span>. 
+<span class="codetext">cachedb1_1211</span> is  the active cache database on <span class="codetext">tthost1</span>,  
+and <span class="codetext">cachedb2_1211</span> on <span class="codetext">tthost2</span> is the standby cache database. </p>
+
+<span class="section1">9. Duplicate the active database to the standby</span>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in to server 2 (<em>tthost2</em>) as the instance administrator. 
+	Use the <span class="doclink">ttRepAdmin</span> 
+	utility to duplicate the active cache database to the standby database.</p>
+	<p class="codetext">ttrepadmin -duplicate -from cachedb1_1211 -host &quot;tthost1&quot; 
+	-uid cacheadm -pwd cacheadm -keepcg -cacheuid cacheadm -cachepwd cacheadm &quot;dsn=cachedb2_1211&quot; </p>
+	<p>Note that the <span class="codetext">-from</span> clause is using the data store name <em>cachedb1_1211</em> and not the DSN name.
+	<span class="codetext"> -uid</span> and <span class="codetext">-pwd</span> correspond to the  username and password of a  
+	user with <span class="codetext">ADMIN</span> privilege on the active database.</p>
+</li><br/>
+</ol></blockquote>
+<p class="section1">10. Start the replication agent on the standby database
+</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in to <span class="codetext">ttIsql</span> and connect to the standby database <span class="codetext">(cachedb2_1211)</span> 
+	as the user <em>cacheadm</em>, 	passing in both the TimesTen and Oracle user passwords for <em>cacheadm</em>. </p>
+	<p class="codetext">ttIsql</p>
+	<p class="codetext">connect &quot;dsn=cachedb2_1211;uid=cacheadm;pwd=cacheadm;oraclepwd=cacheadm&quot;; </p>
+</li><br/>
+<li>
+	<p>The replication agent on the standby database is responsible for processing the data   from the active database. 
+	Use the built-in procedure <span class="doclink">ttRepStart</span> 
+	to start the replication agent.</p>
+	<p class="codetext">call ttrepstart; </p>
+</li><br/>
+<li>
+	<p>Wait for <span class="codetext">cachedb2_1211</span> to enter the standby  state. Use the built-in procedure 
+	  <span class="doclink">ttRepStateGet</span> 
+	to verify the current replication state of the database. </p>
+	<p class="codetext">call ttrepstateget; </p>
+	<p><img class="cmdscnshot" src="../images/rep_standby_repstateget_repdb2.gif" /></p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">11. Start the cache agent on the standby database</span>
+<blockquote ><ol type=a>
+<li>
+	<p>Call the built-in procedure 
+	  <span class="doclink">ttCacheStart</span> 
+	to start the cache agent on the standby database.</p>
+	<p class="codetext">call ttcachestart;</p>
+</li><br/>
+</ol></blockquote>
+
+
+<span class="section1">12. Preload data into Cache Groups</span>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in to <span class="codetext">ttIsql</span> and connect to <em>cachedb1_1211</em> as the user <em>cacheadm</em>, passing in both 
+	the TimesTen and Oracle user passwords for <em>cacheadm</em>. </p>
+	<p class="codetext">ttIsql</p>	  
+	<p class="codetext">connect &quot;dsn=cachedb1_1211;uid=cacheadm;pwd=cacheadm;oraclepwd=cacheadm&quot;; </p>
+</li><br/>
+<li>
+	<p>Enter the 
+	  <span class="doclink">LOAD CACHE GROUP</span> 
+	statement below in <span class="codetext">ttIsql</span>, to populate the read-only cache group <span class="codetext">cacheadm.ro</span>.</p>
+	<p class="codetext">load cache group ro commit every 256 rows;</p>
+	<p class="codetext"><img class="cmdscnshot" src="../images/cg_load_cg_ro.gif" /></p>
+</li><br/>
+<li>
+	<p>Enter the following <span class="codetext">LOAD CACHE GROUP</span> statement in <span class="codetext">ttIsql</span>
+	to pre-load a dynamic cache group  <span class="codetext">cacheadm.d_awt,</span> 
+	with employees records where their <span class="codetext">employee_id</span> is greater than 200; </p>
+	<p class="codetext">load cache group d_awt where employees.employee_id &gt; 200 commit every 0 rows;</p>
+	<p><img class="cmdscnshot" src="../images/cg_load_cg_d_awt.gif" /></p>
+ 
+	<p><b>Note:</b> After loading the data, the autorefresh state for read only cache groups will be changed to "ON". 
+	Changes to the underlying autorefresh tables in Oracle will be applied to the cache tables once the defined refresh interval has been reached. 
+	For <span class="doclink">asynchronous writethrough cache groups</span>, 
+	all updates in the cache database will  be propagated to the Oracle database, once the replication agent process is up and running. </p>
+</li><br/>
+</ol></blockquote>
+
+<p>The configuration of an active standby pair is  completed. Changes to the data in the active cache database will automatically be replicated 
+to the standby cache database.<br />
+For more information on Administering an Active Standby Pair with Cache Groups please refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/standbycache.htm#TTREP231" target="_blank" class="doclink">here</a> </p>
+<table align="right" border="0">
+<tr>
+	<td><a href="rep_aspair_cache_define_activedb.html"><b>&lt; Previous</a></td>
+	<td><a href="rep_aspair_cache_config_db.html"><b>1</b></a></td>
+	<td><a href="rep_aspair_cache_define_activedb.html"><b>2</b></a>
+	<td>3</td>
+</tr>
+</table>
+
+  
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</html>

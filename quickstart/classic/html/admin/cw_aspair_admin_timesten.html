@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Managing an Active Standby Pair with TimesTen In-Memory Database and Clusterware</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Managing an Active Standby Pair<br/> with TimesTen In-Memory Database and Clusterware</span>
+<p>This tutorial will make use of the DSN <em>repdb1_1211</em>. 
+The hostnames of the two machines in the examples are <em>ttcwnode1</em> and <em>ttcwnode2</em>. The active database 
+is in <em>ttcwnode1</em> and the standby database is in <em>ttcwnode2</em>.</p>
+<p>The following tasks are the most common management tasks once the active standby pair has been created by 
+<span class="codetext">ttCWAdmin</span>:</p>
+
+<p class="section1">1. Check the cluster agents' status</p>
+<blockquote><ol type=a>
+<li>
+	<p>Check the TimesTen cluster agents by executing the 
+	  <span class="doclink">ttCWAdmin -status</span> command 
+	on any one of the hosts. For example, on <em>ttcwnode1</em>:</p>
+	<p class="codetext">ttCWAdmin -status -dsn repdb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_status_repdb1_1211.gif" alt="ttCWAdmin -status after start" /></p>
+</li><br/>
+</ol></blockquote>
+
+  
+<p class="section1">2. Stop the Active Standby Pair</p>
+<blockquote><ol type=a>
+<li>
+	<p>Stop the Active Standby Pair by executing the 
+	  <span class="doclink">ttCWAdmin -stop</span> 
+	command on any one of the hosts. For example, on <em>ttcwnode1</em>:
+    <p class="codetext">ttCWAdmin -stop -dsn repdb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_stop_repdb1_1211.gif" alt="ttCWAdmin -stop" /></p>
+</li><br/>
+<li>
+	<p>Check the cluster status after doing <span class="codetext">ttCWAdmin -stop</span>. For example, on <em>ttcwnode2</em>:</p>
+	<p class="codetext">ttcwadmin -status -dsn repdb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_status_repdb1_1211_after_stop.gif" alt="ttCWAdmin -status after stop" /></p>
+</li><br/>
+</ol></blockquote>
+  
+<p class="section1">3. Drop the Active Standby Pair</p>
+<blockquote><ol type=a>
+<li>
+	<p>Drop the Active Standby Pair by executing the 
+	  <span class="doclink">ttCWAdmin -drop</span> 
+	command on any one of the hosts. For example, on <em>ttcwnode1</em>:</p>
+	<p class="codetext">ttcwadmin -drop -dsn repdb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_drop_repdb1_1211.gif" alt="ttCWAdmin -drop" /></p>
+</li><br/>
+<li>
+	<p>Check the cluster status after doing <span class="codetext">ttCWAdmin -drop</span>. For example, on <em>ttcwnode2</em>:</p>
+    <p class="codetext">ttcwadmin -status -dsn repdb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_status_repdb1_1211_after_drop.gif" alt="ttCWAdmin -status after drop" /></p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">4. Shutdown the cluster agents</p>
+<blockquote><ol type=a>
+<li>
+	<p>Shutdown the cluster agents by executing the 
+	  <span class="doclink">ttCWAdmin -shutdown</span> 
+	command on any one of the hosts. For example, on <em>ttcwnode1</em>:</p>
+	<p class="codetext">ttcwadmin -shutdown</p>
+    <p><img class="cmdscnshot" src="../images/cw_ttcwadmin_shutdown_repdb1_1211.gif" alt="ttCWAdmin -shutdown" /></p>
+</li><br/>
+<li>
+	<p>Check the cluster status after doing <span class="codetext">ttCWAdmin -shutdown</span>. For example, on <em>ttcwnode2</em>:</td>
+	<p class="codetext">ttcwadmin -status -dsn repdb1_1211</p>
+    <p><img class="cmdscnshot" src="../images/cw_ttcwadmin_status_repdb1_1211_after_shutdown.gif" alt="ttCWAdmin -status after shutdown" /></p>
+    <p>The <span class="codetext">ttCWAdmin -status</span> command succeeds as it is querying Oracle Clusterware, which is still running.</p>
+</li><br/>
+</ol></blockquote>
+<p >For more information about Using, Configuring and Managing an Active Standby Pair with TimesTen and Oracle Clusterware refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/cluster.htm#CCHCFAAD" target="_blank" class="doclink">here</a> </p>
+<p >&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+</html>

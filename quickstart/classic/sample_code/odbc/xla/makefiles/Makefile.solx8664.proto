@@ -1,0 +1,81 @@
+#
+# Build TimesTen Sample Programs (Unix)
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# $Revision: /main/1 $
+#
+
+INSTDIR         = $(TIMESTEN_HOME)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
+TTDMDIR         = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
+
+CC              = cc
+
+EXTRALIBS       =  -lposix4 -lpthread -lthread -lsocket -lnsl -lm -lc -ldl
+PLATCFLAGS      = -xO4 -mt -m64
+LDFLAGS         = -mt -m64
+SHLIB_SUFFIX    = so
+
+INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
+
+CSDEFS          = -DTTCLIENTSERVER
+CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
+
+TTLINK          = -L$(INSTDIR)/lib -R$(INSTDIR)/lib
+TTDMLINK        = -L$(QUICKSTART_HOME)/lib -R$(QUICKSTART_HOME)/lib
+
+DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
+CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS)
+TTDMLIBS        = $(TTDMLINK) -lttdrvmgr $(EXTRALIBS)
+
+
+#
+# TimesTen Driver Manager Shared Library
+#
+TTDMSHLIB       = $(QUICKSTART_HOME)/lib/libttdrvmgr.$(SHLIB_SUFFIX)
+
+
+XLASIMPLEDC     = xlaSimple
+XLASIMPLEDCOBJS = xlaSimple.o ttgetopt.o
+XLASIMPLETTDM   = xlaSimpleTTDM
+
+PROGS           = $(XLASIMPLEDC) $(XLASIMPLETTDM)
+
+#
+# Top level targets
+#
+
+all:		$(PROGS)
+
+clean:
+	rm -f $(PROGS) *.o
+
+#
+# Targets for building Direct Linked executables
+#
+
+$(XLASIMPLEDC):	$(XLASIMPLEDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(XLASIMPLEDCOBJS) $(DCLIBS)
+
+$(XLASIMPLETTDM):  $(XLASIMPLEDCOBJS) $(TTDMSHLIB)
+	$(CC) -o $@ $(LDFLAGS) $(XLASIMPLEDCOBJS) $(TTDMLIBS)
+
+#
+# Targets for building object files
+#
+
+utils.o:	$(COMMDIR)/utils.c $(COMMDIR)/utils.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/utils.c
+
+ttgetopt.o:	$(COMMDIR)/ttgetopt.c $(COMMDIR)/ttgetopt.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/ttgetopt.c
+
+xlaSimple.o:	xlaSimple.c
+	$(CC) $(CFLAGS) -o $@ -c xlaSimple.c
+
+#
+# Target for building TimesTen Driver Manager shared library
+#
+
+$(TTDMSHLIB):
+	cd $(TTDMDIR); make

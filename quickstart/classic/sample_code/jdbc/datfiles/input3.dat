@@ -1,0 +1,25 @@
+# Here is a description of the format of this data
+# Each line represents a single order placed by a customer
+# An order can contain multiple products
+#    cust_num, time, prd, qty ...
+# comma is the field delimiter
+
+# Custumber 3, on this date and time, ordered 34 count of product 100
+
+3,2003-03-09 08:15:12.0,100,34
+
+# Cust 4, ordered 52 count of product 101
+4,2003-03-09 08:15:13.0,101,52
+
+# Cust 1, ordered 100 count of product 100 and 10000 of product 103
+1,2003-03-09 08:16:00.0,100,100,103,10000
+
+# Cust 1, ordered 100 count of product 100 and 3400 of product 103
+1,2003-03-09 08:16:01.0,100,100,103,3400
+
+# Cust 2, ordered 1000 counts each of products 100, 102, and 103
+2,2003-05-09 08:16:02.0,103,1000,100,1000,102,1000
+
+2,2003-05-09 08:16:02.0,103,500,100,1000,102,1000
+
+

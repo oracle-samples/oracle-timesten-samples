@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to use ttImportFromOracle</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script></head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to  use ttImportFromOracle </span>
+<p>This tutorial provides a step-by-step example on how to use the TimesTen command line utility <span class="doclink"><a href="http://www.oracle.com/technetwork/indexes/samplecode/utilities-2180928.html">ttImportFromOracle</a></span> to efficiently import tables from an Oracle Database to a TimesTen database. In particular, this utility is recommended when there is a need to load detail tables from an Oracle data warehouse to the TimesTen database running in the Oracle Exalytics In-Memory machine. </p>
+<p> <span class="codetext">ttImportFromOracle</span> analyzes a given table in the Oracle Database, recommends space-efficient data types, identifies columns for columnar compression and generates DDL for the table and indexes  in TimesTen for optimal memory footprint  in the TimesTen database.  <span class="codetext">ttImportFromOracle</span> should be run at least once per source table. <span class="codetext">ttImportFromOracle</span> also generates optimized  scripts to load the source data in parallel, using multiple instances of the TimesTen <span class="codetext">ttLoadFromOracle</span> builtin procedure. </p>
+<p>The example on this page references a sample Oracle database called <span class="codetext"><em>ttorcl</em></span>. The Oracle database schema belongs to a user called <span class="codetext">ttuser </span>and this user has 5 tables which need to be imported into a TimesTen database called <span class="codetext"><em>ttdb</em></span>. </p>
+<p>Note. The utility <span class="codetext">ttImportFromOracle</span> should be downloaded from <a href="http://www.oracle.com/technetwork/indexes/samplecode/utilities-2180928.html"> OTN </a>. <br />
+  <br/>
+  <span class="section1"><strong>Prerequisites</strong></span></p>
+<p><span class="codetext">ttImportFromOracle</span> should be run from the server where the TimesTen database resides. Ensure the following perequisites are met:</p>
+<ul>
+  <li>A valid Oracle Database net service name has been configured on  the TimesTen database server   pointing to the source Oracle database.    <span class="codetext"><em>ttorcl</em></span> is the net service name used in this example.<br />
+    <br />
+  </li>
+  <li>The target TimesTen database is using the same database character set  as that for the source Oracle database. Different database character sets will result in an error during the data loading step.   </li>
+</ul>
+<p><span class="section1"><strong><em>1. Running ttImportFromOracle</em></strong></span><strong><em><span class="section1"> to analyze the source tables</span></em></strong> <br/>
+    <br />
+    <span class="codetext">ttImportFromOracle</span> analyzes the specified tables in the Oracle Database and generates   scripts to support the importing of the tables into the specified TimesTen database.  
+  There are various options that the users can specify. The examples below demonstrate the most common  scenarios. Please refer to the <span class="codetext">ttImportFromOracle</span> <a href="http://www.oracle.com/technetwork/database/database-technologies/timesten/downloads/index.html"><span class="doclink"> readme</span></a> for more details on the available options and parameter settings. <br />
+  <br />
+  <strong>Examples:</strong><br />
+  <br />
+  The following command performs data type mapping on the NUMBER columns, and data compression evaluation, for all tables belonging to the Oracle database user <span class="codetext">ttuser. </span><br />
+    <br />  
+    <span class="codetext">$ ./ttImportFromOracle -oraconn ttuser/oracle@ttorcl -typemap 1 -compression 2 -prefix pf </span><br />
+    <br />
+where<br />
+<br />
+<span class="codetext">-<em>oraconn</em></span>   specifies the username/password and the net service name for the source Oracle database.<br />
+  <span class="codetext">-<em>typemap 1</em></span>   specifies that NUMBER columns should be evaluated for data type mapping (without scanning the data in the columns).<br />
+  <span class="codetext">-<em>compression 2</em></span>   specifies that columnar compression should be evaluated. The utility will determine candidates for compression based on the data cardinality. (Note that columnar compression requires TimesTen for Exalytics license).<br />
+  <span class="codetext">-<em>prefix </em></span> <em><span class="codetext">pf</span></em>   is an optional parameter used for adding a filename prefix to all the generated files.</p>
+<p>The following command performs data type mapping on NUMBER columns by scanning the actual data stored in the NUMBER columns for table <span class="codetext">ttuser.orders</span>.</p>
+<p><span class="codetext">$ ./ttImportFromOracle -oraconn ttuser/oracle@ttorcl -typemap 2  -tables orders </span></p>
+<p>The following command performs data type mapping on NUMBER, VARCHAR2 and NVARCHAR2 columns by analyzing the data stored in these columns for all  tables belonging to the user <span class="codetext">ttuser</span>. Columns will also be evaluated for space saving using columnar compression. All of the generated files will use a prefix <span class="codetext">tm21_</span>. </p>
+<p><span class="codetext">$ ./ttImportFromOracle -oraconn ttuser/oracle@ttorcl -typemap 2,1 -compression 2 -prefix tm21_</span></p>
+<p>Here is the sample output from running the above command showing the various processing stages:</p>
+<p><img src="../images/howto_util_ttimport_example.gif" width="562" height="286" class="cmdscnshot"/></p>
+<p><strong><br />
+    </strong><span class="section1"><em><strong>2. Importing the tables from the Oracle Database</strong></em></span><br/>
+    <br />
+  After running <span class="codetext">ttImportFromOracle</span>, various scripts are created for the user. Below is a listing of the  files generated:</p>
+<p><img src="../images/howto_util_ttimport_example_ls.gif" width="562" height="94" class="cmdscnshot"/></p>
+<p>Description of selected files:</p>
+<table width="764" border="0">
+  <tr>
+    <td width="121" valign="top"><span class="codetext">CreateUsers.sql</span></td>
+    <td width="633"> - a SQL script to create the users in a TimesTen database. 
+      Note the default password for these users is set to the same as the username; these should be changed to use a more secure password.</td>
+  </tr>
+  <tr>
+    <td valign="top"><span class="codetext">CreateTables.sql</span></td>
+    <td> - a SQL script to create all the tables in the TimesTen database with data type mapping changes and compression clauses included. This script also contains the estimated table sizes.</td>
+  </tr>
+  <tr>
+    <td><span class="codetext">ttPDL.sh</span></td>
+    <td>- a shell script to load the table data using parallel data load running <span class="doclink"><a href="howto_util_ttloadfromoracle.html">ttLoadFromOracle</a></span> </td>
+  </tr>
+  <tr>
+    <td><span class="codetext">CreateIndexes.sql</span></td>
+    <td>- a SQL script to create all the indexes, primary keys and foreign keys.</td>
+  </tr>
+  <tr>
+    <td><span class="codetext">UpdateStats.sql</span></td>
+    <td>- a SQL script to update the statistics on the tables.</td>
+  </tr>
+  <tr>
+    <td><span class="codetext">ttSizing.sh</span></td>
+    <td> - a shell script to run <a href="util.html"><span class="doclink">ttSize</span> </a>to output sizing information on the created tables.</td>
+  </tr>
+</table>
+<p><br />
+  A typical sequence  for running the scripts to import the tables to TimesTen:</p>
+<ol>
+  <li> Run <span class="codetext">CreateUsers.sql</span> to create the required users in the TimesTen database.</li>
+  <li>Run <span class="codetext">CreateTables.sql</span> to create the tables.</li>
+  <li> Run <span class="codetext">ttPDL.sh</span> to load the data into TimesTen (this script invokes <span class="codetext">ttLoadFromOracle</span>).</li>
+  <li>Run <span class="codetext">CreateIndexes.sql</span> to create the same Oracle databases indexes and constraints in the TimesTen database.</li>
+  <li>Run <span class="codetext">UpdateStats.sql</span> to update the table statistics.</li>
+  </ol>
+<p>Below is the  sample output from running the above scripts to create and import the <span class="codetext">ttuser </span>tables into the TimesTen database <span class="codetext">ttdb</span> :
+  </p>
+<blockquote>
+  <p><strong>1.Create Users </strong><strong>in the TimesTen database </strong></p>
+  <p><img src="../images/howto_util_ttimport_create_users.gif" width="563" height="510" class="cmdscnshot"/></p>
+  <p><br />
+    <br />
+    <strong>2.Create Tables in the TimesTen database</strong></p>
+  <p><img src="../images/howto_util_ttimport_create_tables.gif" width="561" height="1200" class="cmdscnshot"/></p>
+  <p><br />
+    <br />
+    <strong>3.Load Data from the Oracle database into the TimesTen database</strong></p>
+  <p><img src="../images/howto_util_ttimport_ttpdl.gif" width="563" height="528" class="cmdscnshot"/></p>
+  <p><br />
+    <br />
+    <strong>4.Create Indexes on the TimesTen tables </strong></p>
+  <p><img src="../images/howto_util_ttimport_create_indexes.gif" width="563" height="706" class="cmdscnshot"/></p>
+  <p><br />
+    <br />
+    <strong>5.Update Statistics on the TimesTen tables </strong></p>
+  <p><img src="../images/howto_util_ttimport_updatestats.gif" width="563" height="400" class="cmdscnshot"/></p>
+  <p><br />
+  </p>
+  <p><strong>For more details and usage information, refer to <span class="doclink"><a href="http://www.oracle.com/technetwork/indexes/samplecode/utilities-2180928.html">ttImportFromOracle</a></span> online document.
+</strong> 
+</p>
+</blockquote>
+</div>
+
+<div id="footer"/>
+</body>
+</html>

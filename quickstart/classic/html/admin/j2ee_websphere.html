@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to Configure IBM Websphere Application Server with Oracle TimesTen</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to Configure Websphere Application Server 8</span>
+<p class="normal">This section provides descriptions and examples of configuring the TimesTen JDBC driver for use with IBM WebSphere Application Server 8. </p>
+<p class="normal">Assumption:  Oracle TimesTen and IBM WebSphere Application Server have been successfully installed on the same host machine and that both instances are running.</p>
+<p class="normal"><img src="images/view_image.gif" alt="" width="24" height="24" align="absmiddle" /></a></a> <b><font color="#ff0000">Place the cursor over this icon to view  images in this tutorial.</font></b></p>
+<p class="normal"><span class="section1">Configuring TimesTen Connections and Properties</span><br />
+</p>
+<p><span class="normal">The TimesTen JDBC driver supports four different types of connections to access the TimesTen database:</span></p>
+<table width="758" border="1">
+  <tr>
+    <td width="164" height="144" valign="top" class="normal"><div align="left"><em><strong>Direct-linked connections  with local transactions only</strong></em></div></td>
+    <td width="545" valign="top" class="normal">This configuration is an in-process linked to the TimesTen database libraries; direct-linked connection provides the best response time for database operations and results in higher transaction throughput. To use this configuration, the Websphere application server and the TimesTen database must be  running in the same machine.
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span><br />
+</p>
+    <p>Example <span class="codetext">URL Property: jdbc:timesten:direct:sampledb</span></p></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">
+    <td height="131" valign="top" bgcolor="#EEEEEE" class="normal"><div align="left"><em><strong>Direct-linked connection  with XA distributed transaction</strong></em>s</div></td>
+    <td valign="top" class="normal">The JDBC driver supports XA distributed transactions. For directed-link connections, the TimesTen database must reside on the same machine as the Websphere Application Server. This connection type incurs distributed transaction overhead.
+    <p>TimesTen Class: <span class="codetext"><em>com.timesten.jdbc.xa.TimesTenXADataSource</em></span><br />
+</p>
+    <p>Example <span class="codetext">URL Property: jdbc:timesten:direct:sampledb</span></p></td>
+  </tr>
+  <tr>
+    <td height="140" valign="top" class="normal"><div align="left"><em><strong>Client/server access with local transactions only</strong></em></div></td>
+    <td valign="top" class="normal">Client/Server connections are intended for applications not running in the same machine as the TimesTen database. Here, the Websphere Application Server can access the TimesTen database from a remote machine. This connection mode  incurs network (TCP/IP) overhead and is less responsive as the direct-linked connection mode.
+      <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span><br />
+</p>
+    <p>Example <span class="codetext">URL Property: jdbc:timesten:client:sampledb</span></p></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">
+    <td height="131" valign="top" bgcolor="#EEEEEE" class="normal"><div align="left"><em><strong>Client/server access with XA distributed transactions</strong></em></div></td>
+    <td valign="top" class="normal">The JDBC driver supports XA distributed transactions. For client/server connections, the Websphere Application Server may access the TimesTen database from a remote machine.This connection type incurs network overhead in addition to the distributed transaction overhead.
+    <p>TimesTen Class:<span class="codetext"> com.timesten.jdbc.xa.TimesTenXADataSource</span><br />
+</p>
+    <p>Example <span class="codetext">URL Property: jdbc:timesten:client:sampledb</span></p></td>
+  </tr>
+</table>
+<p class="style109">&nbsp;</p>
+<p class="normal"><span class="section1">Configuring a TimesTen JDBC Provider</span></p>
+
+<p class="normal">Before you can WebSphere to access TimesTen data stores the server environment must have access to the TimesTen JDBC driver jar file and the native libraries. In WebSphere this can be done by configuring a JDBC provider in the WebSphere administration console. Follow these steps.</p>
+<table width="760" border="0">
+  <tr>
+    <td width="57" height="22" align="center" valign="top" class="normal"><div align="center">1.</div></td>
+    <td valign="top" class="normal">From the Integrated Solution Console, select <strong>Resources --&gt; JDBC --&gt; JDBC Providers</strong></td>
+  </tr>
+  <tr>
+    <td height="23" align="center" valign="top" class="normal"><div align="center">2.</div></td>
+    <td valign="top" class="normal">Select a scope from the drop-down list box</td>
+  </tr>
+  <tr>
+    <td height="25" align="center" valign="top" class="normal"><div align="center">3.</div></td>
+    <td valign="top" class="normal">Click <strong>New</strong></td>
+  </tr>
+  <tr>
+    <td height="124" align="center" valign="top" class="normal"><div align="center">4.</div></td>
+    <td valign="top" class="normal">In the <strong>Create new JDBC Provider</strong> screen, <br />
+      &gt; <strong>Database type</strong>: 
+      select '<span class="codetext">User-defined</span>' <br />
+    &gt; <strong>Implementation class name</strong>: enter <span class="normal">com.timesten.jdbc.ObservableConnectionDS<br />
+    &gt; <strong>Name</strong>: TimesTen (local transactions) [See Figure 1 for example]<br />
+&gt; Click <strong>Next</strong><br />
+<br />
+        </span><img src="images/view_image.gif" name="ws_newjdbc" class="imgborder_off" id="ws_newjdbc" onClick="hideImage(this)" onMouseOver="showImage(this)" /><br />
+<span class="style2"><strong>Figure 1</strong></span>
+ </td>
+  </tr>
+  <tr>
+    <td height="125" align="center" valign="top" class="normal">5.</td>
+    <td valign="top" class="normal">At the <strong>Enter database class path information</strong> screen</p>
+      <p>&gt; Enter the path to the TimesTen JDBC driver. Choose the proper TimesTen JDBC driver jar file depending on the JDK version used in  Websphere Application Server (either <span class="codetext">&lt;TimesTen_install_dir&gt;/lib/ttjdbc5.jar or ttjdbc6.jar</span>)<br/>
+      &lt;TimesTen_install_dir&gt; is the home directory where you installed Oracle TimesTen.</p>
+        &gt; Click <strong>Next</strong> [See Figure 2 for example]<br />
+        <br />
+     <img src="images/view_image.gif" name="ws_db_classpath" class="imgborder_off" id="ws_db_classpath" onClick="hideImage(this)" onMouseOver="showImage(this)" /><br />
+<span class="style2"><strong>Figure 2</strong></span></td>
+  </tr>
+  <tr>
+    <td height="24" align="center" valign="top" class="normal">6.</td>
+    <td valign="top" class="normal">On the Summary screen, click <strong>Finish</strong></td>
+  </tr>
+  <tr>
+    <td height="27" align="center" valign="top" class="normal">7.</td>
+    <td valign="top" class="normal">At the <strong>JDBC providers</strong> screen click the provider name that you just created</td>
+  </tr>
+  <tr>
+    <td height="106" align="center" valign="top" class="normal">8.</td>
+    <td valign="top" class="normal">At the <strong>General properties</strong> screen<br />
+      &gt; Enter the path to the TimesTen shared libraries in the Native library path field. On UNIX platforms the path is <span class="codetext">&lt;TimesTen_install_dir&gt;/lib</span>. On Windows platforms the path is <span class="codetext">&lt;TimesTen_install_dir&gt;/bin</span>. [See Figure 3 for example] <br />
+    &gt; Click <strong>Apply</strong><br />
+    <br />
+      <img src="images/view_image.gif" name="ws_properties" class="imgborder_off" id="ws_properties" onClick="hideImage(this)" onMouseOver="showImage(this)" /><br />
+<span class="style2"><strong>Figure 3</strong></span>
+    </td>
+  </tr>
+  <tr>
+    <td height="23" align="center" valign="top" class="normal">9.</td>
+    <td valign="top" class="normal">Click <strong>Save</strong> to save the new configuration.</td>
+  </tr>
+</table>
+<p class="normal"><span class="section1">Configuring TimesTen Data Sources</span></p>
+<p class="normal">Data sources are associated with specific JDBC providers defined in the previous section. Follow these steps to configure TimesTen data sources from the WebSphere administration console:</p>
+<table width="760" border="0">
+  <tr>
+    <td width="92" height="25" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>1.</div></td>
+    <td width="652" valign="top" class="normal">Connect to the<strong> WebSphere administration console</strong></td>
+  </tr>
+  <tr>
+    <td height="23" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>2..</div></td>
+    <td valign="top" class="normal">Select <span class="style111">Resources-&gt;JDBC-&gt;Data sources</span></td>
+  </tr>
+  <tr>
+    <td height="25" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>3.</div></td>
+    <td valign="top" class="normal">Select a scope from the drop down list box.</td>
+  </tr>
+  <tr>
+    <td height="25" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>4.</div></td>
+    <td valign="top" class="normal">Click the <strong>New</strong> button</td>
+  </tr>
+  <tr>
+    <td height="23" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>5.</div></td>
+    <td valign="top" class="normal">At the <strong>Enter basic data source information</strong> screen enter a name and a JNDI name for the data source. Click <strong>Next</strong></td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>6.</div></td>
+    <td valign="top" class="normal"> At the <strong>Select JDBC provider</strong> screen select the TimesTen JDBC Provider created in the previous section. Click <strong>Next</strong>.</td>
+  </tr>
+  <tr>
+    <td height="57" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>7.</div></td>
+    <td valign="top" class="normal">At the <strong>Enter database specific properties for the data source</strong> screen use <span class="style112"></span><span class="codetext">com.ibm.websphere.rsadapter.GenericDataStoreHelper</span> for the Data store helper class name field. Make sure that the <strong>Use this data store in container managed persistence </strong>check box is checked. Click <strong>Next</strong>
+    </td>
+  </tr>
+  <tr>
+    <td height="24" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>8.</div></td>
+    <td valign="top" class="normal">On the following summary screen click <strong>Finish</strong></td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>9.</div></td>
+    <td valign="top" class="normal">At the <strong>Data sources</strong> screen click on the name of the TimesTen data source that you just created.</td>
+  </tr>
+  <tr>
+    <td height="24" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>10,</div></td>
+    <td valign="top" class="normal">Click <strong>Custom properties</strong></td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>11.</div></td>
+    <td valign="top" class="normal"><p>Click <strong>url</strong> property, in the <strong>value</strong> field enter the TimesTen JDBC URL for the DSN that this data source should connect to. A TimesTen URL takes the form: <span class="codetext">jdbc:timesten:&lt;direct|client&gt;:&lt;DSN&gt;</span>. For a direct DSN named <span class="codetext">sampledb</span> the screen should look similar to Figure 4. <br />
+      <img src="images/view_image.gif" alt="" name="ws_custom_props_1" class="imgborder_off" id="ws_custom_props_1" onclick="hideImage(this)" onmouseover="showImage(this)" />&nbsp;&nbsp;&nbsp; <img src="images/view_image.gif" alt="" name="ws_custom_props_2" class="imgborder_off" id="ws_custom_props_2" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2"><strong>Figure 4</strong></span></p></td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>12.</div></td>
+    <td valign="top" class="normal">Click <strong>user</strong> property, in the <strong>value</strong> field enter the TimesTen user that this data source should connect as.
+    </td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>13.</div></td>
+    <td valign="top" class="normal">Click <strong>password</strong> property, in the <strong>value</strong> field enter the password for the TimesTen user provided in the previous step.
+    </td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>14.</div></td>
+    <td valign="top" class="normal">Click <strong>webSphereDefaultIsolationLevel</strong> property, in the <strong>value</strong> field enter <strong>2</strong> for READ_COMMITTED.
+    </td>
+  </tr>
+  <tr>
+    <td height="25" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>15.</div></td>
+    <td valign="top" class="normal">Click <strong>Apply</strong></td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>16</div></td>
+    <td valign="top" class="normal">Click <strong>Save</strong> to save the configuration</td>
+  </tr>
+  <tr>
+    <td height="26" align="center" valign="top" class="normal"><div align="center"><span class="style111"></span>17.</div></td>
+    <td valign="top" class="normal">Restart the server before attempting to make connection to the new TimesTen data source.</td>
+  </tr>
+</table>
+<p class="normal"><span class="section1">Troubleshooting  TimesTen Connections</span>
+<p class="normal">Various problems may occur when using TimesTen with WebSphere. The list below describes possible solutions for common problems.<br />
+  <br />
+<table width="760" border="0">
+  <tr>
+    <td width="42" height="55" valign="top" class="normal"><div align="center"><span class="style113"><span class="style111"></span></span>1.</div></td>
+    <td width="708" valign="top" class="normal"><div align="left">When clicking on Test Connection for a TimesTen data source on the Data sources screen of the administration console, TimesTen throws a <span class="codetext">java.lang.IllegalAccessError</span> exception. This problem can occur if you have configured a new TimesTen data source but have not restarted the server. Try restarting the server to solve the problem</div></td>
+  </tr>
+  <tr>
+    <td height="289" valign="top" class="normal"><div align="center"><span class="style111"><span class="style113"></span></span>2.</div></td>
+    <td valign="top" class="normal"><div align="left">When attempting to establish a connection to a TimesTen data source from within WebSphere, TimesTen throws the exception “<span class="codetext">TT0837: Cannot attach data store shared-memory segment.</span>” This problem is likely to occur on 32-bit platforms when the system is unable to allocate or map enough contiguous shared memory to hold the TimesTen database. For detailed instructions on how to resolve this and other connection problems see the Oracle TimesTen In-Memory Database Troubleshooting Procedures Guide and the Oracle TimesTen In-Memory Database Installation Guide. These troubleshooting steps are recommended.<br />
+      <br />
+    </div>
+      <table width="706" border="0">
+      <tr>
+            <td width="34" valign="top" class="normal"><div align="center" class="style114">a.</div></td>
+          <td width="662" class="normal">Verify that it is possible to connect to the TimesTen data store outside of the WebSphere JVM. You can use the ttIsql utility for this purpose.</td>
+        </tr>
+          <tr>
+            <td valign="top" class="normal"><div align="center" class="style114">b.</div></td>
+            <td class="normal">Try increasing the maximum amount of shared memory available to the system. See the Oracle TimesTen In-Memory Database Installation Guide for platform specific details.</td>
+        </tr>
+          <tr>
+            <td valign="top" class="normal"><div align="center" class="style114">c.</div></td>
+            <td class="normal">Try decreasing the size of the TimesTen data store by recreating the data store with lower values for the PermSize and TempSize connection attributes.</td>
+        </tr>
+          <tr>
+            <td valign="top" class="normal"><div align="center" class="style114">d.</div></td>
+            <td class="normal">Terminate any unnecessary processes on the system to make more memory available.</td>
+        </tr>
+          <tr>
+            <td valign="top" class="normal"><div align="center" class="style114">e.</div></td>
+            <td class="normal">Try a client/server TimesTen JDBC connection instead of a direct connection for the WebSphere data source.</td>
+        </tr>
+          <tr>
+            <td valign="top" class="normal"><div align="center" class="style114">f.</div></td>
+            <td class="normal">If possible try a 64-bit version of TimesTen and WebSphere.</td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+<p class="normal">
+
+<p class="normal"><img src="images/view_image.gif" width="24" height="24" align="absmiddle" onMouseOver="hideAllImages()"> </a> 
+  <b class="normal"><font color="#ff0000">Place the cursor over this icon to hide all screenshots.</font></b></p>
+<!-- Footer  -->
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+<script language="JavaScript" type="text/JavaScript">
+<!--
+preLoadImages();
+//-->
+</script>
+</html>

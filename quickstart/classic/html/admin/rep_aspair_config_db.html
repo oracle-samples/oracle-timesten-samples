@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Setting up an Active Master Database</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Setting up an Active Master Database </span>
+<p>This tutorial will make use of the DSNs <em>repdb1_1211</em> and <em>repdb2_1211</em>. The hostnames of the two machines in the examples are <em>tthost1</em> and <em>tthost2</em>. <em>repdb1_1211</em> will be created as the active database on <em>tthost1</em>, 
+and <em>repdb2_1211</em> will be created on <em>tthost2</em> as the standby database.</p>
+<p>In order to set up an active standby pair, you need to first create an active master database. 
+This database must include a user with the 
+<span class="doclink">ADMIN</span> 
+privilege, and an application user with some tables to demonstrate data replication.</p>
+
+<p class="section1">1. Create an Active Master Database</p>
+<blockquote><ol type=a>
+<li>
+	<p>Log in to server 1(<span class="codetext">tthost1</span>) as the 
+	instance administrator and define a DSN for the active master database. In this example 
+	we will use DSN <span class="codetext">repdb1_1211</span>.</p>
+    
+    <p>In your <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini </span>file, add a  new data source name in the section labeled 
+	<span class="codetext">[ODBC Data Sources]</span> :</p>
+	<p class="codetext">repdb1_1211=TimesTen 18.1 Driver</p>
+    </p>
+    
+    For each DSN entry specified, there is a corresponding set of database properties and attributes you need to specify. 
+	The database attributes can be added anywhere after the <span class="codetext">[ODBC Data Sources]</span> section.</p>
+
+	<p><b>Note:</b> The DSN name appears inside square brackets at the top of the DSN definition on a line by itself</p>
+    <p class="codetext">
+          [repdb1_1211]<br />
+          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
+          DataStore=/home/timesten/instance/tt181/sample_db/repdb1_1211<br />
+          PermSize=512<br />
+          TempSize=128<br />
+          LogBufMB=256<br />
+          LogFileSize=256<br />
+          DatabaseCharacterSet=AL32UTF8<br />
+          PLSQL=1<br />
+          OracleNetServiceName=ttorcl 
+  	</p><br/>
+    
+	<p>Refer to the section <a href="db_ops_createdb.html">Setting up a Data Source Name</a> if you need 
+	information on how to define your own DSNs.
+     <br />
+     <br /><b>Note:</b>
+    <ul> To improve the replication throughput, you should set <span class="codetext">ReplicationParallelism</span> to a higher value (default is 4) in your DSN to leverage the processing power of modern multi-core systems and high bandwidth low-latency networks.</ul>
+     <br />
+    <ul>
+     Many of the OLTP applications have transactions that are independent of each other. For such application, set the database attribute <span class="codetext">ReplicationApplyOrdering</span> to 2 (default is 0) in your DSN to enable Automatic Parallel Replication (APR) with Commit Optimization feature by relax enforcing commit ordering on the receiving hosts to gain further replication throughput improvement.
+    </ul><br /></p>
+</li><br/>
+<li>
+	<p>Create and connect to the database <span class="codetext">repdb1_1211</span> 
+	using <span class="codetext">ttIsql</span></p>
+	<p class="codetext">ttisql repdb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/rep_config_ttisql_repdb1.gif"  /></p>
+</li><br/>
+</ol></blockquote>
+
+
+<p class="section1">2. Create a Database User to Administer the Replication Operations</p>
+<blockquote><ol type=a>
+<li>
+	<p>Create a database user and assign it the role of the database and 
+	replication administrator. This user is responsible for setting up and managing the active/standby pair.</p>
+	<p>In <span class="codetext">ttIsql</span>, create an administrator and 
+	grant this user <span class="codetext">admin</span> privilege. 
+	In this example, this user created is <span class="codetext">adm</span>.</p>
+	<p class="codetext">create user adm identified by adm;<br />
+	grant admin to adm;</p>
+	<p><img class="cmdscnshot" src="../images/rep_config_create_admin.gif"/></p>
+</li><br/>
+<li>
+	<p>Create an application user and tables in the database. 
+	In our example, we will create an application user called <span class="codetext">appuser</span> 
+	and this user will own the <span class="codetext">customers</span> and <span class="codetext">orders</span> tables.</p>
+	<p class="codetext">create user appuser identified by appuser;<br />
+	grant create session, create table to appuser; </p>
+	<p><img class="cmdscnshot" src="../images/rep_config_create_appuser.gif" /></p>
+</li><br/>
+<li>
+	<p>Log in as the user <em>appuser </em>in <span class="codetext">ttIsql</span>.</p>
+	<p class="codetext">connect "dsn=repdb1_1211;uid=appuser";</p>
+	<p>Execute the following SQL statements, or run the script 
+	<a href="../../sample_scripts/replication/create_appuser_obj.sql" class="codetext">create_appuser_obj.sql</a> 
+	located in the <span class="codetext">&lt;QUICKSTART_HOME&gt;/sample_scripts/replication</span> directory, 
+	to create the 2 tables in the <span class="codetext">appuser</span> schema.</p>
+    <b>Note:</b> &lt;QUICKSTART_HOME&gt; is the location where you unzip the QuickStart Guide tar file.
+	<p class="codetext">create table customers (<br/>
+	&nbsp;&nbsp;&nbsp;cust_number number,<br />
+	&nbsp;&nbsp;&nbsp;first_name  varchar2(12) not null,<br />
+	&nbsp;&nbsp;&nbsp;last_name   varchar2(12) not null,<br />
+	&nbsp;&nbsp;&nbsp;address     varchar2(100) not null,<br />
+	&nbsp;&nbsp;primary key (cust_number));</p>
+	<p class="codetext">insert into customers values (3700,'Peter','Burchard','882 Osborne Avenue, Boston, MA 02122');<br />
+	insert into customers values (1121,'Saul','Mendoza','721 Stardust Street, Mountain View, CA 94043');</p>
+	<p class="codetext">create table orders (<br />
+	&nbsp;&nbsp;&nbsp;order_number number   not null,<br />
+	&nbsp;&nbsp;&nbsp;cust_number  number   not null,<br />
+	&nbsp;&nbsp;&nbsp;prod_number  char(10) not null,<br />
+	&nbsp;&nbsp;&nbsp;order_date   date     not null,<br />
+	&nbsp;&nbsp;primary key (order_number),<br />
+	&nbsp;&nbsp;foreign key (cust_number) references customers (cust_number));</p>
+	<p class="codetext">insert into ORDERS values (6853036,3700,'0028616731',to_date('2008-04-05','yyyy-mm-dd'));<br />
+	insert into ORDERS values (6853041,3700,'0198612710',to_date('2009-01-12','yyyy-mm-dd'));<br />
+	insert into ORDERS values (6853169,1121,'0003750299',to_date('2008-08-01','yyyy-mm-dd'));<br />
+	insert into ORDERS values (6853174,1121,'0789428741',to_date('2008-10-25','yyyy-mm-dd'));<br />
+	insert into ORDERS values (6853179,1121,'0198612583',to_date('2009-02-02','yyyy-mm-dd'));</p>
+</li><br/>
+<li>
+	<p>Use the <em>tables</em> command in <span class="codetext">ttIsql</span> to confirm that the  tables have been created.</p>
+	<p class="codetext">tables;</p>
+	<p><img class="cmdscnshot" src="../images/rep_config_tables_repdb1.gif"/></p>
+	<p>After setting up an initial database,  you can now define the 
+	<a href="rep_aspair_define_activedb.html">configuration  of the active standby pair</a> 
+	and designate the current database as the active database.</p>
+</li><br/>
+</ol></blockquote>
+
+<table align="right">
+	<tr>
+		<td>1</td>
+		<td><b><a href="rep_aspair_define_activedb.html">2</a></b></td>
+		<td><b><a href="rep_aspair_create_standby.html">3</a></b></td>
+		<td><b><a href="rep_aspair_define_activedb.html">Next &gt;</a></b></td>
+	</tr>
+</table>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</div>
+<div id="footer" />
+
+</body>
+
+</html>

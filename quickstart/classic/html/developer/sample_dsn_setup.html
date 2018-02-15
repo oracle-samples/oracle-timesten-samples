@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to Set Up Sample DSN for QuickStart Sample Programs</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to Set Up Sample DSN for QuickStart Sample Programs</span>
+<p>In this section we will step through what needs to be configured on both the server-side and client-side to perform successful quickstart sample programs. 
+</p>
+<p><span class="section1">1. Configure Sample System DSN <em>sampledb</em> </span></p>
+
+<p>On Linux and UNIX  systems, <span class="codetext">system DSN</span> are defined in the   <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini</span> file. 
+  This file is also referred to as the system ODBC.INI file.</p>
+ <p>By default, the quickstart sample programs use the sample DSN called <span class="codetext">sampledb</span>.  </p>
+ <p>The following section goes through an example of how to set up the system DSN <span class="codetext">sampledb</span>. Suppose that you want to:
+:</p>
+<ul>
+	<li>name your TimesTen database <span class="codetext">sampledb</span></li>
+    	<li>have your TimesTen instance location be <span class="codetext">/home/timesten/instance/tt181</span></span></li>
+</ul>
+<p>You would manually add the following into your  <span class="codetext">sys.odbc.ini </span> file:</p>
+<blockquote><ol type=a>
+<li>
+	<p>In your <span class="codetext">sys.odbc.ini </span>file, add a  new data source name in the section labeled 
+	<span class="codetext">[ODBC Data Sources]</span> :</p>
+	<p class="codetext">sampledb=TimesTen 18.1 Driver</p>
+</li><br/>
+<li>
+	<p>For each DSN entry specified, there is a corresponding set of database properties and attributes you need to specify. 
+	The database attributes can be added anywhere after the <span class="codetext">[ODBC Data Sources]</span> section.</p>
+	<p>Here is an example of the  database attributes you enter for <span class="codetext">sampledb</span>:</p>
+	
+    <p class="codetext">
+          [sampledb]<br />
+          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
+          DataStore=/home/timesten/instance/tt181/sample_db/sampledb<br />
+          PermSize=512<br />
+          TempSize=128<br />
+          LogBufMB=256<br />
+          LogFileSize=256<br />
+          DatabaseCharacterSet=AL32UTF8<br />
+          PLSQL=1<br />
+          OracleNetServiceName=ttorcl 
+  	</p>
+    <p><b>Note:</b> The DSN name appears inside square brackets at the top of the DSN definition on a line by itself. <br />
+    To customize the DSN attributes, refer to the section <a href="../admin/db_ops_createdb.html">Creating a TimesTen Database</a> for more information.</p>
+<p>&nbsp;</p>
+</li>
+</ol>
+
+</blockquote>
+
+<p><span class="section1">2. Configure Client-Server Connection Settings </span></p>
+
+<p>To execute sample programs in C/S mode, edit both sys.odbc.ini and sys.ttconnect.ini files as follows:</p>
+<ol type=a><li><b>Adding a client DSN entry to the sys.odbc.ini file</b>
+ <p>  Manually add the client DSN entry by editing the  <span class="codetext"> sys.odbc.ini</span> file located in <span class="codetext">&lt;instance_dir&gt;/conf </span> directory.  </p>
+ 
+  Firstly, define the client DSN name and provide the name of the ODBC client driver to use in the ODBC Data Sources section:
+ <br /><br />
+  <ul><span class="codetext">[ODBC Data Sources] </span><br />
+  <span class="codetext"> sampledbCS=TimesTen 18.1 Client Driver</span><br /></ul>
+  <br />
+Next, create an entry using the client DSN name you just defined. This entry needs to specify the Logical Server name  <span class="codetext">TTC_SERVER</span>, and the server DSN to look for on the server side:
+ <br /><br />
+  <ul>
+    <span class="codetext">[sampledbCS] </span><br />
+  <span class="codetext">TTC_SERVER=sampledb_CS</span><br />
+   <span class="codetext">TTC_SERVER_DSN=sampledb</span><br /></ul> </p>
+     <br />
+</li>
+<li><b>Adding a Logical Server entry to the sys.ttconnect.ini file</b>
+<p> In this example, the target TimesTen server port number is using the default port number <span class="codetext">6625</span>.
+ <br />
+ Manually add the logical server entry by editing the  <span class="codetext"> sys.ttconnect.ini</span> file located in <span class="codetext">&lt;instance_dir&gt;/conf </span> directory.  </p>
+ <br />
+ For example:
+
+ <br />
+  <ul>
+    <span class="codetext">[sampledb_CS] </span><br />
+  <span class="codetext">  Description=TimesTen Server</span><br />
+<span class="codetext">Network_Address=server.mycompany.com</span>
+<br />
+<span class="codetext">TCP_PORT=6625</span>
+</ul> 
+  <p><br />
+  The <span class="codetext">Network_Address</span> is the host name or IP address of the system on which the TimesTen Server is running.  </p>
+ 
+  <b>Note:</b> To customize the client-server connection settings, refer to the section <a href="../admin/db_ops_connectdb_linux.html">Connecting to a TimesTen Database</a> for more information. 
+</p> 
+</li></ol></li>
+</li>
+</li>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

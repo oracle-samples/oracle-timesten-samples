@@ -1,0 +1,206 @@
+#!/bin/bash
+
+#
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+
+declare -r dfltDSN="sampledb"
+declare -r dfltUID="appuser"
+
+declare loadopts="-xp 1024"
+declare sname=`basename "$0"`
+declare dsn="${dfltDSN}"
+declare username="${dfltUID}"
+declare password=""
+declare connstr=""
+declare cs=""
+declare dir=""
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    ${sname} [-dsn dsn] [-uid username] -pwd password [-cs]"
+    echo
+    echo "Loads the demo data set into the demo database. Parameters are the"
+    echo "DSN (connectable) name, the username and password. If the DSN /"
+    echo "connectable is a client/server one you must also specify '-cs'."
+    echo
+    echo "If you are using the default DSN (sampledb/sampledbCS) or the"
+    echo "default username (appuser) then the corresponding parameter can"
+    echo "be omitted."
+    echo
+    exit 99
+}
+
+canonPath()
+{
+    local cwd
+    local nwd
+    local nfn
+
+    cwd=`pwd -P`
+    nwd=`dirname "$1"`
+    nfn=`basename "$1"`
+    cd "${nwd}" >/dev/null 2>&1
+    if [ $? -ne 0 ]
+    then
+        cd "${cwd}"
+        return 1
+    fi
+    nwd=`pwd -P`
+    if [ -d "${nfn}" ]
+    then
+        cd "${nfn}" >/dev/null 2>&1
+        if [ $? -ne 0 ]
+        then
+            cd "${cwd}"
+            return 1
+        fi
+        nwd=`pwd -P`
+        echo "${nwd}"
+    else
+        echo "${nwd}/${nfn}"
+    fi
+    cd "${cwd}"
+    return 0
+}
+
+parseArgs()
+{
+    local -i foundDSN=1
+    local -i foundUID=1
+    local -i foundPWD=1
+    local -i foundCS=1
+
+    while [ $# -gt 0 ]
+    do
+        case "$1" in
+            "-dsn" )
+                shift
+                if [ \( ${foundDSN} -eq 0 \) -o \( $# -lt 1 \) ]
+                then
+                    usage
+                fi
+                dsn="$1"
+                foundDSN=0
+                ;;
+            "-uid" )
+                shift
+                if [ \( ${foundUID} -eq 0 \) -o \( $# -lt 1 \) ]
+                then
+                    usage
+                fi
+                username="$1"
+                foundUID=0
+                ;;
+            "-pwd" )
+                shift
+                if [ \( ${foundPWD} -eq 0 \) -o \( $# -lt 1 \) ]
+                then
+                    usage
+                fi
+                password="$1"
+                foundPWD=0
+                ;;
+            "-cs" )
+                if [ ${foundCS} -eq 0 ]
+                then
+                    usage
+                fi
+                cs="CS"
+                foundCS=0
+                ;;
+            * )
+                usage
+                ;;
+        esac
+        shift
+    done
+
+    if [ ${foundPWD} -eq 1 ]
+    then
+        usage
+    fi
+
+    if [ \( ${foundDSN} -eq 1 \) -a \( ${foundCS} -eq 0 \) ]
+    then
+        dsn="${dsn}${cs}"
+    fi
+    connstr="DSN=${dsn};UID=${username};PWD=${password}"
+
+    return 0
+}
+
+loadData()
+{
+# truncate all tables
+
+    echo
+    echo "Truncating all tables..."
+    echo
+    ttIsql${cs} -f sql/truncate.sql -connstr "${connstr}"
+    if [ $? -ne 0 ]
+    then
+        return 1
+    fi
+
+# Load ACCOUNT_STATUS and ACCOUNT_TYPE
+
+    echo
+    echo "Loading ACCOUNT_STATUS and ACCOUNT_TYPE..."
+    echo
+    ttIsql${cs} -f data/insert_account_type_status.sql -connstr "${connstr}"
+    if [ $? -ne 0 ]
+    then
+        return 2
+    fi
+
+# load CUSTOMERS table
+
+    echo
+    echo "Loading CUSTOMERS..."
+    echo
+    ttBulkCp${cs} -i ${loadopts} -connstr "${connstr}" customers data/customers_data.dmp
+    if [ $? -ne 0 ]
+    then
+        return 3
+    fi
+
+# load ACCOUNTS table
+
+    echo
+    echo "Loading ACCOUNTS..."
+    echo
+    ttBulkCp${cs} -i ${loadopts} -connstr "${connstr}" accounts data/accounts_data.dmp
+    if [ $? -ne 0 ]
+    then
+        return 4
+    fi
+
+# Update stats
+
+    echo
+    echo "Updating statistics..."
+    echo
+    ttIsql${cs} -f sql/updstats.sql -connstr "${connstr}"
+    if [ $? -ne 0 ]
+    then
+        return 5
+    fi
+
+    return 0
+}
+
+parseArgs "$@"
+
+dir=`canonPath "$0"`
+dir=`dirname "${dir}"`
+cd "${dir}"
+
+loadData
+exit $?

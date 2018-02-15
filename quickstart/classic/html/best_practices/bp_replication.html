@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Best Practices for Replication</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Best Practices for Replication</span>
+<p>This page contains recommendations for achieving the best results when deploying TimesTen replication as part of a High Availability solution. This guide should be read in conjunction with the <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/toc.htm">TimesTen Replication Guide</a>. TimesTen supports both explicit Active/Standby pair replication and the older 'classic' replication. Active/Standby pair is the recommended replication mode for all new applications. While many of the best practices below apply to both modes this guide focuses on Active/Standby pair. TimesTen also supports <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61197/attrib.htm#TTREP423">Parallel Replication</a></span>
+ in order to increase replication throughput and to
+leverage the processing power of modern multi-core systems and high bandwidth low-latency networks.</p><h2><strong>Setup and configuration</strong></h2>
+<p><strong>Automatic Parallel Replication </strong></p>
+<p> <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61197/attrib.htm#TTREP747">Automatic Parallel Replication </a></span> (APR) is enabled by default providing a significant boost for replication throughput – the rate of transactions replicated from the source database to another TimesTen database on a remote host. Transaction dependencies are tracked automatically and the commit ordering is honored when applying the transactions on the remote standby database. Setting <span class="codetext">ReplicationParallelism</span> to a higher value (default is 4) will add more transmitter/receiver pairs to increase replication throughput .</p>
+
+<p><strong>Automatic Parallel Replication with Commit Optimization</strong></p>
+<p> Users may enable <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61197/attrib.htm#BGBCGAEA">Automatic Parallel Replication with Commit Optimization </a></span> feature by relax enforcing commit ordering on the receiving hosts, when TimesTen determines the transactions have no dependencies on each other. This feature provides even more parallelism when applying the replicated transactions on the Standby and Subscriber databases. Depending on your transaction workload characteristics, we have seen close to 80% improvement in replication throughput after using Commit Optimization feature on the standby database. To enable Commit Optimization, set the database attribute <span class="codetext">ReplicationApplyOrdering</span> to a value of 2 when configuring the Active-Standby Pair replication scheme.</p>
+
+<p><strong>Async versus Sync replication</strong></p>
+<p> <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/overview.htm#TTREP119">Choose the replication mode (asynchronous, RETURN RECEIPT, RETURN TWOSAFE etc.)</a> appropriately to balance performance versus data safety. If you are considering using RETURN RECEIPT replication then you should be aware that in Active/Standby pair replication RETURN TWOSAFE offers both higher protection and higher performance and is usually therefore the recommended choice.<span ><br />
+</span></p>
+
+<p><strong>System clock synchronization</strong></p>
+<p> The system clocks on the master nodes <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/definepair.htm#TTREP178">must be maintained in synchronization to an accuracy of &lt; 250 milliseconds</a>. Typically you will need to use NTP or similar for this. If the system clock synchronization is out by more than 250 ms then you will not be able to establish replication between the databases. In this case you will see 'clock skew' errors reported in one or both of the TimesTen error and support logs.</p>
+
+<p><strong>OS Username for Instance Administrator</strong></p>
+<p>The TimesTen instances which will participate in the same replicated environment <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/definepair.htm#TTREP212">must all have the same O/S username for the instance administrator user</a>. The numeric userid does not have to be the same but the actual username must be identical. If this is not the case you will be unable to use the 'duplicate' function which is essential for deploying a replicated environment and for recovery after a failure. </p>
+<p><strong>LAN and WAN connectivity</strong></p>
+<p> The machines hosting the active and standby master databases <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/definepair.htm#TTREP178">must be connected via a LAN or a network with LAN characteristics</a> (throughput, latency, reliability). Readonly subscribers, if used, can be on the same LAN as the masters, on a different LAN or remotely located and accessed via a WAN. If the network connecting the master databases is inadequate you will experience poor replication performance and possibly reliability issues.</p>
+
+<p><strong>TCP port numbers for replication</strong></p>
+<p> <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/attrib.htm#TTREP203">Use fixed port numbers not dynamically assigned port numbers</a> (see the STORE clause). Use of fixed port numbers will greatly simplify rolling upgrades between major releases. If you have firewalls in place then you may anyway have to use fixed port numbers.</p>
+<p><strong>Hostnames versus IP addresses in replication schemes</strong></p>
+<p> Whenever possible, use hostnames not IP addresses when defining store names in replication schemes (dbname ON hostname). It is okay to use IP addresses, if desired, in ROUTE clauses. If you use IP addresses then you will have to re-deploy your entire replicated environment any time the IP address of a participating host changes.</p>
+<p><strong>Name resolution</strong></p>
+<p> Ensure that hostname -&gt; address resolution (DNS or /etc/hosts) is working properly and reliably. The local host's official name should <u>not</u> include any domain component. i.e. the O/S 'hostname' command should return 'myhost' not 'myhost.mydomain'. If hostnames and name resolution are not setup properly then you may be unable to establish replication and you may also have issues with duplicating.</p>
+<p><strong>Network bandwidth</strong></p>
+<p> Use GigaBit Ethernet as a minimum unless the replication workload is very low. 100 Mbit or lower Ethernet may easily become saturated <span >under a heavy replication workload.</span></p>
+<p><strong>Prevent excessive transaction log file accumulation</strong></p>
+<p> <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/attrib.htm#TTREP205">Use the FAILTHRESHOLD option</a> to guard against unbounded transaction log accumulation in the event of a prolonged network or machine outage. If you do not use FAILTHRESHOLD then a prolonged standby or network outage will cause a large amount of transaction log files to accumulate at the active which may then result in an 'out of disk space' condition which is likely to be highly problematic.</p>
+
+<p><strong>Synchronous</strong><span ><span ><strong> replication options</strong></span></span></p>
+<p><span ><span > When using synchronous replication, <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/attrib.htm#TTREP189">there are many configuration options</a> that can be used to:</span></span>
+</p>
+<ul>
+  <li>Maintain data protection when replication is unable to immediately propagate changes to the standby (network or standby down).</li>
+  <li>Minimize the performance impact on the application when the standby is unavailable (network or standby down).</li>
+  <li>Minimize the degree of 'replication awareness' required of the application code.    </li>
+</ul>
+<p><span >While there is no 'one size fits all' recipe, the following options, specified in the STORE clause for </span><u >both</u><span > master databases, are recommended as the best starting point.</span></p>
+<p class="codetext">STORE storename ON hostname<br />
+    RETURN SERVICES OFF WHEN STOPPED<br />     RETURN WAIT TIME 5<br />     DISABLE RETURN ALL 2<br />     DURABLE COMMIT ON<br />     RESUME RETURN 250<br />     LOCAL COMMIT ACTION COMMIT</p>
+<p>Some of the numeric values above will need to be fine tuned for your specific setup and workload. The optimal values depend on your configuration and application requirements and so it is hard to make specific recommendations. Consult the TimesTen documentation for the meaning of these options and the associated values.</p>
+<h2 ><strong>Implementation and Testing</strong></h2>
+<p><strong>Keep transactions <u>small</u></strong></p>
+<p> In a replicated environment it is imperative to keep transactions small. No transaction should modify more than a few thousand rows. Executing very large transactions (10s or 100s of thousands of modifications in a single transaction) will consume a lot of system resources and will have a negative impact on replication operation. In extreme cases, due to the timeouts involved, a very large transaction may effectively prevent replication functioning and necessitate recovery via a duplicate operation.</p>
+<p><strong>Properly handle return service timeout warnings</strong></p>
+<p> If you choose to use RETURN RECEIPT or RETURN TWOSAFE then your application logic must have some awareness of replication. Specifically, under some circumstances a commit operation may return the TimesTen warning <strong>TT8170: Receipt or commit acknowledgement not returned in the specified timeout interval for <em>transaction_ID</em>. </strong>This warning means that the standby did not acknowledge the replicated transaction within the defined timeout period. This typically means that either the standby, or the network connecting the active and standby, is down. It may also occur when the replication agent is stopped at either the active or the standby. The application has to react correctly to this warning depending on  how replication is configured [RETURN SERVICES ON|OFF WHEN STOPPED, LOCAL COMMIT ACTION COMMIT|NO ACTION].</p>
+<p><strong>Optimize replication throughput</strong></p>
+<p> Test a 'sustained maximum plus some headroom' workload to ensure the hardware is adequate and replication can keep up. As part of workload testing, tune the log buffer size (LogBufMB), logging parallelism (LogBufParallelism) and the replication parallelism (ReplicationParallelism) to optimize replication performance. <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61197/perform.htm#TTREP761">The size of the log buffer is a key performance tunable</a> in TimesTen and it is especially important when replication is being used (you want to eliminate any SYS.MONITOR.LOG_FS_READS). </p>
+<p><strong>Determine recovery strategy</strong></p>
+<p> Assess the ability of replication to 'catch up' from a backlog situation after a temporary outage when under typical and maximum workloads. This will affect your chosen recovery strategy; do you allow 'catchup' or do you choose to duplicate.</p>
+<p><strong>Monitor, monitor, monitor</strong></p>
+<p> Implement comprehensive monitoring of replication operation, throughput and backlog to get early warning of any problems (see later).</p>
+<h2><strong>A/S Pair with Oracle Clusterware</strong></h2>
+<p><strong>Use latest supported Clusterware</strong></p>
+<p> Use the latest version of Oracle Clusterware (Grid Infrastructure) that is certified with the TimesTen version that you are using. Using an older version of Clusterware may result in less reliable operation.</p>
+<p><strong>Install TimesTen on local storage on each machine</strong></p>
+<p> Do not install TimesTen on shared storage; each node should have its own private installation. TimesTen does not support the concept of a 'shared installation'.</p>
+<p><strong>Avoid NFS storage</strong></p>
+<p> The use of NFS shared storage is not recommended for TimesTen database files (checkpoint and log files). These should be located on high performance local storage (best) or high performance non-NFS SAN storage (second best).</p>
+<p><strong>Use ttCWAdmin</strong></p>
+<p> Use the TimesTen Clusterware utility, ttCWAdmin, to perform all TimesTen/Clusterware operations. Do not use Clusterware tools or other TimesTen utilities to perform functions that should be performed via ttCWAdmin. Manipulating the state of TimesTen components by means other than ttCWAdmin may result in unreliable operation.</p>
+<p><strong>Monitor, monitor, monitor</strong></p>
+<p> Even when using Clusterware you should still have your own health monitoring in place especially for replication throughout/backlog.</p>
+<h2><strong>A/S pair without Oracle Clusterware</strong></h2>
+<p><strong>Monitor, monitor, monitor</strong></p>
+<p>Ensure a rigorous and robust monitoring mechanism in place covering all aspects of TimesTen health, not just replication operation (see later).</p>
+<p><strong>Test, test, test</strong></p>
+<p> Ensure you have pre-scripted and thoroughly tested recovery procedures for every possible failure/recovery scenario that applies to your environment.</p>
+<p><strong>Handle all failure/recovery scenarios</strong></p>
+<p> If you plan to automate failover and/or recovery, be sure your automation mechanism can detect and deal with all possible failure scenarios and can detect/handle split brain situations, network partition etc.</p>
+<h2><strong>Monitoring the health of TimesTen replication</strong></h2><p>For any production deployment, implementing a rigorous and robust monitoring framework is an absolute must. Operational problems may arise from inadequate or insufficiently robust monitoring regimes.</p>
+<p>The topic of monitoring is a large one; for more detailed information on monitoring TimesTen, and replication in particular, please consult the TimesTen documentation <a target="_blank" class="doclink" href="http://docs.oracle.com/cd/E61354_01/index.htm">here</a>, as well as the <a target="_blank" class="doclink" href="bp_monitoring.html">Best Practices for Monitoring</a> section in this Quick Start guide.</p>
+<p> </p>
+        <p>&nbsp;</p>
+
+
+</div>
+<div id="footer"/>
+</body>
+
+</html>

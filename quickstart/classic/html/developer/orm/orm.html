@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>ORM (Object-Relational Mapping) Sample Application</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">ORM (Object-Relational Mapping) Sample Application</span>
+<p class="normal">This page provides a sample ORM application that demonstrates how to configure and run the Oracle TimesTen In-Memory Database with several different object-relational mapping (ORM) frameworks. The application is a multi-user throughput benchmark program that uses the ORM provider's native API or the EJB 3.0 Java Persistence API (JPA) directly.
+<p class="normal">The application has been tested with the following ORM frameworks: <br>
+<ul>
+  <li> JPA with EclipseLink 2
+  <li> Hibernate 3
+  <li> JPA with Hibernate 3
+  <li> Hibernate 4
+  <li> JPA with Hibernate 4
+  <li> JPA with OpenJPA 2
+</ul>
+</p>
+<p class="normal">The sample ORM application is available in the <span class="codetext">quickstart/classic/sample_code/j2ee_orm</span> directory. It includes the following source files: <br></p>
+
+<table width="760" border="1">
+  <tr class="table-header">
+    <td width="110" valign="top" class="normal-bold">&nbsp;&nbsp;<span class="table-header">Source file</span></td>
+    <td width="634" valign="top" class="normal"><span class="table-header"><strong>Description</strong></span></td>
+  </tr>
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/Tptbm.java" class="codetext">Tptbm.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      This is the POJO (Plain Old Java Object) class.
+      An instance of this class corresponds to a
+      unique row in the TPTBM table. Annotations are used to 
+      associate properties of the class with the database table.
+    </td>
+  </tr>
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/TptbmPKey.java" class="codetext">TptbmPKey.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      Each instance of the Tptbm class contains an embedded 
+      instance of the TptbmPKey class. TptbmPKey represents the 
+      unique ID for a Tptbm. The TPTBM table has a composite
+      primary key consisting of the VPN_NB and VPN_ID table 
+      columns. TptbmPKey is mapped to these key columns through 
+      the use of annotations. 
+    </td>
+  </tr>
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/CommonClient.java" class="codetext">CommonClient.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      CommonClient is the
+      base abstract class from which all concrete client
+      classes inherit. CommonClient implements the high level
+      benchmark setup and execution logic. CommonClient also
+      defines the following abstract methods which are
+      implemented by the concrete client classes using a specific 
+      persistence API:
+
+      <ul>
+        <li> open ()
+      <li> close ()
+      <li> txnBegin ()
+      <li> txnCommit ()
+      <li> txnRollback ()
+      <li> read ()
+      <li> insert ()
+      <li> update ()
+      <li> deleteAll ()
+      <li> populate ()
+      </ul>
+
+      <p>To understand how a particular ORM client configuration works with its persistence API, examine the implementation of these methods in the concrete client classes described below.
+    </td>
+  </tr>
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/JPAClient.java" class="codetext">JPAClient.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      This java class inherits the CommonClient abstract class and implements a stand-alone JPA application that uses the EntityManager interface for persistence.
+    </td>
+  </tr>
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/src/com/timesten/tptbmas/HIBClient.java" class="codetext">HIBClient.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      This java class inherits the CommonClient abstract class and implements a stand-alone Hibernate application that uses the Hibernate native Session interface for persistence.
+    </td>
+  </tr>
+  
+  <tr>
+    <td height="58" valign="top" class="codetext">
+      <div align="left"><span class="style120"><a href="../../../sample_code/j2ee_orm/config/hibernate3/TimesTenDialect1122.java" class="codetext">TimesTenDialect1122.java</a></em></span></div>
+    </td>
+    <td valign="top" class="normal">
+      The Hibernate and "JPA with Hibernate" sample application use the included Hibernate dialect class called TimesTenDialect1122. It has been optimized for SQL features in TimesTen version 11.2.2. This dialect is not included in current versions of the Hibernate distribution. The TimesTenDialect1122 class is compiled and packaged into the tptbmas-hibernate3.jar (tptbmas-hibernate4.jar) or tptbmas-jpa-hibernate3.jar (tptbmas-jpa-hibernate4.jar) file. 
+      <br><br>This is the recommended dialect for applications that use TimesTen version 11.2.2 or greater.
+    </td>
+  </tr>
+</table>
+
+<p class="section1">Compile and Run</p>
+<p>Click <a href="howto_orm.html" class="compilerun">here</a> to learn how to compile and run the sample application with different ORM frameworks.
+</p>
+<p class="normal">For more information on Java programming with Oracle TimesTen, refer to the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61200/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database Java Developer's Guide</font></a>. </p>
+<p class="normal">&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+
+</html>

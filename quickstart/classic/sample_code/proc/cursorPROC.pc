@@ -1,0 +1,183 @@
+/*
+ * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ *
+ * Licensed under the Universal Permissive License v 1.0 as shown
+ * at http://oss.oracle.com/licenses/upl
+ */
+
+/*
+ *  sample2.pc
+ *
+ *  This program connects to ORACLE, declares and opens a cursor, 
+ *  fetches the names, salaries, and commissions of all
+ *  salespeople, displays the results, then closes the cursor. 
+ */ 
+
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <sqlca.h>
+#include <stdlib.h>
+#include <sqlda.h>
+#include <sqlcpr.h>
+
+ 
+/* Prototypes */
+#if defined(__STDC__)
+  void usage(char *prog);
+  void parse_args(int argc, char **argv);
+extern  int chg_echo(int echo_on);
+  void crtrim(char * paddedString);
+#else
+  void usage(char *);
+  void parse_args(int, char **);
+extern  int chg_echo(int echo_on);
+  void crtrim(char * paddedString);
+#endif
+
+#define MAX_USERNAME     31
+#define MAX_SERVICENAME 128
+
+extern char  username[];
+extern char  password[];
+extern char  service[ ];
+
+/*
+ * Use the precompiler typedef'ing capability to create
+ * null-terminated strings for the authentication host
+ * variables. (This isn't really necessary--plain char *'s
+ * would work as well. This is just for illustration.)
+ */
+typedef char asciiz[MAX_USERNAME]; 
+
+EXEC SQL TYPE asciiz IS CHARZ(MAX_USERNAME) REFERENCE; 
+asciiz     user; 
+asciiz     pass; 
+char       svc[MAX_SERVICENAME]; 
+
+struct emp_info 
+{ 
+    asciiz     emp_name; 
+    float      salary; 
+    float      commission; 
+}; 
+
+void sql_error(msg) 
+    char *msg;
+{ 
+    char err_msg[512];
+    size_t buf_len, msg_len;
+
+    EXEC SQL WHENEVER SQLERROR CONTINUE;
+
+    printf("\n%s\n", msg);
+
+/* Call sqlglm() to get the complete text of the
+ * error message.
+ */
+    buf_len = sizeof (err_msg);
+    sqlglm((unsigned char *) err_msg, &buf_len, &msg_len);
+    printf("%.*s\n", (int) msg_len, err_msg);
+
+    EXEC SQL ROLLBACK RELEASE;
+    exit(EXIT_FAILURE);
+} 
+
+int main(int argc, char** argv)
+{ 
+    struct emp_info *emp_rec_ptr; 
+
+/* Allocate memory for emp_info struct. */ 
+    if ((emp_rec_ptr = 
+        (struct emp_info *) malloc(sizeof(struct emp_info))) == 0)
+    { 
+        printf("Memory allocation error.\n"); 
+        exit(EXIT_FAILURE); 
+    } 
+ 
+
+  /* parse the command line arguments */
+  parse_args(argc, argv);
+
+  /* Assign the user, pass and svc values */
+  strncpy((char *) user, (const char *) username, MAX_USERNAME);
+  strncpy((char *) svc,  (const char *) service,  MAX_SERVICENAME);
+  strncpy((char *) pass, (const char *) password, MAX_USERNAME);
+
+  /* hide password */
+  memset(password, 0, MAX_USERNAME);
+
+  printf("\nConnecting as %s@%s\n", user, svc);
+
+  EXEC SQL WHENEVER SQLERROR DO sql_error("ORACLE error--");
+
+  /* Connect to Oracle. */
+  EXEC SQL CONNECT :user IDENTIFIED BY :pass USING :svc;
+
+  /* hide password */
+  memset(pass, 0, MAX_USERNAME);
+
+  printf("Connected\n");
+
+ 
+ 
+/* Declare the cursor. All static SQL explicit cursors
+ * contain SELECT commands. 'salespeople' is a SQL identifier,
+ * not a (C) host variable.
+ */
+    EXEC SQL DECLARE salespeople CURSOR FOR 
+        SELECT ENAME, SAL, COMM 
+            FROM EMP 
+            WHERE JOB LIKE 'SALES%'; 
+ 
+/* Open the cursor. */
+    EXEC SQL OPEN salespeople; 
+ 
+/* Get ready to print results. */
+    printf("\nThe company's salespeople are--\n\n");
+    printf("Salesperson   Salary   Commission\n"); 
+    printf("-----------   -------  ----------\n"); 
+ 
+/* Loop, fetching all salesperson's statistics.
+ * Cause the program to break the loop when no more
+ * data can be retrieved on the cursor.
+ */
+    EXEC SQL WHENEVER NOT FOUND DO break; 
+
+    for (;;) 
+    { 
+        EXEC SQL FETCH salespeople INTO :emp_rec_ptr; 
+
+        crtrim(emp_rec_ptr->emp_name);
+
+        printf("%-11s %9.2f %11.2f\n", emp_rec_ptr->emp_name, 
+                emp_rec_ptr->salary, emp_rec_ptr->commission); 
+    } 
+ 
+/* Close the cursor. */
+    EXEC SQL CLOSE salespeople; 
+ 
+    printf("\nArrivederci.\n\n");
+
+    EXEC SQL COMMIT WORK RELEASE; 
+    exit(EXIT_SUCCESS); 
+} 
+
+void crtrim(char * paddedString)
+{
+  size_t len = 0;
+  int i   = 0;
+
+  len = strlen((const char *) paddedString);
+
+  for (i = len - 1; i >= 0; i--)
+  {
+
+    if (isspace(paddedString[(int) i]))  {
+      paddedString[i] = 0;
+    } else {
+      break;
+    }
+  }
+}
+

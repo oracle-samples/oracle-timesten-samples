@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Setting Up an Active Master Cache Database</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Setting Up an  Active Master Cache Database </span>
+<p>This tutorial will make use of the DSN <em class="codetext">cachedb1_1211</em>  
+as active master database. The hostnames of the two machines in the examples are <span class="codetext">tthost1</span> and 
+<span class="codetext">tthost2</span>.  <span class="codetext">cachedb1_1211</span> will be created as the active cache database 
+on <span class="codetext">tthost1</span>,  and <span class="codetext">cachedb2_1211</span> on  
+<span class="codetext">tthost2</span> will be created as the standby cache database.</p>
+<p>In order to set up an active standby database, you must first  create a cache database 
+which will be the initial active master database. This database must include a user 
+with <span class="codetext">ADMIN</span> privilege, and cache groups owned an  application user.</p>
+
+<strong class="section1">1. Create  a cache  database </strong>
+<blockquote><ol type=a>
+<li>
+	<p>Follow the tutorials in <a href="../admin/timesten_cache.html">Configuring TimesTen Application-Tier Database Cache</a> (TimesTen Cache) to create an initial 
+	cache database <span class="codetext">cachedb1_1211</span>. The cache database contains two cache groups, a dynamic 
+	updatable  cache group based on the Oracle <span class="codetext">hr.employees</span> and 
+	<span class="codetext">hr.job_history</span>  tables, and a read only local cache group 
+	based on the Oracle <span class="codetext">hr.departments</span> table.</p>
+	<p>To create these cache groups, complete the following tutorials:</p> 
+	<ul>
+		<li><a href="timesten_cache_config_oracle.html">Required configuration on the Oracle database</a></li>
+		<br/>
+		<li><a href="cache_create.html">Setting up a cache database</a></li><br/>
+		<li><a href="cache_create_cache_group.html">Adding cache groups to a cache database</a>
+			<ul>
+				<li>Within this tutorial, the  <a href="cache_load_cache.html">Preload data into Cache Groups</a> step is not required.				
+				</li>				 
+			</ul>
+		</li>	
+	 </ul>
+</li><br/>
+<li>
+	<p>Create a DSN for the standby cache database on the standby server. 
+	This DSN should have the same attribute definitions as the active cache database. 
+	In our example, we will use <span class="codetext">cachedb2_1211</span> as the standby database DSN on <span class="codetext">tthost2</span>.</p>
+	<p><b>Log in to server 2 (<span class="codetext">tthost2</span>) as the instance administrator, 
+	create a DSN called <span class="codetext">cachedb2_1211</span> 
+	with the same attribute settings as <span class="codetext">cachedb1_1211</span>.</b></p>
+    <p>If necessary, refer to the  <a href="cache_create.html"> Setting Up a Cache Database </a> for more information.</p>
+</ol></blockquote>		
+
+
+<span class="section1">2. Create a database user to administer the replication operations</span>
+<blockquote><ol type=a>
+<li>
+	<p>Create a database user and assign him the role of the replication administrator, 
+	this user is responsible for setting up and managing the Active Standby Pair replication. 
+	Instead of creating a new  database user, you can also  grant the required privilege to 
+	<span class="codetext">cacheadm</span>, this user will then be responsible for managing both Replication and Cache operations.</p>
+	<p>Using ttisql, log into the database <span class="codetext">cachedb1_1211</span> as the Instance administrator and execute:</p>
+	<p class="codetext">grant admin to cacheadm;</p>
+	<p><b>Note:</b> In the previous TimesTen Cache  example, we have already granted the 
+	<span class="codetext">ADMIN</span> privilege to <span class="codetext">cacheadm</span>, 
+	hence this step is not needed.</p>
+</ol></blockquote>
+  
+<p>After setting up an initial cache database,  you can now define the 
+<a href="rep_aspair_cache_define_activedb.html">configuration of the Active Standby Pair</a> 
+and assign the current database (<span class="codetext">cachedb1_1211</span> on <span class="codetext">tthost1</span>) 
+as the Active database.</p>
+
+<table align="right">
+	<tr>
+		<td>1</td>
+		<td><b><a href="rep_aspair_cache_define_activedb.html">2</a></b></td>
+		<td><b><a href="rep_aspair_cache_create_standby.html">3</a></b></td>
+		<td><b><a href="rep_aspair_cache_define_activedb.html">Next &gt;</a></b></td>
+    </tr>
+</table>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+
+</html>

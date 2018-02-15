@@ -1,0 +1,365 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TimesTen Best Practices</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">TimesTen Database Best Practices</span>
+<p class="normal">This section outlines the best practices optimal usage of Oracle TimesTen.</p>
+<table width="719" border="0">
+  <tr>
+    <td width="520" rowspan="2"><table width="719" border="0">
+      <tr>
+        <td colspan="2" ><div align="center"><img src="../images/network.jpg" alt="network" width="136" height="83" /></div></td>
+        <td width="443" rowspan="2"><table width="443" border="0">
+          <tr>
+            <td width="437" colspan="2" ><table width="436" border="0">
+              <tr>
+                <td colspan="2" class="normal-bold"><a href="bp_hw.html" class="normal-bold-blue">Hardware  Considerations</a></td>
+              </tr>
+              <tr>
+                <td width="24" class="normal"><div align="center">-</div></td>
+                <td width="402" class="normal">Separate transaction logs and checkpoint files on separate disk drives</td>
+              </tr>
+              <tr>
+                <td class="normal"><div align="center">-</div></td>
+                <td class="normal">Disk speed matters - use faster disks for write intensive applications</td>
+              </tr>
+              <tr>
+                <td height="18" class="normal"><div align="center">-</div></td>
+                <td class="normal">Faster processor improves transaction response time and throughput</td>
+              </tr>
+              <tr>
+                <td height="18" class="normal"><div align="center">-</div></td>
+                <td class="normal">Ensure high network bandwidth and low network latency for consistent replication performance</td>
+              </tr>
+            </table></td>
+          </tr>
+        </table></td>
+        <td width="9" rowspan="2">&nbsp;</td>
+      </tr>
+      <tr>
+        <td width="144" ><div align="right"> <img src="../images/disk.gif" alt="disks" width="84" height="46" /></div></td>
+        <td width="105" ><img src="../images/cpu.jpg" alt="cpu" width="79" height="66" /></td>
+      </tr>
+    </table></td>
+  </tr>
+</table>
+<hr/>
+<table width="717" height="140" border="0">
+  <tr>
+    <td width="509"><table width="509" border="0">
+      <tr>
+        <td colspan="2" ><table width="717" height="128" border="0">
+          <tr>
+            <td width="509" height="124"><table width="509" border="0">
+              <tr>
+                <td class="normal-bold"></td>
+                <td colspan="2" class="normal-bold"><a href="bp_os.html" class="normal-bold-blue">Operating System Considerations</a></td>
+              </tr>
+              <tr>
+                <td width="25" class="normal"></td>
+                <td width="45" class="normal"><div align="center">-</div></td>
+                <td class="normal">Check supported operating systems</td>
+              </tr>
+              <tr>
+                <td class="normal"></td>
+                <td class="normal"><div align="center">-</div></td>
+                <td class="normal">Configure memory kernel parameters</td>
+              </tr>
+              <tr>
+                <td class="normal"></td>
+                <td class="normal"><div align="center">-</div></td>
+                <td class="normal">Configure System wide resource use thresholds</td>
+              </tr>
+              <tr>
+                <td class="normal"></td>
+                <td class="normal"><div align="center">-</div></td>
+                <td class="normal">Set MemoryLock database attribute</td>
+              </tr>
+              <tr>
+                <td class="normal"></td>
+                <td class="normal"><div align="center">-</div></td>
+                <td class="normal">Configure semaphores</td>
+              </tr>
+              <tr>
+                <td class="normal"></td>
+                <td class="normal"><div align="center">-</div></td>
+                <td class="normal">Configure OS TCP buffer windows</td>
+              </tr>
+            </table></td>
+            <td class="normal" ><div align="center"><img src="../images/UL_penguin_clr.gif" alt="oel" width="81" height="97" /></div></td>
+            <td width="17">&nbsp;</td>
+          </tr>
+        </table>
+            <a href="bp_os.html"></a></td>
+      </tr>
+    </table></td>
+  </tr>
+</table>
+<hr/>
+<table width="715" border="0">
+  <tr>
+    <td width="248"  ><div align="center">
+      <div align="center"><img src="../images/db_health_check.gif" alt="db" width="100px" /><br/>
+          <img src="../images/RAM.gif" alt="db" width="180px" /></div>
+    </div></td>
+    <td width="439"><table width="437" border="0">
+      <tr>
+        <td colspan="2" class="normal-bold"><a href="bp_dbsettings.html" class="normal-bold-blue">Database Settings</a></td>
+      </tr>
+      <tr>
+        <td class="normal" width="33"><div align="center">-</div></td>
+        <td width="394" class="normal">Configure Memory-related attributes</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Configure Disk-related database settings</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Configure SQL-related attributes</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Configure Client/Server attributes</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Configure Cache and Replication attributes</td>
+      </tr>
+      
+      
+    </table></td>
+    <td width="14">&nbsp;</td>
+  </tr>
+</table>
+<hr/>
+<table width="717" height="125" border="0">
+  <tr>
+    <td width="502" height="121"><table width="502" border="0">
+      <tr>
+        <td class="normal-bold"></td>
+        <td colspan="2" class="normal-bold-blue"><a href="bp_schema.html" class="normal-bold-blue">Schema Considerations</a><a href="bp_prog.html" class="normal-bold-blue"></a></td>
+      </tr>
+      <tr>
+        <td width="26" class="normal"></td>
+        <td width="33" class="normal"><div align="center">-</div></td>
+        <td width="471" class="normal">Create appropriate indexes</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Update statistics</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Review Query Plan and act accordingly</td>
+      </tr>
+    </table></td>
+    <td width="186"><div align="center"><img src="../images/schema.gif" alt="Schema Considerations" width="95" height="100" /></div></td>
+    <td width="15">&nbsp;</td>
+  </tr>
+</table>
+<hr/>
+<table width="715" border="0">
+  <tr>
+    <td  ><div align="center"><img src="../images/program.gif" alt="programming" width="75" height="142" /></div></td>
+    <td width="525"><table width="520" border="0">
+      <tr>
+        <td colspan="2" class="normal-bold-blue"><a href="bp_prog.html" class="normal-bold-blue">Programming Usage Considerations</a></td>
+      </tr>
+      <tr>
+        <td width="33" class="normal"><div align="center">-</div></td>
+        <td width="471" class="normal">Milliseconds count - use direct-linked connections for best response time</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Prepare queries and bind columns and parameters in advance</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Tune your application connections and use connection pooling</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Close cursors promptly</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Commit transactions regularly</td>
+      </tr>
+    </table></td>
+    <td width="16">&nbsp;</td>
+  </tr>
+</table>
+<hr/>
+<table width="717" height="125" border="0">
+  <tr>
+    <td width="502" height="121"><table width="502" border="0">
+      <tr>
+        <td class="normal-bold"></td>
+        <td colspan="2" class="normal-bold"><a href="bp_replication.html" class="normal-bold-blue">Replication</a></td>
+      </tr>
+      <tr>
+        <td width="26" class="normal"></td>
+        <td width="46" class="normal"><div align="center">-</div></td>
+        <td width="416" class="normal">Setup and Configuration tips </td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Implementation and testing tips</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal"> A/S Pair with Oracle Clusterware tips</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal"> A/S Pair without Oracle Clusterware tips</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Monitoring the health of TimesTen replication tips</td>
+      </tr>
+    </table></td>
+    <td width="186"><div align="center"><img src="../images/network.gif" alt="network" width="180" /></div></td>
+    <td width="15">&nbsp;</td>
+  </tr>
+</table>
+<hr/>
+<table width="715" border="0">
+  <tr>
+    <td  ><div align="center"><img src="../images/data.gif" alt="data"  /></div></td>
+    <td width="525"><table width="520" border="0">
+      <tr>
+        <td colspan="2" class="normal-bold"><a href="bp_timestencache.html" class="normal-bold-blue">TimesTen Application-Tier Database Cache</a></td>
+      </tr>
+      <tr>
+        <td class="normal" width="33"><div align="center">-</div></td>
+        <td class="normal">Use the same user for Cache Administration User and Cache Manager User</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Read-only cache groups:</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center"></div></td>
+        <td class="normal"><ul type="square">
+            <li>Choose appropriate Autorefresh Intervals</li>
+          <li>Handle large updates on Oracle Database tables</li>
+          <li>Use separate Oracle database connection versus PassThrough</li>
+          <li>Monitor Read-only cache groups</li>
+        </ul></td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Asynchronous WriteThrough (AWT) cache groups:</td>
+      </tr>
+      <tr>
+        <td class="normal">&nbsp;</td>
+        <td class="normal"><ul type="square">
+            <li>Configure parallel propagation to Oracle Database tables</li>
+          <li>Follow Replication best practices for A/S pairs</li>
+          <li>Add constraint checks to minimize AWT errors</li>
+          <li>Monitor Asynchronous WriteThrough cache groups</li>
+        </ul></td>
+      </tr>
+    </table></td>
+    <td width="16">&nbsp;</td>
+  </tr>
+</table>
+<hr />
+<table width="717" height="125" border="0">
+  <tr>
+    <td width="502" height="121"><table width="502" border="0">
+      <tr>
+        <td class="normal-bold"></td>
+        <td colspan="2" class="normal-bold-blue"><a href="bp_monitoring.html" class="normal-bold-blue">Monitoring</a></td>
+      </tr>
+      <tr>
+        <td width="26" class="normal"></td>
+        <td width="33" class="normal"><div align="center">-</div></td>
+        <td width="471" class="normal">Monitor TimesTen using Oracle Enterprise Manager (OEM)</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Use the ttStats Utility</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Monitor Key TimesTen Database Statistics</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Measure SQL Execution Times</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Monitor TimesTen Replication</td>
+      </tr>
+      <tr>
+        <td class="normal"></td>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Monitor TimesTen  Cache</td>
+      </tr>
+    </table></td>
+    <td width="186"><div align="center"><img src="../images/monitoring_chart.gif" alt="monitoring" height="120px"/></div></td>
+    <td width="15">&nbsp;</td>
+  </tr>
+</table>
+<hr/>
+<table width="715" border="0">
+  <tr>
+    <td width="277"  ><div align="center"><img src="../images/em_logo.gif" alt="em12c" width="171"/></div></td>
+    <td width="416"><table width="416" border="0">
+      <tr>
+        <td colspan="2" class="normal-bold-blue"><a href="bp_em.html" class="normal-bold-blue">Enterprise Manager 12<em>c</em> Plug-In</a></td>
+      </tr>
+      <tr>
+        <td width="33" class="normal"><div align="center">-</div></td>
+        <td width="373" class="normal">Use EM12c Self Update to simplify plug-in installation</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Load database into memory before configuring a target</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Set up Preferred Credential to enable transaction monitoring</td>
+      </tr>
+      <tr>
+        <td class="normal"><div align="center">-</div></td>
+        <td class="normal">Recreate TimesTen target to remove historic metrics</td>
+      </tr>
+    </table></td>
+    <td width="8">&nbsp;</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+
+</html>

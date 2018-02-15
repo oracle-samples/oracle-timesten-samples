@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Dropping an Active Standby Pair Configuration</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Dropping an Active Standby Pair Configuration</span>
+<p >To remove an existing active standby pair configuration, you must stop the replication agents 
+and drop the active standby pair replication scheme on each database. </p>
+<p>This tutorial uses the DSNs <span class="codetext">repdb1_1211</span> and <span class="codetext">repdb2_1211</span>. The hostnames of the two machines are <span class="codetext">tthost1</span> 
+and <span class="codetext">tthost2</span>. <span class="codetext">repdb2_1211</span> 
+is the current active database on <span class="codetext">tthost2</span>, and <span class="codetext">repdb1_1211</span> 
+on <span class="codetext">tthost1</span> is the standby database. </p>
+
+<p span class="section1">1. Stop the Replication Agent</p>
+<blockquote ><ol type=a>
+<li>
+	<p>On <span class="codetext">tthost1</span>, use <span class="codetext">ttIsql</span> to connect to <span class="codetext">repdb1_1211</span> 
+	as the replication administrator <span class="codetext">adm</span>.</p>
+	<p class="codetext">ttIsql</p>
+	<p class="codetext">connect &quot;dsn=repdb1_1211;uid=adm&quot;; </p>
+</li><br/>
+<li>
+	<p>Use the built-in procedure 
+	  <span class="doclink">ttRepStop</span> 
+	to stop the replication agent.</p>
+	<p class="codetext">call ttrepstop;</p>
+</li><br/>
+<li>
+	<p>Repeat the above steps for <span class="codetext">repdb2_1211</span> on <span class="codetext">tthost2</span>.</p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">2. Remove the Active Standby Scheme</p>
+<blockquote ><ol type=a>
+<li>
+	<p>On <span class="codetext">tthost1</span>, connect to the <span class="codetext">repdb1_1211</span> database and 
+	remove the active standby pair schema by using the 
+	  <span class="doclink">DROP ACTIVE STANDBY PAIR</span> statement. 
+	Use the </span><span class="codetext">ttIsql</span><span > command 
+	<span class="doclink">repschemes</span> 
+	to verify that the replication scheme has been removed.</p>
+	<p class="codetext">drop active standby pair;<br />
+      repschemes;</p>
+	<p><img class="cmdscnshot" src="../images/rep_drop_dropasp.gif" /></p>
+</li><br/>
+<li>
+	<p>Repeat the above step for <span class="codetext">repdb2_1211</span> on <span class="codetext">tthost2</span>.</p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">3. Destroy the Standby Database</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in to <span class="codetext">tthost1</span> as the instance administrator. Use the 
+	  <span class="doclink">ttDestroy</span> 
+	utility to remove  the redundant standby database <span class="codetext">repdb1_1211.</span></p>
+	<p class="codetext">ttdestroy repdb1_1211</p>
+</li><br/>
+</ol></blockquote>
+
+<p>For more information on Altering replication and Dropping a replication scheme refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/alter.htm#TTREP481" target="_blank" class="doclink">here</a> </p>
+<p>&nbsp;</p>
+
+</div>
+<div id="footer" />
+</body>
+
+</html>

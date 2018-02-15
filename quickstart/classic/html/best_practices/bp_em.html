@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Best Practices for EM 12c Plug-in</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Best Practices for Enterprise Manager Plug-in </span>
+  <p>This page contains recommendations on simplifying the deployment of TimesTen Enterprise Manager <em></em> plug-in for TimesTen database monitoring.</p><h3><br />
+    Use EM Self Update for plug-in installation</h3>
+  <p>The TimesTen plug-in can be installed manually by  using the  EM <a href="http://docs.oracle.com/cd/E24628_01/doc.121/e24473/self_update.htm#EMADM12814" target="_blank" class="doclink">Self Update</a> feature. The Self Update feature downloads and installs the latest TimesTen plug-in directly from the Enterprise Manager Store. EM users can also upgrade to a newer release of the plug-in using Self Update, whenever an updated version becomes available. </p>
+  <h3>Load database into memory before configuring a target</h3>
+  <p>Before Enterprise Manager can monitor a TimesTen database, a TimesTen Target must be created. Each target must be added manually using the &quot;<em>Add Targets Manually</em>&quot; option under the Setup menu. When defining a target, it is required that the TimesTen database being monitored is loaded into memory. Also the credential of a TimesTen database user with ADMIN privilege (not the TimesTen instance administrator) must be used for the configuration of the target.</p>
+  <p>For more information, please refer to the section <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e65401/install.htm#TTEUB286">Configure a TimesTen target</a> in the EM <em></em> Plug-in User's Guide. </p>
+  <h3>Set up Preferred Credential to enable transaction monitoring</h3><p>The <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e65401/trans_monitor.htm#TTEUB733">transaction monitor</a> allows EM users to monitor the current transactions and lock activities in a TimesTen database. In order for this feature to be able to monitor all TimesTen database activities, the preferred credential for the TimesTen target must be set up using the credential of the TimesTen instance administrator. </p>
+  <p>For more information, please refer to the section <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e65401/install.htm#TTEUB604">Setting preferred credentials for a target</a> in the EM <em></em> Plug-in User's Guide. </p>
+  <h3>Recreate TimesTen target to remove historic metrics</h3><p>When a TimesTen database is destroyed and recreated, historic metrics from the previous database are not automatically removed. This means EM will display statistics for that target from both the current and previous databases. To remove the old statistics, users must drop and recreate the TimesTen target.</p>
+  <p>For more information, please refer to the section <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e65401/install.htm#TTEUB289">Remove the TimesTen Target</a> in the EM <em></em> Plug-in User's Guide. </p>
+  <p>&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Defining an Active Standby Pair Configuration</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Defining an Active Standby Pair Configuration</span>
+<p>After creating  an initial database, you can then define the configuration 
+of the active standby pair,  and assign to the current database  the active role. </p>
+<p>This tutorial uses the   DSNs <span class="codetext">repdb1_1211</span> 
+and <span class="codetext">repdb2_1211</span> to create an Active Standby Pair. The hostnames of the two machines are <span class="codetext">tthost1</span> 
+  and <span class="codetext">tthost2</span>.  <span class="codetext">repdb1_1211</span> is the 
+  active database on <span class="codetext">tthost1</span>,  and <span class="codetext">repdb2_1211</span> 
+  on <span class="codetext">tthost2</span> is the standby database. </p>
+<p>&nbsp;</p>
+
+<span class="section1">3. Define the active standby pair</span>
+<blockquote><ol type=a>
+<li>
+	<p>In <span class="codetext">ttIsql</span>, connect to <span class="codetext">repdb1_1211</span> as the replication administrator 
+	<span class="codetext">adm</span>.</p>
+	<p class="codetext">ttIsql</p>
+    <p class="codetext">connect &quot;dsn=repdb1_1211;uid=adm&quot;;</p>
+</li><br/>
+<li>
+	<p>Define an active standby pair  schema by using the 
+	  <span class="doclink">CREATE ACTIVE STANDBY PAIR</span> SQL statement. 
+	The default replication mode for an active standby pair is asynchronous.</p>
+    <p class="codetext">create active standby pair repdb1_1211 on &quot;tthost1&quot;, repdb2_1211 on &quot;tthost2&quot;; </p>
+    <p ><b>Note:</b> The  data store  names <span class="codetext">repdb1_1211</span> and <span class="codetext">repdb2_1211</span> used  in the 
+	<span class="codetext">CREATE ACTIVE STANDBY</span> statement are not DSNs. 
+	They are the filenames defined in the 
+	<span class="doclink">DataStore</span> attribute. 
+	The hostnames used in defining the active standby pair should match the values returned by the OS <span class="codetext">hostname</span> 
+	command on the respective servers.</p>
+</li><br/>
+<li>
+	<p>The <span class="codetext">ttIsql</span> command 
+	  <span class="doclink">repschemes</span> 
+	can be used to verify the  current replication scheme deployed in the database. </p>
+    <p class="codetext">repschemes;</p>
+    <p><img class="cmdscnshot" src="../images/rep_define_repschemes_repdb1.gif"/></p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">4. Set the replication state to Active</span>
+<blockquote ><ol type=a>
+<li>
+	<p>Use the built-in procedure 
+	  <span class="doclink">ttRepStateSet</span> to designate 
+	the current database (<span class="codetext">repdb1_1211</span>) the active state in the active standby pair. 
+	<span class="doclink">ttRepStateGet</span> 
+	returns the  current replication state of the database.</p>
+	<p class="codetext">call ttrepstateset ('active');<br />
+	call ttrepstateget; </p>
+	<p><img class="cmdscnshot" src="../images/rep_define_set_active.gif" /></p>
+</li><br/>
+</ol></blockquote>	
+
+<span class="section1">5. Start the replication agent</span>
+<blockquote ><ol type=a>
+<li>
+	<p>The replication agent is responsible for replicating data between 
+	TimesTen databases. It must be running on both  databases in an  active standby pair. 
+	Use the built-in procedure <span class="doclink">ttRepStart</span> 
+	to start the Replication agent.</p>
+	<p class="codetext">call ttrepstart; </p>
+</li><br/>
+</ol></blockquote>	
+
+<p>After setting up an active master database and defining the active standby pair  configuration, 
+you can now create the <a href="rep_aspair_create_standby.html">standby database</a></span>.</p>
+<p>&nbsp;</p>
+<table align="right" border="0">
+<tr>
+	<td><a href="rep_aspair_config_db.html"><b>&lt; Previous</b></a></td>
+	<td><a href="rep_aspair_config_db.html"><b>1</b></a></td>
+	<td>2</td>
+	<td><a href="rep_aspair_create_standby.html"><b>3</b></a></td> 
+	<td><a href="rep_aspair_create_standby.html"><b>Next &gt;</b></a></td>
+</tr>
+</table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+
+</html>

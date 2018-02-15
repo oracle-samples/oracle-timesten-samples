@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+
+    <class name="com.timesten.tptbmas.Tptbm" table="TPTBM">
+
+        <composite-id name="key" class="com.timesten.tptbmas.TptbmPKey">
+            <key-property name="vpn_id"/>
+            <key-property name="vpn_nb"/>
+        </composite-id>
+
+        <property name="directory_nb"/>
+        <property name="last_calling_party"/>        
+        <property name="descr"/>
+
+    </class>
+
+</hibernate-mapping>

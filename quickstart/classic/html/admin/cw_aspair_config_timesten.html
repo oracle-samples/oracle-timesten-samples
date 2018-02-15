@@ -1,0 +1,214 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Configuring an Active Standby Pair with TimesTen In-Memory Database and Clusterware</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Configuring an Active Standby Pair<br/> with TimesTen In-Memory Database and Clusterware</span>
+<p>This tutorial will make use of the DSN <em>repdb1_1211</em>. 
+The hostnames of the two machines in the examples are <em>ttcwnode1</em> and <em>ttcwnode2</em>. The active database will be 
+created in <em>ttcwnode1</em> and the standby database in <em>ttcwnode2</em>.</p>
+<p>The following tasks are required to configure an Active Standby pair with Oracle Clusterware and TimesTen In-Memory Database:</p>
+
+<p class="section1">1. Register the TimesTen Instance Information</p>
+<blockquote><ol type=a>
+<li>
+	<p>TimesTen instance information is stored in the Oracle Cluster Registry. As the root user on UNIX or Linux platforms, register the TimesTen instance information by executing the 
+	  <span class="doclink">ttCWAdmin -ocrConfig</span> command 
+	on any one of the hosts (<em>ttcwnode1</em> or <em>ttcwnode2</em>).</p>
+	<p class="codetext">ttCWAdmin -ocrConfig</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_ocrconfig.gif" alt="ttCWAdmin -ocrConfig"/></p>
+</li><br/>
+</ol></blockquote>
+  
+
+<p class="section1">2. Start the Cluster Agent</p>
+<blockquote><ol type=a>
+<li>
+	<p>Start the TimesTen cluster agent by executing the 
+	  <span class="doclink">ttCWAdmin -init</span> command 
+	on any one of the hosts. This command starts the TimesTen clusterware agents 
+	and TimesTen daemons on all nodes and starts monitoring them. For example on <em>ttcwnode1</em>:</p>
+	<p class="codetext">ttCWAdmin -init</span></p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_init.gif" alt="ttCWAdmin -init" /></p>
+</li><br/>
+</ol></blockquote>
+
+
+<p class="section1">3. Create a database</p>
+<p>In order to set up an Active Standby Pair via ttCWAdmin, you need to define an "active" TimesTen database on one of the hosts.<br/>
+This database must include a user with the <span class="doclink">ADMIN</span> 
+privilege and an application user with some objects to be used for replication.</p>
+<blockquote><ol type=a>
+<li>
+	<p>Define a system <span class="doclink">DSN</span> on the active master 
+	host as the <span class="doclink">instance</span> administrator.</p>
+	<p>In this example we will use a system DSN <span class="codetext">repdb1_1211</span> on host <em>ttcwnode1</em>. 
+	<em>ttcwnode1</em> will function as the active database in the active standby pair managed by Clusterware. For Clusterware-managed replication, the database DSN must be the same as the database file name.  
+	Here is the example of DSN definition for the relevant section in <em>ttcwnode1</em>'s <span class="codetext">sys.odbc.ini</span> file:</p>
+    <p class="codetext">
+          [repdb1_1211]<br />
+          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
+          DataStore=/home/timesten/instance/tt181/sample_db/repdb1_1211<br />
+          PermSize=512<br />
+          TempSize=128<br />
+          LogBufMB=256<br />
+          LogFileSize=256<br />
+          DatabaseCharacterSet=AL32UTF8<br />
+          PLSQL=1 
+  	<br/>
+	</p>
+ 
+ 
+    <p><b>Note:</b> On the other host <em>(ttcwnode2)</em>, an identical system DSN (i.e. <span class="codetext">[repdb1_1211]</span>) and database file name (i.e. <em>repdb1_1211</em>) must also exist. 
+      This is used during the creation of the standby database on <em>ttcwnode2</em>.</p>
+</li><br/>
+<li>
+	<p>Connect to the <em>repdb1_1211</em> database from the active node <em>(ttcwnode1)</em> 
+	using <span class="doclink">ttIsql</span> 
+	as the instance administrator.</p>
+	<p class="codetext">ttIsql repdb1_1211</p> 
+	<p><img class="cmdscnshot" src="../images/cw_ttisql_repdb1_1211.gif" alt="ttIsql repdb1_1211" /></p>
+	<p>Refer to the section <a href="db_ops_createdb.html">Setting up Data Source Name</a> for more  
+	information on how to define your own DSNs.</p>
+</li><br/>
+</ol></blockquote>
+
+  
+<p class="section1">4. Create a user to administer the active standby pair</p>
+<blockquote><ol type=a>
+<li>
+	<p>Create a database user and assign that user privilege as the database and replication administrator 
+	by granting the user the <span class="doclink">admin</span> 
+	privilege. This admin user is responsible for setting up and managing the active standby pair.</p>
+	<p class="codetext">create user adm identified by adm;<br/>
+	grant admin to adm;</p>
+	<p><img class="cmdscnshot" src="../images/rep_config_create_admin.gif" alt="create admin user" /></p>
+</li><br/>
+<li>
+	<p>Create an application user and tables in the database. In this example, we will create an application user called 
+	<span class="codetext">appuser</span> and this user will own the <span class="codetext">customers</span> and 
+	<span class="codetext">orders</span> tables.</p>
+	<p class="codetext">create user appuser identified by appuser;<br/>
+	grant create session, create table to appuser;</p>
+	<p><img class="cmdscnshot" src="../images/rep_config_create_appuser.gif" alt="create appuser" /></p>
+</li><br/>
+<li>
+	<p>Log in as the user <span class="codetext">appuser</span> in 
+	  <span class="doclink">ttIsql</span> 
+	and execute the following statements or run the script 
+	<a href="../../sample_scripts/replication/create_appuser_obj.sql">create_appuser_obj.sql</a> 
+	located in the <span class="codetext">&lt;QUICKSTART_HOME&gt;/sample_scripts/replication</span> directory 
+	to create the two tables in the appuser schema.</p>
+	<p class="codetext">ttIsql</p>
+	<p class="codetext">connect &quot;dsn=repdb1_1211;uid=appuser&quot;;</p>
+	<p>Run the <a href="../../sample_scripts/replication/create_appuser_obj.sql">create_appuser_obj.sql</a> script:</p>
+	<p class="codetext">@&lt;QUICKSTART_HOME&gt;/sample_scripts/replication/create_appuser_obj.sql;</p>
+	<p>Or run the following code:</p>
+    <p class="codetext">CREATE TABLE CUSTOMERS (<br />
+	&nbsp;&nbsp;CUST_NUMBER NUMBER, <br />
+	&nbsp;&nbsp;FIRST_NAME  VARCHAR2(12) NOT NULL, <br />
+	&nbsp;&nbsp;LAST_NAME   VARCHAR2(12) NOT NULL, <br />
+	&nbsp;&nbsp;ADDRESS     VARCHAR2(100) NOT NULL,<br />
+	&nbsp;&nbsp;PRIMARY KEY (CUST_NUMBER));</p>
+	<p class="codetext">insert into customers values (3700,'Peter','Burchard','882 Osborne Avenue, Boston, MA 02122');<br />
+	insert into customers values (1121,'Saul','Mendoza','721 Stardust Street, Mountain View, CA 94043');</p>
+	<p class="codetext">CREATE TABLE ORDERS (<br />
+	&nbsp;&nbsp;ORDER_NUMBER NUMBER   NOT NULL,<br />
+	&nbsp;&nbsp;CUST_NUMBER  NUMBER   NOT NULL,<br />
+	&nbsp;&nbsp;PROD_NUMBER  CHAR(10) NOT NULL, <br />
+	&nbsp;&nbsp;ORDER_DATE   DATE     NOT NULL,<br />
+	&nbsp;&nbsp;PRIMARY KEY (ORDER_NUMBER),<br />&nbsp;&nbsp;FOREIGN KEY (CUST_NUMBER) REFERENCES CUSTOMERS (CUST_NUMBER));</p>
+	<p class="codetext">insert into ORDERS values (6853036,3700,'0028616731',to_date('2008-04-05','yyyy-mm-dd'));<br />
+	insert into ORDERS values (6853041,3700,'0198612510',to_date('2009-01-12','yyyy-mm-dd'));<br />
+	insert into ORDERS values (6853169,1121,'0003750299',to_date('2008-08-01','yyyy-mm-dd'));<br />
+	insert into ORDERS values (6853174,1121,'0789428741',to_date('2008-10-25','yyyy-mm-dd'));<br />
+	insert into ORDERS values (6853179,1121,'0198612583',to_date('2009-02-02','yyyy-mm-dd'));</p>
+</li><br/>
+</ol></blockquote>
+
+<p class="section1">5. Create the TimesTen cluster.oracle.ini configuration file</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Although there are many possible attributes in a 
+	  <span class="doclink">cluster.oracle.ini</span> file, 
+	for a <span class="doclink">basic</span> Active Standby pair configuration,<br /> 
+	only the <span class="doclink">MasterHosts</span> attribute is needed.</p>
+	<p><img class="cmdscnshot" src="../images/cw_cluster_ini_repdb1_1211.gif" alt="repdb1_1211 Cluster entry"/></p>
+	<p>The <span class="codetext">cluster.oracle.ini</span> file is in the <span class="codetext">&lt;TIMESTEN_HOME&gt;/conf</span> directory.</p>
+	<p>The <span class="doclink">cluster.oracle.ini</span> 
+	entry name (eg <span class="codetext">[repdb1_1211]</span>) must correspond to the system 
+	<span class="doclink">DSN</span> for the active and standby databases.</p>
+	<p><b>Note:</b> When you use the installer or <span class="codetext">ttInstanceModify</span> to add support for Oracle Clusterware, 
+	the mandatory MasterHosts attribute will be created in the <em>cluster.oracle.ini</em> file for you.  For more complex configurations, 
+	you need to add the relevant attributes yourself in the <span class="codetext">cluster.oracle.ini</span> file on every node in the cluster.</p>
+</li><br/>
+</ol></blockquote>
+
+  
+<p class="section1">6. Create an Active Standby Pair</p>
+<blockquote><ol type=a>
+<li>
+	<p><span class="doclink">Drop any existing [SQL] 
+	Active Standby pair</span> for the <em>repdb1_1211</em> database by running the following command:</p>
+	<p class="codetext">drop active standby pair;</p>
+	<p>You cannot mix Active Standby Pairs managed by 
+	  <span class="tptbmspec">ttIsql</span> 
+	and managed by <span class="doclink">ttCWAdmin</span>.<br />
+	An Active Standby Pair for a database should be managed by either ttIsql or by ttCWAdmin, and <b>not</b> by both.</p>
+</li>
+<br/>
+<li>
+	Create an Active Standby pair replication scheme by executing the 
+	  <span class="doclink">ttCWAdmin -create</span> command on any host. 
+	For example on <em>ttcwnode1</em>:
+	<p class="codetext">ttcwadmin -create -dsn repdb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_create_repdb1_1211.gif" alt="ttCWAdmin create" /></p>
+	<p>Based on the <em>repdb1_1211</em> entries in the system DSN and the <span class="codetext">cluster.oracle.ini</span>, this command 
+	created the  replication scheme for the <em>repdb1_1211</em> database on the <em>ttcwnode1</em> 
+	and <em>ttcwnode2</em> hosts, with <em>ttcwnode1</em> as the active node.</p>
+</li>
+<br/>
+</ol></blockquote>
+
+
+<p class="section1">7. Start the Active Standby Pair</p>
+<blockquote ><ol type=a>
+<li>
+	<p>Start the Active Standby pair replication scheme managed by <span class="codetext">ttCWAdmin</span> by executing the 
+	  <span class="doclink">ttCWAdmin -start</span> command on any host. 
+	For example on <em>ttcwnode1</em>:</p>
+	<p class="codetext" >ttcwadmin -start -dsn repdb1_1211</p>
+	<p><img class="cmdscnshot" src="../images/cw_ttcwadmin_start_repdb1_1211.gif" alt="ttcwadmin start" /></p>
+	<p><b>Notes:</b>
+		<ul>
+			<li><span class="codetext">ttCWAdmin -start</span> will automatically start the replication agent on the standby machine 
+			and duplicate the active database onto the standby host.</li>
+			<li>The time it takes to duplicate the active database will be proportional to the size of the 
+			active database and the performance of the hardware used.</li>
+            <li>Once the Active Standby Pair has be started by <span class="codetext">ttCWAdmin</span>, committed writes to the 
+			active database will be written to its local transaction logs, but they will not get replicated to the standby database 
+			until the duplicate operation is complete.</li>
+			<li>To check the progress of the database duplication, use the <span class="codetext">ttCWAdmin -status -dsn &lt;your_DSN&gt;</span> command.</li>
+		</ul>
+	</p>
+</li><br/>
+</ol></blockquote>
+  <p>&nbsp;</p>
+<p>Click <a href="cw_aspair_admin_timesten.html" class="compilerun">here</a> to learn how to manage the Active Standby Pair
+with TimesTen In-Memory Database and Clusterware.</p>
+<p>For more information about Using Oracle Clusterware to Manage Active Standby Pairs refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/cluster.htm#CCHCFAAD" target="_blank" class="doclink">here</a> </p>
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

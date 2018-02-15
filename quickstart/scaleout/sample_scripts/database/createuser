@@ -1,0 +1,166 @@
+#!/bin/bash
+
+#
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+
+declare -r dfltDSN="sampledb"
+
+declare sname=`basename "$0"`
+declare username=""
+declare password=""
+declare dsn="${dfltDSN}"
+declare connstr=""
+declare dir=""
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    ${sname} [-dsn dsn]"
+    echo
+    echo "Creates a database user in the database referenced by the specified"
+    echo "DSN (or the default DSN 'sampledb' if not specified)."
+    echo
+    echo "You will be prompted for the name of the user to be created and the"
+    echo "password to be assigned to them."
+    echo
+    echo "Users can only be created by the instance administrator user"
+    echo "via a direct mode connection."
+    echo
+    exit 99
+}
+
+warnUser()
+{
+    local a
+
+    echo
+    echo "Users can only be created by the instance administrator user"
+    echo "via a direct mode connection."
+    echo
+    echo "If these criteria are satisfied then press enter to proceed otherwise"
+    echo "press Ctrl-C to interrupt:"
+    read a
+    echo
+
+    return 0
+}
+
+getString()
+{
+    local msg="$1"
+    local str=""
+
+    while [ "${str}" == "" ]
+    do
+        if [ "${msg}" != "" ]
+        then
+            read -p "${msg}" str
+        else
+            read -p "${msg}" str
+        fi
+    done
+
+    echo "${str}"
+    return 0
+}
+
+
+canonPath()
+{
+    local cwd
+    local nwd
+    local nfn
+
+    cwd=`pwd -P`
+    nwd=`dirname "$1"`
+    nfn=`basename "$1"`
+    cd "${nwd}" >/dev/null 2>&1
+    if [ $? -ne 0 ]
+    then
+        cd "${cwd}"
+        return 1
+    fi
+    nwd=`pwd -P`
+    if [ -d "${nfn}" ]
+    then
+        cd "${nfn}" >/dev/null 2>&1
+        if [ $? -ne 0 ]
+        then
+            cd "${cwd}"
+            return 1
+        fi
+        nwd=`pwd -P`
+        echo "${nwd}"
+    else
+        echo "${nwd}/${nfn}"
+    fi
+    cd "${cwd}"
+    return 0
+}
+
+parseArgs()
+{
+    local -i foundDSN=1
+
+    while [ $# -gt 0 ]
+    do
+        case "$1" in
+            "-dsn" )
+                shift
+                if [ \( ${foundDSN} -eq 0 \) -o \( $# -lt 1 \) ]
+                then
+                    usage
+                fi
+                dsn="$1"
+                foundDSN=0
+                ;;
+            * )
+                usage
+                ;;
+        esac
+        shift
+    done
+
+    connstr="DSN=${dsn}"
+
+    return 0
+}
+
+createUser()
+{
+    echo
+    echo "Creating user..."
+    echo
+    ttIsql "${connstr}" <<EOF
+create user ${username} identified by '${password}';
+grant all to ${username};
+quit;
+EOF
+    if [ $? -ne 0 ]
+    then
+        return 1
+    fi
+
+    return 0
+}
+
+
+parseArgs "$@"
+
+warnUser
+
+dir=`canonPath "$0"`
+dir=`dirname "${dir}"`
+cd "${dir}"
+
+username=`getString "Enter the name of the user to create: "`
+password=`getString "Enter the password to be assigned to '${username}': "`
+
+createUser
+exit $?

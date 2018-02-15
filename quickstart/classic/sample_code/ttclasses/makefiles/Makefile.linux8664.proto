@@ -1,0 +1,291 @@
+###################################################################################
+#
+# Linux (gcc/g++) x86 (32-bit) Makefile for the TimesTen TTCLASSES sample programs.
+#
+# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+#
+###################################################################################
+
+TT_MVL_LINUX  = 0
+
+INSTDIR       = $(TIMESTEN_HOME)/install
+COMMON        = $(QUICKSTART_HOME)/sample_code/common
+SAMPLES       = $(QUICKSTART_HOME)/sample_code/ttclasses
+TTCLASSESDIR  = $(TIMESTEN_HOME)/ttclasses
+TTDMDIR       = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
+
+GCC32 = $(shell sh -c "gcc -dumpversion" 2>/dev/null | grep '^3\.[2-9]')
+ifneq (,$(GCC32))
+  USING_GCC_32    = -m64
+  USING_GCC_32_LD = -m64
+endif
+
+64BIT         = -DTT_64BIT
+THREAD_SAFE   = -D_THREAD_SAFE -D_REENTRANT
+POSIX_THREADS = -D_POSIX_PTHREAD_SEMANTICS -D_POSIX_THREADS_CALLS
+CSDEFS        = -DTTCLIENTSERVER
+
+OPTFLAG       = -O -Wuninitialized
+DEBUGFLAG     = -g -Wall -W -Wcast-qual -Wshadow -Wpointer-arith \
+                -Wno-return-type -DTTDEBUG
+
+CFLAGS        = $(OPTFLAG) -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) -Ilib -DGCC \
+                $(USING_GCC_32) $(64BIT) $(THREAD_SAFE) -I$(COMMON)
+
+ifeq ($(TT_MVL_LINUX),1)
+EXTRALIBS       = -ldl -lrt -lstdc++ -lttco
+endif
+
+LDFLAGS       = $(USING_GCC_32_LD)
+DIRLIBS       = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -ltten -L$(TTCLASSESDIR)/lib -lttclasses
+CSLIBS        = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -Wl,-rpath -Wl,$(INSTDIR)/lib -lttclient -L$(TTCLASSESDIR)/lib -lttclassesCS
+TTDMLIBS      = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -lttdrvmgr -L$(TTCLASSESDIR)/lib -lttclassesTTDM
+
+CPLUSPLUS     = g++
+CC            = gcc
+
+# default LINK line (both opt/debug)
+LINK          =  $(CC) -shared $(USING_GCC_32_LD) -o
+
+ARFLAGS       =
+
+SHLDEXT       = so
+AREXT         = a
+
+OBJ_DIR       = obj
+
+# used to determine what targets to build
+TT_CLIENTLIB  = $(wildcard $(INSTDIR)/lib/libttclient.$(SHLDEXT))
+TT_LIBTTEN    = $(wildcard $(INSTDIR)/lib/libtten.$(SHLDEXT))
+
+#
+# TimesTen ttClasses Driver Manager Shared Library
+#
+TTCLASSES_TTDM_SHLIB  = $(INSTDIR)/lib/libttclassesTTDM.$(SHLDEXT)
+
+#
+# TimesTen Driver Manager Shared Library
+#
+TTDM_SHARED_LIB       = $(INSTDIR)/lib/libttdrvmgr.$(SHLDEXT)
+# -----------------------------------------------------------------------------------
+# file lists
+# -----------------------------------------------------------------------------------
+
+TTC_INCLUDEDIR  =  $(INSTDIR)/include/ttclasses
+
+TTC_DEMO_CPP_OBJS = \
+$(OBJ_DIR)/basics.o \
+$(OBJ_DIR)/bulkcp.o \
+$(OBJ_DIR)/bulktest.o \
+$(OBJ_DIR)/catalog.o \
+$(OBJ_DIR)/changemon_multi.o \
+$(OBJ_DIR)/plsqlTTCLASSES.o \
+$(OBJ_DIR)/pooltest.o \
+$(OBJ_DIR)/testprog_utils.o \
+$(OBJ_DIR)/ttSizeAll.o \
+$(OBJ_DIR)/typetest.o
+
+TTC_DEMO_C_OBJS = \
+$(OBJ_DIR)/portable_thread_unix.o
+
+TESTPROGS = \
+basics \
+bulkcp \
+bulktest \
+catalog \
+plsqlTTCLASSES \
+pooltest \
+ttSizeAll \
+typetest
+
+TESTPROGS_CS = \
+basicsCS \
+bulkcpCS \
+bulktestCS \
+catalogCS \
+plsqlTTCLASSESCS \
+pooltestCS \
+ttSizeAllCS \
+typetestCS
+
+TESTPROGS_TTDM = \
+basicsTTDM \
+bulkcpTTDM \
+bulktestTTDM \
+catalogTTDM \
+plsqlTTCLASSESTTDM \
+pooltestTTDM \
+ttSizeAllTTDM \
+typetestTTDM
+
+UTILS = \
+$(OBJ_DIR)/testprog_utils.o
+
+# -----------------------------------------------------------------------------------
+#  Top-level targets
+# -----------------------------------------------------------------------------------
+ifneq ($(strip $(TT_LIBTTEN)),)
+PROGS = $(TESTPROGS) $(TESTPROGS_TTDM)
+endif
+
+ifneq ($(strip $(TT_CLIENTLIB)),)
+PROGS += $(TESTPROGS_CS) $(TESTPROGS_TTDM)
+endif
+
+all: $(PROGS)
+
+clean:
+		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS) $(TESTPROGS_CS) $(TESTPROGS_TTDM)
+		$(PLAT_SPECIFIC_CLEAN)
+
+# -----------------------------------------------------------------------------------
+# build targets
+# -----------------------------------------------------------------------------------
+
+.SUFFIXES: .cpp $(SUFFIXES)
+
+.KEEP.STATE:
+
+$(OBJ_DIR)/%.o:%.c
+	$(CC) $(CFLAGS) -c $*.c -o $@
+
+$(OBJ_DIR)/%_client.o:%.c
+	$(CC) $(CFLAGS) $(CSDEFS) -c $*.c -o $@
+
+$(OBJ_DIR)/%.o:%.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c $*.cpp -o $@
+
+$(OBJ_DIR)/%_client.o:%.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c $*.cpp -o $@
+
+#
+# TTClasses direct linked sample programs
+#
+
+basics: $(UTILS) $(OBJ_DIR)/basics.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/basics.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+bulkcp: $(UTILS) $(OBJ_DIR)/bulkcp.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulkcp.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+bulktest: $(UTILS) $(OBJ_DIR)/bulktest.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulktest.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+catalog: $(UTILS) $(OBJ_DIR)/catalog.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/catalog.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+plsqlTTCLASSES: $(UTILS) $(OBJ_DIR)/plsqlTTCLASSES.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/plsqlTTCLASSES.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+pooltest: $(UTILS) $(OBJ_DIR)/pooltest.o $(TTC_DEMO_C_OBJS)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/pooltest.o \
+        $(TTC_DEMO_C_OBJS) \
+        $(UTILS) \
+        $(LDFLAGS) $(DIRLIBS)
+
+typetest: $(UTILS) $(OBJ_DIR)/typetest.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/typetest.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+ttSizeAll: $(UTILS) $(OBJ_DIR)/ttSizeAll.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll.o $(UTILS) \
+	$(LDFLAGS) $(DIRLIBS)
+
+#
+# TTClasses client-linked sample programs
+#
+
+basicsCS: $(OBJ_DIR)/basics_client.o $(OBJ_DIR)/testprog_utils_client.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/basics_client.o $(OBJ_DIR)/testprog_utils_client.o \
+	$(LDFLAGS) $(CSLIBS)
+
+bulkcpCS: $(OBJ_DIR)/bulkcp_client.o $(OBJ_DIR)/testprog_utils_client.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulkcp_client.o $(OBJ_DIR)/testprog_utils_client.o \
+	$(LDFLAGS) $(CSLIBS)
+
+bulktestCS: $(OBJ_DIR)/bulktest_client.o $(OBJ_DIR)/testprog_utils_client.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulktest_client.o $(OBJ_DIR)/testprog_utils_client.o \
+	$(LDFLAGS) $(CSLIBS)
+
+catalogCS: $(OBJ_DIR)/catalog_client.o $(OBJ_DIR)/testprog_utils_client.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/catalog_client.o $(OBJ_DIR)/testprog_utils_client.o \
+	$(LDFLAGS) $(CSLIBS)
+
+plsqlTTCLASSESCS: $(OBJ_DIR)/plsqlTTCLASSES_client.o $(OBJ_DIR)/testprog_utils_client.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/plsqlTTCLASSES_client.o $(OBJ_DIR)/testprog_utils_client.o \
+	$(LDFLAGS) $(CSLIBS)
+
+pooltestCS: $(OBJ_DIR)/pooltest_client.o $(OBJ_DIR)/testprog_utils_client.o $(OBJ_DIR)/portable_thread_unix_client.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/pooltest_client.o \
+        $(OBJ_DIR)/portable_thread_unix_client.o \
+        $(OBJ_DIR)/testprog_utils_client.o \
+        $(LDFLAGS) $(CSLIBS)
+
+typetestCS: $(OBJ_DIR)/typetest_client.o  $(OBJ_DIR)/testprog_utils_client.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/typetest_client.o $(OBJ_DIR)/testprog_utils_client.o \
+	$(LDFLAGS) $(CSLIBS)
+
+###
+### "useful" sample programs
+###
+
+ttSizeAllCS: $(OBJ_DIR)/ttSizeAll_client.o $(OBJ_DIR)/testprog_utils_client.o
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll_client.o $(OBJ_DIR)/testprog_utils_client.o \
+	$(LDFLAGS) $(CSLIBS)
+
+#
+# TTClasses TimesTen Driver Manager sample programs
+#
+
+basicsTTDM: $(UTILS) $(OBJ_DIR)/basics.o $(TTCLASSES_TTDM_SHLIB)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/basics.o $(UTILS) \
+	$(LDFLAGS) $(TTDMLIBS)
+
+bulkcpTTDM: $(UTILS) $(OBJ_DIR)/bulkcp.o $(TTCLASSES_TTDM_SHLIB)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulkcp.o $(UTILS) \
+	$(LDFLAGS) $(TTDMLIBS)
+
+bulktestTTDM: $(UTILS) $(OBJ_DIR)/bulktest.o $(TTCLASSES_TTDM_SHLIB)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulktest.o $(UTILS) \
+	$(LDFLAGS) $(TTDMLIBS)
+
+catalogTTDM: $(UTILS) $(OBJ_DIR)/catalog.o $(TTCLASSES_TTDM_SHLIB)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/catalog.o $(UTILS) \
+	$(LDFLAGS) $(TTDMLIBS)
+
+plsqlTTCLASSESTTDM: $(UTILS) $(OBJ_DIR)/plsqlTTCLASSES.o $(TTC_DEMO_C_OBJS) $(TTCLASSES_TTDM_SHLIB)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/plsqlTTCLASSES.o \
+        $(TTC_DEMO_C_OBJS) \
+        $(UTILS) \
+        $(LDFLAGS) $(TTDMLIBS)
+
+pooltestTTDM: $(UTILS) $(OBJ_DIR)/pooltest.o $(TTC_DEMO_C_OBJS) $(TTCLASSES_TTDM_SHLIB)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/pooltest.o \
+        $(TTC_DEMO_C_OBJS) \
+        $(UTILS) \
+        $(LDFLAGS) $(TTDMLIBS)
+
+typetestTTDM: $(UTILS) $(OBJ_DIR)/typetest.o $(TTCLASSES_TTDM_SHLIB)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/typetest.o $(UTILS) \
+	$(LDFLAGS) $(TTDMLIBS)
+
+ttSizeAllTTDM: $(UTILS) $(OBJ_DIR)/ttSizeAll.o $(TTCLASSESDMSHLIB)
+	$(PURIFY) $(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll.o $(UTILS) \
+	$(LDFLAGS) $(TTDMLIBS)
+
+#
+# Build the TimesTen ttClasses Driver Manager Shared Library if necessary
+#
+$(TTCLASSES_TTDM_SHLIB): $(TTDM_SHARED_LIB)
+	cd $(TTCLASSESDIR); make -f MakefileTTDM
+
+#
+# Build the TimesTen Driver Manager Shared Library if necessary
+#
+$(TTDM_SHARED_LIB):
+	cd $(TTDMDIR); make

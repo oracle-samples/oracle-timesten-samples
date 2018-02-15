@@ -1,0 +1,169 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to Configure Oracle GlassFish Server with Oracle TimesTen</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">How to Configure Oracle GlassFish Server 3.1.1</span>
+<p class="normal">This section provides descriptions and examples of configuring the TimesTen JDBC driver for use with Oracle GlassFish Server 3.1.1. </p>
+<p class="normal">Assumption:  Oracle TimesTen and Oracle GlassFish Server have been successfully installed on the same host machine and that both instances are running.</p>
+<p class="normal"><img src="images/view_image.gif" alt="" width="24" height="24" align="absmiddle" /></a></a> <b><font color="#ff0000">Place the cursor over this icon to view  images in this tutorial.</font></b></p>
+<!--
+<p class="normal"><img src="images/view_image.gif" alt="" width="24" height="24" align="absmiddle" /></a></a> <b><font color="#ff0000">Place the cursor over this icon to view  images in this tutorial.</font></b></p>
+-->
+<p class="normal"><span class="section1">Configuring the TimesTen JDBC driver</span><br />
+</p>
+<p class="normal">Before you can use Oracle GlassFish Server to access the TimesTen databases, the GlassFish Server environment must have access to the TimesTen JDBC driver jar file and the TimesTen shared libraries. Here are the steps:</p>
+<table width="725" border="0">
+  <tr>
+    <td width="74" height="109" valign="top" class="normal"><div align="center">Step 1</div></td>
+    <td width="641" valign="top" class="normal">Copy the TimesTen JDBC driver jar file <span class="codetext">(ttjdbc6.jar</span>) from your TimesTen install directory <span class="codetext">&lt;install_dir&gt;/lib</span> to <span class="codetext">&lt;GlassFish_install_dir&gt;/lib/ext</span><span class="normal"> directory, if the </span> GlassFish Server is using JDK 1.6; otherwise, copy the TimesTen JDBC driver jar file (<span class="codetext">ttjdbc5.ja</span>r) if the GlassFish server is using JDK 1.5.
+      <p>&lt;TimesTen_install_dir&gt; is the home directory where you installed Oracle TimesTen, and &lt;GlassFish_install_dir&gt; is the home directory where you installed the Oracle GlassFish Server.</td>
+  </tr>
+  <tr>
+    <td height="104" valign="top" class="normal"><div align="center">Step 2</div></td>
+    <td valign="top" class="normal">Set the LD_LIBRARY_PATH environment variable (or the equivalent variable for your OS) to include the TimesTen lib directory <span class="codetext">&lt;TimesTen_install_dir&gt;/lib</span>. </p>
+        <p>On Windows, set the PATH environment variable to include the <span class="codetext">&lt;TimesTen_install_dir&gt;/bin</span> directory where the TimesTen DLLs are located. The PATH variable must be set for the environment where the GlassFish Server runs.</td>
+  </tr>
+  <tr>
+    <td height="27" valign="top" class="normal"><div align="center">Step 3</div></td>
+    <td valign="top" class="normal">Restart the GlassFish Server for the changes to take effect.</td>
+  </tr>
+</table>
+<p class="normal"><span class="section1">Configuring TimesTen Connections and Connection Properties</span><br />
+</p>
+<p><span class="normal">The TimesTen JDBC driver supports four different types of connections to access the TimesTen database. The table below shows the connection types and the connection properties:</span></p>
+<table width="758" border="1">
+  <tr>
+    <td width="150" height="144" valign="top" class="normal"><div align="left"><em><strong>Direct-linked connections  with local transactions only</strong></em></div></td>
+    <td width="592" valign="top" class="normal">This configuration is an in-process linked to the TimesTen database libraries; direct-linked connection provides the best response time for database operations and results in higher transaction throughput. To use this configuration, the GlassFish Server and the TimesTen database must be  running in the same machine.
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span><br />
+</p>
+    <p>Example <span class="codetext">URL Property: jdbc:timesten:direct:sampledb</span></p></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">
+    <td height="131" valign="top" bgcolor="#EEEEEE" class="normal"><div align="left"><em><strong>Direct-linked connection  with XA distributed transactions</strong></em></div></td>
+    <td valign="top" class="normal">The JDBC driver supports XA distributed transactions. For directed-link connections, the TimesTen database must reside on the same machine as the GlassFish Server. This connection type incurs distributed transaction overhead.
+    <p>TimesTen Class: <span class="codetext"><em>com.timesten.jdbc.xa.TimesTenXADataSource</em></span><br />
+</p>
+    <p>Example <span class="codetext">URL Property: jdbc:timesten:direct:sampledb</span></p></td>
+  </tr>
+  <tr>
+    <td height="140" valign="top" class="normal"><div align="left"><em><strong>Client/server access with local transactions only</strong></em></div></td>
+    <td valign="top" class="normal">Client/Server connections are intended for applications not running in the same machine as the TimesTen database. Here, the GlassFish Server can access the TimesTen database from a remote machine. This connection mode  incurs network (TCP/IP) overhead and is less responsive as the direct-linked connection mode.</p>
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span><br />
+    <p>Example <span class="codetext">URL Property: jdbc:timesten:client:sampledb</span></p></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">
+    <td height="131" valign="top" bgcolor="#EEEEEE" class="normal"><div align="left"><em><strong>Client/server access with XA distributed transactions</strong></em></div></td>
+    <td valign="top" class="normal">The JDBC driver supports XA distributed transactions. For client/server connections, the GlassFish Server may access the TimesTen database from a remote machine.This connection type incurs network overhead in addition to the distributed transaction overhead.</p>
+    <p>TimesTen Class:<span class="codetext"> com.timesten.jdbc.xa.TimesTenXADataSource</span><br />
+    <p>Example <span class="codetext">URL Property: jdbc:timesten:client:sampledb</span></p></td>
+  </tr>
+</table>
+<p class="normal">&nbsp;</p>
+<p class="normal"><span class="section1">Configuring a TimesTen JDBC Connection Pool</span></p>
+<p class="normal">To configure a TimesTen JDBC connection pool in GlassFish Server, follow these steps:</p>
+<table width="760" border="0">
+  <tr>
+    <td width="57" height="22" align="center" valign="top" class="normal"><div align="center">1.</div></td>
+    <td valign="top" class="normal">Connect to the <strong>GlassFish Server administration console</strong></td>
+  </tr>
+  <tr>
+    <td height="23" align="center" valign="top" class="normal"><div align="center">2.</div></td>
+    <td valign="top" class="normal">Select <strong>Resources --&gt; JDBC --&gt; Connection Pools</strong> from the left hand pane</td>
+  </tr>
+  <tr>
+    <td height="25" align="center" valign="top" class="normal"><div align="center">3.</div></td>
+    <td valign="top" class="normal">Click <strong>New</strong></td>
+  </tr>
+  <tr>
+    <td height="108" align="center" valign="top" class="normal"><div align="center">4.</div></td>
+    <td valign="top" class="normal"><p>At the <strong>New JDBC Connection Pool (Step 1 of 2)</strong> screen enter a name for the new pool in the <strong>Name</strong> field. In the <strong>Database Vendor</strong> field enter <strong>Oracle TimesTen</strong>. In the <strong>Resource Type</strong> drop down list box select <span class="codetext">javax.sql.ConntionPoolDataSource</span> if the application requires only local transactions; or select <span class="codetext">javax.sql.XADataSource</span> if the application requires XA distributed transactions. See Figure 1 below.
+      </p>
+      <p><img src="images/view_image.gif" alt="" name="gf_new_connpool_1" class="imgborder_off" id="gf_new_connpool_2" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2"><br />
+      <strong>Figure 1</strong></span><!--
+      The screen should look similar to figure 1 below.<br/>
+      <br />
+         <img src="images/view_image.gif" name="sun_connpool" class="imgborder_off" id="sun_connpool" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+         <span class="style2">Figure 1</span>
+      --></p>
+      <p><br />
+      </p></td>
+  </tr>
+  <tr>
+    <td height="56" align="center" valign="top" class="normal">5.</td>
+    <td valign="top" class="normal"><p>At the <strong>New JDBC Connection Pool (Step 2 of 2) </strong>screen enter <span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span> in the <strong>Datasource Classname</strong> field for local transactions. Enter <span class="codetext">com.timesten.jdbc.xa.TimesTenXADatasource</span> if XA distributed transactions are required.  </p>
+      <p><img src="images/view_image.gif" alt="" name="gf_new_connpool_2" class="imgborder_off" id="gf_new_connpool_2" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2"><br />
+      <strong>Figure 2</strong></span></p>
+      <p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td height="109" align="center" valign="top" class="normal">6.</td>
+    <td valign="top" class="normal"><p>Scroll down to the <strong>Additional Properties</strong> section at the bottom of the screen. Click <strong>Add Property</strong>. A new row will appear in the Properties section of the screen. Click the check box in the new row. Type <strong>url</strong> in the <strong>Name</strong> column. In the <strong>Value</strong> column enter the TimesTen URL for the database to which this pool should connect. A TimesTen URL takes the form <span class="codetext"> jdbc:timesten:[direct|client]:DSN</span> (refer to the section above for examples).
+      </p>
+      <p><img src="images/view_image.gif" alt="" name="gf_add_prop" class="imgborder_off" id="gf_add_prop" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+        <br />
+        <span class="style2"><strong>Figure 3</strong></span><br>
+        <br>Click the check box for the <strong>user</strong> property and in the <strong>Value</strong> column enter the TimesTen user that this connection pool should connect as.
+        <br><br>Click the check box for the <strong>password</strong> property and in the <strong>Value</strong> column enter the password for the TimesTen user.</p>
+      <p>The screen should look similar to <strong>Figure 3</strong> above for a connection to a DSN named<span class="codetext"> sampledb</span> using <span class="codetext">appuser/appuser</span> as the TimesTen user account. <br>
+        <br />
+        <br/>
+      </p></td>
+  </tr>
+</table>
+<p class="normal"><span class="section1">Configuring a TimesTen JDBC Resource</span></p>
+
+<p class="normal">In order for applications to access the timesTen connection pool, a JDBC resource must be created and associated with the pool. Follow these steps:</p>
+<table width="760" border="0">
+  <tr>
+    <td width="57" height="22" align="center" valign="top" class="normal"><div align="center">1.</div></td>
+    <td valign="top" class="normal">Connect to the <strong>GlassFish Server administration console</strong></td>
+  </tr>
+  <tr>
+    <td height="23" align="center" valign="top" class="normal"><div align="center">2.</div></td>
+    <td valign="top" class="normal">Select <strong>Resources --&gt; JDBC --&gt; JDBC Resources</strong> from the left hand pane.</td>
+  </tr>
+  <tr>
+    <td height="25" align="center" valign="top" class="normal"><div align="center">3.</div></td>
+    <td valign="top" class="normal">Click <strong>New</strong></td>
+  </tr>
+  <tr>
+    <td height="104" align="center" valign="top" class="normal"><div align="center">4.</div></td>
+    <td valign="top" class="normal"><p>At the<strong> New JDBC Resources</strong> screen, enter a JNDI name for the resource. In the <strong>Pool Name</strong> field, select the name of the TimesTen connection pool that was created in the previous steps. The dialog should look similar to Figure 4 below. </p>
+      <p><img src="images/view_image.gif" alt="" name="gf_new_resource" class="imgborder_off" id="gf_new_resource" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+        <br />
+        <span class="style2"><strong>Figure 4</strong></span></p>
+      <p>Click <strong>OK</strong></p></td>
+  </tr>
+</table>
+<p class="normal">
+
+<!--
+<p class="normal"><img src="images/view_image.gif" width="24" height="24" align="absmiddle" onMouseOver="hideAllImages()"> </a> 
+  <b class="normal"><font color="#ff0000">Place the cursor over this icon to hide all screenshots.</font></b></p>
+-->
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+<script language="JavaScript" type="text/JavaScript">
+<!--
+preLoadImages();
+//-->
+</script>
+</html>

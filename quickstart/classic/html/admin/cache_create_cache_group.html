@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Adding Cache Groups to a Cache Database</title>
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Adding Cache Groups to a Cache Database</span>
+<p>A <span class="doclink">cache group</span> is a 
+collection of Oracle tables  cached inside a TimesTen in-memory  database. A cache database may contain one or more cache groups.</p>
+<p>A cache group can be  read-only or updatable.  With  a read-only cache group, updates in the Oracle database are 
+automatically refreshed to the corresponding cache tables in the TimesTen database. With an updatable cache group,  
+updates on cache tables are automatically   propagated to the corresponding tables in the Oracle database.</p>
+<p>The data in a cache group can be pre-loaded, or loaded on demand. Cache groups can be preloaded when the set of data to cache 
+can be predetermined. A <span class="doclink">dynamic cache group</span> 
+is a cache group where the cache data is loaded on demand. This is appropriate when the set of data to cache cannot be predetermined. </p>
+ 
+<p >The  examples  below show how  you can create an  updatable local cache group, and a  
+  <span class="doclink">read-only</span> local cache group.</p>
+
+<span class="section1">1. Start the Cache agent </span>
+<blockquote ><ol type=a>
+<li>
+	<p>Log in to <span class="codetext">ttIsql</span> as the user <span class="codetext">cacheadm</span>, passing in the 
+	TimesTen and Oracle user passwords for <span class="codetext">cacheadm</span>. </p>
+	<p class="codetext">ttIsql</p>
+    <p class="codetext">connect &quot;dsn=cachedb1_1211;uid=cacheadm;pwd=cacheadm;oraclepwd=cacheadm&quot;; </p>
+</li><br/>
+<li>
+	<p>The cache agent process is responsible for managing the communication between 
+	cache databases, as well as controlling the data flow from an Oracle database to a TimesTen cache database.</p>
+	<p>Call the built-in procedure 
+	  <span class="doclink">ttCacheStart</span> 
+	to start the cache agent for the current database.</p>
+    <p class="codetext">call ttcachestart; </p>
+</li><br/>
+</ol></blockquote>
+
+<span class="section1">2. Define the Cache Groups</span>
+<blockquote><ol type=a>
+<li>
+	<p>Enter the following  
+	  <span class="doclink">CREATE CACHE GROUP</span> statements, 
+	to create a dynamic updatable   cache group named <span class="codetext">d_awt</span> to cache the 
+	<span class="codetext">HR.EMPLOYEES</span> and <span class="codetext">HR.JOB_HISTORY</span> tables. 
+	Alternatively, run the script <a href="../../sample_scripts/cache/create_local_dyn_awt.sql">create_local_dyn_awt.sql</a> 
+	located in the <span class="codetext">&lt;QUICKSTART_HOME&gt;/sample_scripts/cache </span> directory.</p>
+    <b>Note:</b> &lt;QUICKSTART_HOME&gt; is the location where you unzip the QuickStart Guide tar file.
+	<p>Either run the following script:</p>
+    <p class="codetext">@&lt;QUICKSTART_HOME&gt;/sample_scripts/cache/create_local_dyn_awt.sql;</p>
+	<p>or run the following code:</p>
+    <p class="codetext">create dynamic asynchronous writethrough cache group  d_awt from <br />
+          hr.employees ( employee_id number (6) not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;first_name    varchar2(20),<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;last_name     varchar2(25) not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;email         varchar2(25) not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;phone_number  varchar2(20),<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hire_date     date not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;job_id        varchar2(10) not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;salary        number (8,2),<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;commission_pct number (2,2),<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;manager_id    number (6),<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;department_id number(4),<br />
+          &nbsp;&nbsp;&nbsp;primary key (employee_id)),<br />
+          hr.job_history (employee_id  number(6) not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;start_date   date  not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end_date     date  not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;job_id       varchar2(10) not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;department_id number(4), <br />
+          &nbsp;&nbsp;primary key (employee_id,start_date),<br />
+          &nbsp;&nbsp;foreign key (employee_id) <br />
+          &nbsp;&nbsp;references hr.employees (employee_id));</p>
+</li><br/>
+<li>
+	<p>Enter the following  <span class="codetext">CREATE CACHE GROUP</span> statement, 
+	or run the script <a href="../../sample_scripts/cache/create_local_ro.sql">create_local_ro.sql</a> 
+	located in the <span class="codetext">&lt;QUICKSTART_HOME&gt;/sample_scripts/cache </span> directory to 
+	create a read-only  local cache group named <span class="codetext">ro</span> to cache 
+	the <span class="codetext">HR.DEPARTMENTS</span> table. </p>
+	<p>Either run the following script:</p>
+	<p class="codetext">@&lt;QUICKSTART_HOME&gt;/sample_scripts/cache/create_local_ro.sql;</p>
+	<p>or run the following code:</p>
+    <p class="codetext">create readonly cache group ro<br />
+          autorefresh<br />
+          interval  5 seconds <br />
+          mode incremental<br />
+          from<br />
+          hr.departments (department_id   number(4) not null primary key,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;department_name varchar2(30) not null,<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;manager_id      number(6),<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;location_id     number(4));</p>      </td>
+</li><br/>
+<li>
+	<p>The <span class="codetext">ttIsql</span> command 
+	  <span class="doclink">cachegroups</span> 
+	can be used to verify the definitions of cache groups in the database. </p>
+    <p class="codetext">cachegroups;</p>
+	<p><img class="cmdscnshot" src="../images/cg_create_cg_ttisql_cachegroups.gif" /></p>
+</li><br/>
+</ol></blockquote>
+
+<p><span class="section1">3. Start the Replication agent<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(required only if there are asynchronous writethrough (AWT) cache groups)</span></p>
+<blockquote><ol type=a>
+<li>
+	<p>The replication agent process is primarily responsible for the replicating data between TimesTen databases, 
+	but it is also responsible for propagating the updates from a TimesTen cache database to an Oracle database. 
+	This step is needed only if you have asynchronous writethrough (AWT) cache groups.</p>
+	<p>Call the built-in procedure 
+	  <span class="doclink">ttRepStart</span>
+	to start the replication agent for the current database.</p>
+	<p class="codetext">call ttrepstart; </p>
+</li><br/>
+</ol></blockquote>	
+
+
+<p>  Once the cache groups have been created and the required processes have been started, 
+you can start loading data into the cache tables. For more information on how to load data into cache groups, 
+refer to the section <a href="cache_load_cache.html">Loading Data into Cache Groups</a><br />
+<br />
+</p>
+
+<table align="right">
+<tr>
+	<td>1</td>
+	<td><b><a href="cache_load_cache.html">2</a></b></td>
+	<td><b><a href="cache_load_cache.html">Next &gt;</a></b></td>
+</tr>
+</table>
+
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+
+</body>
+</html>

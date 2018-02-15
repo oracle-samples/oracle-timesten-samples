@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>TimesTen TTClasses Sample Programs</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">TTClasses Sample Programs</span>
+<p class="normal"><strong>TTClasses </strong>provides a set of C++ classes and APIs for database developers to implement C++ applications to run on the Oracle TimesTen database. This page provides a listing of the sample programs using TTClasses. The goal is to help jump start developers who are new to TimesTen by providing a set of sample programs that demonstrate  the core features of the TimesTen in-memory database. </p>
+<p class="normal">The following TTClasses sample programs are available in the <span class="codetext">quickstart/classic/sample_code/ttclasses</span> directory.</p>
+<table width="760" border="1">
+  <tr valign="top">
+    <td width="150" class="table-header">&nbsp;&nbsp; Program</td>
+    <td width="594" class="normal"><span class="table-header"><strong>Description</strong></span></td>
+  </tr>
+  <tr>
+    <td height="71" valign="top" class="codetext"> &nbsp;&nbsp;<a href="../../../sample_code/ttclasses/basics.cpp">basics.cpp</a></em></td>
+    <td valign="top" class="normal">This sample program is a good starting template for projects that use   TTClasses.  It shows how to connect to and disconnect from a TimesTen database   and how to prepare, bind, execute, fetch and close SQL statements.  Examples of   TTClasses exception handling and timing SQL operations for both serializable and   committed read transactions are shown. </td>
+  </tr>
+  <tr bgcolor="#F6F6F6">
+    <td height="54" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/bulkcp.cpp">bulkcp.cpp</a></em></td>
+    <td valign="top" class="normal">This sample program uses dynamic SQL to run a SQL query and writes the output to   the console or a file.  The user enters the SQL query on the command line.  The   user can optionally specify the characters to display for NULL values and   column separators.</td>
+  </tr>
+  <tr>
+    <td height="72" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/bulktest.cpp">bulktest.cpp</a></em></td>
+    <td valign="top" class="normal">This sample code executes a series of insert, update and  delete operations   first in 'non-bulk' and then in 'bulk' mode with variable batch sizes. When the   &quot;batchsize&quot; is set to 256 (the optimal value), significant performance benefits   can be achieved for insert operations and modest improvements for update and   delete operations.</td>
+  </tr>
+  <tr bgcolor="#F6F6F6">
+    <td height="27" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/catalog.cpp">catalog.cpp</a></td>
+    <td valign="top" class="normal">This sample program prints out the database schema information including all tables, views, and indexes. . </td>
+  </tr>
+  
+    <tr>
+    <td height="127" valign="top" class="codetext"> &nbsp;&nbsp;<a href="../../../sample_code/proc/plsqlPROC.pc">plsqlTTCLASSES.cpp</a></td>
+    <td valign="top" class="normal">This sample program uses TTClasses to access common PL/SQL packages (<span class="codetext">emp_pkg</span> and <span class="codetext">sample_pkg</span>) in four different ways:</p>
+      <p>- Calls a stored procedure with IN and OUT parameters<br />
+        - Calls a stored function with IN and OUT parameters<br />
+        - Calls an anonymous block and passes host variables into and out of the block<br />
+        - Calls a store procedure to open a ref cursor and uses TTClasses to process the result-set of the ref cursor
+        <br />
+        <br />
+        The <span class="codetext">EMP</span> table and the <span class="codetext">emp_pkg</span> and <span class="codetext">sample_pkg</span> PL/SQL packages need to exist for this program to work.<br />
+    </td>
+  </tr>
+  
+  <tr bgcolor="#F6F6F6" >
+    <td height="72" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/pooltest.cpp">pooltest.cpp</a></td>
+    <td valign="top" class="normal">This sample program demonstrates multi-threaded connection pool usage and error handling. This program shows how to use  the TTConnectionPool class in TTClasses in a multi-threaded application. The user can specify the number of threads to use for the insert operations and the number of connections to keep in the connection pool. </td>
+  </tr>
+  <tr>
+    <td height="30" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/ttSizeAll.cpp">ttSizeAll.cpp</em></a></td>
+    <td valign="top" class="normal">This sample program demonstrates calling TimesTen utility ttSize for multiple tables. </td>
+  </tr>
+  <tr bgcolor="#F6F6F6" >
+    <td height="43" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/typetest.cpp">typetest.cpp</a></td>
+    <td valign="top" class="normal">This sample program demonstrates the use of different datatypes supported by Oracle TimesTen by creating  a table, <span class="codetext">typetest,</span> which contains columns of all supported datatypes. The program then inserts data into the table and  queries the data from the table.</td>
+  </tr>
+  <tr>
+    <td height="195" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/xla/ttXlaAdmin.cpp">ttXlaAdmin.cpp</a></td>
+    <td valign="top" class="normal">This particular TTClasses sample program is available in the <span class="codetext">quickstart/classic/sample_code/ttclasses/xla</span> directory.<br />
+	<br />
+	This program shows how to list or remove XLA bookmarks in the database. This program requires a user with ADMIN privilege to run because only the administrator is allowed to see all bookmarks in the system. A user with the XLA privilege is allowed to list or remove his/her own bookmark. <br />
+      <br />
+      Unwanted bookmarks that are preventing transaction log files from being purged can create operational issues on the system and should be removed. <br />
+      <br />
+      The &quot;list&quot; option is the default option for running the program without any input. For each XLA bookmark found in the system, the program lists the    bookmark name, its LSN and whether the bookmark is holding transaction logs.  <br />
+      <br />
+      The &quot;remove&quot; option   allows the user to delete the XLA bookmark via its bookmark name.  The &quot;removeall&quot; option allows all of the bookmarks to be deleted.  Bookmarks can only be deleted when not in use.    </td>
+  </tr>
+  <tr bgcolor="#F6F6F6" >
+    <td height="148" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/xla/xlasubscriber1.cpp">xlasubscriber1.cpp</a></td>
+    <td valign="top" class="normal">This particular TTClasses sample program is available in the <span class="codetext">quickstart/classic/sample_code/ttclasses/xla</span> directory.<br />
+	<br />
+	This program shows how to use the Transaction Log API (XLA) facility to subscribe to change notifications   for a table, chosen by the user at run time. <br />
+      <br />
+    This program shows how to create persistent XLA bookmark and monitor and process changes on the specified table. The program displays the change records processed and the operations that were performed on the table (insert, update, or delete) to cause the change.  <br />
+    <br />
+    To create     workload on the table being tracked, use a ttIsql session or a TimesTen user application to inject changes to the the table being tracked. This program requires a user with XLA privilege to run. </td>
+  </tr>
+  <tr>
+    <td height="122" valign="top" class="codetext">&nbsp;&nbsp;<a href="../../../sample_code/ttclasses/xla/xlasubscriber2.cpp">xlasubscriber2.cpp</a></td>
+    <td valign="top" class="normal">This particular TTClasses sample program is available in the <span class="codetext">quickstart/classic/sample_code/ttclasses/xla</span> directory.<br />
+	<br />
+	This program shows how to subscribe to XLA events on multiple tables of   interest (in this case three). This program monitors changes to  three tables: MYTABLE, ICF and ABC.<br />
+      <br />
+      The column names and   their values are shown for every row affected by the transaction's inserts,   updates and deletes.  To create the transactional workload, a ttIsql session or   a TimesTen user application can perform the transactions to the MYTABLE, ICF   and/or ABC tables. <br />
+      <br />
+      This program is an example of an XLA subscriber which only   has the permission to see the changes to the table of interest, but not to   access the table of interest itself. The program requires a user with XLA privilege to run.<br />    </td>
+  </tr>
+</table>
+
+<p class="section1">Compile and Run</p>
+<p class="normal">Click <a href="howto_ttclasses.html" class="compilerun">here</a> to learn how to compile and run the sample programs on your installed platform.</p>
+<p class="normal">For more information on TTClasses, refer to the <a href="http://docs.oracle.com/database/timesten-18.1/e61202/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database TTClasses Guide</font></a>. </p>
+<p class="normal">&nbsp;</p>
+
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

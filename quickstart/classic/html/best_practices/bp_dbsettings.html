@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Best Practices for Database Settings</title>
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Best Practices for Database Settings</span>
+
+<p>
+This section lists a number of database attributes and settings that should be set properly to achieve the best performance in a TimesTen production system. These attributes and settings are grouped into the following six categories.
+<ul>
+  <li>Memory-related configuration
+  <li>Disk-related database settings
+  <li>SQL-related attributes
+  <li>Client/Server attributes
+  <li>Cache and Replication attributes
+  <li>Miscellaneous attributes
+</ul>
+Among these database settings, RAM Policy can be modified through ttAdmin utility, while the rest are all database attributes that can be modified either in the database DSN definition of file <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini</span>, or in a TimesTen connection string. Click on the individual attribute names for details on how to set it.</p>
+
+<p><br><h3>Memory-related configuration</h3></p>
+<p><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61195/using.htm#TTOPR728">RAM Policy</a></strong><br />  RAM Policy determines when databases are loaded and unloaded from main memory. By default the RAM Policy of a database is <i>In-Use</i>.
+
+<p>RAM Policy should be set to <i>Manual</i>, to avoid unnecessary database loading or unloading. Policy <i>In-Use</i> should only be considered if the application logic requires the TimesTen database being automatically loaded at the first connection and automatically unloaded at the last disconnection.<br /><br />Use TimesTen database utility <a target="_blank" href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF321">ttAdmin</a> to set RAM Policy for a database.</p>
+ 
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF149">MemoryLock</a><br /> </strong>MemoryLock specifies whether the real memory used by TimesTen database should be locked while the database is loaded into memory. MemoryLock should be set to 4, to avoid paging of the memory used by the TimesTen database. If MemoryLock is not set to 4, parts of the shared memory segment used by the TimesTen database may be paged out to the disk swap area, resulting in poor database performance.</p>
+
+
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF151">PermSize</a><br /> </strong>PermSize indicates the size in MB of the permanent memory region for the database where the actual data is stored. Make sure PermSize is sufficient to hold all the data. TimesTen stores all data in RAM to achieve exceptional performance.  The database throws an error if there is no space left for a new piece of data. PermSize can be increased with a database restart but it cannot be decreased.<br /><br />A TimesTen utility, <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF305">ttSize</a>, can help you to estimate the required PermSize, based on database schema and the number of expected rows in tables.</p>
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF154">TempSize</a><br /> 
+</strong>TempSize indicates the size in MB of the temporary memory region for the database. TempSize has to be large enough to hold the temporary data such as locks, cursors, compiled SQL commands, and the intermediate results from SQL query execution. Related database operations may fail if TempSize is insufficient. TempSize is by default set to approximately 1/8 of PermSize if not explicitly set (when PermSize&gt;64MB). It can be changed with a database restart.<br /> <br />
+<span > The minimum setting of TempSize is highly dependent on the characteristics of the database workload, such as concurrency and SQL commands. Use the following approach to determine an appropriate TempSize for the database workload:</span></p>
+<ul>
+  <li>Set TempSize to a high value (e.g. 1/4 of PermSize) </li>
+  <li>Run the full workload and watch the high water mark (TEMP_IN_USE_HIGH_WATER from sys.MONITOR) of the temp space usage. <em>Note that the high water mark can be reset using built-in procedure ttMonitorHighWaterReset.</em></li>
+  <li>If necessary, change the TempSize to a value of the observed TEMP_IN_USE_HIGH_WATER + 10%.</li></ul>
+
+<p><br /> <strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF143">LogBufMB</a><br /></strong><span >LogBufMB specifies the size in MB of the internal transaction log buffer. A small LogBufMB could slow down write transactions when these transactions have to wait for a log flush operation to make space for redo logging. An oversized log buffer has no impact other than consuming extra memory. By default LogBufMB is 64MB. 
+  <br><br>The recommendation is to set LogBufMB to a value within the range of [256MB, 4GB] on 64-bit systems. If memory space is a concern, start with 256MB, otherwise start with 1GB. If you observe the value of LOG_BUFFER_WAITS metric in sys.monitor table increases while running your workload, increasing the value of LogBufMB may improve the database performance.
+  <br><br>
+LogBufMB is related to attribute LogFileSize, which should be set to the same value or integral multiples of LogBufMB for best performance.
+</span></p>
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF144">LogBufParallelism</a><br /> </strong>LogBufParallelism specifies the number of transaction log buffer strands which the internal log buffer is divided into by the parallel log manager. This attribute improves transaction throughput when multiple connections execute write transactions concurrently. Configure this to the lesser value of the number of CPU cores on the system and the number of concurrent connections executing write transactions. By default LogBufParallelism is 4.</p>
+
+<p><strong ><br /></strong></p>
+
+<h3><strong >Disk-related database settings</strong></h3>
+<p><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF128">DataStore</a><br /></strong><span >DataStore attribute defines the full path and file name prefix of the database checkpoint files. This path name uniquely identifies the database. The background checkpoint process writes delta data changes to these checkpoint files based on a specified frequency (CkptFrequency) or an amount of generated transaction log data (CkptLogVolume). <br><br>
+The file system and underlying disk storage should have sufficient I/O bandwidth for the database checkpointing, especially when a heavy write workload is expected. Similarly, the faster the disk storage for the checkpointing files is, the faster the database can be loaded into memory during database startup.</span>
+
+<p><br><strong ><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF131">LogDir</a><br /></strong><span >LogDir defines the file system directory of the database transaction log files. The background log flusher process continuously flushes the transaction log records from the log buffer space to the log files on disk. Therefore the file system and the underlying disk storage should have sufficient I/O bandwidth for the transaction logging if a heavy write workload is expected.<br /><br />It is imperative that DataStore and LogDir reside on separate storage/disks to avoid I/O contention. Under intensive write workload, the LogDir storage/disk might be a performance bottleneck due to insufficient I/O bandwidth.<br /></span><span ><br /></span></p>
+
+<p><strong ><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF145">LogFileSize</a><br /></strong><span >LogFileSize attribute specifies the maximum size of each transaction log file in megabytes. The default is the same as the chosen value for LogBufMB. If LogFileSize is too small, TimesTen has to create multiple log files within a transaction log flush operation. The overhead of file creation in the file system often leads to LOG_BUF_WAITS events, which will significantly impact performance.<br /></span>
+<br><span >LogFileSize should be set to the same value or integral multiples of LogBufMB for best performance.</span></p>
+
+<p><br /> <strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF137">CkptFrequency</a>, <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF138">CkptLogVolume</a>, and <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF139">CkptRate</a><br /> </strong>These attributes determine the frequency of database checkpoints (based on a time interval and/or log volume) and whether the I/O rate of a checkpoint should be limited (CkptRate). The optimum setting is highly dependent on the application workload, disk I/O bandwidth and MTTR (Mean Time To Recovery) requirement. The more frequently (and the faster) database checkpoints are performed, the less disk space is occupied by transaction logs and the less time is required for database recovery when needed.</p>
+
+<p><br /> <strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF857">CkptReadThreads</a><br /> </strong> CkptReadThreads attribute reduces the amount of time it takes to load the TimesTen database to memory by enabling parallel threads to read the TimesTen database checkpoint files; this feature is particularly useful when the checkpoint files reside on Solid State or Flash storage.</p>
+<p>The parallel checkpoint reads feature is enabled by setting a new database attribute CkptReadThreads.  CkptReadThreads is a First Connect attribute and should be set prior to loading the database. The attribute value specifies the number of threads that TimesTen uses to read checkpoint files, when loading the database to memory.  The default value of CkptReadThreads is set to 1 (for hard disk storage). When using SSD or Flash storage, users can set the attribute to a value great than 1. The overall read rate from the SSD/Flash is best achieved by setting the attribute to a value between 4 and 8; actual performance may vary depending on device models.  </p>
+<p>Using current generation of SSD and Flash storage with 8 parallel check-point read threads, it’s possible to achieve 2 GB/sec read rate using a single SSD device or a PCIe Flash card, and 3.3 GB/sec using two SSD devices/Flash cards (via disk striping).  To improve database restart time, consider using SSD/Flash devices for your TimesTen Checkpoint files, and enable the parallel checkpoint reads feature.</p>
+<p><br /> <strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF162">DurableCommits</a><br /></strong><span >This attribute controls whether the flushing to disk of log records for committed transactions occurs synchronously at commit time (DurableCommits=1) or asynchronously post-commit (DurableCommits=0).
+
+<br><br>The default is 0 and this should only be changed if you need the higher level of assurance provided by fully durable commits. Setting this value to 1 will have an impact on the performance of transactions that modify data within the database.
+<br /><br>
+This attribute can be set at database level in the DSN definition, or at connection level in the connecting string. A connection can also call the <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF247">ttDurableCommit</a> built-in procedure to do durable commits explicitly on selected transactions.</span></p>
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF146">LogFlushMethod</a><br /> </strong>LogFlushMethod controls how TimesTen writes and syncs log data to transaction log files. The general rule is to set the value to 2 if most transaction commit durably, otherwise leave it as the default (1).</p><p><strong ><br /></strong></p>
+
+<h3><strong>SQL-related attributes</strong></h3>
+<p><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF171">SQLQueryTimeout</a><br /></strong><span>This attribute specifies the time limit in seconds within which the database should execute SQL statements. </span><span>By default TimesTen does not limit how long a SQL query executes (SQLQueryTimeout=0). In cases where it is desired to limit the maximum execution time of a SQL statement set this attribute to an appropriate non-zero value (seconds).</span></p>
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF165">LockWait</a><br /></strong><span>LockWait configures the number of seconds to wait for a lock when there is contention on it. Sub-second LockWait values significant to tenths of a second can be specified using decimal format for the number of seconds. </span><span>The default LockWait is 10 seconds before a lock waiter times out. When running a workload of high lock-contention potential, consider setting LockWait to a smaller value for faster return of control to the application, or setting LockWait to a larger value to increase the successful lock grant ratio (but at the risk of decreased throughput).</span></p>
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF168">PrivateCommands</a><br /></strong><span>PrivateCommands controls whether multiple connections can share the common SQL command structures when executing the same command. By default, PrivateCommands is turned off (value is 0) and SQL commands are shared among database connections. </span><span>When multiple connections execute the same command, they access common command structures controlled by a single command lock. To avoid sharing their commands and possibly placing contention on the lock, you can set PrivateCommands to 1. This gives you better performance scaling (throughput) at the cost of slightly increased temporary space usage.</span></p>
+
+
+
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF190">PLSQL_TIMEOUT</a><br /></strong><span>
+PLSQL_TIMEOUT controls how long (in seconds) PL/SQL program units, including PL/SQL procedures, anonymous blocks and functions, are allowed to run before being automatically terminated. The default is 30 seconds.
+
+<br><br>Set PLSQL_TIMEOUT to a higher value if your PL/SQL procedure/block/function is expected to run longer than 30 seconds. This attribute can also be modified with an "ALTER SESSION" statement at runtime.
+</span></p><p><strong ><br /></strong></p>
+
+<h3><strong >Client/Server attributes</strong></h3>
+
+<p><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF201">MaxConnsPerServer</a><br /></strong><span >MaxConnsPerServer attribute sets the maximum number of concurrent connections allowed for a TimesTen server process. By default, MaxConnsPerServer equals to 1, meaning that each TimesTen server process can only handle one client connection. </span>
+<br><br><span>Setting MaxConnsPerServer &gt; 1 allows the database to use threads instead of processes to handle client connections, reducing the time required for applications to establish new connections and increasing overall efficiency in configurations which use a large number of concurrent client/server connections.<br /> </span></p>
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF202">ServersPerDSN</a><br /></strong><span >This attribute only has any effect if the TimesTen server is configured to operate in multi-threaded mode (MaxConnsPerServer &gt; 1). The default for ServersPerDSN is 1. This means that the first MaxConnsPerServer client connections to a specific server DSN will be assigned to one server process, the next MaxConnsPerServer connections to a second server process and so on. 
+  <br><br>If ServersPerDSN is set to N where N &gt; 1 then the first (N * MaxConnsPerServer) client connections to the specific server DSN will be distributed in round robin fashion over N server processes. If additional client connections beyond (N * MaxConnsPerServer) are opened to the same server DSN then those connections will be assigned to new server processes as for the case when ServersPerDSN=1. 
+  
+<br><br>In general it is fine to leave this set to the default of 1.
+
+<!-- This attribute specifies the threshold of total number of client connections, beyond which new database connection will use threads instead of processes (if MaxConnsPerServer &gt; 1). There is no incentive to change the default value (1) unless the application desire that the first &lt;ServersPerDSN&gt; connections have to use dedicated TimesTen processes. -->
+
+</span></p><p ><strong><br /><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF199">TTC_TIMEOUT</a><br /></strong><span >This attribute specifies the maximum number of seconds a TimesTen client application waits for the result from the TimesTen server process before timing out. The default is 60 seconds. <br><br>
+Set the value higher if you will be executing individual SQL operations that could take longer than 60 seconds. Setting it to a lower value will result in faster detection of lost network connections but could result in false timeouts if any operation legitimately takes longer than the timeout value.</span></p>
+
+<p><br /></p>
+
+<h3><strong>Cache and Replication attributes</strong></h3>
+<p><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF722">CacheAWTMethod</a><br /> </strong>CacheAWTMethod determines whether PL/SQL execution method or SQL array execution method is used for Asynchronous Writethrough propagation to apply changes to the Oracle database. By default TimesTen uses PL/SQL execution method (CacheAWTMethod=1). 
+<br><br>This default setting is efficient for most use cases when the workload consists of mixed inserts/updates/deletes statements to the same or different tables. Consider changing CacheAWTMethod to value 0 (SQL Array execution) when the changes in TimesTen AWT cache consist of mostly repeated sequences of the same operation (INSERT/UPDATE/DELETE) against the same table.
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF760">CacheAWTParallelism</a><br /></strong><span >CacheAWTParallelism indicates the number of concurrent threads that should be used to apply changes to the Oracle database. The default is 1. </span><span >
+  
+<br><br>In order to get the maximum performance of AWT change propagation to the Oracle database	consider setting CacheAWTParallelism to the desired number of parallel AWT propagation threads. The performance improvement varies depending on workload. To determine the most optimum value for a specific workload, user can repeat running the workload with increasing CacheAWTParallelism values (e.g. 2, 4, 8, 16) and watch the data propagation throughput.</span></p>
+
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF133">ReplicationParallelism</a><br /></strong><span >This attribute configures the number of parallel replication threads used for automatic parallel replication between two TimesTen databases. The default is 1, meaning that the replication is single-threaded. 
+<br><br>The performance improvement of parallel replication varies depending on workload. The best practice is to run the workload with increasing ReplicationParallelism values (e.g. 2, 4, 8, 16) to determine the most optimum value for a specific workload.</span><strong><br /></strong></p>
+ 
+
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF750">ReplicationApplyOrdering</a><br /></strong><span >This attribute enables parallel replication when used with the ReplicationParallelism attribute. With parallel replication, multiple transmitters on the master send to multiple receivers on the subscriber. The default is 0, meaning that parallel replication over multiple threads that automatically enforces transactional dependencies and all changes applied in commit order. This attribute also sets parallel propagation for AWT cache groups which enables parallel propagation of updates to the Oracle database.<br><br>
+
+Users may enable this new Parallel Replication feature to relax enforcing commit ordering on the receiving hosts, when TimesTen determines the transactions have no dependencies on each other. This feature provides even more parallelism when applying the replicated transactions on the Standby and Subscriber databases. To relax the commit ordering on the receiving host, set the attribute ReplicationApplyOrdering to a value of 2 when configuring the Active-Standby Pair replication scheme.<br><br>
+
+To enable user-defined parallel replication for classic replication schemes, set ReplicationApplyOrdering to 1 and ReplicationParallelism to a number from 1 to 64. </span></p>
+<p>&nbsp;</p>
+<!--
+<p><br /> <strong><a target="_blank" class="doclink" href="../../../doc/timesten.1122/e21643/attribute.htm#TTREF152">ReceiverThreads</a><br /></strong><span >This attribute controls the number of threads used to apply changes on the standby master database or read-only subscriber databases in an active standby pair replication scheme. The default is 1, meaning there is only one thread applying changes on the standby or subscriber database. Consider setting ReceiverThreads to 2 to increase replication throughput. Note that this attribute applies only if parallel replication is not used.<br /> </span></p><p><span > </span><br /></p>
+-->
+
+<h3><strong>Other attributes for consideration</strong></h3>
+<p><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF140">Connections</a><br /> 
+</strong>This attribute indicates the upper bound on the number of user-specified concurrent connections to the database. If the number of connections exceeds the value of this attribute, TimesTen returns an error. 
+With TimesTen 18.1 or above, the default value is the minimum  of 2000 or the number of semaphores specified in the SEMMSL kernel parameter minus 155.
+The Maximum number of  concurrent application connections to a database is 32000 which may be limited by semaphore configuration or Connections DSN attribute or both.<br>
+<br>
+TimesTen allocates one semaphore for each expected connection, therefore the <em>kernel.sem</em> parameter has to be set properly. Make sure the connections attribute is set large enough to accommodate the number of concurrent database connections expected.
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF176">ConnectionCharacterSet</a></strong><br /> This attribute specifies the character encoding for the connection. 
+<br><br>Generally, the connection character set should match your terminal settings where the application runs. When the ConnectionCharacterSet is different from the <a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF129">DatabaseCharacterSet</a>, TimesTen performs data conversion internally as required. If possible, set the ConnectionCharacterSet to the same as the DatabaseCharacterSet to avoid character set conversion.
+
+<p><br><strong><a target="_blank" class="doclink" href="http://docs.oracle.com/database/timesten-18.1/e61204/attribute.htm#TTREF153">RecoveryThreads</a></strong><br /> RecoveryThreads defines the number of parallel threads used for index rebuild at database recovery time. For performance reason TimesTen does not log changes to indexes therefore in the event of a crash all the indexes need to be rebuilt. To reduce the index rebuild time to the maximum extent possible, this attribute by default will be set up to the same number of CPU cores on the system.</p>
+
+        <p>&nbsp;</p>
+
+
+
+
+
+
+
+
+</div>
+<div id="footer"/>
+</body>
+
+</html>

@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How to Configure Oracle Application Server with Oracle TimesTen</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+
+<link type="text/css" rel="stylesheet" href="../css/qs.css">
+<script type="text/javascript" src="../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">How to Configure  Oracle Application Server 10g</span>
+<p class="normal">This section provides descriptions and examples of configuring the TimesTen JDBC driver for use with Oracle Application  Server 10g</p>
+<p class="normal">Assumption:  Oracle TimesTen and Oracle Application Server (OAS) have been successfully installed on the same host machine and that both instances are running.</p>
+<p class="normal"><img src="images/view_image.gif" alt="" width="24" height="24" align="absmiddle" /></a></a> <b><font color="#ff0000">Place the cursor over this icon to view  images in this tutorial.</font></b></p>
+<p class="section1"><span class="section1">Configuring The TimesTen JDBC Driver</span><br class="section1" />
+</p>
+<table width="760" border="0">
+  <tr>
+    <td height="45" colspan="2" valign="top" class="normal">Before you can use Oracle Application Server to access the TimesTen databases, the server  environment must have access to the TimesTen JDBC driver jar file and the TimesTen shared libraries. Here are the steps:</td>
+  </tr>
+  <tr>
+    <td width="74" height="94" valign="top" class="normal"><div align="center">Step 1.</div></td>
+    <td width="676" valign="top" class="normal">Copy the TimesTen JDBC driver jar file from the TimesTen install directory to the OAS install directory:<br /><br />
+      Copy <span class="style110">&lt;TimesTen_install_dir&gt;/lib/ttjdbc5.jar</span><span class="style110"> (</span><span class="normal">or </span><span class="codetext">ttjdbc6.jar</span><span class="style110">) </span> to <span class="codetext">&lt;OAS_install_dir&gt;/lib/ext</span> directory. <br/>
+      <br/>
+      If  OAS is using JDK 1.5, copy the <span class="codetext">ttjdbc5.jar</span> file, otherwise for JDK 1.6, copy the <span class="codetext">ttjdbc6.jar</span> file.
+    </td>
+  </tr>
+  <tr>
+    <td height="111" valign="top" class="normal"><div align="center">Step 2.</div></td>
+    <td valign="top" class="normal">Modify  the LD_LIBRARY_PATH environment variable (or the equivalent variable for your OS) to include the TimesTen shared library. Append <span class="codetext">timesten_install_dir/lib</span> to the <span class="codetext">LD_LIBRARY_PATH</span> (or equivalent) environment variable found in the <span class="codetext">OAS_install_dir/common/bin/commEnv.sh</span> file.
+    <p>On Windows, set the PATH environment variable to include the <span class="codetext">TimesTen_install_dir/bin</span> directory where the TimesTen DLLs are located. The PATH variable must be set for the environment where OAS runs. </p></td>
+  </tr>
+  <tr>
+    <td height="204" valign="top" class="normal"><div align="center">Step 3.</div></td>
+    <td valign="top" class="normal">If you use OPMN (Oracle Process Manager and Notification Service) to start the application server, modify the OPMN configuration file to include the TimesTen shared libraries location. The OPMN configuration file is located at <span class="codetext">OAS_install_dir/opmn/conf/opmn.conf.</span>
+    <p>Open the <span class="codetext">opmn.conf</span> file, add an entry for the LD_LIBRARY_PATH environment variable (or the equivalent variable for your OS) under the <span class="codetext">ias-component</span> element associated with the application server. For example,  the component called 'OC4J' in the opmn configuration file on the Windows platform:</p>
+    <p>&lt;ias-component id=&quot;OC4J&quot;&gt;<br />
+  &lt;environment&gt;<br />
+  &nbsp;&nbsp;&nbsp; &lt;variable id=&quot;PATH&quot; value=&quot;C:\TimesTen\tt1121_32\bin&quot; append=&quot;true&quot; /&gt;<br />
+&lt;/environment&gt; </td>
+  </tr>
+  <tr>
+    <td height="27" valign="top" class="normal"><div align="center">Step 4.</div></td>
+    <td valign="top" class="normal">Restart the Oracle Application Server instance for the changes to take effect.</td>
+  </tr>
+</table>
+<p class="section1">Configuring Connection Pools and Data Sources</p>
+<table width="760" border="0">
+  <tr>
+    <td class="normal"><p>The TimesTen JDBC driver supports four different types of connections for accessing the TimesTen database. The table below shows the connection types and the connection properties. </p>
+      <p>Each type of TimesTen JDBC driver connection requires a unique data source configuration. The examples below reference a TimesTen DSN, sampledb_1121 for  direct-linked connection mode, and sampledbCS_1121 for client/server connection mode. These TimesTen DSNs need to be configured in the odbc.ini or sys.odbc.in file on Unix/Linux platforms, or configured in the Windows Data Source Administrator.</p>
+      <p>Each TimesTen JDBC driver connection type requires a unique connection pool configuration in the Oracle Application Server. One or more data source objects may be associated with each connection pool. </p>
+    <p>Sample connection pool and data source configurations are described below for each of the four types of TimesTen connections.</p></td>
+  </tr>
+</table>
+<br/>
+<table width="760" border="1">
+  <tr>
+    <td width="144" height="438" valign="top"><div align="left"><em><strong>Direct-linked connections  with local transactions only</strong></em></div></td>
+    <td width="600" valign="top" class="normal">This configuration is an in-process linked to the TimesTen database libraries; direct-linked connection provides the best response time for database operations and results in higher transaction throughput. To use this configuration, the Oracle Application Server  and the TimesTen database must be  running in the same machine.
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.TimesTenDriver</span><br />
+Example URL: <span class="codetext">jdbc:timesten:direct:sampledb_1121</span><br/><br/>
+    <img src="images/view_image.gif" alt="Figure 1" name="oas_create_connpool" class="imgborder_off" id="oas_create_connpool" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 1</span></p>
+    <p>Sample <span class="codetext">oas_install_dir/j2ee/home/config/data-sources.xml</span> entries:</p>
+    <p class="codetext">&lt;connection-pool name=&quot;TimesTenDirectPool&quot;&gt;<br />
+      &nbsp;&nbsp;&nbsp;&nbsp; &lt;connection-factory factory-class=&quot;com.timesten.jdbc.TimesTenDriver&quot;<br />
+      &nbsp;&nbsp;&nbsp;&nbsp; url=&quot;jdbc:timesten:direct:sampledb_1121&quot;/&gt;<br />
+      &lt;/connection-pool&gt;</p>
+    <p><span class="codetext">&lt;managed-data-source <br />
+      &nbsp;&nbsp;&nbsp;&nbsp;connection-pool-name=&quot;TimesTenDirectPool&quot; jndi-name=&quot;jdbc/TimesTenDirectDS&quot; 
+      &nbsp;&nbsp;&nbsp;&nbsp;name=&quot;TimesTenDirectDS&quot; tx-level=&quot;local&quot;<br />
+    /managed-data-source</span><span class="codetext">&gt;</span></p>
+    <p><img src="images/view_image.gif" alt="" name="oas_create_ds" class="imgborder_off" id="oas_create_ds" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 2</span><br/>
+    </p></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">
+    <td height="59" valign="top" bgcolor="#EEEEEE"><div align="left"><em><strong>Direct-linked connection  with XA distributed transactions</strong></em></div></td>
+    <td valign="top" class="normal">The JDBC driver supports XA distributed transactions. For directed-link connections, the TimesTen database must reside on the same machine as the Oracle Application Server. This connection type incurs distributed transaction overhead.</p>
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.xa.TimesTenXADataSource</span><br />
+Example URL: <span class="codetext">jdbc:timesten:direct:sampledb_1121</span></p>
+    <p><img src="images/view_image.gif" alt="Figure 3" name="oas_create_xapool" class="imgborder_off" id="oas_create_xapool" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 3</span></p>
+    <p>Example Oracle_install_dir/j2ee/home/config/datasources.xml entries:<br />
+      </p>
+    <p class="codetext">&lt;connection-pool name=&quot;TimesTenDirectXAPool&quot;&gt;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;  &lt;connection-factory factoryclass=&quot;com.timesten.jdbc.xa.TimesTenXADataSource&quot;<br />
+&nbsp;&nbsp;&nbsp;&nbsp; url=&quot;jdbc:timesten:direct:sampledb_1121&quot;/&gt;<br />
+&lt;/connection-pool&gt;</p>
+    <p><span class="codetext">&lt;managed-data-source <br />
+      &nbsp;&nbsp;&nbsp;&nbsp;connection-pool-name=&quot;TimesTenDirectXAPool&quot; jndiname=&quot;jdbc/TimesTenDirectXADS&quot;<br /> 
+      &nbsp;&nbsp;&nbsp;&nbsp;name=&quot;TimesTenDirectXADS&quot;<br />
+    </span><span class="codetext">/manage-data-source&gt;</span></p>
+    <p><img src="images/view_image.gif" alt="Figure 4" name="oas_create_xa_ds" class="imgborder_off" id="oas_create_xa_ds" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 4</span><br/>
+      <br/>
+    </p></td>
+  </tr>
+  <tr>
+    <td height="78" valign="top"><div align="left"><em><strong>Client/server access with local transactions only</strong></em></div></td>
+    <td valign="top" class="normal">Client/Server connections are intended for applications not running in the same machine as the TimesTen database. Here, the Oracle Application Server can access the TimesTen database from a remote machine. This connection mode  incurs network (TCP/IP) overhead and is less responsive as the direct-linked connection mode.
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.TimesTenDriver</span><br />
+Example URL: <span class="codetext">jdbc:timesten:client:sampledbCS_1121</span></p>
+    <p><img src="images/view_image.gif" alt="Figure 5" name="oas_create_pool_cs" class="imgborder_off" id="oas_create_pool_cs" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 5</span></p>
+    <p>Example <span class="codetext">Oracle_install_dir/j2ee/home/config/datasources.xml</span> entries:</p>
+    <p class="codetext">&lt;connection-pool name=&quot;TimesTenClientPool&quot;&gt;<br />
+      &nbsp;&nbsp;&nbsp;&nbsp;&lt;connection-factory factory-class=&quot;com.timesten.jdbc.TimesTenDriver&quot;<br />
+      &nbsp;&nbsp;&nbsp;&nbsp; url=&quot;jdbc:timesten:client:sampledbCS_1121&quot;/&gt;<br />
+    &lt;/connection-pool&gt;</p>
+    <p class="codetext">&lt;managed-data-source<br />
+      &nbsp;&nbsp;&nbsp;&nbsp;connection-pool-name=&quot;TimesTenClientPool&quot; jndiname=&quot;jdbc/TimesTenClientDS&quot;<br />      
+      &nbsp;&nbsp;&nbsp;&nbsp;name=&quot;TimesTenClientDS&quot; tx-level=&quot;local&quot;<br />
+      /manage-data-source/&gt;</p>
+    <p><img src="images/view_image.gif" alt="Figure 6" name="oas_create_ds_cs" class="imgborder_off" id="oas_create_ds_cs" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 6</span><br/><br/></p></td>
+  </tr>
+  <tr bgcolor="#EEEEEE">
+    <td height="59" valign="top" bgcolor="#EEEEEE"><div align="left"><em><strong>Client/server access with XA distributed transactions</strong></em></div></td>
+    <td valign="top" class="normal">The JDBC driver supports XA distributed transactions. For client/server connections, the Oracle Application Server may access the TimesTen database from a remote machine.This connection type incurs network overhead in addition to the distributed transaction overhead.
+    <p>TimesTen Class: <span class="codetext">com.timesten.jdbc.xa.TimesTenXADatatSource</span><br />
+Example URL: <span class="codetext">jdbc:timesten:client:sampledbCS_1121</span><br /><br/>
+    <img src="images/view_image.gif" alt="Figure 7" name="oas_create_xapool_cs" class="imgborder_off" id="oas_create_xapool_cs" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+        <span class="style2">Figure 7</span><br />
+        <br />
+      Example Oracle_install_dir/j2ee/home/config/datasources.xml entries:</p>
+    <p class="codetext">&lt;connection-pool name=&quot;TimesTenClientXAPool&quot;&gt;<br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&lt;connection-factory factory-class=&quot;com.timesten.jdbc.xa.TimesTenXADataSource&quot;<br />
+  &nbsp;&nbsp;&nbsp;&nbsp; url=&quot;jdbc:timesten:client:sampledbCS_1121&quot;/&gt;<br />
+  &lt;/connection-pool&gt;</p>
+    <p class="codetext">&lt;managed-data-source<br />
+  &nbsp;&nbsp;&nbsp;&nbsp;connection-pool-name=&quot;TimesTenClientXAPool&quot; jndiname=&quot;jdbc/TimesTenClientXADS&quot;<br />      
+  &nbsp;&nbsp;&nbsp;&nbsp;name=&quot;TimesTenClientXADS&quot;<br />
+      /manage-data-source/&gt;<br />
+    </p>
+    <p class="normal"><img src="images/view_image.gif" alt="Figure 8" name="oas_create_xa_ds_cs" class="imgborder_off" id="oas_create_xa_ds_cs" onclick="hideImage(this)" onmouseover="showImage(this)" /><br />
+      <span class="style2">Figure 8</span><br /><br/>
+    </p></td>
+  </tr>
+</table>
+<p class="normal">&nbsp;</p>
+<p class="normal"><img src="images/view_image.gif" width="24" height="24" align="absmiddle" onMouseOver="hideAllImages()"> </a> 
+  <b><font color="#ff0000">Place the cursor over this icon to hide all screenshots.</font></b></p>
+<p>&nbsp;</p>
+</div>
+<div id="footer" />
+
+</body>
+<script language="JavaScript" type="text/JavaScript">
+<!--
+preLoadImages();
+//-->
+</script>
+</html>

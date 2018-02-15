@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+             version="1.0">
+
+  <persistence-unit name="TptbmWebSphere" transaction-type="JTA">
+
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+    <jta-data-source>jdbc/TptbmDS</jta-data-source>
+    <class>com.timesten.tptbmas.Tptbm</class>
+    <class>com.timesten.tptbmas.TptbmPKey</class>
+   
+  </persistence-unit>
+
+</persistence>

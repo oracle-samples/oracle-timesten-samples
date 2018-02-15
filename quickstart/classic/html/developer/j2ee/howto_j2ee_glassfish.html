@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Compile and Run application with GlassFish applicaton server</title>
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+
+<span class="PageTitle-navy">Compile and Run application with GlassFish applicaton server</span>
+<p class="normal"><span class="section1"><br />
+IMPORTANT PRE-REQUISITES</span> </p>
+<blockquote>
+<p class="normal-bold">1. <a href="../sample_dsn_setup.html">Manually Configure Sample DSN for Sample Programs</a> </span></p>
+  <p class="normal-bold">2. Set up  environment to compile and run the sample application</p>
+  <p class="normal">The following script must be run for each of the terminal session:</p>
+    <li><p class="normal">Set up the Instance environment variables:<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></p></li>
+ 
+  <li><p class="normal">Set up quickstart environment variables:</p> 
+  <table width="606" border="0">
+  
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ . quickstart/classic/ttquickstartenv.sh <span class="normal-bold">OR</span><br />
+        $ source 
+        quickstart/classic/ttquickstartenv.csh</td>
+    </tr>
+  </table>
+  </li>
+  <p class="normal-bold">3. Set up sample database, user accounts and the TPTBM table</p>
+  <p class="normal">The following command should be run once to set up the sample database, user accounts and the TPTBM table.</p>
+  <table width="608" border="0">
+    <tr>
+      <td width="62" valign="top" class="normal">Unix/Linux:</td>
+      <td width="3" class="codetext">&nbsp;</td>
+      <td width="529" class="codetext">&gt; cd quickstart/classic/sample_code/j2ee_orm<br />
+        &gt; ttIsql -connStr "DSN=sampledb" -f tptbm.sql</td>
+    </tr>
+  </table>
+
+  <p class="normal-bold">3. If necessary, install the Apache Ant build tool.</p>
+  <p class="normal">For each application server, an Ant build script is provided to configure, build and execute the application based on the properties of the applicaton server installation. The Apache Ant build tool has to be installed if not present.
+  <p class="normal">After installation, make sure the Operating System environment variable PATH includes the path to the 'ant' executable.
+  <p class="normal">The Ant build scripts have been tested with Apache Ant version 1.9.2.<p>
+
+
+</blockquote>
+
+<p class="normal"> &nbsp;&nbsp; </p>
+<p class="normal"><span class="section1">CONFIGURE AND RUN</span></p>
+
+<blockquote>
+  <p class="normal-bold">1. install GlassFish application server and configure build.properties </p>
+  <p class="normal">Install GlassFish Server 3 and then set the following properties in file <span class="codetext"><a href="../../../sample_code/j2ee_orm/build.properties">quickstart/classic/sample_code/j2ee_orm/build.properties</a>:</span>
+
+<pre>
+    glassfish.home.dir   -- set this to the root installation directory
+                            of the local GlassFish server installation
+
+    glassfish.domain.dir -- the location of the domain directory for the 
+                            server hosting the Tptbm application
+
+    glassfish.deploy.dir -- the directory where application archives can be
+                            copied and auto deployed to the server
+                              
+    glassfish.host       -- the host name of the machine where the server is
+                            installed
+
+    glassfish.orb.port   -- the RMI port number used by external clients to 
+                            communicate with the server, the default port
+                            number is 3700
+</pre>
+
+  Each Ant build script reads values from file <span class="codetext">quickstart/classic/sample_code/j2ee_orm/build.properties</span>. This file specifies the locations of build dependencies including the location of the application server installation. This file also specifies the common benchmark execution parameters.</p>
+
+  <p class="normal-bold">2. TimesTen JDBC Driver</p>
+  <p class="normal">
+   The server will require access to the TimesTen JDBC driver jar file. 
+   This can be done by copying the TimesTen JDBC driver jar file from the
+   TimesTen installation's lib directory into the <span class="codetext">${glassfish.domain.dir}/lib</span> directory. </p>
+
+  <p class="normal-bold">3. LD_LIBRARY_PATH</p>
+  <p class="normal"> 
+   The server will also need access to the TimesTen shared libraries. This 
+   can be done by setting the <span class="codetext">LD_LIBRARY_PATH</span> environment variable (or the 
+   equivalent variable for your OS) to the location of the TimesTen 
+   installation's lib directory. On Windows platforms the PATH environment
+   variable should be set to the location of the installation's bin directory
+   where TimesTen DLLs are located. </p>
+
+  <p class="normal-bold">4. TimesTen Data Source</p>
+  <p class="normal"> 
+  Before the application can be deployed or executed, a TimesTen connection pool and a JDBC data source with the JNDI name of <span class="codetext">jdbc/TbtbmDS</span> must be configured on the server. Follow these steps:
+  <ol type="a">
+    <li> Connect to the GlassFish Server administration console. By default a local server's administration console can be accessed at <span class="codetext">http://localhost:4848</span>.<br><br>
+
+    <li> Select <span class="codetext">Resources-&gt;JDBC-&gt;Connection Pools</span> from the left hand pane. Click the '<span class="codetext">New...</span>' button.<br><br>
+
+    <li> At the '<span class="codetext">New JDBC Connection Pool (Step 1 of 2)</span>' screen enter '<span class="codetext">TptbmPool</span>' in the '<span class="codetext">Name</span>' field. 
+    <br>In the '<span class="codetext">Resource Type</span>' drop down list box select '<span class="codetext">javax.sql.ConnectionPoolDataSource</span>'. 
+    <br>In the '<span class="codetext">Database Vendor</span>' field enter '<span class="codetext">Oracle TimesTen</span>'. Click 'Next'.<br><br>
+
+    <li> At the '<span class="codetext">New JDBC Connection Pool (Step 2 of 2)</span>' screen enter '<span class="codetext">com.timesten.jdbc.ObservableConnectionDS</span>' in the '<span class="codetext">Datasource Classname</span>' field. 
+    <br>Scroll down to the '<span class="codetext">Additional Properties</span>' section at the bottom of the screen. 
+    <br>Click the '<span class="codetext">Add Property</span>' button. A new row will appear. 
+    <br>Click the check box in the new row. Type '<span class="codetext">url</span>' in the '<span class="codetext">Name</span>' column. In the '<span class="codetext">Value</span>' column enter '<span class="codetext">jdbc:timesten:direct:sampledb</span>'. 
+    <br>Click the check box for the '<span class="codetext">password</span>' property and in the '<span class="codetext">Value</span>' column type '<span class="codetext">tiger</span>'. 
+    <br>Click the check box for the '<span class="codetext">user</span>' property and in the '<span class="codetext">Value</span>' column type '<span class="codetext">SCOTT</span>'.  
+    <br>Click the '<span class="codetext">Finish</span>' button.<br><br>
+
+    <li> Select <span class="codetext">Resources-&gt;JDBC-&gt;JDBC Resources</span> from the left hand pane. Click the '<span class="codetext">New...</span>' button.<br><br>
+    <li> At the '<span class="codetext">New JDBC Resource</span>' screen enter '<span class="codetext">jdbc/TptbmDS</span>' in the '<span class="codetext">JNDI name</span>' field. In the '<span class="codetext">Pool Name</span>' field select '<span class="codetext">TptbmPool</span>'. Click '<span class="codetext">OK</span>'. <br><br>
+     <li> The server should be restarted in order for the configuration changes to take effect.<br><br>
+  </ol>
+
+  <p class="normal-bold">5. build, deploy and run the sample application</p>
+  <p class="normal"> 
+  After the server has been configured to use the <span class="codetext">jdbc/TptbmDS</span> data source and restarted, the application can be built, deployed, and executed, through Ant script <span class="codetext"><a href="../../../sample_code/j2ee_orm/build-glassfish3.xml">build-glassfish3.xml</a>,</span> with this sequence of Ant tasks under directory <span class="codetext">quickstart/classic/sample_code/j2ee_orm</span>:
+
+   <pre>
+   ant -f build-glassfish3.xml clean
+   ant -f build-glassfish3.xml package
+   ant -f build-glassfish3.xml deploy
+   ant -f build-glassfish3.xml run
+   </pre>
+</blockquote>
+
+<p class="normal">Note that this application has been tested with GlassFish Server 3.0.1, and GlassFish Server 3.1.2.2.</p>
+
+<p class="normal">&nbsp;</p>
+<p class="normal"><span class="section1">TROUBLESHOOTING</span></p>
+<ul>
+  <li>Make sure the TimesTen binary bit version (32-bit or 64-bit) is the same as the bit version of the Java binary used to start GlassFish Server. Otherwise you may get a similar error as the following:
+  <br><i>&nbsp;&nbsp;&nbsp;&nbsp;"Problems with loading native library/missing methods: D:\TimesTen\tt1122_32\bin\ttJdbc1122.dll : Can't find dependent libraries" </i>
+  <br><br>
+<li>If the following error pops up in the step of "<span class="codetext">ant -f build-glassfish3.xml run</span>",
+<p><i>[java] Internal Exception: java.sql.SQLException: Error in allocating a connection. Cause: Connection could not be allocated because: Problems with loading native library/missing methods: no ttJdbc1122 in java.library.path
+  </i>
+  <p>it is because the GlassFish server need access to the TimesTen shared libraries but env variables are not set correctly before launching the GlassFish server. Make sure the LD_LIBRARY_PATH includes the location of the TimesTen installation's lib directory. Or, on Windows platforms the PATH environment variable should include the location of the TimesTen installation's bin directory where TimesTen DDLs are located. (See step No.3 above). </p>
+</ul>
+
+<p class="normal">&nbsp;</p>
+<p class="normal">For more information on Java programming with Oracle TimesTen, refer to the<span class="codetext"> </span><a href="http://docs.oracle.com/database/timesten-18.1/e61200/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database Java Developer's Guide</font></a>. </p>
+<p class="normal"><br />
+</p>
+<!-- Footner -->
+<p>&nbsp;</p>
+</div>
+<div id="footer"/>
+</body>
+
+</html>

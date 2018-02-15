@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Compile and Run TTClasses Sample Programs</title>
+
+<link type="text/css" rel="stylesheet" href="../../css/qs.css">
+<script type="text/javascript" src="../../css/qsfuncs.js"></script>
+</head>
+<body onload="javascript:qsInit2();">
+<div id="toppane"></div>
+<div id="leftpane"></div>
+<div id="content">
+
+<span class="PageTitle-navy">Compile and Run the TTClasses Sample Programs </span>
+<p class="normal"><span class="section1"><br />
+IMPORTANT PRE-REQUISITES</span> </p>
+<blockquote>
+<p class="normal-bold">1. <a href="../sample_dsn_setup.html">Manually Configure Sample DSN for Sample Programs</a> </span></p>
+ <p class="normal-bold">2. Set up sample database and user accounts</p>
+  <p class="normal">The following build_sampledb script should be run once to set up the sample database and user accounts </p>
+  <table width="700" border="0">
+      <tr>
+        <td colspan="2" valign="top" >
+        <li> Set up the Instance Environment Variables<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></li>
+<br />
+        <li>Run the <span class="codetext">quickstart/classic/sample_scripts/createdb/build_sampledb</span> script, which creates the sample database and user accounts that are used by the sample programs. This script  creates the TimesTen user accounts and prompts you for the desired user passwords.</li></td>
+      </tr>
+  </table>
+  <br />
+  <table width="608" border="0">
+    
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ cd quickstart/classic/sample_scripts/createdb<br />
+        $
+        ./build_sampledb.sh</td>
+    </tr>
+  </table>
+   <p class="normal-bold">3. Set up  environment to compile and run the sample application</p>
+  <p class="normal">The following script must be run for each of the terminal session:</p>
+    <li><p class="normal">Set up the Instance environment variables:<br />
+e.g. If your TimesTen instance location is under <span class="codetext">/home/timesten/instance/tt181</span> directory, execute the command
+<br/><br />
+<span class="codetext">$ source /home/timesten/instance/tt181/bin/ttenv.sh </span></p></li>
+ 
+  <li><p class="normal">Set up quickstart environment variables:</p> 
+  <table width="606" border="0">
+  
+    <tr>
+      <td valign="top" class="normal">Unix/Linux:</td>
+      <td class="codetext">&nbsp;</td>
+      <td class="codetext">$ . quickstart/classic/ttquickstartenv.sh <span class="normal-bold">OR</span><br />
+        $ source 
+        quickstart/classic/ttquickstartenv.csh</td>
+    </tr>
+  </table>
+  </li>
+</blockquote></p>
+<p class="normal"><span class="section1">How to compile the sample TTClasses (C++) programs</span></p>
+<p class="normal">To compile the sample programs in the sample_code/ttclasses directory, you simply run the makefile supplied in the same directory. Note that the appropriate makefile is made available based on the platform of your TimesTen installation. </p>
+<p class="normal">Firstly, select the platform specific Makefile and copy from <span class="codetext">quickstart/classic/sample_code/ttclasses/makefiles</span> to the upper level directory.
+
+<br/><br/>
+For example, if your platform is Linux x86-64bit, execute the following commands:<br/><br/>
+<span class="codetext">cd quickstart/classic/sample_code/ttclasses/makefiles</span><br/>
+<span class="codetext">cp Makefile.linux8664.proto ../Makefile</span><br/>
+<span class="codetext">cd ..</span><br/>
+</p>
+
+<p class="normal"><span class="normal">To build a specific sample program in the sample_code/ttclasses directory, use the following command:</span></p>
+<table width="810" border="0">
+ 
+  <tr>
+    <td class="normal"></td>
+    <td class="normal">[Linux/Unix]</td>
+     <td class="codetext">$ <span class="style111">make &lt;program-name&gt;</span></td>
+  </tr>
+  <tr>
+    <td class="normal"></td>
+    <td colspan="2" class="normal">where &lt;program-name&gt; is the program you want to compile.</td>
+  </tr>
+</table>
+<p class="normal">For example, to compile the <span class="codetext">typetest.cpp</span> program, you do:</p>
+<table width="540" border="0">
+  
+  <tr>
+    <td class="normal"></td>
+    <td class="normal">[Linux/Unix]</td>
+    <td class="codetext">$ <span class="style111">make typetest</span></td>
+  </tr>
+</table>
+<p class="normal">
+Due to C++ name mangling, C++ programs that use C++ libraries need to use compatible C++ compilers (and even C++ compiler versions). To address this C++ compatibility issue, the TimesTen C++ TTClasses library is shipped as source code which enables users to <a href="http://docs.oracle.com/database/timesten-18.1/e61199/compiling.htm#TTCDV178" target="_blank" class="doclink">re-compile the TTClasses library</a> with their desired C++ compiler. <br/> The TTClasses library and Quick Start executables are built with <span class="normal-bold">Visual Studio 2003</span> and  are shipped by default.<br/><br/> 
+</p>
+<p class="normal">&nbsp;</p>
+<p class="section1">How to run the sample TTClasses (C++) programs</p>
+<table width="800" border="1">
+  <tr>
+    <td width="138" height="62" valign="top" class="normal">&nbsp; <strong>basics</strong></td>
+    <td width="646" valign="top" class="normal">This sample program is a good starting template for projects that use   TTClasses.  It shows how to connect to and disconnect from a TimesTen database   and how to prepare, bind, execute, fetch and close SQL statements.  Examples of   TTClasses exception handling and timing SQL operations for both serializable and   committed read transactions are shown.</td>
+  </tr>
+</table>
+<p class="normal"> &nbsp; Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Run as appuser: DSN=sampledb;UID=appuser)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;basics</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run as instance administrator)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;basics sampledb</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run as user adm in Client/Server mode)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;basicsCS -connstr &quot;DSN=sampledbCS;uid=adm&quot;</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">basics -help</span>&quot;.</p>
+<p class="normal"></p>
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>bulkcp</strong></td>
+    <td width="608" valign="top" class="normal">This sample program uses dynamic SQL to run a SQL query and writes the output to   the console or a file.  The user enters the SQL query on the command line.  The   user can optionally specify the characters to display for NULL values and   column separator.    </td>
+  </tr>
+</table>
+<p class="normal"> &nbsp; Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Display user query to STDOUT with default separators)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;bulkcp -query &quot;SELECT * from emp&quot;</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Display user query to a file with default separators on Linux/Unix)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;bulkcp<strong><em> -query &quot;SELECT * from dept&quot; -output /tmp/myQuery.txt</em></strong></span></em></strong></p>
+ 
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">bulkcp -help</span>&quot;.</p>
+<p class="normal">&nbsp;</p>
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>bulktest</strong></td>
+    <td width="608" valign="top" class="normal">This sample code executes a series of insert, update and  delete operations   first in 'non-bulk' and then in 'bulk' mode with variable batch sizes. When the   &quot;batchsize&quot; is set to 256 (the optimal value), significant performance benefits   can be achieved for insert operations and modest improvements for update and delete operations.</td>
+  </tr>
+</table>
+<p class="normal">Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser;  batch size= 256)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;bulktest </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run the program with batch size = 512, use default connect string (dsn=sampledb and uid=appuser)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;bulktest -batchsize 512</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run the program against a different dsn and user id of your choice)<br />
+  <strong><em>&nbsp;<span class="codetext">&nbsp;bulktest -connstr &quot;DSN=sampledb;uid=adm&quot;</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">bulktest -h</span>&quot;.</p>
+<p class="normal">&nbsp;</p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>catalog</strong></td>
+    <td width="608" valign="top" class="normal">This sample program prints out the database schema information including all tables, views, and indexes.</td>
+  </tr>
+</table>
+<p class="normal">Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser)<br />
+<strong><em>&nbsp;<span class="codetext">&nbsp;catalog </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run the program against a different dsn and user id of your choice)<br />
+  &nbsp;<span class="codetext"><strong>&nbsp;catalog -connstr &quot;DSN=sampledb;uid=adm&quot;</strong></span></p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">catalog -h</span>&quot;.</p>
+<p class="normal">&nbsp;</p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>plsqlTTCLASSES</strong></td>
+    <td width="608" valign="top" class="normal">This sample program uses TTClasses to access common PL/SQL packages (<span class="codetext">emp_pkg</span> and <span class="codetext">sample_pkg</span>) in four different ways:
+      </p>
+      <p>- Calls a stored procedure with IN and OUT parameters<br />
+        - Calls a stored function with IN and OUT parameters<br />
+        - Calls an anonymous block and passes host variables into and out of the block<br />
+        - Calls a store procedure to open a ref cursor and uses TTClasses to process the result-set of the ref cursor <br />
+  <br />
+    The <span class="codetext">EMP</span> table and the <span class="codetext">emp_pkg</span> and <span class="codetext">sample_pkg</span> PL/SQL packages need to exist for this program to work.</p></td>
+  </tr>
+</table>
+<p class="normal">Example usage:</p>
+<p>&nbsp;&nbsp;(run the program using the default DSN and default user , it will prompt for the password)<br />
+    <span class="codetext">&nbsp;&nbsp;<strong>plsqlTTCLASSES</strong></span></p>
+<p>&nbsp;&nbsp;(run the program specifying the DSN and username, it will prompt for the password)<br />
+    <span class="codetext">&nbsp;&nbsp;<strong>plsqlTTCLASSES -connstr &quot;DSN=sampledb;UID=appuser&quot;</strong></span></p>
+<p>&nbsp;&nbsp;(run the program specifying the DSN, username and password)<br />
+    <span class="codetext">&nbsp;&nbsp;<strong>plsqlTTCLASSES -connstr &quot;DSN=sampledb;UID=appuser;PWD=mypassword&quot;</strong></span><br />
+</p>
+<p>For full syntax of the program, try &quot;plsqlTTCLASSES -h&quot;.</p>
+<p class="normal">&nbsp;</p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>pooltest</strong></td>
+    <td width="608" valign="top" class="normal">This sample program demonstrates multi-threaded connection pool usage and error handling. This program shows how to use  the TTConnectionPool class in TTClasses in a multi-threaded application. The user can specify the number of threads to use for the insert operations and the number of connections to keep in the connection pool. </td>
+  </tr>
+</table>
+<p class="normal">Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Without any parameters, the program runs use the default of 1 connection, 2 insert threads, 2 fetch threads, and DSN=sampledb;UID=appuser)<br />
+<strong><em>&nbsp;<span class="codetext">&nbsp;pooltest </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run the program specifying 2 connections, 4 insert threads)<br />
+    &nbsp;<span class="codetext"><strong>&nbsp;pooltest -insert 4 -conn 2</strong></span></p>
+<p class="normal">&nbsp;&nbsp;(Run the program against a different dsn and user id of your choice)<br />
+  <strong><em>&nbsp;<span class="codetext">&nbsp;pooltest -connstr  &quot;DSN=sampledb;uid=adm&quot;</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">pooltest -h</span>&quot;.</p>
+<p class="normal">&nbsp;</p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>ttSizeAll</strong></td>
+    <td width="608" valign="top" class="normal">This sample program demonstrates calling TimesTen utility ttSize for multiple tables. Only the tables which the user has read permissions on will be shown.</td>
+  </tr>
+</table>
+<p class="normal">Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Without any parameters, the program uses DSN=sampledb;UID=appuser)<br />
+<strong><em>&nbsp;<span class="codetext">&nbsp;ttSizeAll </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Show both user and system tables in the output)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;ttSizeAll -listsys</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run the program against a different dsn and user id of your choice)<br />
+  <strong><em>&nbsp;<span class="codetext">&nbsp;ttSizeAll -connstr  &quot;dsn=sampledb;uid=xlauser&quot;</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">ttSizeAll -h</span>&quot;.</p>
+<p class="normal">&nbsp;</p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>typetest</strong></td>
+    <td width="608" valign="top" class="normal">This sample program demonstrates the use of different datatypes supported by Oracle TimesTen by creating  a table, <span class="codetext">typetest,</span> which contains columns of all supported datatypes. The program then inserts data into the table and  queries the data from the table.  
+  </tr>
+</table>
+<p class="normal">Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser )<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;typetest</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run the program against a different dsn and user id of your choice)<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;typetest -connstr &quot;dsn=sampledb;uid=appuser&quot;</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">typetest -h</span>&quot;.</p>
+<p class="normal"></p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" height="29" valign="top" class="normal">&nbsp; <strong>ttXlaAdmin</strong></td>
+    <td width="608" valign="top" class="normal">This particular TTClasses sample program is available in the <span class="codetext">quickstart/classic/sample_code/ttclasses/xla</span> directory.<br />
+	<br />
+	This program shows how to list or remove XLA bookmarks in the database. This program requires a user with ADMIN privilege to run because only the administrator is allowed to see all bookmarks in the system.       An user with the XLA privilege is allowed to list or remove his/her own bookmark. <br />
+        <br />
+Unwanted bookmarks that are preventing transaction log files from being purged can create operational issues on the system and should be removed. <br />
+<br />
+The &quot;list&quot; option is the default option for running the program without any input. For each XLA bookmark found in the system, the program lists the    bookmark name, its LSN and whether the bookmark is holding transaction logs. <br />
+<br />
+The &quot;remove&quot; option   allows the user to delete the XLA bookmark via its bookmark name.  The &quot;removeall&quot; option allows all of the bookmarks to be deleted.  Bookmarks can only be   deleted when  not in use.</td>
+  </tr>
+</table>
+<p class="normal">Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Without any parameters, the program executes the &quot;list&quot; command and connects to DSN=sampledb;UID=adm)<br />
+<strong><em>&nbsp;<span class="codetext">&nbsp;ttXlaAdmin </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;&nbsp;(Remove all of the XLA bookmark for any user in the DB. The user needs to have ADMIN privilege to do this.)<br />
+  <strong><em>&nbsp;<span class="codetext">&nbsp;ttXlaAdmin -removeall</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Remove a specific bookmark. The user needs to have ADMIN privilege to do this.)<br />
+  <strong><em>&nbsp;<span class="codetext">&nbsp;ttXlaAdmin -remove &lt;bookmark&gt;</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">ttxlaAdmin -h</span>&quot;.</p>
+<p class="normal">&nbsp;</p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>xlasubscriber1</strong></td>
+    <td width="608" valign="top" class="normal">This particular TTClasses sample program is available in the <span class="codetext">quickstart/classic/sample_code/ttclasses/xla</span> directory.<br />
+	<br />
+	This program shows how to use the Transaction Log API (XLA) facility to subscribe to change notifications   for a table, chosen by the user at run time. <br />
+        <br />
+This program shows how to create persistent XLA bookmark and monitor and process changes on the specified table. The program displays the change records processed and the operations that were performed on the table (insert, update, or delete) to cause the change. <br />
+<br />
+To create     workload on the table being tracked, use a ttIsql session or a TimesTen user application to inject changes to the the table being tracked. This program requires a user with XLA privilege to run. </td>
+  </tr>
+</table>
+<p class="normal">Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Without any parameters, the program connects to DSN=sampledb;UID=xlauser, and prompt for the table to track)<br />
+<strong><em>&nbsp;<span class="codetext">&nbsp;xlasubscriber1 </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run the program against a different dsn and user id of your choice; the user needs to have XLA privilege)<br />
+  <strong><em>&nbsp;<span class="codetext">&nbsp;xlasubscriber1 -connstr &quot;dsn=&lt;mydsn name&gt;;uid=&lt;myusername&gt;</span></em></strong>&quot;</p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">xlaSubscriber1 -h</span>&quot;.</p>
+<p class="normal">&nbsp;</p>
+
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>xlasubscriber2</strong></td>
+    <td width="608" valign="top" class="normal">This particular TTClasses sample program is available in the <span class="codetext">quickstart/classic/sample_code/ttclasses/xla</span> directory.<br />
+	<br />
+	This program shows how to subscribe to XLA events on multiple tables of   interest (in this case three). This program monitors changes to  three tables: MYTABLE, ICF and ABC.<br />
+        <br />
+The column names and   their values are shown for every row affected by the transaction's inserts,   updates and deletes.  To create the transactional workload, a ttIsql session or   a TimesTen user application can perform the transactions to the MYTABLE, ICF   and/or ABC tables. <br />
+<br />
+This program is an example of an XLA subscriber which only   has the permission to see the changes to the table of interest, but not to   access the table of interest itself. The program requires a user with XLA privilege to run.</td>
+  </tr>
+</table>
+<p class="normal">Examples:</p>
+<p class="normal">&nbsp;&nbsp;(Without any parameters, the program connects to DSN=sampledb;UID=xlauser)<br />
+<strong><em>&nbsp;<span class="codetext">&nbsp;xlasubscriber2 </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(Run the program against a different dsn and user id of your choice; the user needs to have XLA privilege)<br />
+  <strong><em>&nbsp;<span class="codetext">&nbsp;xlasubscriber2 -connstr &quot;dsn=&lt;mydsn name&gt;;uid=&lt;myusername&gt;</span></em></strong>&quot;</p>
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="style111">xlasubscriber2 -h</span>&quot;.</p>
+<p class="normal">For more information on TTClasses, refer to the <a href="http://docs.oracle.com/database/timesten-18.1/e61202/toc.htm" target="_blank" class="doclink">Oracle TimesTen In-Memory Database TTClasses Guide</font></a>. </p>
+<p class="normal">&nbsp;</p>
+<p class="normal">&nbsp;</p>
+
+</div>
+<div id="footer"/>
+</body>
+
+</html>
