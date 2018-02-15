@@ -23,8 +23,10 @@ This directory contains the following files and directories which can be used to
 
 * Before executing any of the scripts you should 'source' the necessary environment scripts to set your environment correctly:
 
-      \<instance\_home\>/bin/ttenv.[c]sh
+````
+      <instance_home>/bin/ttenv.[c]sh
 
       followed by
 
-      \<quickstart\_install\_dir\>/quickstart/scaleout/ttquickstartenv.[c]sh
+      <quickstart_install_dir>/quickstart/scaleout/ttquickstartenv.[c]sh
+````
