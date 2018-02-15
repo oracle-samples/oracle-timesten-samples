@@ -18,4 +18,4 @@ appuser.order_item
 
 The input1.dat, input2.dat, and input3.dat files are used to add, delete, and modify the data in the demo schema.
 
-To compile and run the JDBC sample programs, follow the instructions listed in the **quickstart/classic/sample\_code/jdbc/README\_jdbc.md** file.
+To compile and run the JDBC sample programs, follow the instructions listed in the [quickstart/classic/sample\_code/jdbc/README.md](../README.md) file.
