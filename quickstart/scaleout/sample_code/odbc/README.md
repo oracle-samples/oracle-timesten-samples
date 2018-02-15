@@ -40,13 +40,13 @@ To build and run the sample program:
   
       make
 
-    If you have a client instance then instead build just the client/server (GridSampleCS) binary:
+5.   If you have a client instance then instead build just the client/server (GridSampleCS) binary:
 
       make clean
 
       make csonly
 
-5.    Run the sample program. 
+6.    Run the sample program. 
 
 Here is the online help for the program (this help text is from the client/server version):
 
