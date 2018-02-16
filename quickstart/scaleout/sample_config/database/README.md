@@ -12,7 +12,7 @@ If you deploy your grid using ttGridRollout then database creation is normally p
 
 Regardless of deployment method the sample files provided here, suitably customized, can be used to create a database suitable for use with the Scaleout samples.
 
-If you plan to build and execute the sample programs on one of the data hosts within the grid and to connect to the grid databse using TimesTen direct mode connectivity then you are ready to go once the physical database has been created.
+If you plan to build and execute the sample programs on one of the data hosts within the grid and to connect to the grid database using TimesTen direct mode connectivity then you are ready to go once the physical database has been created.
 
 If you plan to use client/server connectivity to access the grid database, for example if you plan to build and execute the sample programs on a  computer system that is not hosting one of your grid's data instances, then you will need to perform some additional steps to configure client connectivity.
 
@@ -44,7 +44,7 @@ Durability=0
 
 With this configuration, ___each___ database element will require a little under 400 MB of shared memory. This sample configuration assumes that the sample database consists of 3 replica sets; if you configure your database with more or less replica sets then you will need to adjust the memory allocation (PermSize) for each database element in proportion before creating the database.
 
-In order to use this database definition file you must decide where you will be placing the database files (checkpoint and log files) in each database element and after creating those locations on every element you should customise the value for the DataStore attribute in the dbdef fiel accordingly.
+In order to use this database definition file you must decide where you will be placing the database files (checkpoint and log files) in each database element and after creating those locations on every element you should customise the value for the DataStore attribute in the dbdef file accordingly.
 
 Once you have customized the dbdef file you can either reference it in your ttGridRollout master configuration file (in order to create the database as part of grid deployment) or you can use it with the ttGridAdmin utility to create the database in your already deployed grid. For example:
 
@@ -85,7 +85,7 @@ As the desired instance administrator OS user:
 
 5.  Create a ___client___ instance using the **ttInstanceCreate** utility.
 
-6.  Rename the file from stop 3 as 'sys.odbc.ini' and copy it to the client instance's 'conf' directory:
+6.  Rename the file from step 3 as 'sys.odbc.ini' and copy it to the client instance's 'conf' directory:
 
 ```text
 cp client_sys.odbc.ini <client_instance_home>/conf/sys.odbc.ini 
