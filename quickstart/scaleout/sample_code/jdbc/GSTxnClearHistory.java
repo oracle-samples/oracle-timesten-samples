@@ -19,10 +19,13 @@ public class GSTxnClearHistory
     extends GSAppTransaction
 {
     // Static stuff
-    private static final String sqlTruncate =
-         "TRUNCATE TABLE TRANSACTIONS";
+    private static final String truncateDDL =
+             "TRUNCATE TABLE TRANSACTIONS";
+    private static final String truncateDML =
+             "DELETE /*+ TT_TblLock(1) TT_RowLock(0) */ FROM transactions";
     
     // DB stuff
+    private String sqlTruncate = null;
     private GSDbStatement stmtTruncate = null;
 
     /**
@@ -38,6 +41,10 @@ public class GSTxnClearHistory
             GSUtil.debugMessage( cx, 
                              "DEBUG: ENTER: GSTxnClearHistory: Constructor" );
         myName = GSConstants.nameClearHistory;
+        if (  GSConstants.useTruncate  )
+            sqlTruncate = truncateDDL;
+        else
+            sqlTruncate = truncateDML;
         if (  GSConstants.debugEnabled  )
             GSUtil.debugMessage( cx, 
                              "DEBUG: EXIT: GSTxnClearHistory: Constructor" );
@@ -127,11 +134,18 @@ public class GSTxnClearHistory
 
         errMsg = null;
 
-        // Execute the Truncate (DDL so no need to commit)
+        // Execute the Truncate statement
         try {
             if (  GSConstants.debugEnabled  )
                 GSUtil.debugMessage( ctxt, "DEBUG: execute stmtTruncate" );
             result = executeStmt( stmtTruncate );
+            if (  ! GSConstants.useTruncate  ) // need to commit or rollback
+            {
+                if (  result  )
+                    result = commitTxn();
+                else
+                    dbConn.rollback();
+            }
         } catch (  GSGridRetryException gre  ) {
             if (  GSConstants.debugEnabled  )
                 GSUtil.debugMessage( ctxt,

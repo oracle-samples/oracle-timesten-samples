@@ -16,7 +16,12 @@
 #include "GridSample.h"
 
 static char const * const 
-truncateDDL = "TRUNCATE TABLE transactions";
+truncateSQL = 
+#if defined(USE_TRUNCATE)
+"TRUNCATE TABLE transactions";
+#else
+"DELETE /*+ TT_TblLock(1) TT_RowLock(0) */ FROM transactions";
+#endif
 
 /****************************************************************************
  *
@@ -108,9 +113,9 @@ initTxnClearHistory(
     if (  ret != SUCCESS )
         goto error;
 
-    debugMessage( chtxn->txn->ctxt, "DEBUG: ODBCPrepare(truncateDDL)" );
+    debugMessage( chtxn->txn->ctxt, "DEBUG: ODBCPrepare(truncateSQL)" );
     errStack = chtxn->truncateStmt->errors;
-    ret = ODBCPrepare( chtxn->truncateStmt, truncateDDL );
+    ret = ODBCPrepare( chtxn->truncateStmt, truncateSQL );
     if (  ret != SUCCESS )
         goto error;
 
@@ -185,6 +190,13 @@ executeTxnClearHistory(
     ret = ODBCExecute( chtxn->truncateStmt );
     if (  ret != SUCCESS )
         goto error;
+#if !defined(USE_TRUNCATE)
+    debugMessage( chtxn->txn->ctxt, "DEBUG: ODBCCommit" );
+    errStack = chtxn->txn->ctxt->dbconn->errors;
+    ret = ODBCCommit( chtxn->txn->ctxt->dbconn );
+    if (  ret != SUCCESS )
+        goto error;
+#endif /* ! USE_TRUNCATE */
 
     debugMessage( chtxn->txn->ctxt, "DEBUG: EXITOK: executeTxnClearHistory" );
     return SUCCESS;

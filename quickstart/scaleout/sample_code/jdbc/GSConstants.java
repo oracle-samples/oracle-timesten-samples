@@ -16,6 +16,9 @@ public class GSConstants
     // globally disabled here.
     public static final boolean debugEnabled = false;
 
+    // use TRUNCATE TABLE instead of DELETE FROM
+    public static final boolean useTruncate = false;
+
     // General constants
     public static final String progName = "GridSample"; // program name
 

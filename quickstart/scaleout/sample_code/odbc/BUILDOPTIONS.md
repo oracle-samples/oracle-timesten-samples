@@ -24,6 +24,10 @@ The main reasons for including this capability are:
 
 2.    The source code serves as a useful comparison between ODBC 2.5 and 3.5       (at least for the functions used by this program) and may also serve as a helpful guide for those wishing to migrate from ODBC 2.5 to 3.5.
 
+**USE_TRUNCATE**
+
+If this macro is defined then the clear down of the TRANSACTIONS table is done using a TRUNCATE TABLE statement otherwise it is done using DELETE FROM (the default).
+
 **SPECIAL_FEATURES**
 
 The program supports the following spcial features, which can be enabled by adding -DSPECIAL_FEATURES to the makefile OPTDEFS variable:
