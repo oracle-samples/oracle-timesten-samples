@@ -18,7 +18,7 @@ CC		= gcc
 PLATCFLAGS	= -m64 -O2
 LDFLAGS		= -O2 -Wl,-rpath -Wl,$(INSTDIR)/lib
 
-INCS		= -I. -I$(TTDIR)/install/include
+INCS		= -I. -I$(INSTDIR)/include
 #
 # uncomment the OPTDEFS directive to enable debug mode within the app
 #
