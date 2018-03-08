@@ -11,6 +11,7 @@
 TTDIR		= $(TIMESTEN_HOME)
 OBJDIR		= obj
 BINDIR		= bin
+INSTDIR         = $(TTDIR)/install
 
 CC		= gcc
 
@@ -25,7 +26,7 @@ INCS		= -I. -I$(TTDIR)/install/include
 CSDEFS		= -DTTCLIENTSERVER
 CFLAGS		= $(PLATCFLAGS) $(OPTDEFS) $(INCS)
 
-TTLINK		= -L$(TTDIR)/install/lib
+TTLINK		= -L$(INSTDIR)/lib
 DCLIBS		= $(TTLINK) -ltten
 CSLIBS		= $(TTLINK) -lttclient
 
