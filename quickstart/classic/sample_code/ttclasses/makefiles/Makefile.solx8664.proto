@@ -25,7 +25,6 @@ CFLAGS		= $(DEFS) $(INCS) $(OPTFLAG) $(PLATFORM)
 LDFLAGS	      	= $(OPTFLAG) $(PLATFORM)
 DIRLIBS         = -lpthread -lnsl -L$(INSTDIR)/lib -ltten -lttclasses
 CSLIBS          = -lpthread -lnsl -L$(INSTDIR)/lib -lttclient -lttclassesCS
-TTDMLIBS        = -lpthread -lnsl -L$(INSTDIR)/lib -lttdrvmgr -lttclassesTTDM
 
 CPLUSPLUS	= CC
 
