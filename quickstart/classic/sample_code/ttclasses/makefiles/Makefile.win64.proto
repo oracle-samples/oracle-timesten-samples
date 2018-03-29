@@ -1,17 +1,17 @@
+###############################################################################
 #
-# Windows (2000/XP) Visual Studio Makefile for the
-# TimesTen TTCLASSES demo programs.
+# Windows Visual Studio Makefile for the TimesTen TTCLASSES demo programs.
 #
 # Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
 #
-#
+###############################################################################
 
-ODBC    =  $(TIMESTEN_HOME)\install
-COMMON  =  $(QUICKSTART_HOME)\sample_code\common
-TTCLASSESDIR = $(ODBC)\ttclasses
-TTVER   =  1211
-WINMT	=	mt.exe
+ODBC            =  $(TIMESTEN_HOME)\install
+COMMON          =  $(QUICKSTART_HOME)\sample_code\common
+TTC_INCLUDEDIR	= $(ODBC)\include\ttclasses
 
+TTVER   =  1811
+WINMT	= mt.exe
 
 ### Uncomment the eight lines below (which all start VCPP_) if you get
 ### errors like "Could not open include file: 'windows.h': No such
@@ -40,7 +40,6 @@ WINMT	=	mt.exe
 ### correctly for VC++ is to run the VCVARS32.BAT file contained in
 ### the VC++ bin directory.
 
-EXCEPTIONS = /DTTEXCEPT
 ### NB: _WIN32 is defined by cl.exe automatically
 WINDOWS     = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE 
 
@@ -61,34 +60,30 @@ LIBEXT = D
 DEBUGFLAG = /MD /Ox
 !ENDIF
 
-CFLAGS = /nologo /EHsc $(DEBUGFLAG) $(WINDOWS) $(EXCEPTIONS) $(THREAD_SAFE) \
+CFLAGS = /nologo /EHsc $(DEBUGFLAG) $(WINDOWS) $(THREAD_SAFE) \
          /I$(TTC_INCLUDEDIR) /I$(ODBC)\include $(VCPP_INCLUDE_DIRS) \
          /I$(COMMON)
 
-LDFLAGS	=	/nologo /link /STACK:3000000 /FIXED:NO $(DEBUGLINK) $(VCPP_LIB_DIRS)
-
+LDFLAGS	= /nologo /link /STACK:3000000 /FIXED:NO $(DEBUGLINK) $(VCPP_LIB_DIRS)
 LDFLAGS = $(LDFLAGS) bufferoverflowu.lib
+
 ###
 ### DIRLIBS: libs to link for direct TTClasses library
 ### DMLIBS : libs to link for driver manager TTClasses library
 ### CSLIBS : libs to link for client/server TTClasses library
-### TTDMLIBS : libs to link for TT driver manager TTClasses library
 ###
 
-DIRLIBS	= $(ODBC)\lib\ttdv$(TTVER)$(LIBEXT).lib $(ODBC)\lib\tten$(TTVER)$(LIBEXT).lib \
+DIRLIBS	= $(ODBC)\lib\ttdv$(TTVER)$(LIBEXT).lib \
+          $(ODBC)\lib\tten$(TTVER)$(LIBEXT).lib \
           $(VCPP_LIB_DIRS)
 DMLIBS	= odbc32.lib $(VCPP_LIB_DIRS)
 CSLIBS  = $(ODBC)\lib\ttclient$(TTVER).lib $(VCPP_LIB_DIRS)
-TTDMLIBS    = $(ODBC)\lib\ttdrvmgr$(TTVER)$(LIBEXT).lib $(VCPP_LIB_DIRS)
-
 
 CPLUSPLUS	=	cl
 
 ###
 ### list of object targets below
 ###
-
-TTC_INCLUDEDIR	=	$(ODBC)\include\ttclasses
 
 TTC_DEMO_CPP_OBJS = \
 basics.obj \
@@ -111,7 +106,6 @@ plsqlTTCLASSES_client.obj \
 pooltest_client.obj \
 ttSizeAll_client.obj \
 typetest_client.obj
-
 
 TTC_DEMO_C_OBJS = \
 portable_thread_windows.obj
@@ -148,22 +142,6 @@ pooltestDM.exe \
 ttSizeAllDM.exe \
 typetestDM.exe
 
-TESTPROGS_TTDM = \
-basicsTTDM.exe \
-bulkcpTTDM.exe \
-bulktestTTDM.exe \
-catalogTTDM.exe \
-plsqlTTCLASSESTTDM.exe \
-pooltestTTDM.exe \
-ttSizeAllTTDM.exe \
-typetestTTDM.exe
-
-TTC_SOURCE = TTCmd.cpp TTCommand.cpp TTConnection.cpp TTColumn.cpp TTConnectionPool.cpp TTParameter.cpp TTCatalog.cpp TTTStatus.cpp TTypes.cpp TTEnvironment.cpp ttTime.c TTXla.cpp TTLog.cpp TTGlobal.cpp
-
-TTC_INCLUDE = TTCmd.h TTCommand.h TTConnection.h TTColumn.h TTConnectionPool.h TTParameter.h TTCatalog.h TTStatus.h TTTypes.h TTEnvironment.h TTXla.h ttTime.h TTLog.h TTGlobal.h TTIostream.h TT__Header.h TTInclude.h
-
-SRC  = src
-
 #
 #	Top-level targets
 #
@@ -171,23 +149,20 @@ SRC  = src
 UTILS	     = testprog_utils.obj
 UTILS_CLIENT = testprog_utils_client.obj
 
-TTCLASSES_LIB	      =	$(ODBC)\lib\ttclasses$(TTVER)$(LIBEXT).lib
-TTCLASSES_DLL		    =	$(ODBC)\bin\ttclasses$(TTVER)$(LIBEXT).dll
-TTCLASSES_CS_LIB	  =	$(ODBC)\lib\ttclasses$(TTVER)CS$(LIBEXT).lib
-TTCLASSES_CS_DLL		=	$(ODBC)\bin\ttclasses$(TTVER)CS$(LIBEXT).dll
-TTCLASSES_DM_LIB	  =	$(ODBC)\lib\ttclasses$(TTVER)DM$(LIBEXT).lib
-TTCLASSES_DM_DLL		=	$(ODBC)\bin\ttclasses$(TTVER)DM$(LIBEXT).dll
-TTCLASSES_TTDM_LIB	=	$(ODBC)\lib\ttclasses$(TTVER)TTDM$(LIBEXT).lib
-TTCLASSES_TTDM_DLL	=	$(ODBC)\bin\ttclasses$(TTVER)TTDM$(LIBEXT).dll
+TTCLASSES_LIB	   = $(ODBC)\lib\ttclasses$(TTVER)$(LIBEXT).lib
+TTCLASSES_DLL	   = $(ODBC)\bin\ttclasses$(TTVER)$(LIBEXT).dll
+TTCLASSES_CS_LIB   = $(ODBC)\lib\ttclasses$(TTVER)CS$(LIBEXT).lib
+TTCLASSES_CS_DLL   = $(ODBC)\bin\ttclasses$(TTVER)CS$(LIBEXT).dll
+TTCLASSES_DM_LIB   = $(ODBC)\lib\ttclasses$(TTVER)DM$(LIBEXT).lib
+TTCLASSES_DM_DLL   = $(ODBC)\bin\ttclasses$(TTVER)DM$(LIBEXT).dll
 
-TTCLASSESDEPS	  = $(TTCLASSES_LIB) $(TTCLASSES_DLL) 
+TTCLASSESDEPS      = $(TTCLASSES_LIB) $(TTCLASSES_DLL) 
 
 ###
-### by default, build both direct & client/server TTClasses library
-### and example programs
+### by default, build both direct & client/server example programs
 ###
 
-all: $(TESTPROGS) $(TESTPROGS_CS) $(TESTPROGS_DM) $(TESTPROGS_TTDM)
+all: $(TESTPROGS) $(TESTPROGS_CS) $(TESTPROGS_DM)
 
 ###
 ### best performance (recommended) use of TTClasses is the direct library
@@ -206,14 +181,6 @@ client: $(TESTPROGS_CS)
 
 msdm:	$(TESTPROGS_DM)
 
-
-###
-### also possible to use the TimesTen Driver Manager
-### (NB: Often faster than MS Driver Manager)
-###
-
-ttdm:	$(TESTPROGS_TTDM)
-
 clean:
 		-erase *.obj
 		-erase *.pdb
@@ -222,7 +189,6 @@ clean:
 		-erase $(TESTPROGS)
 		-erase $(TESTPROGS_CS)
 		-erase $(TESTPROGS_DM)
-		-erase $(TESTPROGS_TTDM)
 
 ###
 ### .obj rules
@@ -252,75 +218,106 @@ $(TTC_CLIENT_DEMO_CPP_OBJS):
 
 basics.exe: basics.obj $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ basics.obj $(UTILS) $(TTCLASSES_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 bulkcp.exe: bulkcp.obj $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ bulkcp.obj $(UTILS) $(TTCLASSES_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 bulktest.exe: bulktest.obj $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ bulktest.obj $(UTILS) $(TTCLASSES_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 catalog.exe: catalog.obj $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ catalog.obj $(UTILS) $(TTCLASSES_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 plsqlTTCLASSES.exe: plsqlTTCLASSES.obj $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ plsqlTTCLASSES.obj $(UTILS) $(TTCLASSES_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	$(CPLUSPLUS) /Fe$@ plsqlTTCLASSES.obj $(UTILS) $(TTCLASSES_LIB) \
+        $(LDFLAGS)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 pooltest.exe: pooltest.obj portable_thread_windows.obj $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ pooltest.obj \
         portable_thread_windows.obj \
         $(UTILS) $(TTCLASSES_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 ttSizeAll.exe: ttSizeAll.obj $(TTCLASSES_LIB) $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ ttSizeAll.obj $(UTILS) $(TTCLASSES_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 typetest.exe: typetest.obj $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ typetest.obj $(UTILS) $(TTCLASSES_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 ###
 ### client/server sample program targets
 ###
 
-basicsCS.exe: basics_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ basics_client.obj $(UTILS_CLIENT) $(TTCLASSES_CS_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+basicsCS.exe: basics_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) \
+              $(TTCLASSESDEPS)
+	$(CPLUSPLUS) /Fe$@ basics_client.obj $(UTILS_CLIENT) \
+        $(TTCLASSES_CS_LIB) $(LDFLAGS)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
-bulkcpCS.exe: bulkcp_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ bulkcp_client.obj $(UTILS_CLIENT) $(TTCLASSES_CS_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+bulkcpCS.exe: bulkcp_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) \
+              $(TTCLASSESDEPS)
+	$(CPLUSPLUS) /Fe$@ bulkcp_client.obj $(UTILS_CLIENT) \
+        $(TTCLASSES_CS_LIB) $(LDFLAGS)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
-bulktestCS.exe: bulktest_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ bulktest_client.obj $(UTILS_CLIENT) $(TTCLASSES_CS_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+bulktestCS.exe: bulktest_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) \
+                $(TTCLASSESDEPS)
+	$(CPLUSPLUS) /Fe$@ bulktest_client.obj $(UTILS_CLIENT) \
+        $(TTCLASSES_CS_LIB) $(LDFLAGS)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 catalogCS.exe: catalog_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ catalog_client.obj $(UTILS_CLIENT) $(TTCLASSES_CS_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
-plsqlTTCLASSESCS.exe: plsqlTTCLASSES_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ plsqlTTCLASSES_client.obj $(UTILS_CLIENT) $(TTCLASSES_CS_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+plsqlTTCLASSESCS.exe: plsqlTTCLASSES_client.obj $(TTCLASSES_CS_LIB) \
+                      $(UTILS_CLIENT) $(TTCLASSESDEPS)
+	$(CPLUSPLUS) /Fe$@ plsqlTTCLASSES_client.obj $(UTILS_CLIENT) \
+        $(TTCLASSES_CS_LIB) $(LDFLAGS)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
-pooltestCS.exe: pooltest_client.obj $(TTCLASSES_CS_LIB) portable_thread_windows_client.obj $(UTILS_CLIENT) $(TTCLASSESDEPS)
+pooltestCS.exe: pooltest_client.obj $(TTCLASSES_CS_LIB) \
+                portable_thread_windows_client.obj $(UTILS_CLIENT) \
+                $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ pooltest_client.obj \
         portable_thread_windows_client.obj \
         $(UTILS_CLIENT) $(TTCLASSES_CS_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
-ttSizeAllCS.exe: ttSizeAll_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ ttSizeAll_client.obj $(UTILS_CLIENT) $(TTCLASSES_CS_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+ttSizeAllCS.exe: ttSizeAll_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) \
+                 $(TTCLASSESDEPS)
+	$(CPLUSPLUS) /Fe$@ ttSizeAll_client.obj $(UTILS_CLIENT) \
+        $(TTCLASSES_CS_LIB) $(LDFLAGS)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
-typetestCS.exe: typetest_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ typetest_client.obj $(UTILS_CLIENT) $(TTCLASSES_CS_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+typetestCS.exe: typetest_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) \
+                $(TTCLASSESDEPS)
+	$(CPLUSPLUS) /Fe$@ typetest_client.obj $(UTILS_CLIENT) \
+        $(TTCLASSES_CS_LIB) $(LDFLAGS)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 ###
 ### MS driver/manager sample program targets
@@ -328,77 +325,39 @@ typetestCS.exe: typetest_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) $(TTCLAS
 
 basicsDM.exe: basics.obj $(TTCLASSES_DM_LIB) $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ basics.obj $(UTILS) $(TTCLASSES_DM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 bulkcpDM.exe: bulkcp.obj $(TTCLASSES_DM_LIB) $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ bulkcp.obj $(UTILS) $(TTCLASSES_DM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 bulktestDM.exe: bulktest.obj $(TTCLASSES_DM_LIB) $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ bulktest.obj $(UTILS) $(TTCLASSES_DM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 catalogDM.exe: catalog.obj $(TTCLASSES_DM_LIB) $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ catalog.obj $(UTILS) $(TTCLASSES_DM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
-pooltestDM.exe: pooltest.obj $(TTCLASSES_DM_LIB) portable_thread_windows.obj $(UTILS) $(TTCLASSESDEPS)
+pooltestDM.exe: pooltest.obj $(TTCLASSES_DM_LIB) portable_thread_windows.obj \
+                $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ pooltest.obj \
         portable_thread_windows.obj \
         $(UTILS) $(TTCLASSES_DM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 ttSizeAllDM.exe: ttSizeAll.obj $(TTCLASSES_DM_LIB) $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ ttSizeAll.obj $(UTILS) $(TTCLASSES_DM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
 typetestDM.exe: typetest.obj $(TTCLASSES_DM_LIB) $(UTILS) $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ typetest.obj $(UTILS) $(TTCLASSES_DM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
 
-###
-### TimesTen driver/manager sample program targets
-###
-
-basicsTTDM.exe: basics.obj $(TTCLASSES_TTDM_LIB) $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ basics.obj $(UTILS) $(TTCLASSES_TTDM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
-
-bulkcpTTDM.exe: bulkcp.obj $(TTCLASSES_TTDM_LIB) $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ bulkcp.obj $(UTILS) $(TTCLASSES_TTDM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
-
-bulktestTTDM.exe: bulktest.obj $(TTCLASSES_TTDM_LIB) $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ bulktest.obj $(UTILS) $(TTCLASSES_TTDM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
-
-catalogTTDM.exe: catalog.obj $(TTCLASSES_TTDM_LIB) $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ catalog.obj $(UTILS) $(TTCLASSES_TTDM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
-
-plsqlTTCLASSESTTDM.exe: plsqlTTCLASSES.obj $(TTCLASSES_TTDM_LIB) $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ plsqlTTCLASSES.obj $(UTILS) $(TTCLASSES_TTDM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
-
-pooltestTTDM.exe: pooltest.obj $(TTCLASSES_TTDM_LIB) portable_thread_windows.obj $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ pooltest.obj \
-        portable_thread_windows.obj $(UTILS) $(TTCLASSES_TTDM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
-
-ttSizeAllTTDM.exe: ttSizeAll.obj $(TTCLASSES_TTDM_LIB) $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ ttSizeAll.obj $(UTILS) $(TTCLASSES_TTDM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
-
-typetestTTDM.exe: typetest.obj $(TTCLASSES_TTDM_LIB) $(UTILS) $(TTCLASSESDEPS)
-	$(CPLUSPLUS) /Fe$@ typetest.obj $(UTILS) $(TTCLASSES_TTDM_LIB) $(LDFLAGS)
-	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest -outputresource:$@;1)
-
-#
-# Targets for building TimesTen TTClasses library
-#
-
-$(TTCLASSES_LIB):
-	cd $(TTCLASSESDIR) && nmake
-
-$(TTCLASSES_DLL):
-	cd $(TTCLASSESDIR) && nmake

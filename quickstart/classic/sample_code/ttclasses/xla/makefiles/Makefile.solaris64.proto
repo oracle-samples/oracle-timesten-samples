@@ -3,18 +3,16 @@
 # Requires gmake
 #
 # 64-bit Solaris (Workshop Compiler) Makefile for the TimesTen
-# TTCLASSES sample programs.
+# TTCLASSES XLA sample programs.
 #
 # Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
 #
 #######################################################################
 
 INSTDIR         = $(TIMESTEN_HOME)/install
-64BIT           = -DTT_64BIT  
-COMMON        = $(QUICKSTART_HOME)/sample_code/common
-SAMPLES       = $(QUICKSTART_HOME)/sample_code/ttclasses
-TTCLASSESDIR  = $(TIMESTEN_HOME)/ttclasses
-TTDMDIR       = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
+COMMON          = $(QUICKSTART_HOME)/sample_code/common
+SAMPLES         = $(QUICKSTART_HOME)/sample_code/ttclasses
+TTC_INCLUDEDIR  =  $(INSTDIR)/include/ttclasses
 
 # Add this flag to DEFS to workaround a Sun Workshop 5 strstream bug/hang
 # related to synchronization between the C++/ostream and C/printf routines
@@ -22,19 +20,17 @@ TTDMDIR       = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
 
 THREAD_SAFE     = -D_REENTRANT -D_POSIX_PTHREAD_SEMANTICS
 
+64BIT           = -DTT_64BIT  
 OPTFLAG         = -xO4
 DEBUGFLAG       = -g -DTTDEBUG -xs
 INCS            = -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) -I$(COMMON)
 DEFS            = $(THREAD_SAFE) $(64BIT)
 PLATFORM        = -mt -m64 -xarch=sparcvis
 CFLAGS          = $(DEFS) $(INCS) $(OPTFLAG) $(PLATFORM)
-CSDEFS          = -DTTCLIENTSERVER
 
 LDFLAGS         = $(OPTFLAG) $(PLATFORM)
 TTCLASSES_LIB   = -lttclasses
 DIRLIBS         = -lpthread -lsocket -L$(INSTDIR)/lib -ltten -lttclasses
-CSLIBS          = -lpthread -lsocket -L$(INSTDIR)/lib -lttclient -lttclassesCS
-TTDMLIBS        = -lpthread -lnsl -L$(INSTDIR)/lib -lttdrvmgr -lttclassesTTDM
 
 CPLUSPLUS       = CC
 
@@ -48,64 +44,44 @@ AREXT           = a
 
 OBJ_DIR         = obj
 
-# used to determine what targets to build
-TT_CLIENTLIB  = $(wildcard $(INSTDIR)/lib/libttclient.$(SHLDEXT))
+# used to determine library names
 TT_LIBTTEN    = $(wildcard $(INSTDIR)/lib/libtten.$(SHLDEXT))
 
 PLAT_SPECIFIC_CLEAN   = rm -rf $(SRC)/SunWS_cache lib/SunWS_cache
 
-#
-# TimesTen ttClasses Driver Manager Shared Library
-#
-TTCLASSES_TTDM_SHLIB  = $(INSTDIR)/lib/libttclassesTTDM.$(SHLDEXT)
-
-#
-# TimesTen Driver Manager Shared Library
-#
-TTDM_SHARED_LIB       = $(INSTDIR)/lib/libttdrvmgr.$(SHLDEXT)
-# -----------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # file lists
-# -----------------------------------------------------------------------------------
-
-TTC_INCLUDEDIR  =  $(INSTDIR)/include/ttclasses
+# -----------------------------------------------------------------------------
 
 TTC_DEMO_CPP_OBJS = \
 $(OBJ_DIR)/ttXlaAdmin.o \
 $(OBJ_DIR)/xlasubscriber1.o \
 $(OBJ_DIR)/xlasubscriber2.o
 
-TTC_DEMO_C_OBJS = \
 UTILS = \
-$(SAMPLES)/$(OBJ_DIR)/portable_thread_unix.o
+$(SAMPLES)/$(OBJ_DIR)/testprog_utils.o
 
 TESTPROGS = \
 ttXlaAdmin \
 xlasubscriber1 \
 xlasubscriber2
 
-UTILS = \
-$(SAMPLES)/$(OBJ_DIR)/testprog_utils.o
-
-# -----------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #  Top-level targets
-# -----------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 ifneq ($(strip $(TT_LIBTTEN)),)
-PROGS = $(TESTPROGS) $(TESTPROGS_TTDM)
-endif
-
-ifneq ($(strip $(TT_CLIENTLIB)),)
-PROGS += $(TESTPROGS_CS) $(TESTPROGS_TTDM)
+PROGS = $(TESTPROGS)
 endif
 
 all: $(PROGS)
 
 clean:
-		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS) $(TESTPROGS_CS) $(TESTPROGS_TTDM)
+		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS)
 		$(PLAT_SPECIFIC_CLEAN)
 
-# -----------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # build targets
-# -----------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 .SUFFIXES: .cpp $(SUFFIXES)
 
@@ -114,14 +90,8 @@ clean:
 $(OBJ_DIR)/%.o:%.c
 	$(CC) $(CFLAGS) -c $*.c -o $@
 
-$(OBJ_DIR)/%_client.o:%.c
-	$(CC) $(CFLAGS) $(CSDEFS) -c $*.c -o $@
-
 $(OBJ_DIR)/%.o:%.cpp
 	$(CPLUSPLUS) $(CFLAGS) -c $*.cpp -o $@
-
-$(OBJ_DIR)/%_client.o:%.cpp
-	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c $*.cpp -o $@
 
 #
 # TTClasses direct linked sample programs
