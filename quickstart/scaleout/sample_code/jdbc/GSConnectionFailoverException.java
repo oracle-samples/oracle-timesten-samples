@@ -48,9 +48,8 @@ public class GSConnectionFailoverException
     */
     private static FailoverState[] initFailoverStates()
     {
-        FailoverState fos[] = new FailoverState[2];
+        FailoverState fos[] = new FailoverState[1];
         fos[0] = new FailoverState(null,47137);
-        fos[1] = new FailoverState("S1000",0);
         return fos;
     } // initFailoverStates
 

@@ -75,9 +75,7 @@ static odbcerr_t
 csFailoverErrors[] =
 {
     { NULL, NULL, TT_ERR_SQLSTATE_NULL, NULL, 
-                  TT_ERR_NATIVE_FAILOVER, DFLT_FAILOVER_DELAY },
-    { NULL, NULL, TT_ERR_SQLSTATE_GENERAL, NULL, 
-                  TT_ERR_NATIVE_NONE, DFLT_FAILOVER_DELAY }
+                  TT_ERR_NATIVE_FAILOVER, DFLT_FAILOVER_DELAY }
 }; // csFailoverErrors
 
 // number of entries in the csFailoverErrors array
