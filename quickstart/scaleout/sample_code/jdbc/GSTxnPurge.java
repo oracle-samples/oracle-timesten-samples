@@ -205,4 +205,14 @@ public class GSTxnPurge
         return result;
     } // execute
 
+    /**
+     * Close any open result set.
+     */
+    public boolean close()
+        throws GSGridRetryException,
+               GSConnectionFailoverException
+    {
+        return true;
+    } // close
+
 } // GSTxnPurge

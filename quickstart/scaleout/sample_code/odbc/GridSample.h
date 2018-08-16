@@ -73,9 +73,9 @@
  * Grid retries and failover retries
  */
 #define  DFLT_RETRY_LIMIT      30  // max retries for transient errors
-#define  DFLT_RETRY_DELAY      5   // retry delay (ms) for transient errors
+#define  DFLT_RETRY_DELAY      0   // retry delay (ms) for transient errors
 #define  DFLT_FAILOVER_LIMIT   100 // max retries for failover errors
-#define  DFLT_FAILOVER_DELAY   100 // retry delay (ms) for failover errors
+#define  DFLT_FAILOVER_DELAY   25  // retry delay (ms) for failover errors
 
 /*
  * Transaction names for internal 'transactions'.

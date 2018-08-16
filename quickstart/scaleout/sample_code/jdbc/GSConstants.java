@@ -12,6 +12,7 @@ import java.math.BigDecimal;
  */
 public class GSConstants
 {
+    /* BUILD options */
     // Is debug allowed? Optimization to omit debug code elsewhere if it is 
     // globally disabled here.
     public static final boolean debugEnabled = false;
@@ -19,6 +20,10 @@ public class GSConstants
     // use TRUNCATE TABLE instead of DELETE FROM
     public static final boolean useTruncate = false;
 
+    // enable 'commit read-only transactions' option
+    public static final boolean enableCommitRO = false;
+    /* end of BUILD options */
+    
     // General constants
     public static final String progName = "GridSample"; // program name
 
@@ -91,6 +96,7 @@ public class GSConstants
     public static final String optNumTxn = "-numtxn";
     public static final String optTxnMix = "-txnmix";
     public static final String optDuration = "-duration";
+    public static final String optCommitRO = "-commitrotxn";
     public static final String optVerbose = "-verbose";
     public static final String optSilent = "-silent";
     public static final String optLog = "-log";

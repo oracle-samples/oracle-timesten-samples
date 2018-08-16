@@ -745,4 +745,16 @@ public class GSAppTransaction
         return null;
     } // ExecuteRS
 
+    /**
+     * Close any open result set.
+     *
+     * Usually will be overridden
+     */
+    public boolean close()
+        throws GSGridRetryException, 
+               GSConnectionFailoverException
+    {
+        return false;
+    } // close
+
 } // GSAppTransaction

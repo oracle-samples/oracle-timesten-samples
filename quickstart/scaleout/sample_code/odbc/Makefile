@@ -11,7 +11,7 @@
 TTDIR		= $(TIMESTEN_HOME)
 OBJDIR		= obj
 BINDIR		= bin
-INSTDIR         = $(TTDIR)/install
+INSTDIR		= $(TTDIR)/install
 
 CC		= gcc
 
@@ -20,9 +20,9 @@ LDFLAGS		= -O2 -Wl,-rpath -Wl,$(INSTDIR)/lib
 
 INCS		= -I. -I$(INSTDIR)/include
 #
-# uncomment the OPTDEFS directive to enable debug mode within the app
+# Use OPTDEFS to enable optional features
 #
-#OPTDEFS		= -DDEBUG
+#OPTDEFS		= -DDEBUG -DSPECIAL_FEATURES
 CSDEFS		= -DTTCLIENTSERVER
 CFLAGS		= $(PLATCFLAGS) $(OPTDEFS) $(INCS)
 

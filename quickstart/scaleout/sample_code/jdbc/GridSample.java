@@ -404,9 +404,11 @@ public class GridSample
                             if (  rs != null  )
                             {
                                 while (  rs.next()  ) ;
-                                rs.close();
+                                result = txn.close();
                                 rs = null;
                             }
+                            if (  result && ctxt.commitRO  )
+                                result = txn.commitTxn();
                         }
                     }
                 }
@@ -1132,51 +1134,58 @@ public class GridSample
         System.out.println("\nUsage:\n");
         System.out.println("  java " + GSConstants.progName + " [-help] [-cs] [-dsn dsname] [-uid username] [-pwd password]");
         System.out.println("           [-txnmix A,C,T,Q,P] [-nocleanup] [{-numtxn t | -duration s}]");
+        if (  GSConstants.enableCommitRO  )
+            System.out.println("           [-commitrotxn]\n");
         if (  GSConstants.debugEnabled  )
             System.out.println("           [{-silent | -verbose [n]}] [{-log logpath | -debug logpath}]\n");
         else
             System.out.println("           [{-silent | -verbose [n]}] [-log logpath]\n");
         System.out.println("Parameters:\n");
-        System.out.println("  -help      - Displays this usage information and then exits. Any");
-        System.out.println("               other options specified are ignored.\n");
-        System.out.println("  -cs        - Connect using client/server mode (default is direct mode).\n");
-        System.out.println("  -dsn       - Connect to 'dsname' instead of the default DSN (" + 
+        System.out.println("  -help        - Displays this usage information and then exits. Any");
+        System.out.println("                 other options specified are ignored.\n");
+        System.out.println("  -cs          - Connect using client/server mode (default is direct mode).\n");
+        System.out.println("  -dsn         - Connect to 'dsname' instead of the default DSN (" + 
                            GSConstants.dfltDSN + " or");
-        System.out.println("               " + GSConstants.dfltDSNcs + 
+        System.out.println("                 " + GSConstants.dfltDSNcs + 
                            "). The type of the DSN must match the requested");
-        System.out.println("               connection type (direct or client/server).\n");
-        System.out.println("  -uid       - Connect as user 'username' instead of the default user");
-        System.out.println("               (" + GSConstants.dfltUID + ").\n");
-        System.out.println("  -pwd       - Connect using 'password'. If omitted then the user will be");
-        System.out.println("               prompted for the password.\n");
-        System.out.println("  -txnmix    - Sets the transaction mix for the workload; A = percentage");
-        System.out.println("               of Authorize, C = percentage of Charge, T = percentage of");
-        System.out.println("               TopUp, Q = percentage of Query and P = percentage of Purge."); 
-        System.out.println("               All values are integers >= 0 and <= 100 and the sum of the");
-        System.out.println("               values must equal 100. If not specified, the default mix");
-        System.out.println("               is A=" + GSConstants.dfltPctAuthorize + ", C=" + 
+        System.out.println("                 connection type (direct or client/server).\n");
+        System.out.println("  -uid         - Connect as user 'username' instead of the default user");
+        System.out.println("                 (" + GSConstants.dfltUID + ").\n");
+        System.out.println("  -pwd         - Connect using 'password'. If omitted then the user will be");
+        System.out.println("                 prompted for the password.\n");
+        System.out.println("  -txnmix      - Sets the transaction mix for the workload; A = percentage");
+        System.out.println("                 of Authorize, C = percentage of Charge, T = percentage of");
+        System.out.println("                 TopUp, Q = percentage of Query and P = percentage of Purge."); 
+        System.out.println("                 All values are integers >= 0 and <= 100 and the sum of the");
+        System.out.println("                 values must equal 100. If not specified, the default mix");
+        System.out.println("                 is A=" + GSConstants.dfltPctAuthorize + ", C=" + 
                            GSConstants.dfltPctCharge + ", T=" + GSConstants.dfltPctTopUp + ", Q=" +
                            GSConstants.dfltPctQuery + " and P=" + GSConstants.dfltPctPurge + ".\n");
-        System.out.println("  -nocleanup - The transaction history table will not be truncated prior");
-        System.out.println("               to starting the workload.\n");
-        System.out.println("  -numtxn    - The workload will run until it has completed 't' transactions");
-        System.out.println("               (t > 0) and then the program will terminate.\n");
-        System.out.println("  -duration  - The workload will run for approximately 's' seconds (s > 0)");
-        System.out.println("               and then the program will terminate.\n");
-        System.out.println("  -silent    - The program will not produce any output other than to report");
-        System.out.println("               errors. Normally the program will report significant events");
-        System.out.println("               (connect, failover, ...) as it runs plus a workload summary");
-        System.out.println("               when it terminates.\n");
-        System.out.println("  -verbose   - Execution statistics will be reported every 'n' seconds");
-        System.out.println("               (n > 0, default is " + GSConstants.dfltReportInterval +
+        System.out.println("  -nocleanup   - The transaction history table will not be truncated prior");
+        System.out.println("                 to starting the workload.\n");
+        System.out.println("  -numtxn      - The workload will run until it has completed 't' transactions");
+        System.out.println("                 (t > 0) and then the program will terminate.\n");
+        System.out.println("  -duration    - The workload will run for approximately 's' seconds (s > 0)");
+        System.out.println("                 and then the program will terminate.\n");
+        if (  GSConstants.enableCommitRO  )
+        {
+        System.out.println("  -commitrotxn - Commit read-only transactions (normally these are not");
+        System.out.println("                 committed).\n");
+        }
+        System.out.println("  -silent      - The program will not produce any output other than to report");
+        System.out.println("                 errors. Normally the program will report significant events");
+        System.out.println("                 (connect, failover, ...) as it runs plus a workload summary");
+        System.out.println("                 when it terminates.\n");
+        System.out.println("  -verbose     - Execution statistics will be reported every 'n' seconds");
+        System.out.println("                 (n > 0, default is " + GSConstants.dfltReportInterval +
                            ") as the program runs, in addition to");
-        System.out.println("               the normal reporting.\n");
-        System.out.println("  -log       - Write an execution log to 'logpath'.\n");
+        System.out.println("                 the normal reporting.\n");
+        System.out.println("  -log         - Write an execution log to 'logpath'.\n");
         if (  GSConstants.debugEnabled  )
         {
-            System.out.println("  -debug     - Write a debug log to 'logpath'. This log includes much");
-            System.out.println("               more detailed information than the regular log; the");
-            System.out.println("               extra lines include the flag 'DEBUG:' in the text.\n");
+            System.out.println("  -debug       - Write a debug log to 'logpath'. This log includes much");
+            System.out.println("                 more detailed information than the regular log; the");
+            System.out.println("                 extra lines include the flag 'DEBUG:' in the text.\n");
             System.out.println("  The '-log' and '-debug' options are mutually exclusive.\n");
         }
         System.out.println("  The '-numtxn' and '-duration' options are mutually exclusive. If neither");
@@ -1248,6 +1257,7 @@ public class GridSample
         boolean foundNoCleanup = false;
         boolean foundNumTxn = false;
         boolean foundDuration = false;
+        boolean foundCommitRO = false;
         boolean foundSilent = false;
         boolean foundVerbose = false;
         boolean foundLog = false;
@@ -1313,6 +1323,19 @@ public class GridSample
                          argno--;
                     }
                 }
+            }
+            else
+            if (  GSConstants.enableCommitRO && arg[argno].equals( GSConstants.optCommitRO )  )
+            {
+                if (  foundCommitRO  )
+                {
+                    System.err.println( "\n*** Multiple '" +
+                                        GSConstants.optCommitRO +
+                                        "' options not permitted\n" );
+                    return false;
+                }
+                foundCommitRO = true;
+                ctxt.commitRO = true;
             }
             else
             if (  arg[argno].equals( GSConstants.optSilent )  )

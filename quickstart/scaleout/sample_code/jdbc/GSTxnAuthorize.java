@@ -29,6 +29,7 @@ public class GSTxnAuthorize
     
     // DB stuff
     private GSDbStatement stmtAuthorize = null;
+    private GSDbResultSet authRs = null;
     private long accountID = INVALID_VALUE;
 
     /**
@@ -166,6 +167,12 @@ public class GSTxnAuthorize
                 "DEBUG: accountID = " + accountID );
         }
 
+        if (  authRs != null  )
+        {
+            try { authRs.close(); } catch ( Exception e ) { ; }
+            authRs = null;
+        }
+
         if (  accountID == INVALID_VALUE  )
         {
             errMsg = GSErrors.M_NO_INPUT;
@@ -223,6 +230,7 @@ public class GSTxnAuthorize
                            " No results" );
                     return rs;
                 }
+                authRs = rs;
             }
         } catch (  GSGridRetryException gre  ) {
             if (  rs != null  ) { rs.close(); rs = null; }
@@ -243,5 +251,20 @@ public class GSTxnAuthorize
                 "DEBUG: EXITOK: GSTxnAuthorize:executeRS" );
         return rs;
     } // executeRS
+
+    /**
+     * Close any open result set.
+     */
+    public boolean close()
+        throws GSGridRetryException,
+               GSConnectionFailoverException
+    {
+        if (  authRs != null  )
+        {
+            try { authRs.close(); } catch ( Exception e ) { ; }
+            authRs = null;
+        }
+        return true;
+    } // close
 
 } // GSTxnAuthorize

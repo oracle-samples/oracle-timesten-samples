@@ -103,4 +103,3 @@ else
 fi
 echo
 
-return 0

@@ -28,6 +28,7 @@ public class GSTxnQuery
     
     // DB stuff
     private GSDbStatement stmtQuery = null;
+    private GSDbResultSet queryRs = null;
     private long custID = INVALID_VALUE;
 
     /**
@@ -154,6 +155,12 @@ public class GSTxnQuery
         if (  GSConstants.debugEnabled  )
             GSUtil.debugMessage( ctxt, "DEBUG: custID = " + custID );
 
+        if (  queryRs != null  )
+        {
+            try { queryRs.close(); } catch ( Exception e ) { ; }
+            queryRs = null;
+        }
+
         if (  custID == INVALID_VALUE  )
         {
             errMsg = GSErrors.M_NO_INPUT;
@@ -186,7 +193,15 @@ public class GSTxnQuery
                         "DEBUG: stmtQuery.getResultSet()" );
                 rs = stmtQuery.getResultSet();
                 if (  rs == null  )
+                {
                     errMsg = GSErrors.M_NO_RESULTS;
+                    if (  GSConstants.debugEnabled  )
+                        GSUtil.debugMessage( ctxt,
+                           "DEBUG: EXITERR: GSTxnQuery: executeRS:" +
+                           " No results" );
+                }
+                else
+                    queryRs = rs;
             }
         } catch (  GSGridRetryException gre  ) {
             if (  rs != null  ) { rs.close(); rs = null; }
@@ -213,5 +228,20 @@ public class GSTxnQuery
         }
         return rs;
     } // executeRS
+
+    /**
+     * Close any open result set.
+     */
+    public boolean close()
+        throws GSGridRetryException,
+               GSConnectionFailoverException
+    {
+        if (  queryRs != null  )
+        {
+            try { queryRs.close(); } catch ( Exception e ) { ; }
+            queryRs = null;
+        }
+        return true;
+    } // close
 
 } // GSTxnQuery

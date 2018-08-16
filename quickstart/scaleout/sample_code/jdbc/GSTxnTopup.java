@@ -432,4 +432,14 @@ public class GSTxnTopup
         return result;
     } // execute
 
+    /**
+     * Close any open result set.
+     */
+    public boolean close()
+        throws GSGridRetryException,
+               GSConnectionFailoverException
+    {
+        return true;
+    } // close
+
 } // GSTxnTopup

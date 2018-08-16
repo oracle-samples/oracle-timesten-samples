@@ -27,6 +27,7 @@ public class GSGlobal
     public int vbLevel = GSConstants.vbNormal;
     public int vbInterval = GSConstants.dfltReportInterval;
     public String logPath = null;
+    public boolean commitRO = false;
     public boolean debugMode = false;
     public int pctAuthorize = GSConstants.dfltPctAuthorize;
     public int pctQuery = GSConstants.dfltPctQuery;
