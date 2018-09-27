@@ -1,0 +1,4 @@
+{% for host in groups['zookeeper-addresses'] %}
+Servers {{ host }}!{{ zkclientport_a }}
+{% endfor %}
+

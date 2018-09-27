@@ -1,0 +1,28 @@
+#
+# Oracle TimesTen In-Memory Database
+# Copyright (c) 2017,2018 Oracle and/or its affiliates. All rights reserved.
+#
+[Unit]
+Description=TimesTen Mgmt Instance Service
+After=cloud-final.service
+
+[Service]
+User=oracle
+Group=oracle
+StandardError=syslog
+StandardOutput=syslog
+Type=forking
+# Will not restart if exited cleanly.  
+# Cleanly is exit status 0 or 
+# one of the signals SIGHUP, SIGINT, SIGTERM or SIGPIPE.
+# Can be set to 'always'.
+Restart=on-failure
+PIDFile={{ ttinstancepath }}/info/timestend.pid
+TimeoutStartSec=60
+RestartSec=10
+
+ExecStart=-{{ ttinstancepath }}/bin/ttenv ttdaemonadmin -start -force
+ExecStop=-{{ ttinstancepath }}/bin/ttenv ttdaemonadmin  -stop -force
+
+[Install]
+WantedBy=multi-user.target

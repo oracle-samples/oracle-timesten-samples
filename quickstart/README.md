@@ -14,7 +14,7 @@ This folder contains the original TimesTen Classic QuickStart (which also covers
 | [scaleout](./scaleout)              | Scaleout sample programs.                      |
 
 ## More information
-You can find more information on the Oracle TimesTen In-Memory Database on our [OTN Page](http://www.oracle.com/technetwork/database/database-technologies/timesten/overview/index.html)
+You can find more information on the Oracle TimesTen In-Memory Database on our [OTN Page](https://www.oracle.com/technetwork/database/database-technologies/timesten/overview/index.html)
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memoty Database in the [OTN Documentation Library](http://www.oracle.com/technetwork/database/database-technologies/timesten/documentation/index.html)
+You can find the online documentation for Oracle TimesTen In-Memoty Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/)

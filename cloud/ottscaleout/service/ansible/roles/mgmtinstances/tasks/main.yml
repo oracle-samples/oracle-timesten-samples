@@ -1,0 +1,47 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+---
+# Run ttgridrollout to set up grid and database
+# Only run on ansible controller, first db instance
+#
+- import_tasks: mgmtinstancesetup.yml
+  become:       true
+  when:         inventory_hostname in groups['mgmt-addresses']
+
+- import_tasks: create-grid.yml
+  run_once:     true
+  when:         inventory_hostname in groups['mgmt-addresses']
+
+- import_tasks: mgmt-service.yml
+  when:         inventory_hostname in groups['mgmt-addresses']
+
+# only on data instances
+- import_tasks: roles/mgmtinstances/tasks/db-service.yml
+  when:         inventory_hostname in groups['db-addresses']
+
+- name: any grid connection info?
+  stat:
+    path:       "{{ ttgriddir }}/service-info.txt"
+  register:     serviceinfo
+  become:       true
+  become_user:  oracle
+  when:         inventory_hostname in groups['mgmt-addresses']
+
+- name: get service info if present
+  shell:        cat "./service-info.txt"
+  args:
+    chdir:      "{{ ttgriddir }}"
+  register:     service_info
+  become:       true
+  become_user:  oracle
+  run_once:     true
+  when:         inventory_hostname in groups['mgmt-addresses'] and serviceinfo.stat.readable
+
+- name: display service info
+  debug:
+    var:        service_info.stdout_lines
+  when:         service_info is defined
+  run_once:     true
+

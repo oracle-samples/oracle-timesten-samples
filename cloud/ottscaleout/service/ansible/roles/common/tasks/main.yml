@@ -1,0 +1,115 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+
+- name: list host map for this play
+  debug: 
+    msg: "{{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+  with_items: "{{ ansible_play_hosts }}"
+
+- name: ensure security notification package installed; install nc for trouble shooting
+  yum:
+    name:        "{{ item }}"
+    state:       latest
+  with_items:    
+    - yum-plugin-security
+    - nc
+  become:        true
+  become_user:   root
+
+- stat:
+    path:        "{{ initfile }}"
+  register:      initdone
+  become:        true
+  become_user:   root
+
+- name: update any packages where security errata available
+  yum:
+    name:        '*'
+    state:       latest
+    security:    true
+  become:        true
+  become_user:   root
+  when:          initdone.stat.exists == false and securityupdates == "true"
+
+
+- name: copy keys for opc user
+  copy:
+    content:        "{{ key }}"
+    dest:           "{{ keyfile }}"
+    owner:          opc
+    group:          opc
+    mode:           0400
+    force:          no
+
+- name: check if service directory already there
+  stat:             
+    path:           "{{ opchome }}/service"
+  register:         svcd
+
+- name: copy service directory
+  copy:
+    src:            "{{ servicedir }}"
+    dest:           "{{ opchome }}"
+    owner:          opc
+    group:          opc
+    directory_mode: u=rwx,g=rx
+    force:          no
+  when:             svcd.stat.isdir is undefined
+
+- name: get dns search paths
+  shell:            "cat {{ opchome }}/{{ scriptdir }}/resolv.conf"
+  register:         searchpaths
+  when:             initdone.stat.exists == false
+
+- name: add search paths to resolv.conf
+  lineinfile:
+    path:           "/etc/resolv.conf"
+    line:           "{{ item }}"
+    state:          present
+  with_items:       "{{ searchpaths.stdout_lines }}"
+  become:           true
+  become_user:      root
+  when:             initdone.stat.exists == false
+    
+- name: set dhcp client hook to add searchpaths to resolv.conf
+  copy: 
+    content:        "#!/bin/sh"
+    dest:           "/etc/dhcp/dhclient-exit-hooks.d/resolv.conf.sh"
+    force:          true
+    owner:          root
+    group:          root
+    mode:           0700
+  become:           true
+  become_user:      root
+  when:             initdone.stat.exists == false
+
+- name: set up dhcp-client exit hook to restore resolv.conf on reboot
+  lineinfile:
+    path:           "/etc/dhcp/dhclient-exit-hooks.d/resolv.conf.sh"
+    line:           "echo \"{{ item }}\" >> /etc/resolv.conf"
+    state:          present
+    create:         true
+    owner:          root
+    group:          root
+    mode:           0700
+  with_items:       "{{ searchpaths.stdout_lines }}"
+  become:           true
+  become_user:      root
+  when:             initdone.stat.exists == false
+
+# creates "{{ initfile }}" used to decide if already initialized
+- name: create a cron file to check for security updates
+  cron:
+    name:        yum list cves
+    weekday:     0-6
+    minute:      0
+    hour:        1
+    user:        root
+    job:         "/usr/bin/yum updateinfo -y list cves > /home/opc/latest-cves"
+    cron_file:   yum-latestcves
+  become:        true
+  become_user:   root
+  when:          initdone.stat.exists == false
+

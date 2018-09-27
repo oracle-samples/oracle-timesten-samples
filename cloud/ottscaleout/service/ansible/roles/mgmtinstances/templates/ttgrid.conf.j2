@@ -1,0 +1,202 @@
+##################################
+# Required Parameters
+##################################
+ 
+# dbdef_file
+#   Database definition (.dbdef) file.
+#   You can find a sample .dbdef file, exampledb.dbdef, in the same directory as this configuration 
+#   file.
+#
+dbdef_file = {{ ttgriddir }}/{{ dbname }}.dbdef
+
+# shape
+#   Grid shape in <N>x<K> format.
+#     N : Number of instances in one data space group
+#     K : K-factor (replication factor) or number of data space groups
+#
+#shape = 2x2
+
+# zoo_conf
+#   ZooKeeper client configuration file.
+#   If you do not specify this parameter, ttGridRollout assumes that a ZooKeeper server already runs
+#   on the local machine using the default client port: 2181.
+#     (i.e. "Servers localhost!2181")
+#
+zoo_conf = {{ ttgriddir }}/zoo_client.conf
+
+
+##################################
+# Grid Parameters
+##################################
+
+# grid_name
+#   Grid name.
+#   If you do not specify a grid name, ttGridRollout uses "sample_grid".
+#
+grid_name = {{ ttgridname }}
+
+# instance_location
+#   Location for the instance files of the management and data instances.
+#   ttGridRollout uses this location on every machine in the grid.
+#   If not specified, ttGridRollout uses: ${HOME}/TimesTen/instances
+#
+instance_location = {{ ttinstancedir }}
+
+# installation_location
+#   Location for the installation files of the standby management instance and data instances.
+#   ttGridRollout uses this location on every machine in the grid.
+#   If not specified, ttGridRollout uses the path of the original TimesTen installation on every
+#   machine in the grid.
+#
+#installation_location = /opt/timesten/TimesTen/installations
+
+# instance_config
+#   Custom instance configuration file.
+#   Through the ttGridAdmin instanceConfigImport command, ttGridRollout applies the custom instance
+#   configuration to all data instances.
+#
+#instance_config = timesten.conf
+
+
+##################################
+# Model Parameters
+##################################
+
+# data_hosts
+#   List of machines for the data instances in JSON format.
+#   If not specified, ttGridRollout creates all data instances on the local machine.
+#   
+#   Required attrbiutes:
+#     address:                Address
+#     externalAddress:        External address (cannot be used in conjunction with the "address" 
+#     attribute)
+#     internalAddress:        Internal address (must be used in conjunction witht the 
+#     "externalAddress" attribute)
+#
+#   Optional attributes:
+#     installation_location: Overwrites the global installation location.
+#     instance_location:     Overwrites the global instance location.
+#
+#   Example 1: Setting two machines with no private network
+#
+#data_hosts = [
+#  { "address":"tthost1.example.com" },
+#  { "address":"tthost2.example.com" }
+#]
+#
+#   Example 2: Setting four machines with private and external networks
+#   
+#data_hosts = [
+#  { "internalAddress":"tthost1-priv", "externalAddress":"tthost1.example.com", "installation_location":"/u01/tthost1/TimesTen" },
+#  { "internalAddress":"tthost2-priv", "externalAddress":"tthost2.example.com", "installation_location":"/u01/tthost2/TimesTen" },
+#  { "internalAddress":"tthost3-priv", "externalAddress":"tthost3.example.com", "installation_location":"/u01/tthost3/TimesTen" },
+#  { "internalAddress":"tthost4-priv", "externalAddress":"tthost4.example.com", "installation_location":"/u01/tthost4/TimesTen" }
+#]
+
+# data_instances
+#   List of machines for the data instances in JSON format.
+#   If not specified, ttGridRollout creates all data instances on the local machine.
+#
+#   Required attrbiutes:
+#     address:                Address
+#     externalAddress:        External address (cannot be used in conjunction with the "address" 
+#     attribute)
+#     internalAddress:        Internal address (must be used in conjunction with the 
+#     "externalAddress" attribute)
+#    
+#   Optional attributes:
+#     host:                   Host name
+#     instance:               Instance name
+#     dataspacegroup:         Data space group
+#     daemonport:             Daemon port
+#     csport:                 Client/server port
+#     installation_location:  Location for the installation files of the instance
+#     instance_location:      Location for the instance files of the instance
+#
+#   !!!IMPORTANT!!!
+#   This parameter cannot be specified in conjunction with either the "shape" or "data_hosts" 
+#   parameter
+#
+#   Example: of 2x2 grid across 2 machines w/ private network & external network
+#   
+#data_instances = [
+#  { "internalAddress":"tthost1-priv", "externalAddress":"tthost1.example.com", "dataspacegroup":1, "daemonport":50001, "csport":50002 },
+#  { "internalAddress":"tthost2-priv", "externalAddress":"tthost2.example.com", "dataspacegroup":1, "daemonport":50001, "csport":50002 },
+#  { "internalAddress":"tthost3-priv", "externalAddress":"tthost3.example.com", "dataspacegroup":2, "daemonport":50001, "csport":50002 },
+#  { "internalAddress":"tthost4-priv", "externalAddress":"tthost4.example.com", "dataspacegroup":2, "daemonport":50001, "csport":50002 }
+#]
+data_instances = [
+{% for host in groups['db-addresses'] %}
+{ "externalAddress":"{{ host }}","internalAddress":" {{ host|regex_replace('.pub','-i.priv') }}","dataspacegroup":"{{ loop.cycle('1','2') }}","daemonport":"{{ dsdaemonport }}", "csport":"{{ dscsport }}" }
+{% if not loop.last %}
+,
+{% endif %}
+{% endfor %}
+]
+
+##################################
+# Management Instance Parameters 
+##################################
+
+# mgmt_instances
+#   List of management instances in JSON format.
+#   If not specified, ttGridRollout creates one management instance on the local machine using the
+#   default values for all attributes.
+#
+#   Required attrbiutes:
+#     address:                Address
+#     externalAddress:        External address (cannot be used in conjunction with the "address" 
+#     attribute)
+#     internalAddress:        Internal address (must be used in conjunction with the 
+#     "externalAddress" attribute)
+#   
+#   Optional attributes:
+#     host:                   Host name
+#     instance:               Instance name
+#     daemonport:             Daemon port
+#     csport:                 Client/server port
+#     mgmtport:               Management port
+#     
+#   Optional attributes that apply only for the second managment instance:
+#     installation_location: Location for the installation files of the instance
+#     instance_location:     Location for the instance files of the instance
+#
+#   Example: Setting an A/S pair of management instances using default ports
+#   
+#mgmt_instances = [
+#  { "internalAddress":"tthost1-priv", "externalAddress":"tthost1.example.com" },
+#  { "internalAddress":"tthost2-priv", "externalAddress":"tthost2.example.com" }
+#]
+mgmt_instances = [
+{% for host in groups['mgmt-addresses'] %}
+{% if loop.index <= 2  %}
+{ "externalAddress":"{{ host }}","internalAddress":" {{ host|regex_replace('.pub','-i.priv') }}","daemonport":"{{ mgmtdaemonport }}", "csport":"{{ mgmtcsport }}", "mgmtport":"{{ mgmtreplport }}" }
+{% if loop.index < 2 %}
+,
+{% endif %}
+{% endif %}
+{% endfor %}
+]
+
+##################################
+# Post Roll-out Parameters
+##################################
+
+# init_script
+#   SQL script file (ttIsql script) that ttGridRollout executes on one of the data instances after
+#   rolling out the grid.
+#
+init_script = {{ ttgriddir }}/init.sql
+
+# direct_connect_files
+#   .connect files for additional direct connectables.
+#   You may specify multiple, comma-separated .connect files.
+#
+#direct_connect_files = dldb1.connect,dldb2.connect
+
+# cs_connect_files
+#   .connect files for additional client/server connectables.
+#   You may specify multiple, comma-separated .connect files.
+#
+cs_connect_files = {{ ttgriddir }}/{{ dbname }}cs.connect
+

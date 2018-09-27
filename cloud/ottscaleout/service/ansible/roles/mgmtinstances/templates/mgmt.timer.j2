@@ -1,0 +1,11 @@
+[Unit]
+Description=TimesTen Scaleout mgmt instance timer
+
+[Timer]
+OnActiveSec=1
+OnCalendar=*-*-* *:*:00
+Unit={{ dbname }}-mgmt.service
+
+[Install]
+WantedBy=network-online.target
+

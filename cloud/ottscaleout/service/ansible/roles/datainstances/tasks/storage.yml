@@ -1,0 +1,36 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Storage configuration
+# If fsname is mounted, then do nothing
+# Choices are LVM-RAID0, MDRAID-RAID10
+# 
+# Creating the file system using mdraid takes ~10 minutes < 1 hour
+# Doesn't use more than 4 devices.
+# 
+
+- name: check if {{ fsname }} is mounted
+  shell:         df -hm "{{ fsname }}" > /dev/null 2>&1
+  register:      fsmounted
+  failed_when:   fsmounted.rc > 1
+
+- name: include tasks
+  include_tasks: roles/datainstances/tasks/storage-lvm.yml
+  when: fsmounted.rc != 0 and storage == "LVM-RAID-0"
+
+- name: include tasks
+  include_tasks: roles/datainstances/tasks/storage-mdraid.yml
+  when: fsmounted.rc != 0 and storage == "MD-RAID-10"
+
+- name : allow oracle to access
+  file: 
+    path:  "{{ fsname }}"
+    owner:       "oracle"
+    group:       "oracle"
+    mode:        0775
+    state:       "directory"
+  become:      true
+  become_user: root
+

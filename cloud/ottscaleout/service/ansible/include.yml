@@ -1,0 +1,11 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+---
+
+- include_vars: roles/common/vars/main.yml
+- include_vars: roles/common/defaults/main.yml
+- include_vars: roles/orauser/vars/main.yml
+
+

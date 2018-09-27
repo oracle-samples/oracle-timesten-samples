@@ -1,0 +1,41 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+---
+# Run ttgridrollout to set up grid and database
+# Only run on ansible controller, first db instance
+#
+- name: install numactl dstat utils
+  yum: 
+    name:      "{{ item }}"
+    state:     latest
+  become:      true
+  become_user: root
+  with_items:
+    - numactl
+    - dstat
+
+- name: open gridcomm firewall ports
+  firewalld:
+    permanent: true
+    immediate: true
+    port:      "{{ ephemeral }}/tcp"
+    state:     enabled
+    source:    "{{ cidr }}"
+  become:      true
+  become_user: root
+
+- name: create grid directory for configuration files
+  file:
+    state: directory
+    path:  "{{ ttgriddir }}"
+    owner: oracle
+    group: oracle
+    mode:  0770
+  become:      true
+  become_user: oracle
+
+- import_tasks: roles/datainstances/tasks/storage.yml
+  become:       true
+

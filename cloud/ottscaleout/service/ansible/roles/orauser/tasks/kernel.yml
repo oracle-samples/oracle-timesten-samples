@@ -1,0 +1,89 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+---
+#
+# Kernel other OS related utility settings 
+# Kernel parameter values chosen here are OCI default for semaphores and shared memory
+#
+# the following are here for completeness, but they are already defaults in OCI
+#- name: semaphores
+#  sysctl: 
+#    name:        kernel.sem
+#    value:       "32000	1024000000	500	32000"
+#    sysctl_set:  yes
+#    state:       present
+#    reload:      yes
+#
+#- name: shared memory shmmax
+#  sysctl:
+#    name:        kernel.shmmax
+#    value:       18446744073692774399
+#    sysctl_set:  yes
+#    state:       present
+#    reload:      yes
+#
+#- name: shared memory shmall
+#  sysctl:
+#    name:        kernel.shmall
+#    value:       18446744073692774399
+#    sysctl_set:  yes
+#    state:       present
+#    reload:      yes
+#
+#- name: shared memory shmmni
+#  sysctl:
+#    name:        kernel.shmmni
+#    value:       4096
+#    sysctl_set:  yes
+#    state:       present
+#    reload:      yes
+#
+- name: shorter timeout for high availability
+  sysctl:
+    name:        net.ipv4.tcp_retries2
+    value:       3
+    sysctl_set:  yes
+    state:       present
+    reload:      yes
+
+# enable enough for oodles of connections
+- name: somaxconn
+  sysctl:
+    name:        net.core.somaxconn
+    value:       4096
+    sysctl_set:  yes
+    state:       present
+    reload:      yes 
+
+# large pages
+- name: configure huge pages
+  sysctl:
+    name:        vm.nr_hugepages
+    value:       "{{ ((permsize|int + tempsize|int + 4096 + 128) / 2) |int }}"
+    sysctl_set:  yes
+    state:       present
+    reload:      yes
+
+- name: limits.conf nofile memlock core nproc
+  blockinfile:
+    path: /etc/security/limits.conf
+    block: |
+        *       hard nofile 65536
+        *       soft nofile 65536
+        *       hard memlock unlimited
+        *       soft memlock unlimited
+        *       hard core unlimited
+        *       soft core unlimited
+        *       hard nproc unlimited
+        *       soft nproc unlimited
+
+- name: limits.conf nproc
+  blockinfile:
+    path: /etc/security/limits.d/20-nproc.conf
+    block: |
+        oracle     soft    nproc     65536
+
+
+# place holder for ntp

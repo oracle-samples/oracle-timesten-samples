@@ -1,0 +1,15 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# stop 
+# ansible-playbook [ -e stoptime=<time-in-seconds> | -e stoptime="" ] ...
+#   dbclose -wait [time], dbunload -wait [time], ttdaemonadmin -stop -force
+#   mgmtstandbystop, mgmtactivestop
+#   zkServer.sh stop
+
+- import_playbook: dbstop.yml
+- import_playbook: mgmtstop.yml
+- import_playbook: zkstop.yml
+

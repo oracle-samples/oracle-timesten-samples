@@ -1,0 +1,14 @@
+CkptFrequency=0
+CkptLogVolume=1024
+CkptRate=0
+ConnectionCharacterSet={{ databasecharacterset }}
+DatabaseCharacterSet={{ databasecharacterset }}
+Datastore={{ fsname }}/TimesTen/{{dbname}}/!!INSTANCE_NAME!!/database/{{ dbname }}
+LogDir={{ fsname }}/TimesTen/{{dbname}}/!!INSTANCE_NAME!!/txnlog
+LogBufMB=1024
+LogFileSize=4096
+LogBufParallelism=8
+PermSize={{ permsize }}
+TempSize={{ tempsize }}
+Connections=2000
+Durability={{ durability }}
