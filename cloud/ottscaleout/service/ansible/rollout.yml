@@ -10,5 +10,10 @@
 - import_playbook: datainstances.yml
 - import_playbook: mgmtinstances.yml
 - import_playbook: client.yml
-- import_playbook: status.yml
 
+- hosts: mgmt-addresses
+  pre_tasks:
+  - import_tasks: include.yml
+
+  tasks:
+  - import_tasks: roles/mgmtinstances/tasks/service-info.yml

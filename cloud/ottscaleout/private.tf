@@ -121,11 +121,11 @@ resource "oci_core_route_table" "PrivateRouteTable" {
 
 # Subnets, one in each AD
 # Route through NAT gateway
-resource "oci_core_subnet" "PrivateSubnet" {
+resource "oci_core_subnet" "private_subnet" {
     count = 3
     availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[count.index],"name")}"
     cidr_block = "${cidrsubnet(var.network["cidr"],var.network["subnets"],(count.index + 3))}"
-    display_name = "PrivateSubnetAD${count.index + 1}"
+    display_name = "private_subnet_AD${count.index + 1}"
     compartment_id = "${var.compartment_ocid}"
     vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
     route_table_id = "${oci_core_route_table.PrivateRouteTable.id}"
@@ -136,7 +136,7 @@ resource "oci_core_subnet" "PrivateSubnet" {
 }
 
 locals {
-  zkcount1 = "${(var.zkInstanceCount == 0 ||
+  zkcount0 = "${(var.zkInstanceCount == 0 ||
                  var.zkInstanceCount == 3) ?
                  var.zkInstanceCount : 0}"
   firstAD  = "${(var.initialAD > 0 && 
@@ -146,8 +146,10 @@ locals {
   numADs   = "${(var.singleAD == "true") ? 1 : local.ksafeval}"
 
   # data instances
-  dicount1 = "${(var.diInstanceCount * local.ksafeval)}"
-  dicount2 = "${(local.dicount1 + var.mgInstanceCount + var.zkInstanceCount >= 3) ? local.dicount1 : 4 }"
+  dicount1 = "${(var.diInstanceCount * local.ksafeval) }"
+  dicount2 = "${(local.dicount1 > 0) ? local.dicount1 : local.ksafeval }"
+  # adjust zk count if < 3 instances for zk servers
+  zkcount1 = "${(local.dicount2 + var.mgInstanceCount + local.zkcount0 < 3) ? (3 - local.dicount2) : local.zkcount0 }"
 
   # block volumes
   standard = "${substr(var.diInstanceShape,3,8)}"
@@ -187,7 +189,7 @@ resource "oci_core_instance" "zk_instance" {
   hostname_label      = "${format("%s-zk-%03d", var.service_name, count.index + 1)}"
   shape               = "${var.zkInstanceShape}"
   create_vnic_details {
-    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, (count.index + local.firstAD) % 3)}"
+    subnet_id              = "${element(oci_core_subnet.private_subnet.*.id, (count.index + local.firstAD) % 3)}"
     assign_public_ip       = false
   }
   source_details {
@@ -213,7 +215,7 @@ resource "oci_core_instance" "mg_instance" {
   hostname_label      = "${format("%s-mg-%03d", var.service_name, count.index + 1)}"
   shape               = "${var.mgInstanceShape}"
   create_vnic_details {
-    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
+    subnet_id              = "${element(oci_core_subnet.private_subnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
     assign_public_ip       = false
   }
   source_details {
@@ -238,7 +240,7 @@ resource "oci_core_instance" "di_instance" {
   hostname_label      = "${format("%s-di-%03d", var.service_name, count.index + 1)}"
   shape               = "${var.diInstanceShape}"
   create_vnic_details {
-    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
+    subnet_id              = "${element(oci_core_subnet.private_subnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
     assign_public_ip       = false
   }
   source_details {
@@ -262,7 +264,7 @@ resource "oci_core_instance" "cl_instance" {
   hostname_label      = "${format("%s-cl-%03d", var.service_name, count.index + 1)}"
   shape               = "${var.clInstanceShape}"
   create_vnic_details {
-    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
+    subnet_id              = "${element(oci_core_subnet.private_subnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
     assign_public_ip       = false
   }
   source_details {

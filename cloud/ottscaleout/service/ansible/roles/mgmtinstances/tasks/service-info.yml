@@ -1,0 +1,31 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+---
+# Check deployment status
+#
+- import_tasks: roles/mgmtinstances/tasks/mgmt-path.yml
+  when:         inventory_hostname in groups['mgmt-addresses']
+
+- name: any grid connection info?
+  stat:
+    path:          "{{ ttgriddir }}/service-info.txt"
+  register:        serviceinfo
+  become:          true
+  become_user:     oracle
+  when:            inventory_hostname in groups['mgmt-addresses']
+
+- name: get service info if present
+  shell:           cat "./service-info.txt"
+  args:
+    chdir:         "{{ ttgriddir }}"
+  register:        service_info
+  become:          true
+  become_user:     oracle
+  when:            inventory_hostname in groups['mgmt-addresses'] and serviceinfo.stat.exists
+
+- name: display service info
+  debug:
+    var:           service_info.stdout_lines
+  when:            inventory_hostname in groups['mgmt-addresses'] and serviceinfo.stat.exists

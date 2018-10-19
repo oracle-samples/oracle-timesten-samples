@@ -57,8 +57,8 @@ def getFile(outputFile, ksafety):
   #print dbinstances, len(dbinstances)
   zkinstances = fetchSection(config, 'zookeeper-addresses')
   #
-  if len(zkinstances) not in [0,3]:
-    # user can only input 0 or 3
+  if len(zkinstances) < 0 or len(zkinstances) > 3:
+    # user can only input 0 or 3; 1 or 2 occur if nxk == 1x1 or 1x2
     print ('Error: expected 0 or 3 zookeeper instances, found ' + str(len(zkinstances)))
     sys.exit(1)
   #print zkinstances, len(zkinstances)
@@ -68,6 +68,7 @@ def getFile(outputFile, ksafety):
     sys.exit(1)
   #print mginstances, len(mginstances)
 
+  needzkclients = 0
   profile = 'zookeeper-addresses'
   if len(zkinstances) == 0 :
     if len(mginstances) == 2:
@@ -78,11 +79,22 @@ def getFile(outputFile, ksafety):
       config.set(profile, dbinstances[0], None)
       config.set(profile, dbinstances[1], None)
       config.set(profile, dbinstances[2], None)
+  elif len(zkinstances) == 1 :
+    config.set(profile, dbinstances[0], None)
+    needzkclients = 1
+  elif len(zkinstances) == 2 :
+    config.set(profile, dbinstances[0], None)
+    needzkclients = 2
+
  
   profile = 'mgmt-addresses'
   if len(mginstances) == 0:
     config.set(profile, dbinstances[0], None)
-    config.set(profile, dbinstances[1], None)
+    if  len(dbinstances) > 1:
+      config.set(profile, dbinstances[1], None)
+    else:
+      config.set(profile, zkinstances[0], None)
+      needzkclients = 1
 
   # install clients on mgmt instances, zkservers if present
   profile = 'client-addresses'
@@ -94,6 +106,8 @@ def getFile(outputFile, ksafety):
     config.set(profile, zkinstances[0], None)
     config.set(profile, zkinstances[1], None)
     config.set(profile, zkinstances[2], None)
+  for c in range(needzkclients):
+    config.set(profile, zkinstances[c], None)
 
   profile = 'srvrhosts:children'
   config.add_section(profile)

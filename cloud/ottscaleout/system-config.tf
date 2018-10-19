@@ -13,7 +13,7 @@ locals {
   ansibledir   = "service/ansible"
   ansiblehosts = "${local.ansibledir}/hosts"
   # dns search paths /etc/resolv.conf
-  privsubnets  = "${replace(join(" ",oci_core_subnet.PrivateSubnet.*.subnet_domain_name), ",", " ")}"
+  privsubnets  = "${replace(join(" ",oci_core_subnet.private_subnet.*.subnet_domain_name), ",", " ")}"
   publsubnets  = "${replace(join(" ",oci_core_subnet.public_subnet.*.subnet_domain_name), ",", " ")}"
 }
 

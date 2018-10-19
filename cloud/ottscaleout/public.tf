@@ -117,9 +117,9 @@ resource "oci_core_nat_gateway" "nat_gateway" {
 }
 
 resource "oci_core_subnet" "public_subnet" {
-    count = "${local.bscount1}"
+    count = 3
     availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
-    cidr_block = "${cidrsubnet(var.network["cidr"],var.network["subnets"],0)}"
+    cidr_block = "${cidrsubnet(var.network["cidr"],var.network["subnets"],count.index)}"
     display_name = "public_subnet_AD${ count.index + 1 }"
     compartment_id = "${var.compartment_ocid}"
     vcn_id = "${oci_core_virtual_network.CoreVCN.id}"

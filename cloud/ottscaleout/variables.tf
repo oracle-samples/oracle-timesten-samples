@@ -14,7 +14,7 @@
 ### Instance configuration
 # Creating an NxK TimesTen Scaleout Cluster (default 2x2)
 # Creates VCN, subnets, compute resources
-# The N in NxK
+# The N in NxK (replica sets)
 variable  "diInstanceCount" { default = "2" }
 
 # Compute instance shape for data instances
@@ -24,7 +24,7 @@ variable  "diInstanceCount" { default = "2" }
 variable  "diInstanceShape" { default = "VM.DenseIO1.4" }
 
 ### K-Safety
-# The K in NxK
+# The K in NxK (copies of data)
 # Supports {1|2}
 # By default, K==2 spans ADs; see singleAD variable below
 variable  "ksafety" { default = "2" }
