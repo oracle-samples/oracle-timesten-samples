@@ -1,0 +1,13 @@
+
+# check zookeeper, print db service info
+- hosts: zookeeper-addresses mgmt-addresses
+
+  pre_tasks:
+  - import_tasks: include.yml
+
+  tasks:
+  - include_role:
+      name: status
+    vars:
+      zkinstalldir: zookeeper
+

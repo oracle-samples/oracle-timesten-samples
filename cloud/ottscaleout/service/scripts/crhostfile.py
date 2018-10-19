@@ -33,7 +33,7 @@ def fetchSection(config, s):
     mylist = []
     mylist = config.options(profile)
   except ConfigParser.NoSectionError, err:
-    print str(err) + '; section added'
+    print (str(err) + '; section added')
     mylist = []
     config.add_section(s)
   return mylist
@@ -47,30 +47,30 @@ def getFile(outputFile, ksafety):
   # get and validate section input
   bastions = fetchSection(config, 'bastion-hosts')
   if len(bastions) < 1 or len(bastions) > 3 :
-    print 'Error: expected 1-3 bastion hosts, found ' + str(len(bastions))
+    print ('Error: expected 1-3 bastion hosts, found ' + str(len(bastions)))
     sys.exit(1)
   #print bastions, len(bastions)
   dbinstances = fetchSection(config, 'db-addresses')
-  if len(dbinstances) < 2 or len(dbinstances)%int(ksafety) != 0 :
-    print 'Error: too few or odd number of database instances, found ' + str(len(dbinstances))
+  if len(dbinstances)%int(ksafety) != 0 :
+    print ('Error: mismatch of ksafety: ' + str(ksafety) + ' # of database instances: ' + str(len(dbinstances)))
     sys.exit(1)
   #print dbinstances, len(dbinstances)
   zkinstances = fetchSection(config, 'zookeeper-addresses')
   #
   if len(zkinstances) not in [0,3]:
     # user can only input 0 or 3
-    print 'Error: expected 0 or 3 zookeeper instances, found ' + str(len(zkinstances))
+    print ('Error: expected 0 or 3 zookeeper instances, found ' + str(len(zkinstances)))
     sys.exit(1)
   #print zkinstances, len(zkinstances)
   mginstances = fetchSection(config, 'mgmt-addresses')
   if len(mginstances) != 0 and len(mginstances) != 2 :
-    print 'Error: expected 0 or 2 management instances, found ' + str(len(mginstances))
+    print ('Error: expected 0 or 2 management instances, found ' + str(len(mginstances)))
     sys.exit(1)
   #print mginstances, len(mginstances)
 
   profile = 'zookeeper-addresses'
   if len(zkinstances) == 0 :
-    if len(mginstances) >= 2:
+    if len(mginstances) == 2:
       config.set(profile, mginstances[0], None)
       config.set(profile, mginstances[1], None)
       config.set(profile, dbinstances[0], None)
@@ -78,11 +78,28 @@ def getFile(outputFile, ksafety):
       config.set(profile, dbinstances[0], None)
       config.set(profile, dbinstances[1], None)
       config.set(profile, dbinstances[2], None)
-
+ 
   profile = 'mgmt-addresses'
   if len(mginstances) == 0:
     config.set(profile, dbinstances[0], None)
     config.set(profile, dbinstances[1], None)
+
+  # install clients on mgmt instances, zkservers if present
+  profile = 'client-addresses'
+  clinstances = fetchSection(config, 'client-addresses')
+  if len(mginstances) == 2:
+    config.set(profile, mginstances[0], None)
+    config.set(profile, mginstances[1], None)
+  if len(zkinstances) == 3:
+    config.set(profile, zkinstances[0], None)
+    config.set(profile, zkinstances[1], None)
+    config.set(profile, zkinstances[2], None)
+
+  profile = 'srvrhosts:children'
+  config.add_section(profile)
+  config.set(profile, 'db-addresses', None)
+  config.set(profile, 'mgmt-addresses', None)
+  config.set(profile, 'zookeeper-addresses', None)
 
   with open(outputFile, 'w+') as hostsFile:
     config.write(hostsFile)
@@ -100,6 +117,6 @@ def getFile(outputFile, ksafety):
 
 if __name__ == "__main__":
   if len(sys.argv) != 3 : 
-    print 'Error: expected path ksafety'
+    print ('Error: expected path ksafety')
     sys.exit(1)
   getFile(sys.argv[1], sys.argv[2])

@@ -11,109 +11,54 @@
 # Doesn't use more than 4 devices.
 # 
 
-- name: check if {{ fsname }} is mounted
-  shell:         df -hm "{{ fsname }}" > /dev/null 2>&1
-  register:      fsmounted
-  failed_when:   fsmounted.rc > 0
-
-- name: fail when mounted already
-  fail:
-    msg: "Error: file system {{ fsname }} is already mounted."
-  when:  fsmounted.rc|int == 0
-
-- name: get nvme devices, no more than 4
-  shell:    lsblk | grep nvme | grep -v part | head -4 | cut -d' ' -f1
-  register: nrawdevs 
-
-- name: get block storage devices, no more than 4
-  shell:    lsblk | grep 'sd[b-z]' | grep -v part | head -4 | cut -d' ' -f1
-  register: brawdevs 
-
-- name: fail out if too few devices for raid-10
-  fail:
-    msg: "Error: insufficient number of devices found: {{ nrawdevs.stdout }} for raid 10, need 4"
-  when: nrawdevs.stdout|length < 4 and brawdevs.stdout|length < 4
-
-- name: set variables for nvme
-  set_fact: 
-    ndevices:    "{{ nrawdevs.stdout_lines|length }}"
-    blkdevsfx:   "p1"
-    mntopts:     "defaults,noatime,nofail"
-    sdevices:    "{{ nrawdevs.stdout_lines|regex_replace('nvme','/dev/nvme') }}"
-  when:          nrawdevs.stdout|length > 0
-
-- name: set variables for block storage
-  set_fact: 
-    ndevices:    "{{ brawdevs.stdout_lines|length }}"
-    blkdevsfx:   "1"
-    mntopts:     "defaults,_netdev,noatime,nofail"
-    sdevices:    "{{ brawdevs.stdout_lines|regex_replace('sd','/dev/sd') }}"
-  when:          brawdevs.stdout|length > 0
-
-# Block storage not yet implemented
-
-- name: format device list
-  set_fact:
-    devices:      "{{ sdevices | join(' ') }}"
-
-- name: debug
-  debug:
-    msg: "Found {{ ndevices }} devices: {{ devices }}"
-
 - name: configure md-raid-10
-  block: 
-  - yum:   
-      name:    mdadm
-      state:   present
+  include_tasks: roles/datainstances/tasks/storage-common.yml
 
-  - set_fact:
-      mddev:   "/dev/md0"
+- name: install mdadm
+  yum:   
+    name:    mdadm
+    state:   present
 
-  # "Go fast, young man" -- Horace Greeley, 1872
+- name: set device name to /dev/md0
+  set_fact:
+    mddev:   "/dev/md0"
+
+- name: increase min raid speed limit
+  # "Go fast, young man" -Horace Greeley, 1872
   # Goes even slower without this
-  - sysctl:
-      name:          dev.raid.speed_limit_min
-      value:         2000000
-      state:         present
-      sysctl_set:    true
-      reload:        true
-    ignore_errors: true
+  sysctl:
+    name:          dev.raid.speed_limit_min
+    value:         2000000
+    state:         present
+    sysctl_set:    true
+    reload:        true
+  ignore_errors: true
 
-  - sysctl:
-      name:          dev.raid.speed_limit_max
-      value:         3000000
-      state:         present
-      sysctl_set:    true
-      reload:        true
-    ignore_errors: true
+- name: increase raid max speed limit
+  sysctl:
+    name:          dev.raid.speed_limit_max
+    value:         3000000
+    state:         present
+    sysctl_set:    true
+    reload:        true
+  ignore_errors: true
 
-  - shell: |
-      mdadm --create "{{ mddev }}" --raid-devices=4 --level=10 "{{ devices }}"
-      mdadm --detail --scan | tee -a /etc/mdadm.conf >> /dev/null
+- name: create md device
+  shell: |
+    mdadm --create "{{ mddev }}" --raid-devices=4 --level=10 "{{ devices }}"
+    mdadm --detail --scan | tee -a /etc/mdadm.conf >> /dev/null
 
-  - filesystem:
-      dev:     "{{ mddev }}"
-      fstype:  "{{ fstype }}"
+- name: create fs on md device -- this takes a while
+  filesystem:
+    dev:     "{{ mddev }}"
+    fstype:  "{{ fstype }}"
 
-  - mount: 
-      src:     "{{ mddev }}"
-      path:    "{{ fsname }}"
-      state:   mounted
-      opts:    "{{ mntopts }}"
-      passno:  2
-      fstype:  ext4
-               
-  when:        storage == "MD-RAID-10"
-  become:      true
-  become_user: root
-
-- name : allow oracle to access
-  file: 
-    path:  "{{ fsname }}"
-    owner:       "oracle"
-    group:       "oracle"
-    mode:        0775
-    state:       "directory"
-  become:      true
-  become_user: root
+- name: mount file system
+  mount: 
+    src:     "{{ mddev }}"
+    path:    "{{ fsname }}"
+    state:   mounted
+    opts:    "{{ mntopts }}"
+    passno:  2
+    fstype:  ext4
 

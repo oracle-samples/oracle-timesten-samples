@@ -1,0 +1,32 @@
+
+# get ini file
+- hosts: mgmt-addresses
+
+  pre_tasks:
+  - import_tasks: include.yml
+
+  roles:
+    - client
+
+# create user on pure clients
+- hosts: client-addresses:!mgmt-addresses
+
+  pre_tasks:
+  - import_tasks: include.yml
+
+  roles:
+    - common
+    - orauser
+
+
+# create client installations
+- hosts: client-addresses
+
+  pre_tasks:
+  - import_tasks: include.yml
+
+  roles:
+    - client
+
+
+

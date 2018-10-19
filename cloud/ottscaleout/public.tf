@@ -17,18 +17,22 @@
 
 
 provider "oci" {
-    tenancy_ocid = "${var.tenancy_ocid}"
-    user_ocid = "${var.user_ocid}"
-    fingerprint = "${var.fingerprint}"
+    tenancy_ocid     = "${var.tenancy_ocid}"
+    user_ocid        = "${var.user_ocid}"
+    fingerprint      = "${var.fingerprint}"
     private_key_path = "${var.private_key_path}"
-    region = "${var.region}"
-    version = "~> 2.0"
+    region           = "${var.region}"
+    version = ">= 3.4, < 4.0"
 }
-#alternative if provisioning from within oci
+#alternative to provider data above if provisioning within oci
 #provider "oci" {
 #  auth = "InstancePrincipal"
 #  region = "${var.region}"
+#  version = ">= 3.4.0, < 4.0"
 #}
+provider "null" {
+    version = "~> 1.0"
+}
 
 data "oci_identity_availability_domains" "ADs" {
     compartment_id = "${var.tenancy_ocid}"
@@ -100,56 +104,45 @@ resource "oci_core_security_list" "PublicSecurityList" {
     }]
 }
 
-resource "oci_core_subnet" "PublicSubnet_AD1" {
-    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
-    cidr_block = "${var.network["cidr_prefix"]}.${var.network["public_octet"]}.0/${var.network["subnet_mask"]}"
-    display_name = "PublicSubnetAD1"
-    compartment_id = "${var.compartment_ocid}"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
-    route_table_id = "${oci_core_route_table.PublicRouteTable.id}"
-    security_list_ids = ["${oci_core_security_list.PublicSecurityList.id}"]
-    dhcp_options_id = "${oci_core_virtual_network.CoreVCN.default_dhcp_options_id}"
-    dns_label = "pubsnad1"
-}
-resource "oci_core_subnet" "PublicSubnet_AD2" {
-    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[1],"name")}"
-    cidr_block = "${var.network["cidr_prefix"]}.${var.network["public_octet"] + 1}.0/${var.network["subnet_mask"]}"
-    display_name = "PublicSubnetAD2"
-    compartment_id = "${var.compartment_ocid}"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
-    route_table_id = "${oci_core_route_table.PublicRouteTable.id}"
-    security_list_ids = ["${oci_core_security_list.PublicSecurityList.id}"]
-    dhcp_options_id = "${oci_core_virtual_network.CoreVCN.default_dhcp_options_id}"
-    dns_label = "pubsnad2"
-}
-resource "oci_core_subnet" "PublicSubnet_AD3" {
-    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[2],"name")}"
-    cidr_block = "${var.network["cidr_prefix"]}.${var.network["public_octet"] + 2}.0/${var.network["subnet_mask"]}"
-    display_name = "PublicSubnetAD3"
-    compartment_id = "${var.compartment_ocid}"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
-    route_table_id = "${oci_core_route_table.PublicRouteTable.id}"
-    security_list_ids = ["${oci_core_security_list.PublicSecurityList.id}"]
-    dhcp_options_id = "${oci_core_virtual_network.CoreVCN.default_dhcp_options_id}"
-    dns_label = "pubsnad3"
+locals {
+  bscount1 = "${ (var.bsInstanceCount >= 1 && var.bsInstanceCount <= 3) ? var.bsInstanceCount : 1 }"
 }
 
+resource "oci_core_nat_gateway" "nat_gateway" {
+    #Required
+    compartment_id = "${var.compartment_ocid}"
+    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
+    #Optional
+    display_name = "nat_gateway_${var.service_name}"
+}
+
+resource "oci_core_subnet" "public_subnet" {
+    count = "${local.bscount1}"
+    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
+    cidr_block = "${cidrsubnet(var.network["cidr"],var.network["subnets"],0)}"
+    display_name = "public_subnet_AD${ count.index + 1 }"
+    compartment_id = "${var.compartment_ocid}"
+    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
+    route_table_id = "${oci_core_route_table.PublicRouteTable.id}"
+    security_list_ids = ["${oci_core_security_list.PublicSecurityList.id}"]
+    dhcp_options_id = "${oci_core_virtual_network.CoreVCN.default_dhcp_options_id}"
+    dns_label = "pubsnad${ count.index + 1 }"
+}
 
 
 # Bastion_server_count == {1, 2, 3}; 1 by default
-# Use private IP(s) from Bastion servers as route target(s) enabling NAT
-# Allows hosts on private subnets to pull software downloads, updates from public internet
 
-resource "oci_core_instance" "bs_instance_AD1" {
+resource "oci_core_instance" "bs_instance" {
+  count = "${local.bscount1}"
   availability_domain = 
     "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
   compartment_id      = "${var.compartment_ocid}"
-  display_name        = "${format("%s-bs-%03d", var.service_name, 1)}"
-  hostname_label      = "${format("%s-bs-%03d", var.service_name, 1)}"
+  display_name        = "${format("%s-bs-%03d", var.service_name, count.index + 1 )}"
+  hostname_label      = "${format("%s-bs-%03d", var.service_name, count.index + 1 )}"
   shape               = "${var.bsInstanceShape}"
   create_vnic_details {
-    subnet_id              = "${oci_core_subnet.PublicSubnet_AD1.id}"
-     skip_source_dest_check = true
+    subnet_id              = "${element(oci_core_subnet.public_subnet.*.id, count.index + 1 )}"
+    skip_source_dest_check = true
   }
   source_details {
     source_type = "image"
@@ -164,54 +157,5 @@ resource "oci_core_instance" "bs_instance_AD1" {
   }
 }
 
-resource "oci_core_instance" "bs_instance_AD2" {
-  count               = "${(var.bsInstanceCount > 1 ? 1 : 0)}"
-  availability_domain = 
-    "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[1],"name")}"
-  compartment_id      = "${var.compartment_ocid}"
-  display_name        = "${format("%s-bs-%03d", var.service_name, 2)}"
-  hostname_label      = "${format("%s-bs-%03d", var.service_name, 2)}"
-  shape               = "${var.bsInstanceShape}"
-  create_vnic_details {
-    subnet_id              = "${oci_core_subnet.PublicSubnet_AD2.id}"
-     skip_source_dest_check = true
-  }
-  source_details {
-    source_type = "image"
-    source_id = "${var.InstanceImageOCID[var.region]}"
-  }
-  metadata {
-    ssh_authorized_keys = "${var.ssh_public_key}"
-    user_data           = "${base64encode(file("service/scripts/user_data.tpl"))}"
-  }
-  timeouts {
-    create = "10m"
-  }
-}
-
-resource "oci_core_instance" "bs_instance_AD3" {
-  count               = "${(var.bsInstanceCount > 2 ? 1 : 0)}"
-  availability_domain = 
-    "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[2],"name")}"
-  compartment_id      = "${var.compartment_ocid}"
-  display_name        = "${format("%s-bs-%03d", var.service_name, 3)}"
-  hostname_label      = "${format("%s-bs-%03d", var.service_name, 3)}"
-  shape               = "${var.bsInstanceShape}"
-  create_vnic_details {
-    subnet_id              = "${oci_core_subnet.PublicSubnet_AD3.id}"
-     skip_source_dest_check = true
-  }
-  source_details {
-    source_type = "image"
-    source_id = "${var.InstanceImageOCID[var.region]}"
-  }
-  metadata {
-    ssh_authorized_keys = "${var.ssh_public_key}"
-    user_data           = "${base64encode(file("service/scripts/user_data.tpl"))}"
-  }
-  timeouts {
-    create = "10m"
-  }
-}
 
 

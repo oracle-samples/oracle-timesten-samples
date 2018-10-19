@@ -9,23 +9,24 @@
 terraformdir="${HOME}/.oci"
 export PATH=${PATH}:${terraformdir}
 # If necessary, your firewall proxy allowing terraform to get template, resource providers
-export http_proxy=www-proxy.us.oracle.com:80
+#export http_proxy=www-proxy.us.oracle.com:80
 
 ### OCI credentials
 # Extract from ~/.oci/config ?
-export TF_VAR_tenancy_ocid="ocid1.tenancy.oc1..aaaaaaaapwgyzhcjkv2oe4mg4p7hgao56zdd27f6s35jbmm3lkbxc2req5tq"
-export TF_VAR_user_ocid="ocid1.user.oc1..aaaaaaaanah5nrrj3ntjb4pirq5hih2hcienqp6543zqnitphn45ycwgsmpq"
-export TF_VAR_fingerprint="6f:9b:e1:c0:52:07:9f:1e:c2:f0:88:e1:06:83:0d:a9"
-export TF_VAR_private_key_path="${terraformdir}/keys/oci_api_key.pem"
+export TF_VAR_tenancy_ocid="ocid1.tenancy.oc1..."
+export TF_VAR_user_ocid="ocid1.user.oc1..."
+export TF_VAR_fingerprint="he:11:0:..."
+export TF_VAR_private_key_path="${HOME}/.oci/keys/oci_api_key.pem"
 
 ### Compartment
-export TF_VAR_compartment_ocid="ocid1.compartment.oc1..aaaaaaaa6o6c2ibzs4qqcrms5n4jsjgaiztdl5dzzurcps4wnprkkftf4wla"
+# dev1
+export TF_VAR_compartment_ocid="ocid1.compartment.oc1..."
 
 ### Region
 #export TF_VAR_region="eu-frankfurt-1"
 #export TF_VAR_region="uk-london-1"
-#export TF_VAR_region="us-phoenix-1"
-export TF_VAR_region="us-ashburn-1"
+export TF_VAR_region="us-phoenix-1"
+#export TF_VAR_region="us-ashburn-1"
 
 ### Instance credentials for opc user
 export TF_VAR_ssh_public_key=$(cat ${HOME}/.ssh/id_rsa.pub)
@@ -38,4 +39,3 @@ export TF_VAR_service_name="ttimdb1"
 
 ### TimesTen Scaleout configuration
 # See variables.tf
-

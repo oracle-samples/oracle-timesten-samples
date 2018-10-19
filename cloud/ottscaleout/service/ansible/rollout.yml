@@ -9,4 +9,6 @@
 - import_playbook: zookeeper.yml
 - import_playbook: datainstances.yml
 - import_playbook: mgmtinstances.yml
+- import_playbook: client.yml
+- import_playbook: status.yml
 

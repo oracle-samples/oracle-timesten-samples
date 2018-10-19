@@ -12,19 +12,26 @@
 #
 
 ### Instance configuration
-# Creating an NxK TimesTen Scaleout Cluster, where K=2
-# Creates VCN, subnets, compute resources, Object Storage bucket
-# the N in NxK
+# Creating an NxK TimesTen Scaleout Cluster (default 2x2)
+# Creates VCN, subnets, compute resources
+# The N in NxK
 variable  "diInstanceCount" { default = "2" }
 
 # Compute instance shape for data instances
 # N*K VMs/BMs are provisioned for data instances
-# Must use NVMe shape (DenseIO, HighIO)
+# Not allowed to use VM.Standard1.1 shape
+# Recommended to use NVMe shape (DenseIO, HighIO) for best performance
 variable  "diInstanceShape" { default = "VM.DenseIO1.4" }
+
+### K-Safety
+# The K in NxK
+# Supports {1|2}
+# By default, K==2 spans ADs; see singleAD variable below
+variable  "ksafety" { default = "2" }
 
 # ZooKeeper is allocated on zkInstanceCount VMs
 # To co-locate Zk VMs with mgmt/data VMs set zkInstanceCount=0
-# Otherwise set zkInstanceCount=3 for stand-alone VMs.
+# Otherwise set zkInstanceCount=3 for stand-alone VMs
 variable  "zkInstanceCount" { default = "0" }
 variable  "zkInstanceShape" { default = "VM.Standard1.1" }
 
@@ -33,26 +40,44 @@ variable  "zkInstanceShape" { default = "VM.Standard1.1" }
 variable  "mgInstanceCount" { default = "0" }
 variable  "mgInstanceShape" { default = "VM.Standard1.1" }
 
+# Client only installations are allocated on clInstanceCount VMs
+# clients are provisioned on private subnet
+variable "clInstanceCount" { default = "0" }
+variable "clInstanceShape" { default = "VM.Standard1.1" }
+
 # Number and shape of Bastion hosts {1|2|3}
 variable  "bsInstanceCount" { default = "1" }
 variable  "bsInstanceShape" { default = "VM.Standard1.1" }
 
 ### Which AD(s)
 # Compute instances provisioned round robin to AD mod ksafety
-# For example, to start provisioning in AD3, inital_AD=3
+# To start provisioning in AD3, initialAD=3
 # Valid values are 1-3 otherwise 1 is used
-variable  "initial_AD" { default = "1" }
+variable  "initialAD" { default = "1" }
+# Co-locate data spaces and management instances in same AD
+# singleAD == { "true" | "false" }
+variable  "singleAD"   { default = "false" }
+
+### Block Volumes if any
+# One block volume for each data compute instance (NxK)
+# To use block volumes, instance shape must be standard
+# If both block and nvme devices exist, DB is created on nvme only
+#
+# Size of block volume in GB to attach to each data compute instance
+# diBlockVolumeSizeGB < 50 means do not attach block volumes to any data compute instance
+# Minimum allocation is 50 GB
+variable "diBlockVolumeSizeGB" { default = "0" }
 
 # What OS Image to use
 variable "InstanceImageOCID" {
   type = "map"
   default = {
-    #  Oracle-Linux-7.5-2018.06.14-0
+    #  Oracle-Linux-7.5-2018.09.25-0
     // See https://docs.us-phoenix-1.oraclecloud.com/images/
-    "us-phoenix-1"   = "ocid1.image.oc1.phx.aaaaaaaaxyc7rpmh3v4yyuxcdjndofxuuus4iwd7a7wjc63u2ykycojr5djq"
-    "us-ashburn-1"   = "ocid1.image.oc1.iad.aaaaaaaazq7xlunevyn3cf4wppcx2j53eb26pnnc4ukqtfj4tbjjcklnhpaa"
-    "eu-frankfurt-1" = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaa7qdjjqlvryzxx4i2zs5si53edgmwr2ldn22whv5wv34fc3sdsova"
-    "uk-london-1"    = "ocid1.image.oc1.uk-london-1.aaaaaaaas5vonrmseff5fljdmpffffqotcqdrxkbsctotrmqfrnbjd6wwsfq"
+    "us-phoenix-1"   = "ocid1.image.oc1.phx.aaaaaaaadv2bbpnkivhi2rtfuymu2a4bvaxaj567vqdmjjffrq2vswmyr5qa"
+    "us-ashburn-1"   = "ocid1.image.oc1.iad.aaaaaaaaiu73xa6afjzskjwvt3j5shpmboxtlo7yw4xpeqpdz5czpde7px2a"
+    "eu-frankfurt-1" = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaabfxzgyg2gbwxgkfeir3xfqtkdey3g6k6cmri7wuost35vnrmo4zq"
+    "uk-london-1"    = "ocid1.image.oc1.uk-london-1.aaaaaaaaynxdelzap4cpziba7ahd2jbfdf5ss4r4wjmqefm6wwftrmn25vbq"
   }
 }
 
@@ -65,11 +90,9 @@ variable "network" {
   type = "map"
   default = {
     "cidr"          = "172.16.0.0/16"
-    "cidr_prefix"   = "172.16"
-    # Subnets ${cidr_prefix}.X.0/${subnet_mask}, X=1..3,11..13
-    "public_octet"  = "1"
-    "private_octet" = "11"
-    "subnet_mask"   = "24"
+    "subnets"       = "4"         
+    # logbase2(subnets in network)
+    # enables 2^16 - 2^subnets host systems
   }
 }
 
@@ -86,7 +109,10 @@ variable "timesten" {
     "mgmtdaemonport"       =  6624
     "mgmtcsport"           =  6625
     "mgmtreplport"         =  3754
-    "ephemeral"            = "32768-61000"
+    # entire ephemeral range req'd for channel ports at present
+    "chnlportlo"           =  32768
+    "chnlporthi"           =  61000
+    # daemon and cs ports must be in range chnlportlo-chnlporthi
     "dsdaemonport"         =  46464
     "dscsport"             =  46465
   }

@@ -29,7 +29,7 @@
   become_user:     root
 
 - name: generate ttgridadmin commands for scaleout
-  shell: "{{ oraclehome }}/bin/scaleout.py {{ mgmt }} {{ dbname }} {{ oraclehome }}/hosts2 ./ttdsg.json > ./ttgridscaleout.plan"
+  shell: "{{ oraclehome }}/bin/scaleout.py {{ mgmt }} {{ dbname }} {{ oraclehome }}/hosts2 ./ttdsg.json {{ singleAD }} > ./ttgridscaleout.plan"
   args:
     chdir:          "{{ ttgriddir }}"
   become:           true

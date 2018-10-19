@@ -12,14 +12,15 @@ import string
 import subprocess
 import sys
 
-hostmap = {}
-addmap  = {}
+hostmap  = {}
+addmap   = {}
 sshopts = '-o StrictHostKeyChecking=no -o ConnectTimeout=3 '
 
 def parseDbStatus(fdbspg):
   try:
     with open(fdbspg,'r') as inpfile:
       obj = json.load(inpfile)
+    ks = obj['k']
     dbs=obj['databases']
     for db in dbs:
       instances=db['instances']
@@ -35,6 +36,7 @@ def parseDbStatus(fdbspg):
           dmnm=subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
           dsgmap['dn']=dmnm.strip()
           hostmap[dsgmap['hn']] = copy.deepcopy(dsgmap)
+    return ks
   except ValueError as details:
     print 'Error loading JSON from file'.format(
            details.returncode,
@@ -84,22 +86,28 @@ def parseHosts(fhosts):
            str(details.output).replace('\n',''))
 
 def findMatchingDomain(dn):
-  for k in hostmap:
-    dsgdict = hostmap[k]
-    if dsgdict['dn'] == dn:
-      return dsgdict
-  return None
+    for k in hostmap:
+      dsgdict = hostmap[k]
+      if dsgdict['dn'] == dn:
+        return dsgdict
+    return None
 
 def printMap(amap):
   for k in amap:
     print amap[k]
 
-def printScaleoutCommands(opath, ttenv, dbname):
+def printScaleoutCommands(opath, ttenv, dbname, singleAD, ksafety):
   # hostCreate
+  newdsg = 0
   for hst in addmap:
+    newdsg = (newdsg + 1) % (ksafety + 1)
     hstdict = addmap[hst]
+    if singleAD == "true":
+      dsgroup = newdsg
+    else:
+      dsgroup = hstdict['ds']
     #print hst, hstdict
-    print('{0} ttgridadmin hostcreate {1} -internalAddress {1} -externalAddress {1} -like {2} -cascade -dataspacegroup {3}').format(ttenv, hst, hstdict['lk'], hstdict['ds'])
+    print('{0} ttgridadmin hostcreate {1} -internalAddress {1} -externalAddress {1} -like {2} -cascade -dataspacegroup {3}').format(ttenv, hst, hstdict['lk'], dsgroup)
   # apply
   print('{} ttgridadmin modelapply').format(ttenv)
   print('{} ttgridadmin instancelist | sort -rk 3').format(ttenv)
@@ -122,9 +130,10 @@ if __name__ == '__main__':
   dbname=sys.argv[2]
   fhosts=sys.argv[3]
   fdbspg=sys.argv[4]
-  parseDbStatus(fdbspg)
+  singleAD=sys.argv[5]
+  ksafeval = parseDbStatus(fdbspg)
   #printMap(hostmap)
   parseHosts(fhosts)
   #printMap(addmap)
-  printScaleoutCommands(opath, mgpath, dbname)
+  printScaleoutCommands(opath, mgpath, dbname, singleAD, ksafeval)
 

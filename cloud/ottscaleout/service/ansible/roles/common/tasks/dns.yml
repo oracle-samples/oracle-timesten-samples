@@ -1,0 +1,61 @@
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+
+- name: get dns search paths
+  shell:            "cat {{ opchome }}/{{ scriptdir }}/resolv.conf"
+  register:         searchpaths
+  delegate_to:      localhost
+  when:             initdone.stat.exists == false
+
+- name: add search paths to resolv.conf
+  lineinfile:
+    path:           "/etc/resolv.conf"
+    line:           "{{ item }}"
+    state:          present
+  with_items:       "{{ searchpaths.stdout_lines }}"
+  become:           true
+  become_user:      root
+  when:             initdone.stat.exists == false
+    
+- name: set dhcp client hook to add searchpaths to resolv.conf
+  copy: 
+    content:        "#!/bin/sh"
+    dest:           "/etc/dhcp/dhclient-exit-hooks.d/resolv.conf.sh"
+    force:          true
+    owner:          root
+    group:          root
+    mode:           0700
+  become:           true
+  become_user:      root
+  when:             initdone.stat.exists == false
+
+- name: set up dhcp-client exit hook to restore resolv.conf on reboot
+  lineinfile:
+    path:           "/etc/dhcp/dhclient-exit-hooks.d/resolv.conf.sh"
+    line:           "echo \"{{ item }}\" >> /etc/resolv.conf"
+    state:          present
+    create:         true
+    owner:          root
+    group:          root
+    mode:           0700
+  with_items:       "{{ searchpaths.stdout_lines }}"
+  become:           true
+  become_user:      root
+  when:             initdone.stat.exists == false
+
+- name: issue#3 make sure connecting works before proceeding
+  shell:            /usr/bin/python "{{ opchome }}/{{ scriptdir }}/gethosts.py" "{{ inventory_file }}" zookeeper-addresses
+  register:         somehosts
+  when:             initdone.stat.exists == false and inventory_hostname in groups['zookeeper-addresses']
+  
+- name: try connecting for 5 minutes
+  command:          ssh -o StrictHostKeyChecking=no {{ item }} /usr/bin/ls "{{ opchome }}"
+  register:         canconnect
+  until:            canconnect.rc == 0
+  retries:          30
+  delay:            10
+  with_items:       "{{ somehosts.stdout }}"
+  when:             initdone.stat.exists == false and inventory_hostname in groups['zookeeper-addresses']
+#

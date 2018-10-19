@@ -18,19 +18,23 @@
 
 - name: include tasks
   include_tasks: roles/datainstances/tasks/storage-lvm.yml
-  when: fsmounted.rc != 0 and storage == "LVM-RAID-0"
+  when:          fsmounted.rc != 0 and storage == "LVM-RAID-0"
+  become:        true
+  become_user:   root
 
 - name: include tasks
   include_tasks: roles/datainstances/tasks/storage-mdraid.yml
-  when: fsmounted.rc != 0 and storage == "MD-RAID-10"
+  when:          fsmounted.rc != 0 and storage == "MD-RAID-10"
+  become:        true
+  become_user:   root
 
 - name : allow oracle to access
   file: 
-    path:  "{{ fsname }}"
+    path:        "{{ fsname }}"
     owner:       "oracle"
     group:       "oracle"
     mode:        0775
     state:       "directory"
-  become:      true
-  become_user: root
+  become:        true
+  become_user:   root
 

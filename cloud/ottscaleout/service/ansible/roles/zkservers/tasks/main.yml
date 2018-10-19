@@ -105,7 +105,6 @@
   become:       true
   become_user:  root
 
-# todo loop over subnets
 - name: open server firewall ports
   firewalld:
     permanent:  true
@@ -147,8 +146,8 @@
   become:       true
   become_user:  oracle
 
-- name: zk status
-  import_tasks: zkstatus.yml
+#- name: zk status
+#  import_tasks: zkstatus.yml
 
 
 

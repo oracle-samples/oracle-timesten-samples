@@ -20,7 +20,7 @@
   firewalld:
     permanent: true
     immediate: true
-    port:      "{{ ephemeral }}/tcp"
+    port:      "{{ chnlportlo }}-{{ chnlporthi }}/tcp"
     state:     enabled
     source:    "{{ cidr }}"
   become:      true

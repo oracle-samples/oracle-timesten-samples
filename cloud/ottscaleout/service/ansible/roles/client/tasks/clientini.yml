@@ -1,0 +1,25 @@
+---
+#
+# get client connect information from mgmt server
+#
+
+- import_tasks: roles/mgmtinstances/tasks/mgmt-path.yml
+
+- name: ttgridadmin gridclientexport
+  shell:        "{{ mgmt }} ttgridadmin gridclientexport {{ ttgriddir }}/client.odbc.ini"
+  args:
+    chdir:      "{{ ttgriddir }}"
+  become:       true
+  become_user:  oracle
+  run_once:     true
+
+- name: fetch client ini
+  fetch: 
+    src:        "{{ ttgriddir }}/client.odbc.ini"
+    dest:       "roles/client/tasks/"
+    flat:       true
+  become:       true
+  run_once:     true
+
+
+  

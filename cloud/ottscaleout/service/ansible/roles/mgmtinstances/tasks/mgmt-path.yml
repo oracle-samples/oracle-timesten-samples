@@ -22,9 +22,15 @@
     mgmt:           "{{ mgmtdir1.stat.path }}/bin/ttenv" 
   when:             mgmtdir1.stat.isdir is defined and mgmtdir1.stat.isdir
 
-- name: set paths to mgmt instance (1)
+- name: set paths to mgmt instance (2)
   set_fact:
     mgmtdir:        "{{ mgmtdir2.stat.path }}"
     mgmt:           "{{ mgmtdir2.stat.path }}/bin/ttenv" 
   when:             mgmtdir2.stat.isdir is defined and mgmtdir2.stat.isdir
+
+- name: fail when mgmt instances not found
+  fail:
+    msg:            "Error: mgmt instances not found at {{ ttinstancedir }}/{{ ttgridname }}_mgmt[2]"
+  when:             mgmt is not defined and inventory_hostname in groups['mgmt-addresses']
+
 

@@ -1,0 +1,12 @@
+---
+# install client instances
+#
+
+- import_tasks: clientini.yml
+  when:         inventory_hostname in groups['mgmt-addresses']
+
+- import_tasks: clients.yml
+  when:         inventory_hostname in groups['client-addresses']
+
+
+

@@ -11,44 +11,13 @@
 # Doesn't use more than 4 devices.
 # 
 
-- name: check if {{ fsname }} is mounted
-  shell:         df -hm "{{ fsname }}" > /dev/null 2>&1
-  register:      fsmounted
-  failed_when:   fsmounted.rc > 1
+- name: import tasks
+  include_tasks: roles/datainstances/tasks/storage-common.yml
 
-- name: fail when mounted already
-  fail:
-    msg: "Error: file system {{ fsname }} is already mounted."
-  when:  fsmounted.rc|int == 0
-
-- name: get nvme devices, no more than 4
-  shell:    lsblk | grep nvme | grep -v part | head -4 | cut -d' ' -f1
-  register: nrawdevs 
-
-- name: get block storage devices, no more than 4
-  shell:    lsblk | grep 'sd[b-z]' | grep -v part | head -4 | cut -d' ' -f1
-  register: brawdevs 
-
-- name: fail out if no devices
-  fail: 
-    msg: "Error: No NVMe nor block storage devices found."
-  when: nrawdevs.stdout|length == 0 and brawdevs.stdout|length == 0
-
-- name: set variables for nvme
-  set_fact: 
-    ndevices:    "{{ nrawdevs.stdout_lines|length }}"
-    blkdevsfx:   "p1"
-    mntopts:     "defaults,noatime,nofail"
-    devices:    "{{ nrawdevs.stdout_lines|regex_replace('nvme','/dev/nvme') }}"
-  when:          nrawdevs.stdout|length > 0
-
-- name: set variables for block storage
-  set_fact: 
-    ndevices:    "{{ brawdevs.stdout_lines|length }}"
-    blkdevsfx:   "1"
-    mntopts:     "defaults,_netdev,noatime,nofail"
-    devices:     "{{ brawdevs.stdout_lines|regex_replace('sd','/dev/sd') }}"
-  when:          brawdevs.stdout|length > 0
+- name:  lvm-raid-0 
+  yum:   
+    name:        lvm2
+    state:       present
 
 - name: set common variables
   set_fact:
@@ -56,107 +25,65 @@
     lvname:      "lv{{ fsname | regex_replace('/') }}"
     stripesz:    ""
 
-- name: debug
-  debug:
-    msg: "Found {{ ndevices }} devices: {{ devices }}"
+- name: set stripe size
+  set_fact:
+    stripesz:    "-I 128K -i {{ ndevices }}"
+  when:          ndevices|int > 1
 
-- name: configure lvm-raid-0 
-  block: 
-  - yum:   
-      name:    lvm2
-      state:   present
+- name: align and 0 
+  shell: |
+    dd if=/dev/zero of="{{ item }}" bs=512 count=2048 > /dev/null 2>&1
+    pvscan --cache
+  with_items:
+  - "{{ devices }}"
+  ignore_errors: true
 
-  - set_fact:
-      stripesz:    "-I 128K -i {{ ndevices }}"
-    when:          ndevices|int > 1
+- name: partition disk
+  parted:
+    device:     "{{ item }}"
+    number:     1
+    align:      optimal
+    label:      gpt
+    state:      present
+    unit:       GB
+    part_start: 2048s
+    part_end:   98%
+    part_type:  extended
+  with_items:
+  - "{{ devices }}"
 
-  - shell: |
-      dd if=/dev/zero of="{{ item }}" bs=512 count=2048 > /dev/null 2>&1
-      pvscan --cache
-    with_items:
-    - "{{ devices }}"
-    #when force_storage == true
-    ignore_errors: true
+- name: for nvme just use device
+  set_fact:
+    sdevices: "{{ devices }}"
+  when:       nvmedevs.stdout|length > 0
 
-  - parted:
-      device:     "{{ item }}"
-      number:     1
-      align:      optimal
-      label:      gpt
-      state:      present
-      unit:       GB
-      part_start: 2048s
-      part_end:   98%
-      part_type:  extended
-    with_items:
-    - "{{ devices }}"
+- name: set up volume group
+  lvg: 
+    vg:         "{{ vgname }}"
+    pvs:        "{{ sdevices }}"
+    pesize:     32
+    state:      "present"
 
-  - lvg: 
-      vg:         "{{ vgname }}"
-      pvs:        "{{ devices }}"
-      pesize:     32
-      state:      "present"
+- name: set up logical volume
+  lvol:
+    lv:         "{{ lvname }}"
+    vg:         "{{ vgname }}"
+    state:      "present"
+    active:     "yes"
+    size:       "+100%FREE"
+    force:      "yes"
 
-  - lvol:
-      lv:         "{{ lvname }}"
-      vg:         "{{ vgname }}"
-      state:      "present"
-      active:     "yes"
-      size:       "+100%FREE"
-      force:      "yes"
-      
-  - filesystem:
-      dev:     "/dev/{{ vgname }}/{{ lvname }}"
-      fstype:  "{{ fstype }}"
+- name: create filesystem      
+  filesystem:
+    dev:     "/dev/{{ vgname }}/{{ lvname }}"
+    fstype:  "{{ fstype }}"
 
-  - mount: 
-      src:     "/dev/{{ vgname }}/{{ lvname }}"
-      path:    "{{ fsname }}"
-      state:   mounted
-      opts:    "{{ mntopts }}"
-      passno:  2
-      fstype:  ext4
-               
-  when:        storage == "LVM-RAID-0"
-  become:      true
-  become_user: root
-
-#- name: install mdadm
-#  yum:   
-#    name:   mdadm
-#    state:  present
-#  when:     ndevices >= 4
-#  become:      true
-#  become_user: root
-#
-#  set_fact:
-#    blkdev:      "/dev/{{ vgname }}/{{ lvname }}"
-#  when:          storage == "MD-RAID-0" or storage == "MD-RAID-1"
-#- name: stripe with few devices
-#  shell: |
-#    mdadm --create "{{ blkdev }} --raid-devices={{ ndevices }} --level=RAID0 {{ devpart }}"
-#    mdadm --detail --scan | sudo tee -a /etc/mdadm.conf >> /dev/null
-#  args:
-#    creates: "{{ blkdev }}"
-#  when:  (ndevices > 1 and ndevices < 4)
-#
-#- name: stripe and mirror with more devices
-#  shell: |
-#    mdadm --create "{{ blkdev }} --raid-devices={{ ndevices }} --level=RAID10 {{ devpart }}"
-#    mdadm --detail --scan | tee -a /etc/mdadm.conf >> /dev/null
-#  args: 
-#    creates: "{{ blkdev }}"
-#  when:  ndevices >= 4
-#  become:      true
-#  become_user: root
-#
-- name : allow oracle to access
-  file: 
-    path:  "{{ fsname }}"
-    owner:       "oracle"
-    group:       "oracle"
-    mode:        0775
-    state:       "directory"
-  become:      true
-  become_user: root
-
+- name: mount filesystem
+  mount: 
+    src:     "/dev/{{ vgname }}/{{ lvname }}"
+    path:    "{{ fsname }}"
+    state:   mounted
+    opts:    "{{ mntopts }}"
+    passno:  2
+    fstype:  ext4
+             

@@ -11,4 +11,11 @@ LogBufParallelism=8
 PermSize={{ permsize }}
 TempSize={{ tempsize }}
 Connections=2000
-Durability={{ durability }}
+{% if durability == "1" %}
+Durability=1
+{% elif ksafety == "1" %}
+Durability=1
+{% else %}
+Durability=0
+{% endif %}
+

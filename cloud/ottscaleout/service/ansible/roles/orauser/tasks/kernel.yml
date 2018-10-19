@@ -40,6 +40,15 @@
 #    state:       present
 #    reload:      yes
 #
+- name: create directory to avoid warning
+  file:
+    state:     directory
+    path:      "/root/.ansible/tmp"
+    owner:     root
+    group:     root
+    mode:      0700
+    recurse:   true
+
 - name: shorter timeout for high availability
   sysctl:
     name:        net.ipv4.tcp_retries2
@@ -85,5 +94,9 @@
     block: |
         oracle     soft    nproc     65536
 
+- name: remove directory created to avoid warning
+  file:
+    state:     absent
+    path:      "/root/.ansible"
 
 # place holder for ntp

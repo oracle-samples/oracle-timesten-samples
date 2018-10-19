@@ -6,6 +6,7 @@
 # Allocates private subnets and compute instances
 # Bastion hosts are attached to public subnet
 # All other hosts are attached to private subnet, provisioned here
+# Block volumes, if requested, are allocated here
 #
 # zkInstanceCount == {0,3};  0 collocates; if 3 on its own vms
 # mgInstanceCount == {0, 2}; 0 collocates; if 2 on its own vms
@@ -24,24 +25,32 @@ resource "oci_core_security_list" "PrivateSecurityList" {
     ingress_security_rules = [
     {
         tcp_options {
-            "max" = 6625
-            "min" = 6624
+            "max" = "${var.timesten["mgmtdaemonport"]}"
+            "min" = "${var.timesten["mgmtdaemonport"]}"
         }
         protocol = "6"
         source = "${var.network["cidr"]}"
     },
     {
         tcp_options {
-            "max" = 3754
-            "min" = 3754
+            "max" = "${var.timesten["mgmtcsport"] }"
+            "min" = "${var.timesten["mgmtcsport"] }"
         }
         protocol = "6"
         source = "${var.network["cidr"]}"
     },
     {
         tcp_options {
-            "max" = 61000
-            "min" = 32768
+            "max" = "${var.timesten["mgmtreplport"]}"
+            "min" = "${var.timesten["mgmtreplport"]}"
+        }
+        protocol = "6"
+        source = "${var.network["cidr"]}"
+    },
+    {
+        tcp_options {
+            "max" = "${var.timesten["chnlporthi"]}"
+            "min" = "${var.timesten["chnlportlo"]}"
         }
         protocol = "6"
         source = "${var.network["cidr"]}"
@@ -96,119 +105,78 @@ resource "oci_core_security_list" "PrivateSecurityList" {
     }]
 }
 
-# Created NAT'd routing through bastion host
-# All subnets route through bastion host
-# To get NAT H/A configuration, configure more than one bastion host
-
-# Gets a list of VNIC attachments on the bastion (NAT) instance
-data "oci_core_vnic_attachments" "bsInstanceVnicAD1" {
-    compartment_id = "${var.compartment_ocid}"
-    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
-    instance_id = "${oci_core_instance.bs_instance_AD1.id}"
-}
-
-# Get private IP address
-resource "oci_core_private_ip" "bsInstancePrivateIPAD1" {
-    vnic_id = "${lookup(data.oci_core_vnic_attachments.bsInstanceVnicAD1.vnic_attachments[0],"vnic_id")}"
-    display_name = "bsInstancePrivateIPAD1"
-}
-
-
-# Route Tables
-resource "oci_core_route_table" "PrivateRouteTableAD1" {
+# Private Route Table
+# Create routing for private subnets through NAT gateway
+resource "oci_core_route_table" "PrivateRouteTable" {
     compartment_id = "${var.compartment_ocid}"
     vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
-    display_name = "PrivateRouteTableAD1"
+    display_name = "PrivateRouteTable"
     route_rules {
         #cidr_block = "0.0.0.0/0"
         destination = "0.0.0.0/0"
 	destination_type = "CIDR_BLOCK"
-	network_entity_id = "${oci_core_private_ip.bsInstancePrivateIPAD1.id}"
+	network_entity_id = "${oci_core_nat_gateway.nat_gateway.id}"
     }
 }
 
 # Subnets, one in each AD
-# All NAT through Bastion host in AD1
+# Route through NAT gateway
 resource "oci_core_subnet" "PrivateSubnet" {
     count = 3
     availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[count.index],"name")}"
-    cidr_block = "${var.network["cidr_prefix"]}.${var.network["private_octet"] + (count.index - 1)}.0/${var.network["subnet_mask"]}"
+    cidr_block = "${cidrsubnet(var.network["cidr"],var.network["subnets"],(count.index + 3))}"
     display_name = "PrivateSubnetAD${count.index + 1}"
     compartment_id = "${var.compartment_ocid}"
     vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
-    route_table_id = "${oci_core_route_table.PrivateRouteTableAD1.id}"
+    route_table_id = "${oci_core_route_table.PrivateRouteTable.id}"
     security_list_ids = ["${oci_core_security_list.PrivateSecurityList.id}"]
     dhcp_options_id = "${oci_core_virtual_network.CoreVCN.default_dhcp_options_id}"
     dns_label="privsnad${count.index + 1}"
     prohibit_public_ip_on_vnic = "true"
 }
 
-# If more than one bastion host, then create another route table.
-# Check NAT/Bastion Whitepaper
-# AD2
-data "oci_core_vnic_attachments" "bsInstanceVnicAD2" {
-    count = "${(var.bsInstanceCount > 1) ? 1 : 0}"
-    compartment_id = "${var.compartment_ocid}"
-    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[1],"name")}"
-    instance_id = "${oci_core_instance.bs_instance_AD2.id}"
-}
-# AD2
-resource "oci_core_private_ip" "bsInstancePrivateIPAD2" {
-    count = "${(var.bsInstanceCount > 1) ? 1 : 0}"
-    vnic_id = "${lookup(data.oci_core_vnic_attachments.bsInstanceVnicAD2.vnic_attachments[0],"vnic_id")}"
-    display_name = "bsInstancePrivateIPAD2"
-}
-# AD2
-resource "oci_core_route_table" "PrivateRouteTableAD2" {
-    count = "${(var.bsInstanceCount > 1) ? 1 : 0}"
-    compartment_id = "${var.compartment_ocid}"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
-    display_name = "PrivateRouteTableAD2"
-    route_rules {
-        #cidr_block = "0.0.0.0/0"
-        destination = "0.0.0.0/0"
-	destination_type = "CIDR_BLOCK"
-	network_entity_id = "${oci_core_private_ip.bsInstancePrivateIPAD2.id}"
-    }
-}
-# AD3
-data "oci_core_vnic_attachments" "bsInstanceVnicAD3" {
-    count = "${(var.bsInstanceCount > 2) ? 1 : 0}"
-    compartment_id = "${var.compartment_ocid}"
-    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[2],"name")}"
-    instance_id = "${oci_core_instance.bs_instance_AD3.id}"
-}
-# AD3
-resource "oci_core_private_ip" "bsInstancePrivateIPAD3" {
-    count = "${(var.bsInstanceCount > 1) ? 1 : 0}"
-    vnic_id = "${lookup(data.oci_core_vnic_attachments.bsInstanceVnicAD3.vnic_attachments[2],"vnic_id")}"
-    display_name = "bsInstancePrivateIPAD3"
-}
-# AD3
-resource "oci_core_route_table" "PrivateRouteTableAD3" {
-    count = "${(var.bsInstanceCount > 1) ? 1 : 0}"
-    compartment_id = "${var.compartment_ocid}"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
-    display_name = "PrivateRouteTableAD3"
-    route_rules {
-        #cidr_block = "0.0.0.0/0"
-        destination = "0.0.0.0/0"
-	destination_type = "CIDR_BLOCK"
-	network_entity_id = "${oci_core_private_ip.bsInstancePrivateIPAD3.id}"
-    }
-}
-
-
-variable  "ksafety" { default = "2" }
-
 locals {
   zkcount1 = "${(var.zkInstanceCount == 0 ||
                  var.zkInstanceCount == 3) ?
                  var.zkInstanceCount : 0}"
-  firstAD  = "${(var.initial_AD > 0 && 
-                 var.initial_AD < 4) ? 
-		 var.initial_AD - 1 : 0}"
+  firstAD  = "${(var.initialAD > 0 && 
+                 var.initialAD < 4) ? 
+		 var.initialAD - 1 : 0}"
+  ksafeval = "${(var.ksafety >= 1 && var.ksafety <= 2) ? var.ksafety : 2}"		 
+  numADs   = "${(var.singleAD == "true") ? 1 : local.ksafeval}"
+
+  # data instances
+  dicount1 = "${(var.diInstanceCount * local.ksafeval)}"
+  dicount2 = "${(local.dicount1 + var.mgInstanceCount + var.zkInstanceCount >= 3) ? local.dicount1 : 4 }"
+
+  # block volumes
+  standard = "${substr(var.diInstanceShape,3,8)}"
+  bvcount1 = "${(local.standard == "Standard") ? 1 : 0}"
+  bvcount2 = "${(var.diBlockVolumeSizeGB >= 50 && 
+                 var.diBlockVolumeSizeGB <= 32768) ? 
+                local.dicount2 : 0}"
+  # set to indicate error condition if no block volume and Standard shape
+  bvcheck1 = "${(local.bvcount2 == 0 && local.bvcount1 == 1) ? 1 : 0}"
+  bvcheck2 = "${(local.bvcount2 == 0 && var.system["storage"] == "MD-RAID-10") ? 1 : 0}"
+  dicheck1 = "${(var.diInstanceShape == "VM.Standard1.1") ? 1 : 0}"
 }
+
+# workaround for error checking
+# prevent use of standard shape without block volume
+resource "null_resource" "bv_check_1" {
+  count = "${local.bvcheck1}"
+  "\nERROR: No block volumes specified with Standard shape" = true
+}
+resource "null_resource" "bv_check_2" {
+  count = "${local.bvcheck2}"
+  "\nERROR: MD-RAID-10 storage not permitted with block volume" = true
+}
+# prevent use of standard shape without block volume
+resource "null_resource" "di_shape_check_1" {
+  count = "${local.dicheck1}"
+  "\nERROR: VM.Standard1.1 shape has insufficient resources for use as data instance.\nPlease specify different diInstanceShape" = true
+}
+
 
 resource "oci_core_instance" "zk_instance" {
   count               = "${local.zkcount1}"
@@ -239,13 +207,13 @@ resource "oci_core_instance" "mg_instance" {
   count               = "${(var.mgInstanceCount == 0 || 
                             var.mgInstanceCount == 2) ?
 			    var.mgInstanceCount : 0}"
-  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[((count.index % var.ksafety) + local.firstAD) % 3],"name")}"
+  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[((count.index % local.numADs) + local.firstAD) % 3],"name")}"
   compartment_id      = "${var.compartment_ocid}"
   display_name        = "${format("%s-mg-%03d", var.service_name, count.index + 1)}"
   hostname_label      = "${format("%s-mg-%03d", var.service_name, count.index + 1)}"
   shape               = "${var.mgInstanceShape}"
   create_vnic_details {
-    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, ((count.index % var.ksafety) + local.firstAD) % 3)}"
+    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
     assign_public_ip       = false
   }
   source_details {
@@ -261,20 +229,16 @@ resource "oci_core_instance" "mg_instance" {
   }
 }
 
-locals {
-  dicount1 = "${(var.diInstanceCount * var.ksafety)}"
-  dicount2 = "${(local.dicount1 + var.mgInstanceCount + var.zkInstanceCount >= 3) ? local.dicount1 : 4 }"
-}
 
 resource "oci_core_instance" "di_instance" {
   count               = "${local.dicount2}"
-  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[((count.index % var.ksafety) + local.firstAD) % 3],"name")}"
+  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[((count.index % local.numADs) + local.firstAD) % 3],"name")}"
   compartment_id      = "${var.compartment_ocid}"
   display_name        = "${format("%s-di-%03d", var.service_name, count.index + 1)}"
   hostname_label      = "${format("%s-di-%03d", var.service_name, count.index + 1)}"
   shape               = "${var.diInstanceShape}"
   create_vnic_details {
-    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, ((count.index % var.ksafety) + local.firstAD) % 3)}"
+    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
     assign_public_ip       = false
   }
   source_details {
@@ -288,5 +252,55 @@ resource "oci_core_instance" "di_instance" {
   timeouts {
     create = "10m"
   }
+}
+
+resource "oci_core_instance" "cl_instance" {
+  count               = "${var.clInstanceCount}"
+  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[((count.index % local.numADs) + local.firstAD) % 3],"name")}"
+  compartment_id      = "${var.compartment_ocid}"
+  display_name        = "${format("%s-cl-%03d", var.service_name, count.index + 1)}"
+  hostname_label      = "${format("%s-cl-%03d", var.service_name, count.index + 1)}"
+  shape               = "${var.clInstanceShape}"
+  create_vnic_details {
+    subnet_id              = "${element(oci_core_subnet.PrivateSubnet.*.id, ((count.index % local.numADs) + local.firstAD) % 3)}"
+    assign_public_ip       = false
+  }
+  source_details {
+    source_type = "image"
+    source_id = "${var.InstanceImageOCID[var.region]}"
+  }
+  metadata {
+    ssh_authorized_keys = "${var.ssh_public_key}"
+    user_data           = "${base64encode(file("service/scripts/user_data.tpl"))}"
+  }
+  timeouts {
+    create = "10m"
+  }
+}
+
+
+# Optional block volume attachments
+# May only used with Standard shape
+
+resource "oci_core_volume" "di_volume" {
+  count = "${local.bvcount2}"
+  #Required
+  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[((count.index % local.numADs) + local.firstAD) % 3],"name")}"
+  compartment_id = "${var.compartment_ocid}"
+
+  #Optional
+  display_name = "${format("%s-bv-%03d", var.service_name, count.index + 1)}"
+  size_in_gbs = "${var.diBlockVolumeSizeGB}"
+}
+
+resource "oci_core_volume_attachment" "di_volume_attachments" {
+  count = "${local.bvcount2 }"
+  #Required
+  instance_id = "${oci_core_instance.di_instance.*.id[count.index]}"
+  attachment_type = "iscsi"
+  volume_id = "${oci_core_volume.di_volume.*.id[count.index]}"
+
+  #Optional
+  display_name = "${format("%s-bvat-%03d", var.service_name, count.index + 1)}"
 }
 

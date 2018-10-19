@@ -43,61 +43,14 @@
     mode:           0400
     force:          no
 
-- name: check if service directory already there
-  stat:             
-    path:           "{{ opchome }}/service"
-  register:         svcd
-
-- name: copy service directory
-  copy:
+- name: synchronize service directory
+  synchronize: 
     src:            "{{ servicedir }}"
     dest:           "{{ opchome }}"
-    owner:          opc
-    group:          opc
-    directory_mode: u=rwx,g=rx
-    force:          no
-  when:             svcd.stat.isdir is undefined
+  when:             inventory_hostname in groups['srvrhosts']
 
-- name: get dns search paths
-  shell:            "cat {{ opchome }}/{{ scriptdir }}/resolv.conf"
-  register:         searchpaths
-  when:             initdone.stat.exists == false
-
-- name: add search paths to resolv.conf
-  lineinfile:
-    path:           "/etc/resolv.conf"
-    line:           "{{ item }}"
-    state:          present
-  with_items:       "{{ searchpaths.stdout_lines }}"
-  become:           true
-  become_user:      root
-  when:             initdone.stat.exists == false
-    
-- name: set dhcp client hook to add searchpaths to resolv.conf
-  copy: 
-    content:        "#!/bin/sh"
-    dest:           "/etc/dhcp/dhclient-exit-hooks.d/resolv.conf.sh"
-    force:          true
-    owner:          root
-    group:          root
-    mode:           0700
-  become:           true
-  become_user:      root
-  when:             initdone.stat.exists == false
-
-- name: set up dhcp-client exit hook to restore resolv.conf on reboot
-  lineinfile:
-    path:           "/etc/dhcp/dhclient-exit-hooks.d/resolv.conf.sh"
-    line:           "echo \"{{ item }}\" >> /etc/resolv.conf"
-    state:          present
-    create:         true
-    owner:          root
-    group:          root
-    mode:           0700
-  with_items:       "{{ searchpaths.stdout_lines }}"
-  become:           true
-  become_user:      root
-  when:             initdone.stat.exists == false
+- name: set up dns
+  import_tasks:     "roles/common/tasks/dns.yml"
 
 # creates "{{ initfile }}" used to decide if already initialized
 - name: create a cron file to check for security updates

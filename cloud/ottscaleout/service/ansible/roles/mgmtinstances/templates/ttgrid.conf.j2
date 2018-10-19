@@ -127,7 +127,7 @@ instance_location = {{ ttinstancedir }}
 #]
 data_instances = [
 {% for host in groups['db-addresses'] %}
-{ "externalAddress":"{{ host }}","internalAddress":" {{ host|regex_replace('.pub','-i.priv') }}","dataspacegroup":"{{ loop.cycle('1','2') }}","daemonport":"{{ dsdaemonport }}", "csport":"{{ dscsport }}" }
+{ "externalAddress":"{{ host }}","internalAddress":" {{ host|regex_replace('.pub','-i.priv') }}","dataspacegroup":"{{ loop.cycle('1',ksafety) }}","daemonport":"{{ dsdaemonport }}", "csport":"{{ dscsport }}" }
 {% if not loop.last %}
 ,
 {% endif %}

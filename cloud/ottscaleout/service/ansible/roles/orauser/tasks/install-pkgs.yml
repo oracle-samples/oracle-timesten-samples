@@ -8,7 +8,7 @@
 - name: see if jdk already present
   find:
     paths:     "{{ javabase }}"
-    patterns:  'jdk1.8*'
+    patterns:  'j(dk|re)1.8*'
   register:    hasjdk
 
 - name: copy java

@@ -14,22 +14,26 @@ locals {
   ansiblehosts = "${local.ansibledir}/hosts"
   # dns search paths /etc/resolv.conf
   privsubnets  = "${replace(join(" ",oci_core_subnet.PrivateSubnet.*.subnet_domain_name), ",", " ")}"
-  publsubnets  = "${oci_core_subnet.PublicSubnet_AD1.subnet_domain_name} ${oci_core_subnet.PublicSubnet_AD2.subnet_domain_name} ${oci_core_subnet.PublicSubnet_AD3.subnet_domain_name}" 
+  publsubnets  = "${replace(join(" ",oci_core_subnet.public_subnet.*.subnet_domain_name), ",", " ")}"
 }
 
 # Copy ssh key to bastion host
 # First bastion becomes ansible controller
 resource "null_resource" "copy-to-bastion" {
+
+  count = "${var.bsInstanceCount}"
+
   connection {
     type        = "ssh"
     user        = "opc"
     private_key = "${var.ssh_private_key}"
-    host        = "${oci_core_instance.bs_instance_AD1.public_ip}"
+    host        = "${element(oci_core_instance.bs_instance.*.public_ip, count.index + 1 )}"
     timeout     = "10m"
   }
 
   triggers = {
     di_instance_ids = "${join(",", oci_core_instance.di_instance.*.id)}"
+    cl_instance_ids = "${join(",", oci_core_instance.cl_instance.*.id)}"
   }
 
   # copy opc ssh key
@@ -73,16 +77,16 @@ resource "null_resource" "write-hosts-file" {
 
   triggers = {
     di_instance_ids = "${join(",", oci_core_instance.di_instance.*.id)}"
+    cl_instance_ids = "${join(",", oci_core_instance.cl_instance.*.id)}"
   }
 
   provisioner "local-exec" {
-    command = "echo '${format("[bastion-hosts]\n%s\n%s%s[db-addresses]\n%s[mgmt-addresses]\n%s[zookeeper-addresses]\n%s",
-           oci_core_instance.bs_instance_AD1.hostname_label,
-           join("",formatlist("%s\n",oci_core_instance.bs_instance_AD2.*.hostname_label)),
-           join("",formatlist("%s\n",oci_core_instance.bs_instance_AD3.*.hostname_label)),
+    command = "echo '${format("[bastion-hosts]\n%s\n[db-addresses]\n%s[mgmt-addresses]\n%s[zookeeper-addresses]\n%s[client-addresses]\n%s",
+           join("",formatlist("%s\n",oci_core_instance.bs_instance.*.hostname_label)),
            join("",formatlist("%s\n",oci_core_instance.di_instance.*.hostname_label)),
            join("",formatlist("%s\n",oci_core_instance.mg_instance.*.hostname_label)),
-           join("",formatlist("%s\n",oci_core_instance.zk_instance.*.hostname_label)))}' > ${path.module}/${local.ansiblehosts}"
+           join("",formatlist("%s\n",oci_core_instance.zk_instance.*.hostname_label)),
+           join("",formatlist("%s\n",oci_core_instance.cl_instance.*.hostname_label)))}' > ${path.module}/${local.ansiblehosts}"
   }
 
   provisioner "local-exec" {
@@ -97,14 +101,12 @@ resource "null_resource" "install-ansible" {
     type        = "ssh"
     user        = "opc"
     private_key = "${var.ssh_private_key}"
-    host       = "${oci_core_instance.bs_instance_AD1.public_ip}"
+    host       = "${element(oci_core_instance.bs_instance.*.public_ip, count.index + 1 )}"
     timeout     = "30m"
   }
 
   triggers = {
-    bs_instance_id1 = "${oci_core_instance.bs_instance_AD1.id}"
-    bs_instance_id2 = "${join(",", oci_core_instance.bs_instance_AD2.*.id)}"
-    bs_instance_id3 = "${join(",", oci_core_instance.bs_instance_AD3.*.id)}"
+    bs_instance_id1 = "${join(",", oci_core_instance.bs_instance.*.id)}"
   }
 
   provisioner "remote-exec" {
@@ -130,9 +132,7 @@ locals {
 resource "null_resource" "configvars" {
    
   triggers = {
-    bs_instance_id1 = "${oci_core_instance.bs_instance_AD1.id}"
-    bs_instance_id2 = "${join(",", oci_core_instance.bs_instance_AD2.*.id)}"
-    bs_instance_id3 = "${join(",", oci_core_instance.bs_instance_AD3.*.id)}"
+    bs_instance_id = "${join(",", oci_core_instance.bs_instance.*.id)}"
   }
 
   provisioner "local-exec" {
@@ -145,6 +145,12 @@ resource "null_resource" "configvars" {
     command = "${var.opc["scriptdir"]}/crvarsfile.py variables.tf >> ${local.cfgfile}"
   }
   provisioner "local-exec" {
-    command = "echo 'dbname              : ${local.qt}${var.service_name}${local.qt}' >> ${local.cfgfile}" 
+    command = "echo 'dbname              : ${local.qt}${var.service_name}${local.qt}' >> ${local.cfgfile}"
+  }
+  provisioner "local-exec" {
+    command = "echo 'ksafety             : ${local.qt}${var.ksafety}${local.qt}' >> ${local.cfgfile}" 
+  }
+  provisioner "local-exec" {
+    command = "echo 'singleAD            : ${local.qt}${var.singleAD}${local.qt}' >> ${local.cfgfile}" 
   }
 }

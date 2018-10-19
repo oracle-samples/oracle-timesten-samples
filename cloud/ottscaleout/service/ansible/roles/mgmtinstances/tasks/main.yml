@@ -21,27 +21,3 @@
 - import_tasks: roles/mgmtinstances/tasks/db-service.yml
   when:         inventory_hostname in groups['db-addresses']
 
-- name: any grid connection info?
-  stat:
-    path:       "{{ ttgriddir }}/service-info.txt"
-  register:     serviceinfo
-  become:       true
-  become_user:  oracle
-  when:         inventory_hostname in groups['mgmt-addresses']
-
-- name: get service info if present
-  shell:        cat "./service-info.txt"
-  args:
-    chdir:      "{{ ttgriddir }}"
-  register:     service_info
-  become:       true
-  become_user:  oracle
-  run_once:     true
-  when:         inventory_hostname in groups['mgmt-addresses'] and serviceinfo.stat.readable
-
-- name: display service info
-  debug:
-    var:        service_info.stdout_lines
-  when:         service_info is defined
-  run_once:     true
-

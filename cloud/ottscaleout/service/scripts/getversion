@@ -7,7 +7,7 @@ if [ -z "${deffile}" ]; then
 fi
 
 ottpkg=$(ls -t ./service/packages/timesten18*.server.linux8664.* | head -1)
-jdkpkg=$(ls -t ./service/packages/jdk-8*-linux-x64.tar.gz | head -1)
+jdkpkg=$(ls -t ./service/packages/j[rd][ek]-8*-linux-x64.tar.gz | head -1)
 
 if [[ ! -r ${ottpkg} ]]; then
   echo "$0: can't find timesten distribution, ${ottpkg}"
