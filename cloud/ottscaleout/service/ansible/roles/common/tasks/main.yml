@@ -10,11 +10,8 @@
 
 - name: ensure security notification package installed; install nc for trouble shooting
   yum:
-    name:        "{{ item }}"
+    name:        ['yum-plugin-security','nc']
     state:       latest
-  with_items:    
-    - yum-plugin-security
-    - nc
   become:        true
   become_user:   root
 

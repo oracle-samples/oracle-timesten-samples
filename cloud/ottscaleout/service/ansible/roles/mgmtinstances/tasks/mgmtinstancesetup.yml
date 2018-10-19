@@ -8,14 +8,10 @@
 #
 - name: install handy-dandy utils
   yum: 
-    name:      "{{ item }}"
+    name:      ['nc','numactl','dstat']
     state:     latest
   become:      true
   become_user: root
-  with_items:
-    - nc
-    - numactl
-    - dstat
 
 - name: open mgmt daemon, c/s, replication firewall ports
   firewalld:

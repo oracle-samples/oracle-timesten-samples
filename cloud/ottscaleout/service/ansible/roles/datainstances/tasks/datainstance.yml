@@ -8,13 +8,10 @@
 #
 - name: install numactl dstat utils
   yum: 
-    name:      "{{ item }}"
+    name:      ['numactl', 'dstat']
     state:     latest
   become:      true
   become_user: root
-  with_items:
-    - numactl
-    - dstat
 
 - name: open gridcomm firewall ports
   firewalld:
