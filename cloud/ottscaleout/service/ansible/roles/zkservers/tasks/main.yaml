@@ -1,0 +1,130 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+---
+
+- name: setup variables 
+  import_tasks: roles/zkservers/tasks/zksetup.yaml
+
+- name: create dest directory
+  file:
+    state:      directory
+    path:       "{{ oraclehome }}/{{ zkinstalldir }}"
+    owner:      oracle
+    group:      oracle
+    mode:       0770
+  become:       true
+  become_user:  oracle
+
+- name: install zookeeper
+  unarchive: 
+    remote_src: true
+    src:        "{{ ttinstalldir }}/3rdparty/{{ zkdirname.stdout }}.tar.gz"
+    dest:       "{{ oraclehome }}/{{ zkinstalldir }}"
+    owner:      oracle
+    group:      oracle
+    #creates:    "{{ zkinstalldir }}/{{ zkinstalldir }}"
+  become:       true
+  become_user:  oracle
+
+- name: create data directory
+  file:
+    state:      directory
+    path:       "{{ zkdatadir }}"
+    owner:      oracle
+    group:      oracle
+    mode:       0770
+  become:       true
+  become_user:  oracle
+
+- name: create zk config file
+  template: 
+    src:        zoo.cfg.j2
+    dest:       "{{ zkconfdir }}/zoo.cfg"
+    owner:      oracle
+    group:      oracle
+    mode:       0660
+  become:       true
+  become_user:  oracle
+
+- name: create myid config file
+  template:
+    src:        myid.j2
+    dest:       "{{ zkdatadir }}/myid"
+    owner:      oracle
+    group:      oracle
+    mode:       0660
+  become:       true
+  become_user:  oracle
+
+- name: create zk client config file
+  template:
+    src:        zoo_client.conf.j2
+    dest:       "{{ zkdatadir }}/zoo_client.conf"
+    owner:      oracle
+    group:      oracle
+    mode:       0660
+  become:       true
+  become_user:  oracle
+
+- name: fetch java version
+  shell:        tar -tf "{{ packagedir }}/{{ jdk }}" | head -1
+  args:
+    warn:       false
+  register:     javaver
+  become:       true
+  when:         not openjdk
+
+- name: set java env
+  template:
+    src:        roles/orauser/templates/javaenv.j2
+    dest:       "{{ zkconfdir }}/java.env"
+    owner:      oracle
+    group:      oracle
+    mode:       0750
+  become:       true
+  become_user:  oracle
+
+- name: set up log4j logging
+  template:
+    src:        zk.log4j.properties.j2
+    dest:       "{{ zkconfdir }}/log4j.properties"
+    owner:      oracle
+    group:      oracle
+    mode:       0660
+  become:       true
+  become_user:  oracle
+
+- name: open client firewall ports
+  firewalld:
+    permanent:  true
+    immediate:  true
+    port:       "{{ zkclientport_a }}/tcp"
+    state:      enabled
+    source:     "{{ cidr }}"
+  become:       true
+  become_user:  root
+
+- name: open server firewall ports
+  firewalld:
+    permanent:  true
+    immediate:  true
+    port:       "{{ zkserverportrange_a }}/tcp"
+    state:      enabled
+    source:     "{{ cidr }}"
+  become:       true
+  become_user:  root
+
+- name: run as a service
+  import_tasks: roles/zkservers/tasks/zkservice.yaml
+
+- name: print zkhome path
+  debug:
+    msg: "Zookeeper is running on {{ inventory_hostname }}:{{ zkclientport_a }}; home directory: {{ zkhome }}"
+
+#- name: zk status
+#  import_tasks: zkstatus.yaml
+
+
+

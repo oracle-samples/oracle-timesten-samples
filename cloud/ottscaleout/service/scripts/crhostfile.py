@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -68,7 +68,6 @@ def getFile(outputFile, ksafety):
     sys.exit(1)
   #print mginstances, len(mginstances)
 
-  needzkclients = 0
   profile = 'zookeeper-addresses'
   if len(zkinstances) == 0 :
     if len(mginstances) == 2:
@@ -81,10 +80,9 @@ def getFile(outputFile, ksafety):
       config.set(profile, dbinstances[2], None)
   elif len(zkinstances) == 1 :
     config.set(profile, dbinstances[0], None)
-    needzkclients = 1
+    config.set(profile, dbinstances[1], None)
   elif len(zkinstances) == 2 :
     config.set(profile, dbinstances[0], None)
-    needzkclients = 2
 
  
   profile = 'mgmt-addresses'
@@ -94,7 +92,6 @@ def getFile(outputFile, ksafety):
       config.set(profile, dbinstances[1], None)
     else:
       config.set(profile, zkinstances[0], None)
-      needzkclients = 1
 
   # install clients on mgmt instances, zkservers if present
   profile = 'client-addresses'
@@ -106,8 +103,6 @@ def getFile(outputFile, ksafety):
     config.set(profile, zkinstances[0], None)
     config.set(profile, zkinstances[1], None)
     config.set(profile, zkinstances[2], None)
-  for c in range(needzkclients):
-    config.set(profile, zkinstances[c], None)
 
   profile = 'srvrhosts:children'
   config.add_section(profile)

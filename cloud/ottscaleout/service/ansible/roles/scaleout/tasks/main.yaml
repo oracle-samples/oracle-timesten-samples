@@ -1,0 +1,48 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# run on a mgmtinstance
+# use dbstatus --dataspacegroup
+# util program finds matching host/dataspacegroup
+# generate necessary commands
+# run script
+#
+---
+
+- name: pwdlessssh
+  import_tasks:     roles/orauser/tasks/ssh.yaml
+  become:           true
+  become_user:      oracle
+
+- name: find path to mgmt instance
+  import_tasks:     roles/mgmtinstances/tasks/mgmt-path.yaml
+
+- name: scale out db to more instances
+  import_tasks:     scaleout.yaml
+  when:             inventory_hostname in groups['mgmt-addresses']
+  run_once:         true
+
+- name: turn on db-service
+  import_tasks:     roles/mgmtinstances/tasks/db-service.yaml
+  when:             inventory_hostname in groups['db-addresses']
+
+- name: display results
+  shell:            "cat ./ttgridscaleout.out"
+  args:
+    chdir:          "{{ ttgriddir }}"
+  register:         scaleout
+  become:           true
+  become_user:      oracle
+  run_once:         true
+  when:             inventory_hostname in groups['mgmt-addresses']
+
+- debug:
+    var:            scaleout.stdout_lines
+  run_once:         true
+  when:             inventory_hostname in groups['mgmt-addresses']
+
+
+
+

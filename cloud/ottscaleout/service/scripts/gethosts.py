@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -37,7 +37,7 @@ if __name__ == '__main__':
   serverList=[]
   fhosts=sys.argv[1]
   for arg in sys.argv[2:]:
-    serverList = serverList + getInstances(fhosts,arg) 
+    serverList = list(set(serverList + getInstances(fhosts,arg)))
   print serverList
 
   

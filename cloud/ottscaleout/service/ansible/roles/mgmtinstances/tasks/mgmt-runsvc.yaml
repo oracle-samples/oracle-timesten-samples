@@ -1,0 +1,35 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Be aware of what runs where
+# Assumed to be run by root user
+# 
+---
+
+- name: disable service before start
+  systemd:
+    name:           "{{ dbname }}-{{ item }}"
+    enabled:        no
+  with_items:       ['mgmt.service', 'mgmt.timer']
+  become:           true
+  become_user:      root
+  ignore_errors:    true
+
+- name: enable service
+  systemd:
+    name:           "{{ dbname }}-{{ item }}"
+    enabled:        yes
+  with_items:       ['mgmt.service', 'mgmt.timer']
+  become:           true
+  become_user:      root
+
+- name: start service timer
+  systemd:
+    name:           "{{ dbname }}-{{ item }}"
+    state:          started
+  with_items:       ['mgmt.timer']
+  become:           true
+  become_user:      root
+

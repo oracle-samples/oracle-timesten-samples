@@ -1,0 +1,60 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+---
+
+- name: install openjdk if jre/jdk not provided
+  yum: 	       
+    name:      "{{ jdk }}"
+    state:     present
+  when:        openjdk
+  become:      true
+  become_user: root
+
+- name: see if jdk already present
+  find:
+    paths:     "{{ javabase }}"
+    patterns:  'j(dk|re)1.8*'
+  register:    hasjdk
+  when:        not openjdk
+
+- name: copy java
+  copy:
+    src:       "{{ packagedir }}/{{ jdk }}"
+    dest:      "{{ javabase }}/{{ jdk }}"
+  when:        not openjdk and hasjdk.matched == 0
+  become:      true
+  become_user: root
+
+- name: install java
+  unarchive:
+    dest:      "{{ javabase }}"
+    src:       "{{ javabase }}/{{ jdk }}"
+    remote_src: true
+  when:        not openjdk and hasjdk.matched == 0
+  become:      true
+  become_user: root
+
+- name: create directory for install loc
+  file:
+    path:      "{{ oraclehome }}/{{ dbname }}"
+    recurse:   true
+    group:     oracle
+    owner:     oracle
+    state:     directory
+  become:      true
+  become_user: oracle
+
+# here we don't replace timesten installation if it exists
+# can consider forcing a remove
+- name: install timesten
+  unarchive:
+    src:       "{{ packagedir }}/{{ ttpackage }}"
+    dest:      "{{ oraclehome }}/{{ dbname }}"
+    group:     oracle
+    owner:     oracle
+    creates:   "{{ ttinstalldir }}"
+  become:      true
+  become_user: oracle
+

@@ -1,4 +1,4 @@
-# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -38,22 +38,24 @@ data "oci_identity_availability_domains" "ADs" {
     compartment_id = "${var.tenancy_ocid}"
 }
 
-resource "oci_core_virtual_network" "CoreVCN" {
+resource "oci_core_vcn" "CoreVCN" {
     cidr_block = "${var.network["cidr"]}"
     compartment_id = "${var.compartment_ocid}"
     display_name = "vcn${var.service_name}"
     dns_label = "vcn${var.service_name}"
+    freeform_tags = "${map(var.opc["tagkey"],var.service_name)}"
 }
 
 resource "oci_core_internet_gateway" "PublicIG" {
     compartment_id = "${var.compartment_ocid}"
     display_name = "PublicIG"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
+    vcn_id = "${oci_core_vcn.CoreVCN.id}"
+    freeform_tags = "${map(var.opc["tagkey"],var.service_name)}"
 }
 
 resource "oci_core_route_table" "PublicRouteTable" {
     compartment_id = "${var.compartment_ocid}"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
+    vcn_id = "${oci_core_vcn.CoreVCN.id}"
     display_name = "PublicRouteTable"
     route_rules {
         #cidr_block = "0.0.0.0/0"
@@ -66,7 +68,7 @@ resource "oci_core_route_table" "PublicRouteTable" {
 resource "oci_core_security_list" "PublicSecurityList" {
     compartment_id = "${var.compartment_ocid}"
     display_name = "PublicSecurityList"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
+    vcn_id = "${oci_core_vcn.CoreVCN.id}"
 
     egress_security_rules = [{
         protocol = "all"
@@ -102,31 +104,35 @@ resource "oci_core_security_list" "PublicSecurityList" {
             "code" = 4
         }
     }]
+    freeform_tags = "${map(var.opc["tagkey"],var.service_name)}"
 }
 
 locals {
   bscount1 = "${ (var.bsInstanceCount >= 1 && var.bsInstanceCount <= 3) ? var.bsInstanceCount : 1 }"
+  bsad = "${ (var.bsInstanceInitialAD >= 1 && var.bsInstanceInitialAD <= 3) ? var.bsInstanceInitialAD - 1 : 0 }"
 }
 
 resource "oci_core_nat_gateway" "nat_gateway" {
     #Required
     compartment_id = "${var.compartment_ocid}"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
+    vcn_id = "${oci_core_vcn.CoreVCN.id}"
     #Optional
     display_name = "nat_gateway_${var.service_name}"
+    freeform_tags = "${map(var.opc["tagkey"],var.service_name)}"
 }
 
 resource "oci_core_subnet" "public_subnet" {
     count = 3
-    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
+    availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[count.index],"name")}"
     cidr_block = "${cidrsubnet(var.network["cidr"],var.network["subnets"],count.index)}"
     display_name = "public_subnet_AD${ count.index + 1 }"
     compartment_id = "${var.compartment_ocid}"
-    vcn_id = "${oci_core_virtual_network.CoreVCN.id}"
+    vcn_id = "${oci_core_vcn.CoreVCN.id}"
     route_table_id = "${oci_core_route_table.PublicRouteTable.id}"
     security_list_ids = ["${oci_core_security_list.PublicSecurityList.id}"]
-    dhcp_options_id = "${oci_core_virtual_network.CoreVCN.default_dhcp_options_id}"
+    dhcp_options_id = "${oci_core_vcn.CoreVCN.default_dhcp_options_id}"
     dns_label = "pubsnad${ count.index + 1 }"
+    freeform_tags = "${map(var.opc["tagkey"],var.service_name)}"
 }
 
 
@@ -135,13 +141,13 @@ resource "oci_core_subnet" "public_subnet" {
 resource "oci_core_instance" "bs_instance" {
   count = "${local.bscount1}"
   availability_domain = 
-    "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[0],"name")}"
+    "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[(count.index + local.bsad) % 3],"name")}"
   compartment_id      = "${var.compartment_ocid}"
   display_name        = "${format("%s-bs-%03d", var.service_name, count.index + 1 )}"
   hostname_label      = "${format("%s-bs-%03d", var.service_name, count.index + 1 )}"
   shape               = "${var.bsInstanceShape}"
   create_vnic_details {
-    subnet_id              = "${element(oci_core_subnet.public_subnet.*.id, count.index + 1 )}"
+    subnet_id              = "${element(oci_core_subnet.public_subnet.*.id, (count.index + local.bsad) % 3)}"
     skip_source_dest_check = true
   }
   source_details {
@@ -155,6 +161,7 @@ resource "oci_core_instance" "bs_instance" {
   timeouts {
     create = "10m"
   }
+  freeform_tags = "${map(var.opc["tagkey"],var.service_name)}"
 }
 
 

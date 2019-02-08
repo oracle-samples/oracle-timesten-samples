@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -22,7 +22,7 @@ def parsePairs(inputf):
             var  = str(llist[1]).strip().strip('"')
             if name.startswith(('type','default','#')):
                continue
-            print('{0:20}: \"{1}\"'.format(name, var))
+            print('{0:32}: \"{1}\"'.format(name, var))
         if line == "# Variables after this point written to ansible vars file\n":
           seenStart = True
   except IOError as details:

@@ -1,0 +1,64 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Storage configuration
+#
+# Choices are LVM-RAID-0, MDRAID-RAID-10
+# 
+# Creating the file system using mdraid takes ~10 minutes < 1 hour
+# Doesn't use more than 4 devices.
+# 
+
+- name: configure md-raid-10
+  include_tasks: roles/datainstances/tasks/storage-common.yaml
+
+- name: install mdadm
+  yum:   
+    name:    mdadm
+    state:   present
+
+- name: set device name to /dev/md0
+  set_fact:
+    mddev:   "/dev/md0"
+
+- name: increase min raid speed limit
+  # "Go fast, young man" -Horace Greeley, 1872
+  # Goes even slower without this
+  sysctl:
+    name:          dev.raid.speed_limit_min
+    value:         2000000
+    state:         present
+    sysctl_set:    true
+    reload:        true
+  ignore_errors: true
+
+- name: increase raid max speed limit
+  sysctl:
+    name:          dev.raid.speed_limit_max
+    value:         3000000
+    state:         present
+    sysctl_set:    true
+    reload:        true
+  ignore_errors: true
+
+- name: create md device
+  shell: |
+    mdadm --create "{{ mddev }}" --raid-devices=4 --level=10 "{{ devices }}"
+    mdadm --detail --scan | tee -a /etc/mdadm.conf >> /dev/null
+
+- name: create fs on md device -- this takes a while
+  filesystem:
+    dev:     "{{ mddev }}"
+    fstype:  "{{ fstype }}"
+
+- name: mount file system
+  mount: 
+    src:     "{{ mddev }}"
+    path:    "{{ fsname }}"
+    state:   mounted
+    opts:    "{{ mntopts }}"
+    passno:  2
+    fstype:  ext4
+

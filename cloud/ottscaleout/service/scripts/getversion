@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 deffile=$1
 if [ -z "${deffile}" ]; then
@@ -14,8 +14,7 @@ if [[ ! -r ${ottpkg} ]]; then
   exit 1
 fi
 if [[ ! -r ${jdkpkg} ]]; then
-  echo "$0: can't find jdk distribution, ${jdkpkg}"
-  exit 1
+  jdkpkg="java-1.8.0-openjdk"
 fi
 
 if [[ "${ottpkg##*.}" =~ "zip" ]]; then

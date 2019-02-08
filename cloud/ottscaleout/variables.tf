@@ -1,4 +1,4 @@
-# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -21,7 +21,7 @@ variable  "diInstanceCount" { default = "2" }
 # N*K VMs/BMs are provisioned for data instances
 # Not allowed to use VM.Standard1.1 shape
 # Recommended to use NVMe shape (DenseIO, HighIO) for best performance
-variable  "diInstanceShape" { default = "VM.DenseIO1.4" }
+variable  "diInstanceShape" { default = "VM.DenseIO2.8" }
 
 ### K-Safety
 # The K in NxK (copies of data)
@@ -33,21 +33,22 @@ variable  "ksafety" { default = "2" }
 # To co-locate Zk VMs with mgmt/data VMs set zkInstanceCount=0
 # Otherwise set zkInstanceCount=3 for stand-alone VMs
 variable  "zkInstanceCount" { default = "0" }
-variable  "zkInstanceShape" { default = "VM.Standard1.1" }
+variable  "zkInstanceShape" { default = "VM.Standard2.1" }
 
 # Number of hosts for mgmt instances {0|2}
 # 0 = co-located with data instance VMs
 variable  "mgInstanceCount" { default = "0" }
-variable  "mgInstanceShape" { default = "VM.Standard1.1" }
+variable  "mgInstanceShape" { default = "VM.Standard2.1" }
 
 # Client only installations are allocated on clInstanceCount VMs
 # clients are provisioned on private subnet
 variable "clInstanceCount" { default = "0" }
-variable "clInstanceShape" { default = "VM.Standard1.1" }
+variable "clInstanceShape" { default = "VM.Standard2.1" }
 
 # Number and shape of Bastion hosts {1|2|3}
 variable  "bsInstanceCount" { default = "1" }
-variable  "bsInstanceShape" { default = "VM.Standard1.1" }
+variable  "bsInstanceShape" { default = "VM.Standard2.1" }
+variable  "bsInstanceInitialAD" { default = "1" }
 
 ### Which AD(s)
 # Compute instances provisioned round robin to AD mod ksafety
@@ -65,6 +66,7 @@ variable  "singleAD"   { default = "false" }
 #
 # Size of block volume in GB to attach to each data compute instance
 # diBlockVolumeSizeGB < 50 means do not attach block volumes to any data compute instance
+# Recommended to use > 3X RAM of diInstanceShape
 # Minimum allocation is 50 GB
 variable "diBlockVolumeSizeGB" { default = "0" }
 
@@ -89,10 +91,13 @@ variable "InstanceImageOCID" {
 variable "network" {
   type = "map"
   default = {
-    "cidr"          = "172.16.0.0/16"
-    "subnets"       = "4"         
+    "cidr"            = "172.16.0.0/16"
     # logbase2(subnets in network)
     # enables 2^16 - 2^subnets host systems
+    "subnets"         = "4"         
+    # nat instance or nat gateway?
+    # nat instance single point of failure
+    "use_nat_gateway" = "1"
   }
 }
 
@@ -104,7 +109,7 @@ variable "timesten" {
     "durability"           =  0
     "permsize"             =  4096
     "tempsize"             =  400
-    "restarttimeout"       =  ""
+    "restarttimeout"       =  300
     "stoptimeout"          =  300
     "mgmtdaemonport"       =  6624
     "mgmtcsport"           =  6625
@@ -147,6 +152,7 @@ variable "opc" {
     opchome   = "/home/opc"
     scriptdir = "service/scripts"
     securityupdates = "false"
+    tagkey = "TimesTenScaleout"
   }
 }
 

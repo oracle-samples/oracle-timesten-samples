@@ -1,0 +1,9 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+
+ttgridconf:      "{{ ttgriddir }}/ttgrid.conf"
+dbdef:           "{{ ttgriddir }}/attributes.dbdef"
+initscript:      "{{ ttgriddir }}/init.sql"
+csconnect:       "{{ ttgriddir }}/attributes.connect"

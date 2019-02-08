@@ -6,7 +6,11 @@ After=remote.fs.target
 User=oracle
 Group=oracle
 Type=forking
+{% if openjdk %}
+Environment=JAVA_HOME=/usr/lib/jvm/{{ openjdkrt }}
+{% else %}
 Environment=JAVA_HOME={{ javabase }}
+{% endif %}
 Environment=ZOO_LOG_DIR={{ oraclehome }}/{{ zkinstalldir }}
 ExecStart={{ zkhome }}/bin/zkServer.sh start
 ExecStop={{ zkhome }}/bin zkServer.sh stop

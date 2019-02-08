@@ -1,4 +1,4 @@
-# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -50,7 +50,10 @@ resource "null_resource" "copy-to-bastion" {
     destination = "${var.opc["opchome"]}"
   }
 
-  depends_on = ["null_resource.configvars", "null_resource.write-hosts-file", "null_resource.dns-searchpaths"]
+  depends_on = ["null_resource.configvars", 
+                "null_resource.write-hosts-file", 
+		"null_resource.dns-searchpaths", 
+		"null_resource.blkvol-iscsi-commands"]
 }
 
 #
@@ -68,6 +71,40 @@ resource "null_resource" "dns-searchpaths" {
     command = "echo search ${local.privsubnets} >> ${var.opc["scriptdir"]}/resolv.conf"
   }
 } 	
+
+resource "null_resource" "blkvol-iscsi-commands" {
+  count = "${local.bvcount2 }"
+
+  triggers = {
+    di_instance_ids  = "${join(",", oci_core_instance.di_instance.*.id)}"
+    volume_attach_ids = "${join(",", oci_core_volume_attachment.di_volume_attachments.*.id)}"
+  }
+
+  # cleanup anything from a previous run
+  provisioner "local-exec" {
+    command = "rm -rf ${var.opc["scriptdir"]}/iscsi/iscsi-*"
+  }
+
+  # attach
+  provisioner "local-exec" {
+    command = "echo iscsiadm -m node -o new -T ${oci_core_volume_attachment.di_volume_attachments.*.iqn[count.index]} -p ${oci_core_volume_attachment.di_volume_attachments.*.ipv4[count.index]}:${oci_core_volume_attachment.di_volume_attachments.*.port[count.index]} >> ${var.opc["scriptdir"]}/iscsi/iscsi-attach.${oci_core_volume_attachment.di_volume_attachments.*.instance_id[count.index]}"
+  }
+  provisioner "local-exec" {
+    command = "echo iscsiadm -m node -o update -T ${oci_core_volume_attachment.di_volume_attachments.*.iqn[count.index]} -n node.startup -v automatic >> ${var.opc["scriptdir"]}/iscsi/iscsi-attach.${oci_core_volume_attachment.di_volume_attachments.*.instance_id[count.index]}"
+  }
+  provisioner "local-exec" {
+    command = "echo iscsiadm -m node -T ${oci_core_volume_attachment.di_volume_attachments.*.iqn[count.index]} -p ${oci_core_volume_attachment.di_volume_attachments.*.ipv4[count.index]}:${oci_core_volume_attachment.di_volume_attachments.*.port[count.index]} -l >> ${var.opc["scriptdir"]}/iscsi/iscsi-attach.${oci_core_volume_attachment.di_volume_attachments.*.instance_id[count.index]}"
+  }
+
+  # detach
+  provisioner "local-exec" {
+    command = "echo iscsiadm -m node -T ${oci_core_volume_attachment.di_volume_attachments.*.iqn[count.index]} -p ${oci_core_volume_attachment.di_volume_attachments.*.ipv4[count.index]}:${oci_core_volume_attachment.di_volume_attachments.*.port[count.index]} >> ${var.opc["scriptdir"]}/iscsi/iscsi-detach.${oci_core_volume_attachment.di_volume_attachments.*.instance_id[count.index]} -u"
+  }
+  provisioner "local-exec" {
+    command = "echo iscsiadm -m node -o delete -T ${oci_core_volume_attachment.di_volume_attachments.*.iqn[count.index]} -p ${oci_core_volume_attachment.di_volume_attachments.*.ipv4[count.index]}:${oci_core_volume_attachment.di_volume_attachments.*.port[count.index]} >> ${var.opc["scriptdir"]}/iscsi/iscsi-detach.${oci_core_volume_attachment.di_volume_attachments.*.instance_id[count.index]}"
+  }
+
+}
 
 
 # 
@@ -125,10 +162,10 @@ resource "null_resource" "install-ansible" {
 #
 locals {
   qt="\""
-  cfgfile = "./${local.ansibledir}/roles/common/vars/main.yml"
+  cfgfile = "./${local.ansibledir}/roles/common/vars/main.yaml"
 }
 
-# write dbname into new config file
+# write select variables into new config file
 resource "null_resource" "configvars" {
    
   triggers = {

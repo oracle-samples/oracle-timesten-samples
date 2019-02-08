@@ -1,0 +1,22 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# stop db
+# stop service
+# dbclose, dbunload
+# ttdaemonadmin stop
+---
+
+- name: stop datainstances
+  include_tasks:    roles/datainstances/tasks/dbsetpaths.yaml
+
+- name: stop tasks issued from mgmt instance
+  include_tasks:    roles/dbstop/tasks/mgmtops.yaml
+  when:             inventory_hostname in groups['mgmt-addresses']
+
+- name: stop tasks on data instances
+  include_tasks:    roles/dbstop/tasks/dbstop.yaml
+  when:             inventory_hostname in groups['db-addresses']
+

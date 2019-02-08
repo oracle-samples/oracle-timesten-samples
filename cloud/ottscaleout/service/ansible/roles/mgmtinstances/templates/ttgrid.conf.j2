@@ -170,7 +170,7 @@ data_instances = [
 mgmt_instances = [
 {% for host in groups['mgmt-addresses'] %}
 {% if loop.index <= 2  %}
-{ "externalAddress":"{{ host }}","internalAddress":" {{ host|regex_replace('.pub','-i.priv') }}","daemonport":"{{ mgmtdaemonport }}", "csport":"{{ mgmtcsport }}", "mgmtport":"{{ mgmtreplport }}" }
+{ "externalAddress":"{{ host }}","internalAddress":" {{ host|regex_replace('.pub','-i.priv') }}","daemonport":"{{ mgmtdaemonport }}", "csport":"{{ mgmtcsport }}", "mgmtport":"{{ mgmtreplport }}", "instance":"{{ ttgridname}}_mgmt" }
 {% if loop.index < 2 %}
 ,
 {% endif %}

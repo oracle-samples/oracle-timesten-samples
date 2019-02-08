@@ -1,0 +1,25 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# find path to managment instances
+# 
+---
+- name: find path to mgmt instance (1)
+  stat: 
+    path:           "{{ ttinstancedir }}/{{ ttgridname }}_mgmt"
+  register:         mgmtdir1
+
+- name: set paths to mgmt instance (1)
+  set_fact:
+    mgmtdir:        "{{ mgmtdir1.stat.path }}"
+    mgmt:           "{{ mgmtdir1.stat.path }}/bin/ttenv" 
+  when:             mgmtdir1.stat.isdir is defined and mgmtdir1.stat.isdir
+
+- name: fail when mgmt instances not found
+  fail:
+    msg:            "Error: mgmt instances not found at {{ ttinstancedir }}/{{ ttgridname }}_mgmt"
+  when:             mgmt is not defined and inventory_hostname in groups['mgmt-addresses']
+
+

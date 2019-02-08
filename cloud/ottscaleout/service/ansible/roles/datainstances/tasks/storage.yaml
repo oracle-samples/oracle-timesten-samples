@@ -1,0 +1,40 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Storage configuration
+# If fsname exists, then skip configuration
+# Choices are LVM-RAID0, MDRAID-RAID10
+# 
+# Creating the file system using mdraid takes ~10 minutes < 1 hour
+# Doesn't use more than 4 devices.
+# 
+
+- name: check if {{ fsname }} exists
+  shell:         df -hm "{{ fsname }}"
+  register:      fspresent
+  failed_when:   fspresent.rc > 1
+
+- name: include tasks
+  include_tasks: roles/datainstances/tasks/storage-lvm.yaml
+  when:          fspresent.rc != 0 and storage == "LVM-RAID-0"
+  become:        true
+  become_user:   root
+
+- name: include tasks
+  include_tasks: roles/datainstances/tasks/storage-mdraid.yaml
+  when:          fspresent.rc != 0 and storage == "MD-RAID-10"
+  become:        true
+  become_user:   root
+
+- name : allow oracle to access
+  file: 
+    path:        "{{ fsname }}"
+    owner:       "oracle"
+    group:       "oracle"
+    mode:        0775
+    state:       "directory"
+  become:        true
+  become_user:   root
+
