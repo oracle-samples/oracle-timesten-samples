@@ -104,6 +104,8 @@ resource "null_resource" "blkvol-iscsi-commands" {
     command = "echo iscsiadm -m node -o delete -T ${oci_core_volume_attachment.di_volume_attachments.*.iqn[count.index]} -p ${oci_core_volume_attachment.di_volume_attachments.*.ipv4[count.index]}:${oci_core_volume_attachment.di_volume_attachments.*.port[count.index]} >> ${var.opc["scriptdir"]}/iscsi/iscsi-detach.${oci_core_volume_attachment.di_volume_attachments.*.instance_id[count.index]}"
   }
 
+  depends_on = ["oci_core_volume_attachment.di_volume_attachments"]
+
 }
 
 

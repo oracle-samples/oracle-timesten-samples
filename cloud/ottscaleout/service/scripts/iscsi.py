@@ -7,6 +7,7 @@
 import sys
 import subprocess
 import fileinput
+import re
 
 def iscsiOperation(operation, dpath):
   try:
@@ -15,9 +16,14 @@ def iscsiOperation(operation, dpath):
     #print(z)
     line = '{0}/runcmds.py {1}/iscsi/iscsi-{2}.{3}'.format(dpath, dpath, operation, z)
     y=subprocess.check_output(line, stderr=subprocess.STDOUT, shell=True)
+    if re.search('errno', y):
+      print('ERROR: {0}'.format(y))
+      return -1
+    return 0
   except subprocess.CalledProcessError as details:
     print ('Error getting instance id or executing iscsi ops: {0} id: {1}\nrc={2} details: {3}'.format(
         operation, z, details.returncode, str(details.output).replace('\n','')))
+    return -1
 
 if __name__ == '__main__':
 
@@ -27,7 +33,8 @@ if __name__ == '__main__':
   operation = sys.argv[1]
   cmdsfilepath = sys.argv[2]
 
-  iscsiOperation(operation, cmdsfilepath)
+  sys.exit(iscsiOperation(operation, cmdsfilepath))
+
 
 
 
