@@ -24,6 +24,7 @@ endif
 
 INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
 
+DEFS		= -DSCALEOUT
 CSDEFS          = -DTTCLIENTSERVER
 CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
 

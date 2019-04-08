@@ -44,54 +44,105 @@
 #define VERBOSE_FIRST VERBOSE_NOMSGS
 #define VERBOSE_LAST  VERBOSE_ALL
 
+#define XS(str) #str
+#define S(str)  XS(str)
+
+#define NO_VALUE         -1
+#define MIN_KEY           10
+#define M_CLASSIC         0
+#ifdef SCALEOUT
+#define M_SCALEOUT        1
+#define M_SCALEOUT_LOCAL  2
+#endif
+#define DFLT_XACT         10000
+#define DFLT_SEED         1
+#define DFLT_PROC         1
+#define DFLT_RAMPUP       5
+#define DFLT_READS        80
+#define DFLT_INSERTS      0
+#define DFLT_DELETES      0
+#define DFLT_OPS          1
+#define DFLT_KEY          100
+#define DFLT_ISO          1
+#define DFLT_RANGE        0
+#define DFLT_BUILDONLY    0
+#define DFLT_NOBUILD      0
+#define DFLT_THROTTLE     0
+#define DFLT_INSERT_MOD   1
+#define DFLT_PROCID       0
+
+#define PROC_INITIALIZED 0
+#define PROC_READY       1
+#define PROC_SET         2
+#define PROC_GO          3
+#define PROC_STARTBENCH  4
+#define PROC_STOP        5
+#define PROC_END         6
 
 static char usageStr[] =
   "\n"
-  "Usage:\t<CMD> {-h | -help | -V}\n"
-  "\t<CMD> [-proc <nprocs>] [-read <nreads>] [-insert <nins>] [-delete <ndels>]\n"
-  "\t\t[-xact <xacts>] [-ops <ops>] [-key <keys>] [-range]\n"
-  "\t\t[-iso <level>] [-seed <seed>] [-build] [-nobuild] [-v <level>]\n"
-  "\t\t[<DSN> | -connstr <connection-string>]\n\n"
+  "This program implements a multi-user throughput benchmark.\n\n"
+  "Usage:\n\n"
+  "  %s {-h | -help}\n"
+  "  %s [-proc <nprocs>] [-read <nreads>] [-insert <nins>] [-delete <ndels>]\n"
+  "     [-throttle <n>] [{-xact <xacts> | -sec <seconds> [-ramp <rseconds>]}]\n"
+  "     [-ops <ops>] [-key <keys>] [-range] [-iso <level>] [-seed <seed>]\n"
+  "     [-build] [-nobuild] [-v <level>]"
+#ifdef SCALEOUT
+  " [-scaleout [local]]"
+#endif
+  "\n     [<DSN> | -connstr <connection-string>]\n\n"
   "  -h                  Prints this message and exits.\n"
   "  -help               Same as -h.\n"
   "  -V                  Prints version number and exits.\n"
   "  -proc    <nprocs>   Specifies that <nprocs> is the number of concurrent\n"
-  "                      processes. The default is 1.\n"
+  "                      processes. The default is " S(DFLT_PROC) ".\n"
   "  -read    <nreads>   Specifies that <nreads> is the percentage of read-only\n"
-  "                      transactions. The default is 80.\n"
+  "                      transactions. The default is " S(DFLT_READS) ".\n"
   "  -insert  <nins>     Specifies that <nins> is the percentage of insert\n"
-  "                      transactions. The default is 0.\n"
+  "                      transactions. The default is " S(DFLT_INSERTS) ".\n"
   "  -delete  <ndels>    Specifies that <ndels> is the percentage of delete\n"
-  "                      transactions. The default is 0.\n"
+  "                      transactions. The default is " S(DFLT_DELETES) ".\n"
   "  -xact    <xacts>    Specifies that <xacts> is the number of transactions\n"
-  "                      that each process should run. The default is 10000.\n"
-  "  -ops     <ops>      Operations per transaction.  The default is 1.\n"
+  "                      that each process should run. The default is " S(DFLT_XACT) ".\n"
+  "  -sec     <seconds>  Specifies that <seconds> is the test duration.\n"
+  "                      that each process should run. Default is to run in\n"
+  "                      transaction mode (-xact).\n"
+  "  -ramp  <rseconds>   Specifies that <rseconds> is the ramp up time in duration\n"
+  "                      mode (-sec). Default is " S(DFLT_RAMPUP) ".\n"
+  "  -ops     <ops>      Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
   "                      In the special case where 0 is specified, no commit\n"
   "                      is done. This may be useful for read-only testing.\n"
   "  -key     <keys>     Specifies the number of records (squared) to initially\n"
-  "                      populate in the data store. The default is 100**2.\n"
+  "                      populate in the data store. The minimum value is " S(MIN_KEY) "\n"
+  "                      and the default is " S(DFLT_KEY) " (" S(DFLT_KEY) "**2 rows).\n"
   "  -range              Create a range index instead of a hash index.\n"
   "  -iso     <level>    Locking isolation level\n"
   "                         0 = serializable\n"
   "                         1 = read-committed (default)\n"
   "  -seed    <seed>     Specifies that <seed> should be the seed for the\n"
-  "                      random number generator.\n"
-  "  -throttle <n>       Throttle to <n> operations per second\n"
-  "  -build              Only build the database.\n"
-  "  -nobuild            Only run the benchmark.\n"
-  "  -v <level>          Verbose level\n"
+  "                      random number generator. Must be > 0, default is " S(DFLT_SEED) ".\n"
+  "  -throttle <n>       Throttle each process to <n> operations per second.\n"
+  "                      Must be > 0. The default is no throttle.\n"
+  "  -build              Only build the database, do not run the benchmark.\n"
+  "  -nobuild            Only run the benchmark, do not build the database.\n"
+#ifdef SCALEOUT
+  "  -scaleout [local]   Run in Scaleout mode (default is Classic). If 'local' is\n"
+  "                      specified then use the routing API to ensure all operations\n"
+  "                      are (as) local (as possible).\n"
+#endif
+  "  -v <level>          Verbosity level\n"
   "                         0 = errors only\n"
   "                         1 = results only\n"
   "                         2 = results and some status messages (default)\n"
-  "                         3 = all messages\n"
+  "                         3 = all messages\n\n"
   "If no DSN or connection string is specified, the default is\n"
   "  \"DSN=sampledb;UID=appuser\".\n\n"
-  "This program implements a multi-user throughput benchmark.\n\n";
+  "The percentage of update operations is 100 minus the percentages of reads,\n"
+  "inserts and deletes.\n\n";
 
-
-
-
-#define DSNNAME DEMODSN
+#define DFLT_DSN DEMODSN
+#define DFLT_UID UIDNAME
 
 /* message macros used for all conditional non-error output */
 
@@ -133,18 +184,22 @@ static char usageStr[] =
 
 
 
-/* function to determine odbc INI parameters */
-int getinikey (char*        connStr,
-               const char*  sought,
-               char*        result);
-
+/* Forward declarations */
 void ExecuteTptBm (int        seed,
                    int        procId);
 
 void erasePassword(volatile char *buf, size_t len);
 void getPassword(const char * prompt, const char * uid, char * pswd, size_t len);
-int getUid(const char * dsnOrConnstr, char * uid);
-int pwdExists(const char * dsnOrConnstr);
+int
+parseConnectionString(
+                      char * connstr,
+                      char * pDSN,
+                      int    sDSN,
+                      char * pUID,
+                      int    sUID,
+                      char * pPWD,
+                      int    sPWD
+                     );
 
 
 #ifdef WIN32
@@ -177,33 +232,66 @@ int pwdExists(const char * dsnOrConnstr);
 #define tt_yield() sched_yield()
 #endif
 
+#define CACHELINE_SIZE 128 /* ideal for x8664 and big enough for every platform except Itanium */
+
+typedef struct procinfo {
+  volatile int       state;
+  volatile UBIGINT   xacts;
+  char      pad[CACHELINE_SIZE - sizeof(int) - sizeof(UBIGINT)];
+} procinfo_t;
+
+#ifdef SCALEOUT
+/* ODBC routing API */
+TTGRIDMAP   routingGridMap;
+TTGRIDDIST  routingHDist;
+/* The distribution key has two columns */
+SQLSMALLINT routingCTypes[]   = { SQL_C_SLONG, SQL_C_SLONG };
+SQLSMALLINT routingSQLTypes[] = { SQL_INTEGER, SQL_INTEGER };
+SQLLEN      routingMaxSizes[] = { sizeof(int), sizeof(int) };
+
+#ifdef TTCLIENTSERVER
+typedef struct _ttclientdsn {
+  int       elementid;
+  int       repset;
+  int       dataspace;
+  SQLCHAR   clientdsn[64+1];
+} cCliDSN_t;
+
+cCliDSN_t*  routingDSNs = NULL;
+int*        routingShmposMap = NULL;
+int         nElements = 0;
+int         kFactor = 0;
+int         routingDSToUse = 1; /* Data Space */
+#endif /* TTCLIENTSERVER */
+/* End of ODBC Routing API */
+#endif /* SCALEOUT */
 
 
 /* Global variable declarations */
 
-int        rand_seed = 1;     /* seed for the random numbers */
-int        num_processes = 1; /* # of concurrent processes for the test */
-int        reads = 80;        /* read percentage */
-int        inserts = 0;       /* insert percentage */
-int        deletes = 0;       /* delete percentage */
-int        num_xacts = 10000; /* # of transactions per process */
-int        opsperxact = 1;    /* operations per transaction or 0 for no commit */
-int        key_cnt = 100;     /* number of keys (squared) populated in the datastore */
-int        isolevel = -1;     /* isolation level (or -1 for no change */
-int        rangeFlag = 0;     /* if 1 use range index instead of hash */
-int        verbose = VERBOSE_DFLT; /* verbose level */
-FILE*      statusfp;          /* File for status messages */
-char       dsn[CONN_STR_LEN] = { 0 }; /* ODBC data source */
-char       connstr_opt[CONN_STR_LEN] = { 0 }; /* ODBC connStr from cmd line */
-char*      input_connStr = NULL; /* connection string to be used */
-int        buildOnly = 0;     /* Only create/populate */
-int        noBuild = 0;       /* Don't create/populate */
-int        replication_ended = 0; /* Indicates when replication ended */
-int        replication_begin = 0; /* Indicates when replication may begin */
-int        primary = 0;       /* primary datastore for replication */
-int        standby = 0;       /* standby datatstore for replication */
-int        insert_mod = 1;    /* used to prevent multiple inserts clobber */
-int        throttle = 0;      /* throttle to <n> ops / second */
+int        rand_seed = NO_VALUE;       /* seed for the random numbers */
+int        num_processes = NO_VALUE;   /* # of concurrent processes for the test */
+int        duration = NO_VALUE;        /* test duration */
+int        rampup = NO_VALUE;          /* rampup in the duration mode */
+int        reads = NO_VALUE;           /* read percentage */
+int        inserts = NO_VALUE;         /* insert percentage */
+int        deletes = NO_VALUE;         /* delete percentage */
+int        num_xacts = NO_VALUE;       /* # of transactions per process */
+int        opsperxact = NO_VALUE;      /* operations per transaction or 0 for no commit */
+int        key_cnt = NO_VALUE;         /* number of keys (squared) populated in the datastore */
+int        isolevel = NO_VALUE;        /* isolation level */
+int        rangeFlag = NO_VALUE;       /* if 1 use range index instead of hash */
+int        verbose = NO_VALUE;         /* verbose level */
+FILE*      statusfp;                   /* File for status messages */
+char       dsn[CONN_STR_LEN] = "";     /* ODBC data source */
+char*      connstr_opt = NULL;         /* ODBC connStr from cmd line */
+char*      input_connStr = NULL;       /* connection string to be used */
+char       connstr[CONN_STR_LEN] = "";
+int        buildOnly = NO_VALUE;       /* Only create/populate */
+int        noBuild = NO_VALUE;         /* Don't create/populate */
+int        throttle = NO_VALUE;        /* throttle to <n> ops / second */
+int        mode = M_CLASSIC;           /* classic vs. scaleout mode */
+int        insert_mod = NO_VALUE;      /* used to prevent multiple inserts clobber */
 
 SQLHENV    henv;              /* ODBC environment handle */
 SQLHDBC    ghdbc;             /* global ODBC connection handle */
@@ -213,8 +301,9 @@ HANDLE     shmHndl;           /* handle to shared memory segment */
 #else
 int        shmid;             /* shared memory segment id  */
 #endif
-int*       shmhdr;            /* shared memory segment to sync processes */
-int        procId = 0;        /* process # in shared memory array */
+// int*       shmhdr;            /* shared memory segment to sync processes */
+volatile procinfo_t *shmhdr = NULL;   /* shared memory segment to sync processes */
+int        procId = NO_VALUE; /* process # in shared memory array */
 int        sigReceived;       /* zero if no signal received or signum */
 tt_ptrint  *pidArr;           /* array to store list of pids [and DSN for Windows] */
                               /* How this is laid out in memory: */
@@ -285,6 +374,53 @@ char username[MAX_USERNAME_SIZE];
 char password[MAX_PASSWORD_SIZE];
 char * passwordPrompt = "Enter password for ";
 
+/*********************************************************************
+ *
+ *  FUNCTION:       usage
+ *
+ *  DESCRIPTION:    This function displays the programme usage info.
+ *
+ *  PARAMETERS:     char * progname - program name
+ *
+ *  RETURNS:        Nothing, exits
+ *
+ *********************************************************************/
+
+void usage( char * progname )
+{
+  fprintf( stderr, usageStr, progname, progname );
+  exit( 10 );
+}
+
+/*********************************************************************
+ *
+ *  FUNCTION:       isnumeric
+ *
+ *  DESCRIPTION:    Checks if a string represents a valid unsigned
+ *                  integer value in the range 0 to 999999999.
+ *
+ *  PARAMETERS:     char * str
+ *
+ *  RETURNS:        -1 = invalid value otherwise the value of the integer
+ *
+ *********************************************************************/
+
+int isnumeric( char * str )
+{
+    int val = 0;
+
+    if (  (str == NULL) || (*str == '\0')  )
+        return -1;
+    if (  strlen( str ) > 9  )
+        return -1;
+    while (  *str  ) {
+        if (  (*str < '0') || (*str > '9')  )
+            return -1;
+        val = (val * 10) + (*str++ - '0');
+    }
+
+    return val;
+}
 
 /*********************************************************************
  *
@@ -307,417 +443,323 @@ char * passwordPrompt = "Enter password for ";
 int parse_args (int      argc,
                 char**   argv)
 {
-  int ac;
-  char errbuf[80];
+  int argno = 1;
+  int pos = 0;
 
   ttc_getcmdname(argv[0], cmdname, sizeof(cmdname));
 
-  ac = ttc_getoptions(argc, argv, TTC_OPT_NO_CONNSTR_OK,
-                    errbuf, sizeof(errbuf),
-                    "<HELP>",         usageStr,
-                    "<VERSION>",      NULL,
-                    "<CONNSTR>",      connstr_opt, sizeof(connstr_opt),
-                    "<DSN>",          dsn, sizeof(dsn),
-                    "proc=i",         &num_processes,
-                    "xact=i",         &num_xacts,
-                    "seed=i",         &rand_seed,
-                    "ops=i",          &opsperxact,
-                    "read=i",         &reads,
-                    "insert=i",       &inserts,
-                    "delete=i",       &deletes,
-                    "key=i",          &key_cnt,
-                    "insertmod=i",    &insert_mod, /* undocumented */
-                    "range",          &rangeFlag,
-                    "build",          &buildOnly,
-                    "nobuild",        &noBuild,
-                    "primary",        &primary,    /* undocumented */
-                    "standby",        &standby,    /* undocumented */
-                    "v=i",            &verbose,
-                    "iso=i",          &isolevel,
-                    "throttle=i",     &throttle,
-#if defined(WIN32)
-                    "procid=i",       &procId,     /* undocumented */
-#endif
-                    NULL);
-
-  if (ac == -1) {
-    fprintf(stderr, "%s\n", errbuf);
-    fprintf(stderr, "Type '%s -help' for more information.\n", cmdname);
-    exit(-1);
-  }
-  if (ac != argc) {
-    ttc_dump_help(stderr, cmdname, usageStr);
-    exit(-1);
-  }
-
-  /* Various checks on inputs */
-  if (num_processes <= 0) {
-    fprintf(stderr, "%s: -proc value must be > 0.\n", cmdname);
-    exit(-1);
-  }
-  if (num_xacts <= 0) {
-    fprintf(stderr, "%s: -xact value must be > 0.\n", cmdname);
-    exit(-1);
-  }
-  if (rand_seed <= 0) {
-    fprintf(stderr, "%s: -seed value must be > 0.\n", cmdname);
-    exit(-1);
-  }
-  if (opsperxact < 0) {
-    fprintf(stderr, "%s: -ops value must be >= 0.\n", cmdname);
-    exit(-1);
-  }
-  if (reads < 0 || reads > 100) {
-    fprintf(stderr, "%s: -read value must be in range [0..100].\n", cmdname);
-    exit(-1);
-  }
-  if (inserts < 0 || inserts > 100) {
-    fprintf(stderr, "%s: -insert value must be in range [0..100].\n", cmdname);
-    exit(-1);
-  }
-  if (deletes < 0 || deletes > 100) {
-    fprintf(stderr, "%s: -delete value must be in range [0..100].\n", cmdname);
-    exit(-1);
-  }
-  if (key_cnt <= 0) {
-    fprintf(stderr, "%s: -key value must be > 0.\n", cmdname);
-    exit(-1);
-  }
-  if (insert_mod <= 0) {
-    fprintf(stderr, "%s: -insertmod value must be > 0.\n", cmdname);
-    exit(-1);
-  }
-  if (verbose < VERBOSE_FIRST || verbose > VERBOSE_LAST) {
-    fprintf(stderr, "%s: -v value must be in range [%d .. %d].\n",
-            cmdname, VERBOSE_FIRST, VERBOSE_LAST);
-    exit(-1);
-  }
-  if (isolevel < 0 || isolevel > 1) {
-    if (isolevel == -1) {
-      /* initialized to this to mean no change */
-    } else {
-      fprintf(stderr, "%s: -iso value must be in range [0..1].\n", cmdname);
-      exit(-1);
-    }
-  }
-#if defined(WIN32)
-  if (procId < 0) {
-    fprintf(stderr, "%s: -procid value must be >= 0.\n", cmdname);
-    exit(-1);
-  }
-#endif
-
-  if ((reads + inserts + deletes) > 100)
+  while (  argno < argc )
   {
-    fprintf(stderr, "insert + read + delete should not exceed 100. \n");
-    fprintf(stderr, "For more information, run \"%s -help\"\n",
-            cmdname);
-    return 0;
+    if (  (strcmp(argv[argno], "-h") == 0) || 
+          (strcmp(argv[argno], "-help") == 0)  )
+        usage( cmdname );
+    else
+    if (  strcmp(argv[argno], "-proc") == 0  ) {
+      if (  (++argno >= argc) || (num_processes != NO_VALUE)  )
+          usage( cmdname );
+      num_processes = isnumeric( argv[argno] );
+      if (  num_processes <= 0  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-read") == 0  ) {
+      if (  (++argno >= argc) || (reads != NO_VALUE)  )
+          usage( cmdname );
+      reads = isnumeric( argv[argno] );
+      if (  (reads < 0) || (reads > 100)  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-insert") == 0  ) {
+      if (  (++argno >= argc) || (inserts != NO_VALUE)  )
+          usage( cmdname );
+      inserts = isnumeric( argv[argno] );
+      if (  (inserts < 0) || (inserts > 100)  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-delete") == 0  ) {
+      if (  (++argno >= argc) || (deletes != NO_VALUE)  )
+          usage( cmdname );
+      deletes = isnumeric( argv[argno] );
+      if (  (deletes < 0) || (deletes > 100)  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-xact") == 0  ) {
+      if (  (++argno >= argc) || ( num_xacts != NO_VALUE) || 
+            (duration != NO_VALUE ) || (rampup != NO_VALUE)  )
+          usage( cmdname );
+      num_xacts = isnumeric( argv[argno] );
+      if (  num_xacts <= 0  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-sec") == 0  ) {
+      if (  (++argno >= argc) || ( duration != NO_VALUE) || 
+            (num_xacts != NO_VALUE )  )
+          usage( cmdname );
+      duration = isnumeric( argv[argno] );
+      if (  duration <= 0  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-ramp") == 0  ) {
+      if (  (++argno >= argc) || ( rampup != NO_VALUE) || 
+            (num_xacts != NO_VALUE )  )
+          usage( cmdname );
+      rampup = isnumeric( argv[argno] );
+      if (  rampup < 0  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-ops") == 0  ) {
+      if (  (++argno >= argc) || (opsperxact != NO_VALUE)  )
+          usage( cmdname );
+      opsperxact = isnumeric( argv[argno] );
+      if (  opsperxact < 0  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-key") == 0  ) {
+      if (  (++argno >= argc) || (key_cnt != NO_VALUE)  )
+          usage( cmdname );
+      key_cnt = isnumeric( argv[argno] );
+      if (  key_cnt < MIN_KEY  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-range") == 0  ) {
+      if (  rangeFlag != NO_VALUE  )
+          usage( cmdname );
+      rangeFlag = 1;
+    }
+    else
+    if (  strcmp(argv[argno], "-iso") == 0  ) {
+      if (  (++argno >= argc) || (isolevel != NO_VALUE)  )
+          usage( cmdname );
+      isolevel = isnumeric( argv[argno] );
+      if (  (isolevel < 0) || (isolevel > 1)  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-seed") == 0  ) {
+      if (  (++argno >= argc) || (rand_seed != NO_VALUE)  )
+          usage( cmdname );
+      rand_seed = isnumeric( argv[argno] );
+      if (  rand_seed <= 0  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-throttle") == 0  ) {
+      if (  (++argno >= argc) || (throttle != NO_VALUE)  )
+          usage( cmdname );
+      throttle = isnumeric( argv[argno] );
+      if (  throttle <= 0  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-v") == 0  ) {
+      if (  (++argno >= argc) || (verbose != NO_VALUE)  )
+          usage( cmdname );
+      verbose = isnumeric( argv[argno] );
+      if (  (verbose < VERBOSE_FIRST) || (verbose > VERBOSE_LAST)  )
+          usage( cmdname );
+    }
+    else
+    if (  strcmp(argv[argno], "-build") == 0  ) {
+      if (  (buildOnly != NO_VALUE) || (noBuild != NO_VALUE)  )
+          usage( cmdname );
+      buildOnly = 1;
+    }
+    else
+    if (  strcmp(argv[argno], "-nobuild") == 0  ) {
+      if (  (buildOnly != NO_VALUE) || (noBuild != NO_VALUE)  )
+          usage( cmdname );
+      noBuild = 1;
+    }
+    else
+    if (  strcmp(argv[argno], "-insertmod") == 0  ) {
+      if (  (++argno >= argc) || (insert_mod != NO_VALUE)  ) {
+          fprintf( stderr, "Multiple '-insertmod' parameters are not allowed.\n");
+          exit(1);
+      }
+      insert_mod = isnumeric( argv[argno] );
+      if (  insert_mod <= 0  ) {
+          fprintf( stderr, "Value for '-insertmod' must be > 0.\n");
+          exit(1);
+      }
+    }
+#ifdef WIN32
+    else
+    if (  strcmp(argv[argno], "-procid") == 0  ) {
+      if (  (++argno >= argc) || (procId != NO_VALUE)  ) {
+          fprintf( stderr, "Multiple '-procid' parameters are not allowed.\n");
+          exit(1);
+      }
+      procId = isnumeric( argv[argno] );
+      if (  procId <= 0  ) {
+          fprintf( stderr, "Value for '-procid' must be > 0.\n");
+          exit(1);
+      }
+    }
+#endif /* WIN32 */
+#ifdef SCALEOUT
+    else
+    if (  strcmp(argv[argno], "-scaleout") == 0  ) {
+      if (  ((argno+1) >= argc) && (strcmp(argv[argno+1],"local") == 0)  ) {
+          mode = M_SCALEOUT_LOCAL;
+          argno += 1;
+      }
+      else
+          mode = M_SCALEOUT;
+    }
+#endif /* SCALEOUT */
+    else
+    if (  strcmp(argv[argno], "-connstr") == 0  ) {
+        if (  (++argno >= argc) || (connstr_opt != NULL) || (dsn[0] != '\0')  )
+            usage( cmdname );
+        connstr_opt = strdup( argv[argno] );
+    }
+    else {
+        if (  (connstr_opt != NULL) || (dsn[0] != '\0')  )
+            usage( cmdname );
+        if (  (strlen(argv[argno])+1) > sizeof(dsn)  )
+            usage( cmdname );
+        strcpy( dsn, argv[argno] );
+    }
+    argno += 1;
   }
 
+  /* Check if we have a DSN which is really a connection string */
+  if ( dsn[0] )
+  {
+      if (  (strchr(dsn,';') != NULL) || (strncasecmp(dsn, "DSN=", 4) == 0)  )
+      {
+          connstr_opt = strdup( dsn );
+          dsn[0] = '\0';
+      }
+  }
+
+  /* Assign defaults and computed values as required */
+  if (  duration != NO_VALUE  ) {
+      if (  rampup == NO_VALUE  )
+          rampup = DFLT_RAMPUP;
+      num_xacts = 0;
+  }
+  else {
+    if (  rampup != NO_VALUE  )
+        usage( cmdname );
+    if (  num_xacts == NO_VALUE  )
+      num_xacts = DFLT_XACT;
+    duration = 0;
+  }
+  if (  rand_seed == NO_VALUE  )
+    rand_seed = DFLT_SEED;
+  if (  num_processes == NO_VALUE  )
+     num_processes = DFLT_PROC;
+  if (  reads == NO_VALUE  )
+      reads = DFLT_READS;
+  if (  inserts == NO_VALUE  )
+      inserts = DFLT_INSERTS;
+  if (  deletes == NO_VALUE  )
+      deletes = DFLT_DELETES;
+  if (  opsperxact == NO_VALUE  )
+      opsperxact = DFLT_OPS;
+  if (  key_cnt == NO_VALUE  )
+      key_cnt = DFLT_KEY;
+  if (  isolevel == NO_VALUE  )
+      isolevel = DFLT_ISO;
+  if (  verbose == NO_VALUE  )
+      verbose = VERBOSE_DFLT;
+  if (  rangeFlag == NO_VALUE  )
+      rangeFlag = DFLT_RANGE;
+  if (  throttle == NO_VALUE  )
+      throttle = DFLT_THROTTLE;
+  if (  buildOnly == NO_VALUE  )
+      buildOnly = DFLT_BUILDONLY;
+  if (  noBuild == NO_VALUE  )
+      noBuild = DFLT_NOBUILD;
+  if (  insert_mod == NO_VALUE  )
+      insert_mod = DFLT_INSERT_MOD;
+  if (  procId == NO_VALUE  )
+      procId = DFLT_PROCID;
+  
   if (num_processes != 1)
     insert_mod = num_processes;
 
-  if (num_processes > 1)
-    throttle /= num_processes;
-  
+  /* Various checks on inputs */
+  if ((reads + inserts + deletes) > 100)
+  {
+    fprintf(stderr, "insert + read + delete must not exceed 100. \n");
+    return 0;
+  }
+
   if ((insert_mod * (num_xacts / 100 * (float)inserts)) >
       (key_cnt * key_cnt))
   {
-    fprintf(stderr, "Inserts as part of transaction mix exceed\n"
-                     "number initially populated into data store.\n");
-    fprintf(stderr, "For more information, run \"%s -help\"\n",
-            cmdname);
+    fprintf(stderr, "Inserts as part of transaction mix exceed number\n"
+                    "of rows initially populated into database.\n");
     return 0;
   }
+
   if ((insert_mod * (num_xacts / 100 * (float)deletes)) >
       (key_cnt * key_cnt))
   {
-    fprintf(stderr, "Deletes as part of transaction mix exceed\n"
-                     "number initially populated into data store.\n");
-    fprintf(stderr, "For more information, run \"%s -help\"\n",
-            cmdname);
+    fprintf(stderr, "Deletes as part of transaction mix exceed number\n"
+                    "of rows initially populated into database.\n");
     return 0;
   }
 
-  /* check for connection string or DSN */
-  if (dsn[0] && connstr_opt[0]) {
-
-    /* Got both a connection string and a DSN. */
-    fprintf(stderr, "%s: Both DSN and connection string were given.\n",
-            cmdname);
-    exit(-1);
-
-  } else if (dsn[0]) {
-
-    /* Got a DSN, turn it into a connection string. */
-    if (strlen(dsn)+6 >= sizeof(connstr_opt)) {
-      fprintf(stderr, "%s: DSN '%s' too long.\n", cmdname, dsn);
-      exit(-1);
-    }
-
-    /* does the DSN have a UID */
-    if ( getUid( dsn, username) ) {
-
-      /* Only check for the password if the UID exists */
-      if (pwdExists(dsn) ) {        
-
-        /* use the password in the DSN as is */
-        sprintf(connstr_opt, "DSN=%s", dsn);
-
-        /* What will be displayed and on the CmdLine */
-        sprintf(connstr_no_password, "DSN=%s", dsn);
-      }
-      else {
-
-        /* Get the password once in the parent process */
-        if (procId == 0) {
-        
-          /* get the password and store it in password */
-          getPassword(passwordPrompt, username, (char *) password, sizeof(password) );          
-
-          /* Add the password to the DSN */
-          sprintf(connstr_opt, "DSN=%s;pwd=%s", dsn, password);
-
-          /* now erase the password */
-          erasePassword(password, strlen(password));
-        }
-
-        /* What will be displayed and on the CmdLine */
-        sprintf(connstr_no_password, "DSN=%s", dsn);
-      }
-    } 
-    else {
-
-      /* use the DSN as is */
-      sprintf(connstr_opt, "DSN=%s", dsn);
-
-      /* What will be displayed and on the CmdLine */
-      sprintf(connstr_no_password, "%s", dsn);
-    }
-
-  } else if (connstr_opt[0]) {
-
-    /* Got a connection string. */
-    if (strlen(connstr_opt)+2 >= sizeof(connstr_opt)) {
-      fprintf(stderr, "%s: connection string '%s' too long.\n",
-              cmdname, connstr_opt);
-      app_exit(-1);
-    }
-
-    /* does the Connect String have a UID */
-    if (getUid( connstr_opt, username) ) {
-
-      /* Only check for the password if the UID exists */
-      if (pwdExists(connstr_opt) ) {
-
-        /* use the connstr string as is */
-        sprintf(connstr_no_password, "%s", connstr_opt);
-
-      }
-      else {
-
-        /* Get the password once in the parent process */
-        if (procId == 0) {
-
-          getPassword(passwordPrompt, username, (char *) password, sizeof(password) );
-
-          /* Use the DSN as a temp string */
-          strcpy(dsn, connstr_opt);
-
-          /* Add the password to the Connect String */
-          sprintf(connstr_opt, "%s;pwd=%s", dsn, password);
-
-          /* now erase the password */
-          erasePassword(password, strlen(password));
-        }
-
-        /* What will be displayed and on the CmdLine */
-        sprintf(connstr_no_password, "%s", dsn);
-      }
-    } 
-    else {
-      /* use the DSN as is */
-
-      /* What will be displayed and on the CmdLine */
-      sprintf(connstr_no_password, "%s", dsn);
-    }
-
-  } else {
+  if ( !dsn[0] && (connstr_opt == NULL)  ) { // apply defaults
     /* No connection string or DSN given, use the default. */
-    if (primary)
-      sprintf (dsn, "%sRepSrc", DSNNAME);
-    else if (standby)
-      sprintf (dsn, "%sRepDst", DSNNAME);
-    else {
-
-      /* Get the password once in the parent process */
-      if (procId == 0) {
-
-        getPassword(passwordPrompt, UIDNAME, (char *) password, sizeof(password) );
-
-        /* Use the DSN as a temp string */
-        strcpy(dsn, connstr_opt);
-
-        /* Add the UID and password to the DSN */
-        sprintf(dsn, "%s;%s;pwd=%s", DSNNAME, UID, password);
-
-        /* now erase the password */
-        erasePassword(password, strlen(password));
-      }
+      connstr_opt = strdup( "DSN=" DFLT_DSN ";UID=" DFLT_UID );
     }
 
-    if (strlen(dsn)+6 >= sizeof(connstr_opt)) {
-      fprintf(stderr, "%s: DSN '%s' too long.\n", cmdname, dsn);
+  /* process connection string or DSN */
+  if (dsn[0]) {
+    /* Got a DSN, turn it into a connection string. */
+    if (strlen(dsn)+5 >= sizeof(connstr)) {
+      fprintf(stderr, "DSN '%s' too long.\n", dsn);
       exit(-1);
     }
-    sprintf(connstr_opt, "DSN=%s", dsn);
+    sprintf(connstr, "DSN=%s", dsn);
+    strcpy(connstr_no_password, connstr);
+  } else if (connstr_opt != NULL) {
+    /* Got a connection string. */
+    if (  ! parseConnectionString( connstr_opt,
+                                   dsn, sizeof(dsn),
+                                   username, sizeof(username),
+                                   password, sizeof(password) )  )
+        usage( cmdname );
+    if ( username[0] && !password[0] && (procId == 0)  )
+      getPassword(passwordPrompt, username, (char *) password, sizeof(password) );
 
-    /* What will be displayed and on the CmdLine */
-    sprintf(connstr_no_password, "DSN=%s;%s", DSNNAME, UID);
-  }
+    pos = 1 + strlen( "DSN=" ) + strlen(dsn);
+    if (  username[0]  )
+       pos += strlen( ";UID=" ) + strlen( username );
+    if (  password[0]  )
+       pos += strlen( ";PWD=" ) + strlen( password );
+    if (  pos > sizeof(connstr)  ) {
+      fprintf(stderr, "Connection string is too long.\n");
+      exit(-1);
+    }
+
+    pos = 0;
+    pos += sprintf( connstr+pos, "DSN=%s", dsn );
+    if (  username[0]  )
+        pos += sprintf( connstr+pos, ";UID=%s", username );
+    strcpy( connstr_no_password, connstr );
+    if (  password[0]  ) 
+        pos += sprintf( connstr+pos, ";PWD=%s", password );
+
+#ifndef WIN32
+    /* now erase the password */
+    erasePassword(password, strlen(password));
+#endif
+  } 
 
   return 1;
-}
-
-/* Find the UID in a DSN or Connect String */
-/* assign the username to the INOUT uid param */
-int getUid(const char * dsnOrConnstr, char * uid)
-{
-  int  lenDsnOrConnstr = 0;
-  int i = 0;
-  const char * uideq = "UID=";
-  const char * semicolon = ";";
-  int lenUideq = strlen(uideq);
-  int startUIDeq = 0;
-  int foundUID = 0;
-  int done = 0;
-  int lenUid = 0;
-
-  lenDsnOrConnstr = strlen(dsnOrConnstr);
-  for (i = 0; i < lenDsnOrConnstr; i++)
-  {
-      if (!strncasecmp( &dsnOrConnstr[i], uideq, lenUideq) ) {
-        startUIDeq = i;
-        foundUID = 1;
-        break;
-      }
-  }
-
-  /* Was there a UID in the DSN or Connect String */
-  if (!foundUID) {
-     foundUID = 0;
-     return foundUID;
-
-  } else {  /* now get the username length */
-
-      for (i = startUIDeq + lenUideq; i < lenDsnOrConnstr; i++) {
-
-        /* Is the UID=? embedded within the connect string */
-        if (!strncasecmp( &dsnOrConnstr[i], semicolon, 1) ) {
-
-          /* The username length must be >= 1 */
-          if (i > startUIDeq + lenUideq) {
-            done = 1;
-            break;
-          } 
-          else {
-
-            /* fail */
-            foundUID = 0;
-            return foundUID;
-          }           
-        }  /* if */
-
-      }  /* for */
-
-      /* Was the UID=? at the end of the connect string */
-      if (!done) {
-
-         /* The username length must be >= 1 */
-         if (lenDsnOrConnstr <= (startUIDeq + lenUideq) ) {
-
-            /* fail */
-            foundUID = 0;
-            return foundUID;
-         }
-      }
-
-      /* The username length */
-      lenUid = i - (startUIDeq + lenUideq);
-
-      /* Assign the username to the OUT param */
-      strncpy(uid, &dsnOrConnstr[startUIDeq + lenUideq], lenUid);
-  }  /* foundUID */
-
-  return foundUID;
-}
-
-
-/* Find if a PWD exists in the DSN or Connect String */
-int pwdExists(const char * dsnOrConnstr)
-{
-  int  lenDsnOrConnstr = 0;
-  int i = 0;
-  const char * pwdEq = "PWD=";
-  const char * semicolon = ";";
-  int lenPwdEq = strlen(pwdEq);
-  int startPWDeq = 0;
-  int foundPWD = 0;
-  int done = 0;
-
-  lenDsnOrConnstr = strlen(dsnOrConnstr);
-  for (i = 0; i < lenDsnOrConnstr; i++)
-  {
-      if (!strncasecmp( &dsnOrConnstr[i], pwdEq, lenPwdEq) ) {
-        startPWDeq = i;
-        foundPWD = 1;
-        break;
-      }
-  }
-
-  /* Was there a PWD in the DSN or Connect String */
-  if (!foundPWD) {
-     foundPWD = 0;
-     return foundPWD;
-
-  } else {  /* now get the password length */
-
-      for (i = startPWDeq + lenPwdEq; i < lenDsnOrConnstr; i++) {
-
-        /* Is the PWD=? embedded within the connect string */
-        if (!strncasecmp( &dsnOrConnstr[i], semicolon, 1) ) {       
-
-          /* The password name length must be >= 1 */
-          if (i > startPWDeq + lenPwdEq) {
-            done = 1;
-            break;
-          } 
-          else {
-
-            /* fail */
-            foundPWD = 0;
-            return foundPWD;
-          }           
-        }  /* if */
-
-      }  /* for */
-
-      /* Was the PWD=? at the end of the connect string */
-      if (!done) {
-
-         /* The password length must be >= 1 */
-         if (lenDsnOrConnstr == (startPWDeq + lenPwdEq) ) {
-
-            /* fail */
-            foundPWD = 0;
-            return foundPWD;
-         }
-      }
-
-  }  /* foundPWD */
-
-  return foundPWD;
 }
 
 /*********************************************************************
@@ -735,8 +777,7 @@ int pwdExists(const char * dsnOrConnstr)
  *
  *********************************************************************/
 
-void populate (char*  name,
-               int    overwrite)
+void populate(void)
 {
   SQLRETURN  rc;
   SQLHDBC    hdbc;
@@ -795,7 +836,6 @@ void populate (char*  name,
   sprintf (buff2, "Connected using %s\n",
            connstr_no_password);
   printf("%s\n", buff2);
-
 
   if (!noBuild)
   {
@@ -931,17 +971,18 @@ void populate (char*  name,
     handle_errors (hdbc, hstmt, rc, DISCONNECT_EXIT,
                    "freeing statement handle",
                    __FILE__, __LINE__);
+
+    tptbm_msg0("Population complete\n\n");
   }
+
 }
-
-
-
 
 #if defined(WIN32)
 void OpenShmSeg (int  shmSize)
 {
     int  i;
     int  j;
+    char * p;
 
     /* procId is 0 only for the parent process */
     if (procId == 0)
@@ -956,7 +997,7 @@ void OpenShmSeg (int  shmSize)
         exit (1);
       }
 
-      shmhdr = MapViewOfFile (shmHndl, FILE_MAP_WRITE, 0, 0, 
+      shmhdr = (procinfo_t *)MapViewOfFile (shmHndl, FILE_MAP_WRITE, 0, 0, 
                                      shmSize);
       if (shmhdr == NULL)
       {
@@ -966,22 +1007,22 @@ void OpenShmSeg (int  shmSize)
 
       /* initialize shared memory segment */
       /*    Used for array of PIDs and DSN to pass to child processes */
-      for (i = 0; i < num_processes + strlen(connstr_real) + 4; i++) {
-        shmhdr [i] = 0; 
-      }
+      // for (i = 0; i < (shmSize / sizeof(int)); i++) {
+        // shmhdr [i] = 0; 
+      // }
+      memset( (void *)shmhdr, 0, shmSize );
 
       /* Set the number of processes for the children to get the correct offsets */
-      shmhdr[0] = num_processes;
+      shmhdr[0].state = num_processes;
 
       /* How long is the "real" Connect String */
-      shmhdr[num_processes + 1] = strlen(connstr_real);
+      // shmhdr[(sizeofnum_processes + 1] = strlen(connstr_real);
 
-      j = 0;
-      /* Assign the connect string for the children to read */    
-      for (i = num_processes + 2; i <= num_processes + strlen(connstr_real) + 4; i++) {
-        shmhdr [i] = connstr_real[j]; 
-        j++;
-      }
+      /* Save the connection string for the children to read */
+      // for (i = num_processes + 2, j = 0; i <= num_processes + strlen(password) + 3; i++, j++)
+        // shmhdr [i] = password[j]; 
+      p = (char *)shmhdr + ((sizeof(procinfo_t) * num_processes);
+      strcpy( p, connstr );
 
     }
     else
@@ -995,7 +1036,7 @@ void OpenShmSeg (int  shmSize)
         exit (1);
       }
 
-      shmhdr = MapViewOfFile (shmHndl, FILE_MAP_WRITE, 
+      shmhdr = (procinfo_t *)MapViewOfFile (shmHndl, FILE_MAP_WRITE, 
                                      0, 0, shmSize);
       if (shmhdr == NULL)
       {
@@ -1009,45 +1050,51 @@ void OpenShmSeg (int  shmSize)
 {
     int i;
     int fd;
+    char * p;
 
-    /* create a file for key generation */
-    fd = mkstemp(keypath);
-    if (fd != -1)
-    {
-      /* success - close the file */
-      close(fd);
+    if ( procId == 0  ) {
+        /* create a file for key generation */
+        fd = mkstemp(keypath);
+        if (fd != -1)
+        {
+          /* success - close the file */
+          close(fd);
+        }
+        /* if mkstemp() failed, then ftok() will return -1 to use as the key */
+    
+        /* create shared memory segment */
+        shmid = shmget (ftok (keypath, rand_seed),
+                               shmSize, IPC_CREAT | 0666);
+        if (shmid == -1)
+        {
+          err_msg1("could not create shm segment, errno = %d\n", errno);
+          exit (1);
+        }
     }
-    /* if mkstemp() failed, then ftok() will return -1 to use as the key */
 
-    /* create shared memory segment */
-    shmid = shmget (ftok (keypath, rand_seed),
-                           shmSize, IPC_CREAT | 0666);
-    if (shmid == -1)
-    {
-      err_msg1("could not create shm segment, errno = %d\n", errno);
-      exit (1);
-    }
-
-    shmhdr = (int*) shmat (shmid, 0, 0);
+    shmhdr = (procinfo_t *)shmat (shmid, 0, 0);
     if ((tt_ptrint) shmhdr == -1)
     {
       err_msg1("could not attach to shm segment, errno = %d\n", errno);
       exit (1);
     }
 
-    /* initialize shared memory segment */
-    /*    Used for array of PIDs and DSN to pass to child processes */
-    for (i = 0; i < num_processes + strlen(connstr_real) + 4; i++) {
-      shmhdr [i] = 0; 
+    if ( procId == 0  ) {
+        /* initialize shared memory segment */
+        /*    Used for array of PIDs and DSN to pass to child processes */
+        // for (i = 0; i < (shmSize / sizeof(int)); i++) {
+          // shmhdr [i] = 0; 
+        // }
+        memset( (void *)shmhdr, 0, shmSize );
+    
+        /* Set the number of processes for the children to get the correct offsets */
+        shmhdr[0].state = num_processes;
+    
+        /* remove shared memory segment so it disappears after detach */
+        shmctl (shmid, IPC_RMID, NULL);
+        /* remove the key file */
+        unlink(keypath);
     }
-
-    /* Set the number of processes for the children to get the correct offsets */
-    shmhdr[0] = num_processes;
-
-    /* remove access to shared memory segment */
-    shmctl (shmid, IPC_RMID,NULL);
-    /* remove the key file */
-    unlink(keypath);
 }
 #endif
 
@@ -1093,20 +1140,27 @@ void CreateChildProcs (char*    progName)
        *  in case it has embedded spaces
        */
       char cmdLine      [2000];
+      int  pos = 0;
 
-      if (isolevel >= 0)
-        sprintf (cmdLine, 
-                 "%s -connstr \"%s\" -proc 1 -xact %d -seed %d -procid %d "
-                 "-key %d -read %d -insert %d -insertmod %d -iso %d",
-                 progName, connstr_no_password, num_xacts, rand_seed + 1,
-                 i, key_cnt, reads, inserts, insert_mod, isolevel);
+      pos = sprintf( cmdLine+pos, 
+                 "%s -connstr \"%s\" -proc 1 -seed %d -procid %d -key %d -iso %d "
+                 "-read %d -insert %d -delete %d -insertmod %d -ops %d ",
+                 progName, connstr_no_password, rand_seed + 1, i, key_cnt, isolevel,
+                 reads, inserts, deletes, insert_mod, opsperxact);
+      if (  rangeFlag  )
+          pos += sprintf( cmdLine+pos, "-range " );
+      if (  throttle > 0  )
+          pos += sprintf( cmdLine+pos, "-throttle %d ", throttle );
+#ifdef SCALEOUT
+      if (  mode > M_CLASSIC  )
+          pos += sprintf( cmdLine+pos, "-scaleout " );
+      if (  mode == M_CLASSIC_LOCAL  )
+          pos += sprintf( cmdLine+pos, "local " );
+#endif /* SCALEOUT */
+      if (  num_xacts > 0  )
+          pos += sprintf( cmdLine+pos, "-xact %d ", num_xacts );
       else
-        sprintf (cmdLine, 
-                 "%s -connStr \"%s\" -proc 1 -xact %d -seed %d -procid %d "
-                 "-key %d -read %d -insert %d -insertmod %d",
-                 progName, connstr_no_password, num_xacts, rand_seed + 1,
-                 i, key_cnt, reads, inserts, insert_mod);
-
+          pos += sprintf( cmdLine+pos, "-sec %d -ramp %d ", duration, rampup );
 
       if (CreateProcess (NULL, cmdLine, NULL, NULL, FALSE,
                          CREATE_DEFAULT_ERROR_MODE, NULL,
@@ -1168,17 +1222,10 @@ int main (int argc, char** argv)
 
   
   /* parse the command line arguments */
-  switch (parse_args(argc, argv))
-  {
-    case 1:
-       break;
-
-    case 2:
-      retval = 0;
-      /* Fall through */
-    default:
+  if (  ! parse_args(argc, argv)  )
       goto leaveMain;
-  }
+
+  retval = 0;
 
   if (StopRequested()) {
     err_msg1("Signal %d received. Stopping\n", SigReceived());
@@ -1186,15 +1233,9 @@ int main (int argc, char** argv)
   }
 
   /* the parent/main process must prepare datastore for the benchmark */
+  strcpy(connstr_real, connstr);
   if (procId == 0) {
-
-    sprintf(connstr_real, "%s", connstr_opt);
-
-    populate (dsn, !noBuild); 
-
-  } else {
-
-    strcpy(connstr_real, connstr_opt);
+    populate();
   }
 
   if (buildOnly)
@@ -1217,17 +1258,28 @@ int main (int argc, char** argv)
     goto leaveMain;
   }
 
-  pidArr = malloc(sizeof(tt_ptrint) * (num_processes + strlen(password) + 4));
+  pidArr = malloc(sizeof(tt_ptrint) * (num_processes + strlen(connstr) + 4));
   if (pidArr == NULL)
   {
     fprintf(stderr, "Failed to allocate memory for pidArr\n");
     exit(-1);
   }
 
+#if 0
   if ((num_processes > 1) || (procId > 0))
-    OpenShmSeg (sizeof(int) * (num_processes + strlen(password) + 4));
+    OpenShmSeg ( (sizeof(procinfo_t) * num_processes) + strlen(connstr) + 4);
 
   CreateChildProcs (argv[0]);
+#else
+  if (  procId == 0  )
+  {
+      OpenShmSeg( (sizeof(procinfo_t) * num_processes) + strlen(connstr) + 4);
+      if ( num_processes > 1 )
+          CreateChildProcs(argv[0]);
+  }
+  if (  (num_processes > 1) && (procId > 0) )
+      OpenShmSeg( (sizeof(procinfo_t) * num_processes) + strlen(connstr) + 4);
+#endif
 
   ExecuteTptBm (rand_seed, procId);
   retval = 0;
@@ -1249,7 +1301,10 @@ void ExecuteTptBm (int          seed,
   time_t    interval_start;   /* variable to measure interval time */
   time_t    interval_cur;     /* variable to measure interval time */
   time_t    interval_diff;    /* variable to measure interval time */
-
+  time_t    duration_start, duration_cur, duration_diff;
+  int       duration_target = 0;
+  UBIGINT   duration_est = 10000;    /* duration estimate; initial guess = 10000 xacts / sec */
+  int       rampingup;
   int       rand_int;         /* rand integer */
   int       insert_start;     /* start mark for inserts */
   int       insert_present;   /* present mark for inserts */
@@ -1281,6 +1336,7 @@ void ExecuteTptBm (int          seed,
   int connStrLen ;
   int k;
   int j;
+  char * p;
 
 
   srand(seed);
@@ -1293,15 +1349,19 @@ void ExecuteTptBm (int          seed,
 
 
   /* Connect to data store */
-  if (procId == 0)
+  if (procId == 0) {
     hdbc = ghdbc;
-  else
-  {
-    /* Get the num_processes from SHM to enable the offsets to work */
-    the_num_processes = shmhdr[0];
-
+    the_num_processes = num_processes;
+  } else {
+    /* Get the num_processes from SHM */
+    the_num_processes = shmhdr[0].state;
 
 #ifdef WIN32  /* Only needed on Windoze */
+    p = (char *)shmhdr + (sizeof(procinfo_t) * the_num_processes);
+    strcpy( connstr, p );
+    connStrLen = strlen( connstr );
+    strcpy( connstr_real, connstr );
+#if 0
     /* Get the length of the connect string from SHM */
     connStrLen = shmhdr[the_num_processes + 1];
 
@@ -1313,6 +1373,7 @@ void ExecuteTptBm (int          seed,
       k++;
     }
 #endif
+#endif /* WIN32 */
 
     rc = SQLAllocEnv (&henv);
     if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO)
@@ -1335,18 +1396,19 @@ void ExecuteTptBm (int          seed,
                    __FILE__, __LINE__);
     
 
-    printf("In ExecuteTptBm (Child process = %d), waiting to connect\n", procId);
+    // printf("In ExecuteTptBm (Child process = %d), waiting to connect\n", procId);
 
     rc = SQLDriverConnect (hdbc, NULL, (SQLCHAR*) connstr_real, SQL_NTS,
                            NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
 
     /* Now erase the connect string to get rid of the password */
     erasePassword(connstr_real, strlen(connstr_real));
-    erasePassword(connstr_opt, strlen(connstr_opt));
+    erasePassword(connstr, strlen(connstr));
 
     sprintf (errstr, "connecting to driver (connect string %s)\n",
              connstr_no_password);
     handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT, errstr, __FILE__, __LINE__);
+
   }
   /* explicitly set the locking isolation level */
 
@@ -1530,100 +1592,159 @@ void ExecuteTptBm (int          seed,
   /* print this starting message only in the main/parent process */
   if (procId == 0)
   {
-    if (num_processes > 1) {
+    if (the_num_processes > 1) {
       /* wait for the children to finish initialization */
-      
-      tptbm_msg1("\nWaiting for %d processes to initialize\n",
-                 num_processes);
-      tt_sleep (10);
+      tptbm_msg1("Waiting for %d processes to initialize\n", the_num_processes);
+      // ready all the children
+      for ( i = 1; i < the_num_processes; i++ )
+          shmhdr[i].state = PROC_READY;
+      do {
+          if (StopRequested())
+            goto cleanup;
+          j = 1; k= 0;
+          for ( i = 1; i < the_num_processes; i++ ) {
+              if ( shmhdr[i].state != PROC_SET  )
+                  j = 0, k++;
+          }
+          tt_sleep (1);
+      } while ( ! j );
+      // start all the children
+      for ( i = 1; i < the_num_processes; i++ )
+          shmhdr[i].state = PROC_GO;
     }
 
-    if (!standby) {
-      out_msg6("\nBeginning execution with %d process%s: "
+    out_msg6("Beginning execution with %d process%s: "
                  "%d%% read, %d%% update, %d%% insert, %d%% delete\n",
-                 num_processes, num_processes > 1 ? "es" : "",
+                 the_num_processes, the_num_processes > 1 ? "es" : "",
                  reads,
                  100 - (reads + inserts + deletes),
                  inserts, deletes);
-    }
-    else {
-      tptbm_msg0("Beginning execution in standby mode.\n");
-    }
-  }
-
-  /* For replication demo, otherwise not used
-     In case of the primary replication datastore wait for
-     the standby to be ready 
-  */
-  if (primary)
-  {
-    id = 0;
-    nb = 0;
-
-    /* wait for replication begin */
-    while (!replication_begin)
-    {
-      /* execute, fetch, free and commit */
-      rc = SQLExecute (selstmt);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "executing select",
-                     __FILE__, __LINE__);
-
-      rc = SQLFetch (selstmt);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "fetching select",
-                     __FILE__, __LINE__);
-
-      rc = SQLFreeStmt (selstmt,SQL_CLOSE);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "closing select",
-                     __FILE__, __LINE__);
-
-      rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "committing transaction",
-                     __FILE__, __LINE__);
-
-      /* has the standby updated the record */
-      if (strncmp ((char*)last, "begin", 5) == 0)
+  } else {
+      // wait to be readied
+      while (shmhdr[procId].state < PROC_READY)
       {
-        /* received the begin transmission record */
-        replication_begin = 1;
+        if (StopRequested())
+            goto cleanup;
+        tt_sleep(1)
       }
-      else 
+      shmhdr[procId].state = PROC_SET; // indicate ready
+      // wait to be started
+      while (shmhdr[procId].state < PROC_GO)
       {
-        tt_sleep (1);
+        if (StopRequested())
+            goto cleanup;
+        tt_yield();
       }
-    }
   }
 
   time(&interval_start);
-  ttGetTime (&main_start);
 
-  /* the following is only for multi-process */
-  if ((num_processes > 1) || (procId > 0))
-  {
-    /* parent sets  the entire array to 1 */
-    if (procId == 0)
-    {
-      for (i = 1; i < num_processes + 1; i++)
-        shmhdr [i] = 1;      
+  if ( (procId == 0) && duration) {
+    duration_start = interval_start;
+    if (rampup > 0) {
+      duration_target = rampup;
+      rampingup = 1;
+    } else {
+      duration_target = duration;
+      rampingup = 0;
     }
-
-    /* the child polls for a value of 1 */
-    while (shmhdr [procId] == 0)
-      tt_sleep (1);
   }
+
+  ttGetTime (&main_start);
 
   insert_start = key_cnt + procId;   /* start mark for this process */
   insert_present = 0;
   delete_start = procId;
 
-  /* execute num_xacts transactions except in replication standby datastore */
-  if (!standby)
-  {
-    for (i = 0; i < num_xacts; i++)
+    long delete_max = (key_cnt * key_cnt) / the_num_processes;
+    long deleted = 0;
+    for (i = 0; duration || (i < num_xacts); i++)
     {
+      if (duration) {
+        /* no more rows to delete */
+        if ( deletes && (deleted >= delete_max) ) {
+          if (the_num_processes > 1) {
+            shmhdr[procId].xacts = i; /* store the number of xacts */
+            shmhdr[procId].state = PROC_STOP;
+          } else {
+            /* i am the only process */
+            num_xacts = i;
+          }
+          if (verbose >= VERBOSE_ALL)
+            status_msg2("Process %d deleted %.0f rows\n",
+                        procId, (double)deleted);
+          goto finish_loop;
+        }
+
+        /* child */
+        if ( procId > 0 ) {
+          /* check this first for performance */
+          if (shmhdr[procId].state != PROC_GO) {
+            if (shmhdr[procId].state == PROC_STARTBENCH) {
+              i = 0; /* reset the counter */
+              shmhdr[procId].state = PROC_GO;
+            }
+            else if (shmhdr[procId].state == PROC_STOP) {
+              if (verbose >= VERBOSE_ALL)
+                status_msg2("Process %d finished %.0f xacts\n",
+                            procId, (double)i);
+              shmhdr[procId].xacts = i; /* store the number of xacts */
+              goto finish_loop;
+            }
+          }
+        }
+        /* parent */
+        else {
+          if (i > duration_est) {
+            int child;
+            (void)time(&duration_cur);
+            duration_diff = (duration_cur - duration_start);
+            /* recalculate the estimation */
+            if (duration_diff == 0) duration_diff = 1; /* avoid divide-by-zero */
+            if (duration_diff < 10) /* too short to determine the estimation */
+              duration_est = (i / duration_diff) * (duration_diff + 10);
+            else if (duration_diff < duration_target - 5) /* jump to 5 seconds before the end */
+              duration_est = (i / duration_diff) * (duration_target - 5);
+            else /* for last 5 seconds, try second by second */
+              duration_est = (i / duration_diff) * (duration_diff + 1);
+
+            /* duration passed */
+            if (duration_diff >= (time_t)duration_target) {
+              if (rampingup) {
+                /* RAMP-UP done */
+                status_msg0("Ramp-up done...benchmark begins\n");
+                ttGetTime(&main_start); /* reset the start time */
+                if (the_num_processes > 1) {
+                  for (child = 1; child < the_num_processes; child++) {
+                    shmhdr[child].state = PROC_STARTBENCH;
+                  }
+                }
+                duration_start = duration_cur;
+                duration_target = duration;
+                rampingup = 0;
+                i = 0;
+              } else {
+                /* Benchmark finished */
+                if (the_num_processes > 1) {
+                  for (child = 1; child < the_num_processes; child++) {
+                    /* tell children to stop */
+                    shmhdr[child].state = PROC_STOP;
+                  }
+                }
+                shmhdr[procId].xacts = i; /* store the number of xacts */
+                if (verbose >= VERBOSE_ALL)
+                  status_msg2("Process %d finished %.0f xacts\n",
+                              procId, (double)i);
+                goto finish_loop;
+              }
+            }
+
+          } /* i > duration_est */
+        } /* end of parent */
+      } /* end of duration */
+    else
+        shmhdr[procId].xacts = i;
+
     throttle:      
       if (throttle && ((i % throttle) == (throttle-1))) {
         (void) time (&interval_cur);
@@ -1767,89 +1888,20 @@ void ExecuteTptBm (int          seed,
         }
       }
     }
-  }
-  else  /* Used only for replication demo */
-  {
-    /* Standby datastore. Indicate replication may begin  */
-    id = 0;
-    nb = 0;
-    sprintf ((char*) last, "begin"); /* replication demo may begin */
-
-    /* execute and commit */
-    rc = SQLExecute (upstmt);
-    handle_errors (hdbc, upstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "executing update",
-                   __FILE__, __LINE__);
-
-
-    rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-    handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "committing transaction",
-                   __FILE__, __LINE__);
-
-    /* wait for transmission to end from primary */
-    while (!replication_ended)
-    {
-      /* execute, fetch, free and commit */
-      rc = SQLExecute (selstmt);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "executing select",
-                     __FILE__, __LINE__);
-
-      rc = SQLFetch (selstmt);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "fetching select",
-                     __FILE__, __LINE__);
-
-      rc = SQLFreeStmt (selstmt,SQL_CLOSE);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "closing select",
-                     __FILE__, __LINE__);
-
-      rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "committing transaction",
-                     __FILE__, __LINE__);
-
-      if (strncmp ((char*) last, "check", 5) == 0)
-      {
-        /* received the end of transmission record */
-        replication_ended = 1; 
-      }
-      else
-      {
-        tt_sleep (1);
-      }
-    }
-
-    /* Standby datastore. Insert replication end record */
-    id = 0;
-    nb = 0;
-    sprintf ((char*) last, "end"); /* replication demo ended */
-
-    /* execute and commit */
-    rc = SQLExecute (upstmt);
-    handle_errors (hdbc, upstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "executing update",
-                   __FILE__, __LINE__);
-
-
-    rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-    handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "committing transaction",
-                   __FILE__, __LINE__);
-  }
-
+finish_loop:
+   rc = SQLTransact(henv, hdbc, SQL_COMMIT);
+   handle_errors(hdbc, NULL, rc, -3, "Unable to commit last transaction",
+                    __FILE__, __LINE__);
 
   /* the following is only for multi-process */
-  if ((num_processes > 1) || (procId > 0))
+  if ((the_num_processes > 1) || (procId > 0))
   {
     /* each process indicates completion of run */
-    shmhdr [procId] = 0;
+    shmhdr[procId].state = PROC_END;
 
     if (procId == 0)   /* parent process */
     {
-      for (i = 1; i < num_processes; i++)
+      for (i = 1; i < the_num_processes; i++)
       {
         /* code to check if any children are dead */
 #if defined(WIN32)
@@ -1857,10 +1909,10 @@ void ExecuteTptBm (int          seed,
 
         while ((GetExitCodeProcess ((HANDLE) pidArr [i], &exitcode) 
              && (exitcode == STILL_ACTIVE))
-           && (shmhdr [i] == 1))
+           && (shmhdr[i].state < PROC_END))
 #else
         while ((waitpid (pidArr [i], NULL, WNOHANG) != pidArr [i])
-           && (shmhdr [i] == 1))
+           && (shmhdr[i].state < PROC_END))
 #endif
         {
           /* main/parent  process waits for all sub-processes to complete */
@@ -1869,55 +1921,6 @@ void ExecuteTptBm (int          seed,
       }
     }
   }
-
-  /* Primary datastore. Insert replication end record */
-  if ((primary) && (procId == 0))
-  {
-    id = 0;
-    nb = 0;
-    sprintf ((char*) last, "check"); /* replication demo ended */
-
-    /* execute and commit */
-    rc = SQLExecute (upstmt);
-    handle_errors (hdbc, upstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "executing update",
-                   __FILE__, __LINE__);
-
-    rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-    handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "committing transaction",
-                   __FILE__, __LINE__);
-
-    while (!replication_ended)
-    {
-      /* execute, fetch, free and commit */
-      rc = SQLExecute (selstmt);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "executing select",
-                     __FILE__, __LINE__);
-
-      rc = SQLFetch (selstmt);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "fetching select",
-                     __FILE__, __LINE__);
-
-      rc = SQLFreeStmt (selstmt,SQL_CLOSE);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "closing select",
-                     __FILE__, __LINE__);
-
-      rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "committing transaction",
-                     __FILE__, __LINE__);
-
-      if (strncmp ((char*) last, "end", 3) == 0)
-        replication_ended = 1; /* received the end record */
-      else
-        tt_sleep (1);
-    }
-  }
-
 
   /* time at the end of the run */
   ttGetTime (&main_end);
@@ -1928,8 +1931,11 @@ void ExecuteTptBm (int          seed,
   if (time_diff == 0)
     time_diff = 1000; /* 1 second minimum difference */
 
-  
-  tps = num_processes * ((double) num_xacts / time_diff) * 1000;
+  num_xacts = shmhdr[0].xacts;
+  if ( the_num_processes > 1 )
+      for (i = 1; i < the_num_processes; i++)
+           num_xacts += shmhdr[i].xacts;
+  tps = ((double) num_xacts / time_diff) * 1000;
   if (opsperxact > 1) {
     tps /= (double)opsperxact;
   }
@@ -1937,7 +1943,6 @@ void ExecuteTptBm (int          seed,
   /* print this message only in the main/parent process */
   if (procId == 0 && verbose)
   {
-    if (!standby) {
       if (time_diff >= 1000) {
         out_msg1("\nElapsed time:     %10.1f seconds \n", (double)time_diff/1000.0);
       }
@@ -1954,12 +1959,9 @@ void ExecuteTptBm (int          seed,
         out_msg2("Operation rate:   %10.1f operations/second (%d ops/transaction)\n",
                  tps * opsperxact, opsperxact);
       }
-    }
-    else {
-      out_msg0("Standby complete. All updates received.\n");
-    }
   }
 
+cleanup:
   rc = SQLTransact (henv, hdbc, SQL_COMMIT);
   handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                  "committing transaction",
@@ -2006,7 +2008,7 @@ void ExecuteTptBm (int          seed,
 
 
   /* the following is only for multi-process */
-  if ((num_processes > 1) || (procId > 0))
+  if ((the_num_processes > 1) || (procId > 0))
   {
 #if defined(WIN32)
 
@@ -2021,90 +2023,6 @@ void ExecuteTptBm (int          seed,
 #endif
   }
 }
-
-
-
-/*********************************************************************
- *
- *  FUNCTION:       getinikey
- *
- *  DESCRIPTION:    Retrieve the string value of a key from connStr.
- *
- *  PARAMETERS:     char* connStr   input connStr to search
-                    char *sought    Parameter whose value required.
- *                  char *result    The value of the parameter.
- *
- *  RETURNS:        int             0  success, -1 failure.
- *
- *  NOTES:          NONE
- *
- *********************************************************************/
-int getinikey (char*        connStr,
-               const char*  sought,
-               char*        result)
-{
-  const char* cp;
-  const char* cp2;
-  int         kl;
-
-  kl = strlen (sought);
-  cp = connStr;
-  while (*cp)
-  {
-    /* Starting on an attribute name, read through until we hit an = or ; */
-    cp2 = cp;
-
-    while (*cp2)
-    {
-      if (*cp2 == '=' || *cp2 == ';')
-        break;
-
-      cp2++;
-    }
-
-    /* If hit end of string, funny attribute with no value attached,
-     * so we can't use it.  Give up. */
-    if (*cp2 == 0)
-      break;
-
-    /* If we ended up finding nothing, just advance cp by one and try
-     * again.  Could happen due to adjacent ;'s or ='s in string */
-    if (cp2 == cp)
-    {
-      cp++;
-      continue;
-    }
-
-    /* Compare keyword (case insensitive) to the one we're looking for */
-    if ((kl == cp2 - cp) && strncasecmp (sought, cp, cp2 - cp) == 0)
-    {
-      /* Extract the desired data store name */
-      cp = cp2 + 1;
-      cp2 = cp;
-
-      while (*cp2 && *cp2 != ';')
-        cp2++;
-
-      memcpy (result, cp, cp2 - cp);
-      result [cp2 - cp] = 0;
-      return 0;
-    }
-
-    /* No match.  Advance cp to beginning of next possible keyword */
-    cp = cp2 + 1;
-
-    while (*cp && *cp != ';')
-      cp++;
-
-    if (*cp != 0)
-      cp++;
-  }
-
-  /* Never found what we wanted, return failure */
-  return -1;
-}
-
-
 
 /* Turn on and off echoing text to the console */
 int chg_echo(int echo_on)
@@ -2176,7 +2094,7 @@ void getPassword(const char * prompt, const char * uid, char * pswd, size_t len)
 
 /*********************************************************************
  *
- *  FUNCTION:       tt_MemErase
+ *  FUNCTION:       erasePassword
  *
  *  DESCRIPTION:    Securely erase memory, for example to clear any trace
  *                  of a plaintext password.  Do it in a way that shouldn't
@@ -2204,6 +2122,125 @@ erasePassword(volatile char *buf, size_t len)
      }
    }
 }  /* erasePassword */
+
+/*********************************************************************
+ *
+ *  FUNCTION:       parseConnectionString
+ *
+ *  DESCRIPTION:    Parses a connection string, verifying it conforms to
+ *                  the allowed format, and extracts the DSN (mandatory),
+ *                  username (optional) and password (optional, only if 
+ *                  username is present).
+ *
+ *  PARAMETERS:     char * connstr   The connection string
+ *                  char * pDSN      Buffer to receive DSN
+ *                  int    sDSN      Size of DSN buffer
+ *                  char * pUID      Buffer to receive username
+ *                  int    sUID      Size of username buffer
+ *                  char * pPWD      Buffer to receive password
+ *                  int    sPWD      Size of password buffer
+ *
+ *  RETURNS:        True if successful, false if some error.
+ *
+ *  NOTES:          Required format for a connection strign is:
+ *                  [DSN=]dsname[;UID=username[;PWD=password]]
+ *
+ *********************************************************************/
+
+int
+parseConnectionString(
+                      char * connstr,
+                      char * pDSN,
+                      int    sDSN,
+                      char * pUID,
+                      int    sUID,
+                      char * pPWD,
+                      int    sPWD
+                     )
+{
+    enum {eDSN, eUID, ePWD} aname;
+    char * p, * q, *avalue;
+
+    if (  (connstr == NULL) || 
+          (pDSN == NULL) || (sDSN <= 0) ||
+          (pUID == NULL) || (sUID <= 0) ||
+          (pPWD == NULL) || (sPWD <= 0)  )
+        return 0; /* invalid */
+    *pDSN = *pUID = *pPWD = '\0';
+    p = connstr;
+
+    while (  (p != NULL) && (*p != '\0')  )
+    {
+        if (  strncasecmp( p, "UID=", strlen("UID=") ) == 0  )
+        {
+            aname = eUID;
+            p += (strlen("UID=")-1);
+            *p++ = '\0';
+            avalue = p;
+        }
+        else
+        if (  strncasecmp( p, "PWD=", strlen("PWD=") ) == 0  )
+        {
+            aname = ePWD;
+            p += (strlen("PWD=")-1);
+            *p++ = '\0';
+            avalue = p;
+        }
+        else
+        if (  strncasecmp( p, "DSN=", strlen("DSN=") ) == 0  )
+        {
+            aname = eDSN;
+            p += (strlen("DSN=")-1);
+            *p++ = '\0';
+            avalue = p;
+        }
+        else
+        {
+            aname = eDSN;
+            avalue = p;
+        }
+        if (  *p == '\0'  )
+            return 0; /* invalid */
+        q = strchr( p, ';' );
+        if (  q != NULL  )
+            *q++ = '\0';
+
+        switch ( aname ) 
+        {
+            case eDSN:
+                if (  *pDSN != '\0'  )
+                    return 0; /* invalid */
+                if (  (strlen(avalue)+1) > sDSN  )
+                    return 0; /* invalid */
+                strcpy( pDSN, avalue );
+                break;
+            case eUID:
+                if (  *pUID != '\0'  )
+                    return 0; /* invalid */
+                if (  (strlen(avalue)+1) > sUID  )
+                    return 0; /* invalid */
+                strcpy( pUID, avalue );
+                break;
+            case ePWD:
+                if (  *pPWD != '\0'  )
+                    return 0; /* invalid */
+                if (  (strlen(avalue)+1) > sPWD  )
+                    return 0; /* invalid */
+                strcpy( pPWD, avalue );
+                break;
+        }
+
+        p = q;
+    }
+
+    /* validation */
+    if (  *pDSN == '\0'  )
+        return 0; /* invalid */
+    if (  (*pPWD != '\0') && (*pUID == '\0')  )
+        return 0; /* invalid */
+
+    return 1;
+}
 
 /* Emacs variable settings */
 /* Local Variables: */
