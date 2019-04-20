@@ -9,9 +9,9 @@ INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 TTDMDIR         = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
 
-CC              = cc_r
+CC              = xlc_r
 
-PLATCFLAGS      = -O -qmaxmem=8192 -q64
+PLATCFLAGS      = -O -qmaxmem=32768 -q64
 LDFLAGS         = -q64
 SHLIB_SUFFIX    = so
 AR_SUFFIX       = a

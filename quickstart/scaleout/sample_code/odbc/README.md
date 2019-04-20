@@ -1,10 +1,104 @@
-Copyright (c) 1998, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 1998, 2019, Oracle and/or its affiliates. All rights reserved.
 
-# C/ODBC sample program for Scaleout
+# C/ODBC sample programs for Scaleout
 
-This directory contains the source code for a relatively simple C/ODBC program (GridSample) that shows how to connect to and execute transactions against a TimesTen Scaleout database. The program is written to illustrate best practice and demonstrates how to make a program resilient by providing a fully functional code example showing how to properly handle events such as client connection failovers and transient errors. 
+This directory contains the source code for some relatively simple C/ODBC programs hat shows how to connect to and execute transactions against a TimesTen Scaleout database.
 
-The program can also be run against a Classic database; the program determines the database mode at run-time and adapts accordingly.
+**TptBm**
+
+This program implements a multi-user throughput benchmark. By default, the transaction mix consists of 80% SELECT (read) transactions and 20% UPDATE (write) transactions. In addition to SELECTs and UPDATEs, INSERTs can also be included in the transaction mix. The ratio of SELECTs, UPDATEs and INSERTs is specified at the command line. Each transaction consists of one or more SQL operations (controlled by the '-ops' command line parameter).
+
+The benchmark initially populates the data store, and then executes the transaction mix on it. The number of rows inserted as part of the transaction mix cannot exceed the number of rows with which the database is populated initially.
+
+The measurement error for the benchmark is at most 2 seconds. This will be negligible at loads with a duration in excess of 200 seconds. A suggested load for the benchmark is one which lasts at least 600 seconds.
+
+The schema for the bnchmark table is described in the program source file tptbm.c. There are two versions of the program; tptbm for direct mode and tptbmCS for client-server mode.
+
+For the full syntax of the program, use "tptbm[CS] -help".
+
+
+The program can run in 4 different modes:
+
+_Classic mode (the default): direct and client-server_
+
+The program treats the target database as a TimesTen Classic database. In this mode it behaves identically to the 'tptbm' sample program in the Classic QuickStart (they are in fact exactly the same programs just built with different options enabled).
+
+Examples:
+
+  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions
+  
+`  tptbm`
+  
+  Default connection string, 80% reads, 20% updates, 4 processes, run for 600 seconds with a 30 second ramp-up, random number generator uses 3 as the seed
+  
+  `tptbm -proc 4 -sec 600 -ramp 30 -seed 3`
+
+  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 5 second ramp-up time
+  
+  `tptbm -read 85 -insert 10 -sec 300 -ramp 5 -connstr "DSN=mytestdb;UID=someuser"`
+
+_Scaleout mode - use '-scaleout' on the command line: direct and client-server_
+
+The program treats the target database as a TimesTen Scaleout database. In this mode it creates the benchmark table with a hash distribution clause and makes some minor adaptions to its behavior to better suit a Scaleout database.
+
+Examples:
+
+  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions
+  
+`  tptbm -scaleout
+`
+  
+  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp-up
+  
+  `tptbm -scaleout -proc 8 -sec 600 -ramp 30`
+
+  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 5 second ramp-up time
+  
+  `tptbm -scaleout -read 85 -insert 10 -sec 300 -ramp 5 -connstr "DSN=mytestdb;UID=someuser"`
+
+_Scaleout Local mode - use '-scaleout local' on the command line: direct and client-server_
+
+Behaves like the regular scaleout mode but in addition each benchmark process uses the TimesTen Scaleout Routing API to enable it to generate and use key values that ensure that it always manipulates rows that reside in the database element to which it is connected thus minimising network round trips within the Scaleout grid. This is a form of data locality based optimization.
+
+Examples:
+
+  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions, throtle each process to no more than 1000 TPS
+  
+`  tptbm -scaleout local -throttle 1000
+`
+  
+  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp-up
+  
+  `tptbm -scaleout local -proc 8 -sec 600 -ramp 30`
+
+  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 5 second ramp-up time
+  
+  `tptbm -scaleout local -read 85 -insert 10 -sec 300 -ramp 5 -connstr "DSN=mytestdb;UID=someuser"`
+
+_Scaleout Routing mode - use '-scaleout routing' on the command line: client-server only_
+
+This mode is only available in the client-server version of the program, tptbmCS. Behaves like the regular scaleout mode but in addition each benchmark process opens connectiosn to every database element. During the benchmark it uses the TimesTen Scaleout Routing API to send operations directly to a database element containing the target row thus minimising network round trips within the Scaleout grid. This is another form of data locality based optimization.
+
+Examples:
+
+  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions, throtle each process to no more than 1000 TPS
+  
+`  tptbmCS -scaleout routing -throttle 1000
+`
+  
+  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp-up
+  
+  `tptbmCS -scaleout routing -proc 8 -sec 600 -ramp 30`
+
+  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 5 second ramp-up time
+  
+  `tptbmCS -scaleout rouing -read 85 -insert 10 -sec 300 -ramp 5 -connstr "DSN=mytestdbCS;UID=someuser"`
+
+**GridSample**
+
+The program is written to illustrate best practice and demonstrates how to make a program resilient by providing a fully functional code example showing how to properly handle events such as client connection failovers and transient errors. 
+
+The program can also be run against a Classic database; the program determines the database mode at run-time and adapts accordingly. There are two versions of the program; GridSample for direct mode and GridSampleCS for client-server mode.
 
 GridSample uses the Mobile Payments sample database which must be created and populated before running the program.
 
@@ -20,33 +114,6 @@ The GridSample program implements a configurable workload consisting of 5 differ
 **Query**       -    Retrieve details for a customer and their accounts.
 
 **Purge**       -    Delete 'old' entries from the transaction history table.
-
-To build and run the sample program:
-
-1.    Make sure that you have a suitable C development environment installed (compiler, linker etc.) and a suitable TimesTen instance (a client instance is sufficient).
-
-2.    Make sure that you have deployed a TimesTen Scaleout grid, created a database, created the Mobile Payments user and schema and populated it with the Mobile Payments example data set. See the 'database' directory for more information.
-
-3.    Set your environment for the TimesTen instance that you will use to connect to the database (this instance must be configured with a suitable connectable):
-
-      source \<instance\_home\>/bin/ttenv.[c]sh
-      
-      source \<quickstart\_install\_dir\>/scaleout/ttquickstartenv.[c]sh
-
-
-4.    Build GridSample using the provided Makefile. If you have a full instance then you can build both the direct mode (GridSample) and client/server (GridSampleCS) binaries:
-
-      make clean
-  
-      make
-
-5.   If you have a client instance then instead build just the client/server (GridSampleCS) binary:
-
-      make clean
-
-      make csonly
-
-6.    Run the sample program. 
 
 Here is the online help for the program (this help text is from the client/server version):
 
@@ -117,15 +184,44 @@ Here are some examples of running the program.
 Connect via client/server using all defaults. You will be prompted for the 
 password for the user 'appuser':
 
-GridSampleCS
+  GridSampleCS
 
 Connect via direct mode to the DSN 'demodb' using the user 'griddemo' with 
 password 'griddemo'. Use a transaction mix of 50% Authorize, 25% Charge,
 5% TopUp, 10% Query and 10% Purge and run for 120 seconds with status reports
 every 10 seconds:
 
-GridSample -dsn demodb -uid griddemo -pwd griddemo -txnmix 50,25,5,10,10 \
-           -duration 120 -verbose 10
+  GridSample -dsn demodb -uid griddemo -pwd griddemo -txnmix 50,25,5,10,10 \
+             -duration 120 -verbose 10
 ````
 
 You can observe the program's resilience to failures by using ttGridAdmin to stop and start grid data instances or server processes while the program is running.
+
+**Building and running the sample programs**
+
+To build and run the sample programs:
+
+1.    Make sure that you have a suitable C development environment installed (compiler, linker etc.) and a suitable TimesTen instance (a client instance is sufficient).
+
+2.    Make sure that you have deployed a TimesTen Scaleout grid, created a database, created the Mobile Payments user and schema and populated it with the Mobile Payments example data set. See the 'database' directory for more information. For TptBm only the user need be created.
+
+3.    Set your environment for the TimesTen instance that you will use to connect to the database (this instance must be configured with a suitable connectable):
+
+      `source <instance_home>/bin/ttenv.[c]sh`
+      
+      `source <quickstart_install_dir>/scaleout/ttquickstartenv.[c]sh`
+
+
+4.    Build the binaries using the provided Makefile. If you have a full instance then you can build both the direct mode and client/server binaries:
+
+      `make clean`
+  
+      `make`
+
+5.   If you have a client instance then instead build just the client/server binaries:
+
+      `make clean`
+
+      `make csonly`
+
+6.    Run the sample program(s). 

@@ -1,0 +1,56 @@
+---
+#
+# install client
+#
+
+- set_fact:
+    ttclientname:       "{{ dbname }}-client"
+
+- set_fact:
+    ttclientini:        "{{ oraclehome }}/{{ ttclientname }}/conf/sys.odbc.ini"
+
+- name: get serverhost param from db-addresses
+  shell:       "python {{opchome }}/{{ scriptdir }}/gethosts.py {{ inventory_file }} db-addresses | cut -d\"'\" -f2"
+  register:      dbaddr
+  delegate_to:   localhost
+
+- name: ttinstancecreate -clientonly
+  shell:         "{{ ttinstalldir }}/bin/ttInstanceCreate -grid -name {{ ttclientname }} -location {{ oraclehome }} -serverhost {{ dbaddr.stdout }} -csport {{ dscsport }} -clientonly"
+  args:
+    creates:     "{{ oraclehome }}/{{ ttclientname }}"
+  register:      ttinstancecreate
+  become:        true
+  become_user:   oracle
+
+# force == true  copies file if dest differs from src
+# force == false would save original file
+- name: save sys.odbc.ini
+  copy: 
+    src:         "{{ ttclientini }}"
+    dest:        "{{ ttclientini }}.save"
+    owner:       oracle
+    group:       oracle
+    mode:        0640
+    remote_src:  true
+    force:       true
+  become:        true
+  become_user:   oracle
+
+- name: have export file?
+  stat: 
+    path:        "roles/client/tasks/client.odbc.ini"
+  register:      clientini
+  delegate_to:   localhost
+
+- name: put gridclientexport file in place
+  copy:
+    src:         "roles/client/tasks/client.odbc.ini"
+    dest:        "{{ ttclientini }}"
+    owner:       oracle
+    group:       oracle
+    mode:        0640
+    force:       true
+  when:          clientini.stat.exists
+  become:        true
+  become_user:   root
+

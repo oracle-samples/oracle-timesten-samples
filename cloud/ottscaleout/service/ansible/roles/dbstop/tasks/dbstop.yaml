@@ -1,0 +1,24 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# stop db
+# stop service
+# dbclose, dbunload
+# ttdaemonadmin stop
+---
+
+- name: attempt close
+  shell:            "{{ ttinstancepath }}/bin/ttdaemonadmin -stop -force"
+  register:         ttstop
+  become:           true
+  become_user:      oracle
+  failed_when:      ttstop.rc > 1
+
+- name: display status (daemon not running)
+  debug:
+    msg:            "{{ ttstop.stderr_lines }}"
+  ignore_errors:    true
+
+

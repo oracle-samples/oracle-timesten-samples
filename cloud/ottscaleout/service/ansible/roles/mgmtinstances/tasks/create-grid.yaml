@@ -1,0 +1,106 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Set up grid and database
+# Only run once 
+#
+# This taskset:
+#   Creates input files for ttgridrollout from templates
+#   Does a dryrun of ttgridrollout before executing it
+#   Create grid active standby pair managment instances
+#   Create grid data instances
+#   Create database
+#   Display status, connection info
+---
+ 
+- name: get config files from templates
+  template:
+    src:            "{{ item }}.j2"
+    dest:           "{{ ttgriddir }}/{{ item }}"
+    owner:          oracle
+    group:          oracle
+    mode:           0660
+  with_items:       ['attributes.dbdef', 'attributes.connect', 'init.sql', 'ttgrid.conf', 'timesten.conf']
+  become:           true
+  become_user:      oracle
+
+- name: change attributes template to dbname.dbdef (1)
+  command: mv attributes.dbdef "{{ dbname }}.dbdef"
+  args:
+    chdir:          "{{ ttgriddir }}"
+  become:           true
+  become_user:      oracle
+
+- name: change connect attributes to cs.connect. (2)
+  command: mv attributes.connect "{{ dbname }}cs.connect"
+  args:
+    chdir:          "{{ ttgriddir }}"
+  become:           true
+  become_user:      oracle
+
+- name: copy in zookeeper client
+  copy:
+    src:            "roles/datainstances/files/zoo_client.conf"
+    dest:           "{{ ttgriddir }}"
+    owner:          oracle
+    group:          oracle
+    mode:           0550
+  become:           true
+  become_user:      oracle
+
+- name: get commands to rollout grid; tell me what you do what you really really do.
+  shell: "{{ ttinstalldir }}/bin/ttGridRollout -n ./ttgrid.conf > ./ttgridrollout.plan"
+  args:
+    chdir:          "{{ ttgriddir }}"
+  become:           true
+  become_user:      oracle
+  run_once:         true
+
+- name: do rollout 
+  shell: "{{ ttinstalldir }}/bin/ttGridRollout ./ttgrid.conf > ./ttgridrollout.out 2>&1"
+  args:
+    chdir:          "{{ ttgriddir }}"
+    creates:        "{{ ttinstancedir }}/{{ ttgridname }}_mgmt"
+  register:         rollout_status
+  become:           true
+  become_user:      oracle
+  ignore_errors:    true
+  run_once:         true
+
+- name: if error on rollout check output
+  shell:            "tail ttgridrollout.out"
+  args:
+    chdir:          "{{ ttgriddir }}"
+  register:         result_tail
+  become:           true
+  become_user:      oracle
+  ignore_errors:    true
+  run_once:         true
+  when:             rollout_status.rc != 0
+
+- name: if error on rollout tail output
+  debug:
+    var:            result_tail.stdout_lines
+  when:             rollout_status.rc != 0
+
+
+- name: extract useful output from rollout
+  shell:           "sed -r -n -e '/Management Instance/,${p}' ./ttgridrollout.out > ./service-info.txt 2>&1"
+  args:
+    chdir:         "{{ ttgriddir }}"
+    warn:          false
+  register:        rollout_result
+  become:       true
+  become_user:  oracle
+
+- name: check for oracle processes
+  shell: "{{ ttinstancedir }}/{{ ttgridname }}_mgmt/bin/ttenv ttgridadmin dbstatus {{ dbname }} -replicaset >> ./service-info.txt 2>&1"
+  args:
+    chdir:         "{{ ttgriddir }}"
+  register:        shell_result  
+  become:       true
+  become_user:  oracle
+
+

@@ -10,31 +10,33 @@ Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 
     The following build_sampledb script should be run once to set up the sample database and user accounts. First set up the Instance Environment Variables e.g. if your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
-    $ source /home/timesten/instance/tt181/bin/ttenv.sh
+    `source /home/timesten/instance/tt181/bin/ttenv.sh`
 
     Run the quickstart/classic/sample_scripts/createdb/build\_sampledb script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
 
     Unix/Linux:
     
-    $ cd quickstart/classic/sample\_scripts/createdb
+    `cd quickstart/classic/sample\_scripts/createdb`
     
-    $ ./build\_sampledb.sh
+    `./build\_sampledb.sh`
 
 3. Set up environment to compile and run the sample application
 
-    The following script must be run in every terminal session:
+    The following scripts must be run in every terminal session.
 
     Set up the Instance environment variables. e.g. if your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
-    $ source /home/timesten/instance/tt181/bin/ttenv.sh
+    `source /home/timesten/instance/tt181/bin/ttenv.sh`
 
     Set up quickstart environment variables:
     
     Unix/Linux: 	  	
     
-    $ . quickstart/classic/ttquickstartenv.sh OR
+    `. quickstart/classic/ttquickstartenv.sh`
     
-    $ source quickstart/classic/ttquickstartenv.csh
+    or
+    
+    `source quickstart/classic/ttquickstartenv.csh`
 
 # How to compile the sample TTClasses (C++) programs
 
@@ -44,15 +46,17 @@ Firstly, select the platform specific Makefile and copy from quickstart/classic/
 
 For example, if your platform is Linux x86-64bit, execute the following commands:
 
-cd quickstart/classic/sample\_code/ttclasses/makefiles
-cp Makefile.linux8664.proto ../Makefile
-cd ..
+`cd quickstart/classic/sample\_code/ttclasses/makefiles`
+
+`cp Makefile.linux8664.proto ../Makefile`
+
+`cd ..`
 
 To build a sample program in the sample_code/ttclasses directory, use the following command:
 
 Linux/Unix:
 
-$ make \<program-name\>
+`make <program-name>`
 
 where \<program-name\> is the program you want to compile.
 
@@ -60,7 +64,7 @@ For example, to compile the typetest program, you do:
 
 Linux/Unix:
 
-$ make typetest
+`make typetest`
 
 ## How to run the sample TTClasses (C++) programs
 
@@ -70,19 +74,19 @@ This sample program is a good starting template for projects that use TTClasses.
 
 Examples:
 
-(Run as appuser: DSN=sampledb;UID=appuser)
+Run as appuser: DSN=sampledb;UID=appuser\
 
-basics
+`basics`
 
-(Run as instance administrator)
+Run as instance administrator
 
-basics sampledb
+`basics sampledb`
 
-(Run as user adm in Client/Server mode)
+Run as user adm in Client/Server mode
 
-basicsCS -connstr "DSN=sampledbCS;uid=adm"
+`basicsCS -connstr "DSN=sampledbCS;uid=adm"`
 
-For full syntax of the program, try "basics -help".
+For the full syntax of the program, use "basics -help".
 
 
 **bulkcp**
@@ -91,15 +95,15 @@ This sample program uses dynamic SQL to run a SQL query and writes the output to
 
 Examples:
 
-(Display user query to STDOUT with default separators)
+Display user query to STDOUT with default separators
 
-bulkcp -query "SELECT * from emp"
+`bulkcp -query "SELECT * from emp"`
 
-(Display user query to a file with default separators on Linux/Unix)
+Display user query to a file with default separators on Linux/Unix
 
-bulkcp -query "SELECT * from dept" -output /tmp/myQuery.txt
+`bulkcp -query "SELECT * from dept" -output /tmp/myQuery.txt`
  
-For full syntax of the program, try "bulkcp -help".
+For the full syntax of the program, use "bulkcp -help".
 
 
 **bulktest**
@@ -108,19 +112,19 @@ This sample code executes a series of insert, update and delete operations first
 
 Examples:
 
-(Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser; batch size= 256)
+Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser; batch size= 256
 
-bulktest
+`bulktest`
 
-(Run the program with batch size = 512, using default connect string \[dsn=sampledb and uid=appuser\])
+Run the program with batch size = 512, using default connect string \[dsn=sampledb and uid=appuser\]
 
-bulktest -batchsize 512
+`bulktest -batchsize 512`
 
-(Run the program against a different dsn and user id of your choice)
+Run the program against a different dsn and user id of your choice
 
-bulktest -connstr "DSN=sampledb;uid=adm"
+`bulktest -connstr "DSN=sampledb;uid=adm"`
 
-For full syntax of the program, try "bulktest -h".
+For the full syntax of the program, use "bulktest -h".
 
 
 **catalog**
@@ -129,15 +133,15 @@ This sample program prints out the database schema information including all tab
 
 Examples:
 
-(Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser)
+Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser
 
-catalog
+`catalog`
 
-(Run the program against a different dsn and user id of your choice)
+Run the program against a different dsn and user id of your choice
 
-catalog -connstr "DSN=sampledb;uid=adm"
+`catalog -connstr "DSN=sampledb;uid=adm"`
 
-For full syntax of the program, try "catalog -h".
+For the full syntax of the program, use "catalog -h".
 
 
 **plsqlTTCLASSES**
@@ -156,19 +160,19 @@ The EMP table and the emp\_pkg and sample\_pkg PLSQL packages need to exist for 
 
 Example usage:
 
-(run the program using the default DSN and default user, it will prompt for the password)
+Run the program using the default DSN and default user, it will prompt for the password
 
-plsqlTTCLASSES
+`plsqlTTCLASSES`
 
-(run the program specifying the DSN and username, it will prompt for the password)
+Run the program specifying the DSN and username, it will prompt for the password
 
-plsqlTTCLASSES -connstr "DSN=sampledb;UID=appuser"
+`plsqlTTCLASSES -connstr "DSN=sampledb;UID=appuser"`
 
-(run the program specifying the DSN, username and password)
+Run the program specifying the DSN, username and password
 
-plsqlTTCLASSES -connstr "DSN=sampledb;UID=appuser;PWD=mypassword"
+`plsqlTTCLASSES -connstr "DSN=sampledb;UID=appuser;PWD=mypassword"`
 
-For full syntax of the program, try "plsqlTTCLASSES -h".
+For the full syntax of the program, use "plsqlTTCLASSES -h".
 
 
 **pooltest**
@@ -177,19 +181,20 @@ This sample program demonstrates multi-threaded connection pool usage and error 
 
 Examples:
 
-(Without any parameters, the program runs use the default of 1 connection, 2 insert threads, 2 fetch threads, and DSN=sampledb;UID=appuser)
+Without any parameters, the program runs use the default of 1 connection, 2 insert threads, 2 fetch threads, and DSN=sampledb;UID=appuser
 
-pooltest
+`pooltest`
 
-(Run the program specifying 2 connections, 4 insert threads)
+Run the program specifying 2 connections, 4 insert threads
 
-pooltest -insert 4 -conn 2
+`pooltest -insert 4 -conn 2`
 
-(Run the program against a different dsn and user id of your choice)
+Run the program against a different dsn and user id of your choice
 
-pooltest -connstr "DSN=sampledb;uid=adm"
+`pooltest -connstr "DSN=sampledb;uid=adm"`
 
-For full syntax of the program, try "pooltest -h".
+For the full syntax of the program, use "pooltest -h".
+
 
 **ttSizeAll**
 
@@ -197,19 +202,19 @@ This sample program demonstrates calling TimesTen utility ttSize for multiple ta
 
 Examples:
 
-(Without any parameters, the program uses DSN=sampledb;UID=appuser)
+Without any parameters, the program uses DSN=sampledb;UID=appuser
 
-ttSizeAll
+`ttSizeAll`
 
-(Show both user and system tables in the output)
+Show both user and system tables in the output
 
-ttSizeAll -listsys
+`ttSizeAll -listsys`
 
-(Run the program against a different dsn and user id of your choice)
+Run the program against a different dsn and user id of your choice
 
-ttSizeAll -connstr "dsn=sampledb;uid=xlauser"
+`ttSizeAll -connstr "dsn=sampledb;uid=xlauser"`
 
-For full syntax of the program, try "ttSizeAll -h".
+For the full syntax of the program, use "ttSizeAll -h".
 
 
 **typetest**
@@ -218,15 +223,15 @@ This sample program demonstrates the use of different datatypes supported by Ora
 
 Examples:
 
-(Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser)
+Without any parameters, the program runs with the default settings: DSN=sampledb;UID=appuser
 
-typetest
+`typetest`
 
-(Run the program against a different dsn and user id of your choice)
+Run the program against a different dsn and user id of your choice
 
-typetest -connstr "dsn=sampledb;uid=appuser"
+`typetest -connstr "dsn=sampledb;uid=appuser"`
 
-For full syntax of the program, try "typetest -h".
+For the full syntax of the program, use "typetest -h".
 
 
 **ttXlaAdmin**
@@ -243,19 +248,19 @@ The "remove" option allows the user to delete the XLA bookmark via its bookmark 
 
 Examples:
 
-(Without any parameters, the program executes the "list" command and connects to DSN=sampledb;UID=adm)
+Without any parameters, the program executes the "list" command and connects to DSN=sampledb;UID=adm
 
-ttXlaAdmin
+`ttXlaAdmin`
 
-(Remove all of the XLA bookmark for any user in the DB. The user needs to have ADMIN privilege to do this.)
+Remove all of the XLA bookmark for any user in the DB. The user needs to have ADMIN privilege to do this.
  
-ttXlaAdmin -removeall
+`ttXlaAdmin -removeall`
 
-(Remove a specific bookmark. The user needs to have ADMIN privilege to do this.)
+Remove a specific bookmark. The user needs to have ADMIN privilege to do this.
  
-ttXlaAdmin -remove <bookmark>
+`ttXlaAdmin -remove <bookmark>`
 
-For full syntax of the program, try "ttxlaAdmin -h".
+For the full syntax of the program, use "ttxlaAdmin -h".
 
 
 **xlasubscriber1**
@@ -270,15 +275,15 @@ To create workload on the table being tracked, use a ttIsql session or a TimesTe
 
 Examples:
 
-(Without any parameters, the program connects to DSN=sampledb;UID=xlauser, and prompt for the table to track)
+Without any parameters, the program connects to DSN=sampledb;UID=xlauser, and prompt for the table to track
 
-xlasubscriber1
+`xlasubscriber1`
 
-(Run the program against a different dsn and user id of your choice; the user needs to have XLA privilege)
+Run the program against a different dsn and user id of your choice; the user needs to have XLA privilege
 
-xlasubscriber1 -connstr "dsn=<mydsn name>;uid=<myusername>"
+`xlasubscriber1 -connstr "dsn=<mydsn name>;uid=<myusername>"`
 
-For full syntax of the program, try "xlaSubscriber1 -h".
+For the full syntax of the program, use "xlaSubscriber1 -h".
 
 
 **xlasubscriber2**
@@ -293,15 +298,15 @@ This program is an example of an XLA subscriber which only has the permission to
 
 Examples:
 
-(Without any parameters, the program connects to DSN=sampledb;UID=xlauser)
+Without any parameters, the program connects to DSN=sampledb;UID=xlauser
 
-xlasubscriber2
+`xlasubscriber2`
 
-(Run the program against a different dsn and user id of your choice; the user needs to have XLA privilege)
+Run the program against a different dsn and user id of your choice; the user needs to have XLA privilege
 
-xlasubscriber2 -connstr "dsn=<mydsn name>;uid=<myusername>"
+`xlasubscriber2 -connstr "dsn=<mydsn name>;uid=<myusername>"`
 
-For full syntax of the program, try "xlasubscriber2 -h".
+For the full syntax of the program, use "xlasubscriber2 -h".
 
 
-For more information on TTClasses, refer to the [Oracle TimesTen In-Memory Database TTClasses Guide](https://docs.oracle.com/cd/E21901_01/timesten.1122/e21640/toc.htm).
+For more information on TTClasses, refer to the [Oracle TimesTen In-Memory Database TTClasses Guide](https://docs.oracle.com/database/timesten-18.1/TTCLS/toc.htm).

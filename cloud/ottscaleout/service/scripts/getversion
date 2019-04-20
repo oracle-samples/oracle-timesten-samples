@@ -1,0 +1,41 @@
+#!/bin/bash
+
+deffile=$1
+if [ -z "${deffile}" ]; then
+  echo "$0: no main variable file specified"
+  exit 1
+fi
+
+ottpkg=$(ls -t ./service/packages/timesten18*.server.linux8664.* | head -1)
+jdkpkg=$(ls -t ./service/packages/j[rd][ek]-8*-linux-x64.tar.gz | head -1)
+
+if [[ ! -r ${ottpkg} ]]; then
+  echo "$0: can't find timesten distribution, ${ottpkg}"
+  exit 1
+fi
+if [[ ! -r ${jdkpkg} ]]; then
+  jdkpkg="java-1.8.0-openjdk"
+fi
+
+if [[ "${ottpkg##*.}" =~ "zip" ]]; then
+  ottver=$(unzip -ql ${ottpkg} | head -3 | tail -1 | awk '{print $4}')
+  if [[ "${ottver##*.}" =~ "gz" ]]; then
+    $(unzip -qou -d ./service/packages ${ottpkg})
+    ottpkg=$(ls -t ./service/packages/timesten18*.server.linux8664.*gz | head -1)
+    ottver=$(tar -tzf ${ottpkg} | head -1)
+  fi
+else
+    ottver=$(tar -tzf ${ottpkg} | head -1)
+fi
+
+ott=$(basename ${ottpkg})
+jdk=$(basename ${jdkpkg})
+
+sed -i -e '/ttinstalldir/d' ${deffile} > /dev/null 2>&1
+sed -i -e '/ttpackage/d'    ${deffile} > /dev/null 2>&1
+sed -i -e '/jdk/d'          ${deffile} > /dev/null 2>&1
+echo "ttinstalldir        : \"{{ oraclehome }}/{{ dbname }}/${ottver}\"" >> ${deffile}
+echo "ttpackage           : \"${ott}\"" >> ${deffile}
+echo "jdk                 : \"${jdk}\"" >> ${deffile}
+
+

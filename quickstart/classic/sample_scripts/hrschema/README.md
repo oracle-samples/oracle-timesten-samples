@@ -237,7 +237,7 @@ CREATE VIEW SAMPLEUSER.EMP_DETAILS_VIEW (EMPLOYEE_ID, JOB_ID, MANAGER_ID, DEPART
 1 view found.
 ````
 
-## 6. Detail on indexes created
+## 7. Detail on indexes created
 
 You can use ttIsql to describe the index definitions. For example, after you connect to the data store containing the HR sample schema objects, use the ttIsql indexes command. (Assume SAMPLEUSER has created the objects):
 
@@ -351,7 +351,7 @@ Indexes on table SAMPLEUSER.JOB_HISTORY:
 1 table found.
 ````
 
-## 7. Performing queries
+## 8. Performing queries
 
 You can use ttIsql to perform queries. For example, each table should have the following number of rows:
 

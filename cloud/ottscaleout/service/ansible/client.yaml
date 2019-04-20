@@ -1,0 +1,36 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+---
+# get ini file
+- hosts: mgmt-addresses
+
+  pre_tasks:
+  - import_tasks: include.yaml
+
+  roles:
+    - client
+
+# create user on pure clients
+- hosts: client-addresses:!mgmt-addresses
+
+  pre_tasks:
+  - import_tasks: include.yaml
+
+  roles:
+    - common
+    - orauser
+
+
+# create client installations
+- hosts: client-addresses
+
+  pre_tasks:
+  - import_tasks: include.yaml
+
+  roles:
+    - client
+
+
+

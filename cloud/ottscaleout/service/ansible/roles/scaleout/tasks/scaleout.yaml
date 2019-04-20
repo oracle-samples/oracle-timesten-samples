@@ -1,0 +1,43 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# run on a mgmtinstance
+# use dbstatus --dataspacegroup
+# util program finds matching host/dataspacegroup
+# generate necessary commands
+# run script
+#
+---
+
+- name: get current data space groups
+  shell: "{{ mgmt }} ttgridadmin -o json dbstatus {{ dbname }} --dataspacegroup > ./ttdsg.json"
+  args:
+    chdir:          "{{ ttgriddir }}"
+  become:           true
+  become_user:      oracle
+
+- name: get hosts file
+  copy: 
+    src:           "{{ opchome }}/service/ansible/hosts"
+    dest:          "{{ oraclehome }}/hosts2"
+    owner:         oracle
+    group:         oracle
+    mode:          0640
+  become:          true
+  become_user:     root
+
+- name: generate ttgridadmin commands for scaleout
+  shell: "{{ oraclehome }}/bin/scaleout.py {{ mgmt }} {{ dbname }} {{ oraclehome }}/hosts2 ./ttdsg.json {{ singleAD }} > ./ttgridscaleout.plan"
+  args:
+    chdir:          "{{ ttgriddir }}"
+  become:           true
+  become_user:      oracle
+
+- name: do scale out
+  shell: "{{ oraclehome }}/bin/runcmds.py ttgridscaleout.plan > ./ttgridscaleout.out"
+  args:
+    chdir:          "{{ ttgriddir }}"
+  become:           true
+  become_user:      oracle

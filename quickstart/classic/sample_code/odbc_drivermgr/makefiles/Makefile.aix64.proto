@@ -9,7 +9,7 @@ INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 TTDMDIR         = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
 
-CC              = cc_r
+CC              = xlc_r
 
 PLATCFLAGS      = -q64 -O -qmaxmem=8192 -qpic=small -qarch=auto -qtune=auto
 DEFS            = -DBITS64 -DTT_LIB_VERSION=181000
@@ -18,7 +18,7 @@ LIBS            = -ldl -lpthread
 SHLIB_SUFFIX    = so
 AR_SUFFIX       = a
 
-INCS            = -I$(INSTDIR)/include -I$(COMMDIR) -I$(INSTDIR)/include/ttclasses
+INCS            = -I. -I$(INSTDIR)/include -I$(COMMDIR) -I$(INSTDIR)/include/ttclasses
 
 CSDEFS          = -DTTCLIENTSERVER
 CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)

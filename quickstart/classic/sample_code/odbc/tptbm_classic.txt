@@ -1,0 +1,63 @@
+
+This program implements a multi-user throughput benchmark using
+direct connection mode.
+
+Usage:
+
+  tptbm {-h | -help}
+  tptbm [-proc <nprocs>] [-read <nreads>] [-insert <nins>] [-delete <ndels>]
+     [-throttle <n>] [{-xact <xacts> | -sec <seconds> [-ramp <rseconds>]}]
+     [-ops <ops>] [-key <keys>] [-range] [-iso <level>] [-seed <seed>]
+     [-build] [-nobuild] [-v <level>]
+     [<DSN> | -connstr <connection-string>]
+
+  -h                  Prints this message and exits.
+  -help               Same as -h.
+  -V                  Prints version number and exits.
+  -proc    <nprocs>   Specifies that <nprocs> is the number of concurrent
+                      processes. The default is 1.
+  -read    <nreads>   Specifies that <nreads> is the percentage of read-only
+                      transactions. The default is 80.
+  -insert  <nins>     Specifies that <nins> is the percentage of insert
+                      transactions. The default is 0.
+  -delete  <ndels>    Specifies that <ndels> is the percentage of delete
+                      transactions. The default is 0.
+  -xact    <xacts>    Specifies that <xacts> is the number of transactions
+                      that each process should run. The default is 10000.
+  -sec     <seconds>  Specifies that <seconds> is the test duration.
+                      that each process should run. Default is to run in
+                      transaction mode (-xact).
+  -ramp  <rseconds>   Specifies that <rseconds> is the ramp up time in duration
+                      mode (-sec). Default is 5.
+  -ops     <ops>      Operations per transaction.  The default is 1.
+                      In the special case where 0 is specified, no commit
+                      is done. This may be useful for read-only testing.
+  -key     <keys>     Specifies the number of records (squared) to initially
+                      populate in the database. The minimum value is 10
+                      and the default is 100 (100**2 rows). The same
+                      value should be specified at both build and run time.
+  -range              Use a range index for the primary key instead of a hash
+                      index.
+  -iso     <level>    Locking isolation level
+                         0 = serializable
+                         1 = read-committed (default)
+  -seed    <seed>     Specifies that <seed> should be the seed for the
+                      random number generator. Must be > 0, default is 1.
+  -throttle <n>       Throttle each process to <n> operations per second.
+                      Must be > 0. The default is no throttle.
+  -build              Only build the database, do not run the benchmark. Only
+                      the '-key' and '-range' parameters are relevant.
+  -nobuild            Only run the benchmark, do not build the database.
+                      The '-range' parameter is not relevant.
+  -v <level>          Verbosity level
+                         0 = errors only
+                         1 = results only
+                         2 = results and some status messages (default)
+                         3 = all messages
+
+If no DSN or connection string is specified, the default is
+  "DSN=sampledb;UID=appuser".
+
+The percentage of update operations is 100 minus the percentages of reads,
+inserts and deletes.
+

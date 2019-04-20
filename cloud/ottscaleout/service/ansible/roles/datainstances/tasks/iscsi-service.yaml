@@ -1,0 +1,47 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Create service for running iscsi attach/detach
+# On OCI could use existing ocid service instead
+--- 
+
+- name: set service name for iscsi
+  set_fact: 
+    iscsisvcname:   "{{ dbname }}-iscsi.service"
+
+- name: make helper utils executable
+  file: 
+    path:           "{{ opchome }}/{{ scriptdir }}/{{ item }}"
+    mode:           0744
+    state:          file
+  with_items:       ["runcmds.py", "iscsi.py"]
+
+- name: install iscsi service files from templates
+  template:
+    src:            "roles/datainstances/templates/iscsi.service.j2"
+    dest:           "{{ systemddir }}/{{ iscsisvcname }}"
+    mode:           0664
+  become:           true
+  become_user:      root
+
+- name: disable iscsi service before start
+  systemd:
+    name:           "{{ iscsisvcname }}"
+    enabled:        no
+  register:         disabled
+  become:           true
+  become_user:      root
+  ignore_errors:    true
+
+- name: enable iscsi service
+  systemd:
+    name:           "{{ iscsisvcname }}"
+    enabled:        yes
+    state:          started
+  register:         dbe
+  become:           true
+  become_user:      root
+
+

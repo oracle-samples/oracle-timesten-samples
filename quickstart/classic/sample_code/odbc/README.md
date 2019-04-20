@@ -1,4 +1,4 @@
-Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 
 # Compile and Run ODBC Sample Programs
 
@@ -10,15 +10,15 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
     The following build_sampledb script should be run once to set up the sample database and user accounts. First set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
-    $ source /home/timesten/instance/tt181/bin/ttenv.sh
+    `source /home/timesten/instance/tt181/bin/ttenv.sh`
 
     Run the quickstart/classic/sample_scripts/createdb/build_sampledb script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
 
     Unix/Linux:
     
-    $ cd quickstart/classic/sample_scripts/createdb
+    `cd quickstart/classic/sample_scripts/createdb`
     
-    $ ./build_sampledb.sh
+    `./build_sampledb.sh`
 
 3. Set up environment to compile and run the sample application
 
@@ -28,15 +28,17 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
     
     e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
-    $ source /home/timesten/instance/tt181/bin/ttenv.sh
+    `source /home/timesten/instance/tt181/bin/ttenv.sh`
 
     Set up quickstart environment variables:
     
     Unix/Linux: 	  	
     
-    $ . quickstart/classic/ttquickstartenv.sh OR
+    `. quickstart/classic/ttquickstartenv.sh`
     
-    $ source quickstart/classic/ttquickstartenv.csh
+    or
+    
+    `source quickstart/classic/ttquickstartenv.csh`
 
 ## How to compile the sample ODBC programs
 
@@ -46,17 +48,17 @@ Firstly, select the platform specific Makefile and copy from quickstart/classic/
 
 For example, if your platform is Linux x86-64bit, execute the following commands:
 
-$ cd quickstart/classic/sample_code/odbc/makefiles
+`cd quickstart/classic/sample_code/odbc/makefiles`
 
-$ cp Makefile.linux8664.proto ../Makefile
+`cp Makefile.linux8664.proto ../Makefile`
 
-$ cd ..
+`cd ..`
 
 To build a sample program in the sample_code/odbc directory, use the following command:
 
 Linux/Unix
 	
-$ make \<program-name\>
+`make <program-name>`
 	
 where \<program-name\> is the program you want to compile.
 
@@ -64,7 +66,9 @@ For example, to compile the bulkinsert program, you do:
 
 Linux/Unix
 	
-$ make bulkinsert
+`make bulkinsert`
+
+There are two versions of each program; one for direct mode and tptbmCS for client-server mode.
 
 ## How to run the sample ODBC programs
 
@@ -74,19 +78,19 @@ This program measures the time needed for insertion of many rows into a table. P
 
   Examples:
 
-  (10,000 rows, batchsize 256, no indexes)
+  Default connection string, 10,000 rows, batchsize 256, no indexes
   
-  bulkinsert
+  `bulkinsert`
 
-  (50,000 rows, batchsize 256, no indexes)
+  Default connection string, 100,000 rows, batchsize 256, no indexes
   
-  bulkinsert -r 50000
+  `bulkinsert -r 100000`
 
-  (5,000 rows, batchsize 512, 3 indexes)
+  Default connection string, 2,000,000 rows, batchsize 512, 3 indexes
   
-  bulkinsert -r 5000 -s 512 -i 3
+  `bulkinsert -r 2000000 -s 512 -i 3`
 
-  For full syntax of the program, try "bulkinsert -help".
+  For the full syntax of the program, use "bulkinsert -help".
 
 
 **plsqlODBC**
@@ -103,21 +107,17 @@ This sample program uses ODBC to access common PLSQL packages (emp_pkg and sampl
 
 The EMP table and the emp_pkg and sample_pkg PLSQL packages need to exist for this program to work.
 
-Example usage:
+Examples:
 
-  (run the program using the default DSN and default user, it will prompt for the password)
+  Default connection string
   
-  plsqlODBC
+  `plsqlODBC`
 
-  (run the program specifying the DSN and username, it will prompt for the password) 
+  Custom connection string
   
-  plsqlODBC -connstr "DSN=sampledb;UID=appuser"
+  `plsqlODBC -connstr "DSN=sampledb;UID=appuser"`
 
-  (run the program specifying the DSN, username and password)
-  
-  plsqlODBC -connstr "DSN=sampledb;UID=appuser;PWD=mypassword"
-
-For full syntax of the program, try "plsqlODBC -help".
+For the full syntax of the program, use "plsqlODBC -help".
 
 
 **tpcb**
@@ -128,18 +128,18 @@ Each transaction updates the balance in the ACCOUNTS, BRANCHES and TELLERS table
 
 Examples:
 
-  (25,000 transactions, scale 1)
+  Default connection string, 25,000 transactions, scale 1
   
-  tpcb
+  `tpcb`
 
-  (250,000 transactions, scale 2)
+  Default connection string, 250,000 transactions, scale 2)
   
-  tpcb -xact 250000 -scale 2
+  `tpcb -xact 250000 -scale 2`
 
-  For full syntax of the program, try "tpcb -help".
+  For the full syntax of the program, use "tpcb -help".
 
 
-**tptbm**
+**TptBm**
 
 This program implements a multi-user throughput benchmark. By default, the transaction mix consists of 80% SELECT (read) transactions and 20% UPDATE (write) transactions. In addition to SELECTs and UPDATEs, INSERTs can also be included in the transaction mix. The ratio of SELECTs, UPDATEs and INSERTs is specified at the command line. Each transaction consists of one or more SQL operations.
 
@@ -151,19 +151,19 @@ The schema for this test is described in the program source file tptbm.c.
 
 Examples:
 
-  (80% reads, 20% updates, 1 process, 10,000 transactions)
+  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions
   
-  tptbm
+  `tptbm`
 
-  (80% reads, 20% updates, 2 process, 100,000 transactions, random number generator uses 3 as the seed)
+  Default connection string, 80% reads, 20% updates, 2 process, 100,000 transactions, random number generator uses 3 as the seed
   
-  tptbm -proc 2 -xact 100000 -seed 3
+  `tptbm -proc 2 -xact 100000 -seed 3`
 
-  (85% reads, 10% inserts, 5% updates, 1 process, 10,000 transactions)
+  Default connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 600 seconds with a 30 second ramp-up time
   
-  tptbm -read 85 -insert 10
+  `tptbm -read 85 -insert 10 -sec 600 -ramp 30`
 
-  For full syntax of the program, try "tptbm -help").
+  For the full syntax of the program, use "tptbm -help").
 
 
 **wiscbm**
@@ -172,24 +172,24 @@ This program implements and measures a subset of queries from the Wisconsin benc
 
 Example usage:
 
-  (scale 1, all queries, read-committed isolation)
+  Default connection string, scale 1, all queries, read-committed isolation
   
-  wiscbm
+  `wiscbm`
 
-  (scale 5, all queries, read-committed isolation)
+  Default connection string, scale 5, all queries, read-committed isolation
   
-  wiscbm -scale 2
+  `wiscbm -scale 2`
 
-  (scale 2, only queries [1, 3, 5-7, 10-14, 25], read-committed isolation)
+  Default connection string, scale 2, only queries [1, 3, 5-7, 10-14, 25], read-committed isolation
   
-  wiscbm -scale 2 -q 1,3,5-7,10-14,25
+  `wiscbm -scale 2 -q 1,3,5-7,10-14,25`
 
-For full syntax, try "wiscbm -help".
+For the full syntax, use "wiscbm -help".
 
 
 **xlaSimple**
 
-This particular  sample program is available in the _quickstart/classic/sample\_code/odbc/xla_ directory.
+This sample program is available in the _quickstart/classic/sample\_code/odbc/xla_ directory.
 
 This program demonstrates the usage of the TimesTen Transaction Log API (XLA) for C developers using ODBC. This program requires a user with XLA privilege to subscribe to changes in the database.
 
@@ -199,11 +199,11 @@ To generate changes to the APPUSER.MYDATA, use ttIsql to connect to sampledb und
 
 Example usage:
 
-  (run the program, default user is xlauser, default database is sampledb)
+  Default connection string
   
-  xlaSimple
+  `xlaSimple`
 
-To exit the program, press CTRL-C. For full syntax, try "xlaSimple -help"
+To exit the program, press CTRL-C. For the full syntax, use "xlaSimple -help"
 
 For more information on how to use ODBC to develop database programs for
-the TimesTen database, see the [Oracle TimesTen In-Memory Database C Developer's Guide](https://docs.oracle.com/cd/E21901_01/timesten.1122/e21637/toc.htm).
+the TimesTen database, see the [Oracle TimesTen In-Memory Database C Developer's Guide](https://docs.oracle.com/database/timesten-18.1/TTCDV/toc.htm).

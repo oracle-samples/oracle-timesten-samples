@@ -1,14 +1,14 @@
 /*
  ******************************************************************
  *
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
  *
  * Project:    TimesTen Driver Manager
- * Version:    2.1
- * Date:       25th January 2018
+ * Version:    2.2
+ * Date:       11th April 2019
  * Author:     chris.jenkins@oracle.com
  *
  ******************************************************************
@@ -67,7 +67,7 @@
 
 /*
  * Special define to enable code to workaround a bug in the SQLEndTran and
- * SQLTransact functions n the TT drivers when called against an environment 
+ * SQLTransact functions in the TT drivers when called against an environment 
  * handle. Under some circumstances the functions should return SQL_SUCCESS 
  * but in fact they erroneously return SQL_ERROR. A subsequent call to
  * SQLError() returns SQL_NO_DATA however.
@@ -92,8 +92,6 @@
 #define TT_LIB_ID   181
 #elif TT_LIB_VERSION == 112200
 #define TT_LIB_ID   1122
-#elif TT_LIB_VERSION == 112100
-#define TT_LIB_ID   1121
 #else
 #error Invalid value for TT_LIB_VERSION
 #endif
@@ -219,13 +217,10 @@ typedef    pthread_mutex_t       * tt_mutex_t;
 #define    TTDM_HID_ENV            0x456e5600    /* EnV */
 #define    TTDM_HID_DBC            0x44624300    /* DbC */
 #define    TTDM_HID_STMT           0x53744d74    /* StMt */
-#if TT_LIB_VERSION >= 112200
 #define    TTDM_HID_DESC           0x44655363    /* DeSc */
-#endif /* >= 112200 */
 #define    TTDM_HID_XLA            0x586c4100    /* XlA */
 #define    TTDM_HID_UTIL           0x5574496c    /* UtIl */
 
-#if TT_LIB_VERSION >= 112200
 #define    SQLHDESC                SQLHANDLE
 #define    TT_MAX_CONN_NAME_LEN    1024
 
@@ -234,8 +229,6 @@ typedef    pthread_mutex_t       * tt_mutex_t;
  */
 #define    ENCODING_ANSI           8
 #define    ENCODING_UTF16          16
-
-#endif /* >= 112200 */
 
 /*
  * SQLSTATE related values
@@ -269,13 +262,8 @@ typedef    pthread_mutex_t       * tt_mutex_t;
 #define    TT_LIB_DM_TYPE     1
 #define    TT_LIB_CS_TYPE     2
 #if defined(WINDOWS)
-#if TT_LIB_VERSION < 112100
-#define    TT_LIB_DM_NAME     "ttdv" ARG2STRING(TT_LIB_ID) DBG_LIB_EXTENSION SHLIB_SUFFIX
-#define    TT_LIB_CS_NAME     "ttcl" ARG2STRING(TT_LIB_ID) SHLIB_SUFFIX
-#else /* TT_LIB_VERSION >= 112100 */
 #define    TT_LIB_DM_NAME     "ttdv" ARG2STRING(TT_LIB_ID) DBG_LIB_EXTENSION SHLIB_SUFFIX
 #define    TT_LIB_CS_NAME     "ttclient" ARG2STRING(TT_LIB_ID) SHLIB_SUFFIX
-#endif /* TT_LIB_VERSION >= 112100 */
 #else /* !WINDOWS */
 #define    TT_LIB_DM_NAME     "libtten" DBG_LIB_EXTENSION SHLIB_SUFFIX
 #define    TT_LIB_CS_NAME     "libttclient" SHLIB_SUFFIX
@@ -283,11 +271,7 @@ typedef    pthread_mutex_t       * tt_mutex_t;
 #if defined(ENABLE_UTIL_LIB)
 #define    TT_LIB_UT_TYPE     3
 #if defined(WINDOWS)
-#if TT_LIB_VERSION < 112100
-#define    TT_LIB_UT_NAME     "ttut" ARG2STRING(TT_LIB_ID) DBG_LIB_EXTENSION SHLIB_SUFFIX
-#else /* TT_LIB_VERSION >= 112100 */
 #define    TT_LIB_UT_NAME     "ttutil" ARG2STRING(TT_LIB_ID) DBG_LIB_EXTENSION SHLIB_SUFFIX
-#endif /* TT_LIB_VERSION >= 112100 */
 #else /* !WINDOWS */
 #define    TT_LIB_UT_NAME     "libttutil" DBG_LIB_EXTENSION SHLIB_SUFFIX
 #endif /* !WINDOWS */
@@ -305,11 +289,7 @@ typedef    pthread_mutex_t       * tt_mutex_t;
 /*
  * Values for ODBC function tables
  */
-#if TT_LIB_VERSION >= 112200
 #define    NUM_ODBC_FUNCTIONS                102
-#else /* TT_LIB_VERSION >= 112200 */
-#define    NUM_ODBC_FUNCTIONS                51
-#endif /* TT_LIB_VERSION < 112200 */
 #define    MAX_ODBC_FUNCNAME_LEN             33
 
 #define    F_POS_ODBC_SQLAllocEnv            0
@@ -414,7 +394,6 @@ typedef    pthread_mutex_t       * tt_mutex_t;
 #define    F_NM_ODBC_SQLSetPos               "SQLSetPos"
 #define    F_POS_ODBC_SQLTablePrivileges     50
 #define    F_NM_ODBC_SQLTablePrivileges      "SQLTablePrivileges"
-#if TT_LIB_VERSION >= 112200
 #define   F_POS_ODBC_SQLColAttribute         51
 #define   F_NM_ODBC_SQLColAttribute          "SQLColAttribute"
 #define   F_POS_ODBC_SQLColAttributesW       52
@@ -520,17 +499,16 @@ typedef    pthread_mutex_t       * tt_mutex_t;
 #define   F_POS_ODBC_ttSQLFreeHandle         101
 #define   F_POS_ODBC_SQLFreeHandle           101
 #define   F_NM_ODBC_ttSQLFreeHandle          "ttSQLFreeHandle"
-#endif /* TT_LIB_VERSION >= 112200 */
 
 #if defined(ENABLE_XLA_DIRECT)
 /*
  * Values for XLA function tables
  */
-#if TT_LIB_VERSION >= 112100
+#if TT_LIB_VERSION < 181000
 #define   NUM_XLA_FUNCTIONS                    50
-#else /* TT_LIB_VERSION >= 112100 */
-#define   NUM_XLA_FUNCTIONS                    49
-#endif /* TT_LIB_VERSION < 112100 */
+#else /* TT_LIB_VERSION >= 181000 */
+#define   NUM_XLA_FUNCTIONS                    46
+#endif /* TT_LIB_VERSION >= 181000 */
 #define   MAX_XLA_FUNCNAME_LEN                 35
 
 #define   F_POS_XLA_ttXlaAcknowledge            0
@@ -589,58 +567,58 @@ typedef    pthread_mutex_t       * tt_mutex_t;
 #define   F_NM_XLA_ttXlaOraTimeStampToODBCTimeStamp  "ttXlaOraTimeStampToODBCTimeStamp"
 #define   F_POS_XLA_ttXlaPersistOpen           27
 #define   F_NM_XLA_ttXlaPersistOpen             "ttXlaPersistOpen"
-#define   F_POS_XLA_ttXlaResetStatus           28
-#define   F_NM_XLA_ttXlaResetStatus             "ttXlaResetStatus"
-#define   F_POS_XLA_ttXlaRollback              29
+#define   F_POS_XLA_ttXlaRollback              28
 #define   F_NM_XLA_ttXlaRollback                "ttXlaRollback"
-#define   F_POS_XLA_ttXlaSetLSN                30
+#define   F_POS_XLA_ttXlaSetLSN                29
 #define   F_NM_XLA_ttXlaSetLSN                  "ttXlaSetLSN"
-#define   F_POS_XLA_ttXlaSetVersion            31
+#define   F_POS_XLA_ttXlaSetVersion            30
 #define   F_NM_XLA_ttXlaSetVersion              "ttXlaSetVersion"
-#define   F_POS_XLA_ttXlaStatus                32
-#define   F_NM_XLA_ttXlaStatus                  "ttXlaStatus"
-#define   F_POS_XLA_ttXlaTableByName           33
+#define   F_POS_XLA_ttXlaTableByName           31
 #define   F_NM_XLA_ttXlaTableByName             "ttXlaTableByName"
-#define   F_POS_XLA_ttXlaTableCheck            34
+#define   F_POS_XLA_ttXlaTableCheck            32
 #define   F_NM_XLA_ttXlaTableCheck              "ttXlaTableCheck"
-#define   F_POS_XLA_ttXlaTableStatus           35
+#define   F_POS_XLA_ttXlaTableStatus           33
 #define   F_NM_XLA_ttXlaTableStatus             "ttXlaTableStatus"
-#define   F_POS_XLA_ttXlaTableVersionVerify    36
+#define   F_POS_XLA_ttXlaTableVersionVerify    34
 #define   F_NM_XLA_ttXlaTableVersionVerify      "ttXlaTableVersionVerify"
-#define   F_POS_XLA_ttXlaTimeStampToODBCCType  37
+#define   F_POS_XLA_ttXlaTimeStampToODBCCType  35
 #define   F_NM_XLA_ttXlaTimeStampToODBCCType    "ttXlaTimeStampToODBCCType"
-#define   F_POS_XLA_ttXlaTimeToODBCCType       38
+#define   F_POS_XLA_ttXlaTimeToODBCCType       36
 #define   F_NM_XLA_ttXlaTimeToODBCCType         "ttXlaTimeToODBCCType"
-#define   F_POS_XLA_ttXlaVersionColumnInfo     39
+#define   F_POS_XLA_ttXlaVersionColumnInfo     37
 #define   F_NM_XLA_ttXlaVersionColumnInfo       "ttXlaVersionColumnInfo"
-#define   F_POS_XLA_ttXlaVersionCompare        40
+#define   F_POS_XLA_ttXlaVersionCompare        38
 #define   F_NM_XLA_ttXlaVersionCompare          "ttXlaVersionCompare"
-#define   F_POS_XLA_ttXlaVersionTableInfo      41
+#define   F_POS_XLA_ttXlaVersionTableInfo      39
 #define   F_NM_XLA_ttXlaVersionTableInfo        "ttXlaVersionTableInfo"
-/*
- * Functions for legacy (non persistent) XLA
- */
-#define   F_POS_XLA_ttXlaOpenTimesTen          42
-#define   F_NM_XLA_ttXlaOpenTimesTen            "ttXlaOpenTimesTen"
-#define   F_POS_XLA_ttXlaConfigBuffer          43
-#define   F_NM_XLA_ttXlaConfigBuffer            "ttXlaConfigBuffer"
 /*
  * Undocumented public functions
  */
-#define   F_POS_XLA_ttXlaEpilog2               44
+#define   F_POS_XLA_ttXlaEpilog2               40
 #define   F_NM_XLA_ttXlaEpilog2                 "ttXlaEpilog2"
-#define   F_POS_XLA_ttXlaInvalidateTbl2        45
+#define   F_POS_XLA_ttXlaInvalidateTbl2        41
 #define   F_NM_XLA_ttXlaInvalidateTbl2          "ttXlaInvalidateTbl2"
-#define   F_POS_XLA_ttXlaGenerateSQL2          46
+#define   F_POS_XLA_ttXlaGenerateSQL2          42
 #define   F_NM_XLA_ttXlaGenerateSQL2            "ttXlaGenerateSQL2"
-#define   F_POS_XLA_ttXlaTranslate             47
+#define   F_POS_XLA_ttXlaTranslate             43
 #define   F_NM_XLA_ttXlaTranslate               "ttXlaTranslate"
-#define   F_POS_XLA_ttXlaSqlOption             48
+#define   F_POS_XLA_ttXlaSqlOption             44
 #define   F_NM_XLA_ttXlaSqlOption               "ttXlaSqlOption"
-#if TT_LIB_VERSION >= 112100
-#define   F_POS_XLA_ttXlaRowidToCString        49
-#define   F_NM_XLA_ttXlaRowidToCString         "ttXlaRowidToCstring"
-#endif /* TT_LIB_VERSION >= 112100 */
+#define   F_POS_XLA_ttXlaRowidToCString        45
+#define   F_NM_XLA_ttXlaRowidToCString         "ttXlaRowidToCString"
+#if TT_LIB_VERSION < 181000
+/*
+ * Functions for legacy (non persistent) XLA
+ */
+#define   F_POS_XLA_ttXlaResetStatus           46
+#define   F_NM_XLA_ttXlaResetStatus             "ttXlaResetStatus"
+#define   F_POS_XLA_ttXlaStatus                47
+#define   F_NM_XLA_ttXlaStatus                  "ttXlaStatus"
+#define   F_POS_XLA_ttXlaOpenTimesTen          48
+#define   F_NM_XLA_ttXlaOpenTimesTen            "ttXlaOpenTimesTen"
+#define   F_POS_XLA_ttXlaConfigBuffer          49
+#define   F_NM_XLA_ttXlaConfigBuffer            "ttXlaConfigBuffer"
+#endif /* TT_LIB_VERSION < 181000 */
 
 #endif /* ENABLE_XLA_DIRECT */
 
@@ -715,12 +693,10 @@ typedef struct s_ODBC_ERR
     SQLCHAR             sqlState[2*(TT_SQLSTATE_LEN+1)];
     SQLINTEGER          nativeError;
     SQLCHAR             errorMsg[2*(SQL_MAX_MESSAGE_LENGTH+1)];
-#if TT_LIB_VERSION >= 112200
     SQLCHAR           * diagClassOrigin;
     SQLCHAR           * diagSubclassOrigin;
     SQLCHAR           * diagConnectionName;
     SQLCHAR           * diagServerName;
-#endif /* >= 112200 */
     struct s_ODBC_ERR * next;
 }
 ODBC_ERR_t;
@@ -772,12 +748,10 @@ typedef struct s_TT_DBC
     SQLHDBC            directDbc; /* The direct ODBC HDBC for this connection */
     SQLHDBC            clientDbc; /* The client ODBC HDBC for this connection */
     SQLHDBC            hDbc; /* The actual HDBC for this connection */
-#if TT_LIB_VERSION >= 112200
     SQLCHAR          * connName;
     SQLWCHAR         * connNameW;
     SQLCHAR          * serverName;
     SQLWCHAR         * serverNameW;
-#endif /* >= 112200 */
     funcmapper_t     * pDirectMap; /* pointer to Client function map */
     funcmapper_t     * pClientMap; /* pointer to Direct function map */
     funcmapper_t     * pFuncMap;   /* pointer to actual function map */
@@ -789,10 +763,8 @@ typedef struct s_TT_DBC
     struct s_TT_DBC  * next;
     struct s_TT_STMT * head;   /* List of all associated TT_STMT_t */
     struct s_TT_STMT * tail;
-#if TT_LIB_VERSION >= 112200
     struct s_TT_DESC * dhead;   /* List of all associated TT_DESC_t */
     struct s_TT_DESC * dtail;
-#endif /* >= 112200 */
 #if defined(ENABLE_THREAD_SAFETY)
     tt_mutex_t         mutex;
 #endif /* ENABLE_THREAD_SAFETY */
@@ -825,7 +797,6 @@ TT_STMT_t;
 
 typedef TT_STMT_t * TTSQLHSTMT;
 
-#if TT_LIB_VERSION >= 112200
 /*
  * Our version of a Descriptor
  */
@@ -849,7 +820,6 @@ typedef struct s_TT_DESC
 TT_DESC_t;
 
 typedef TT_DESC_t * TTSQLHDESC;
-#endif /* >= 112200 */
 
 #if defined(ENABLE_XLA_DIRECT)
 /*
@@ -924,12 +894,10 @@ DMGlobalData_t;
  ========================================================================
  */
 
-#if TT_LIB_VERSION >= 112200
 #define    TTDM_DIAG_CLASS_ORIGIN     "ODBC 3.0"
 #define    TTDM_DIAG_SUBCLASS_ORIGIN  "ODBC 3.0"
 SQLWCHAR   TTDM_DIAG_CLASS_ORIGIN_W[] = { 79, 68, 66, 67, 32, 51, 46, 48, 0 };
 SQLWCHAR   TTDM_DIAG_SUBCLASS_ORIGIN_W[] = { 79, 68, 66, 67, 32, 51, 46, 48, 0 };
-#endif /* >= 112200 */
 
 #if defined(ENABLE_THREAD_SAFETY)
 /*
@@ -1004,9 +972,7 @@ ODBCFuncName[NUM_ODBC_FUNCTIONS][MAX_ODBC_FUNCNAME_LEN+1] =
     F_NM_ODBC_SQLProcedureColumns,
     F_NM_ODBC_SQLProcedures,
     F_NM_ODBC_SQLSetPos,
-    F_NM_ODBC_SQLTablePrivileges
-#if TT_LIB_VERSION >= 112200
-    ,
+    F_NM_ODBC_SQLTablePrivileges,
     F_NM_ODBC_SQLColAttribute,
     F_NM_ODBC_SQLColAttributesW,
     F_NM_ODBC_SQLColAttributeW,
@@ -1058,7 +1024,6 @@ ODBCFuncName[NUM_ODBC_FUNCTIONS][MAX_ODBC_FUNCNAME_LEN+1] =
     F_NM_ODBC_ttSQLAllocHandle,
     F_NM_ODBC_ttSQLConnectW,
     F_NM_ODBC_ttSQLFreeHandle
-#endif /* TT_LIB_VERSION >= 112200 */
 };
 
 #if defined(ENABLE_XLA_DIRECT)
@@ -1098,11 +1063,9 @@ XLAFuncName[NUM_XLA_FUNCTIONS][MAX_XLA_FUNCNAME_LEN+1] =
     F_NM_XLA_ttXlaOraDateToODBCTimeStamp,
     F_NM_XLA_ttXlaOraTimeStampToODBCTimeStamp,
     F_NM_XLA_ttXlaPersistOpen,
-    F_NM_XLA_ttXlaResetStatus,
     F_NM_XLA_ttXlaRollback,
     F_NM_XLA_ttXlaSetLSN,
     F_NM_XLA_ttXlaSetVersion,
-    F_NM_XLA_ttXlaStatus,
     F_NM_XLA_ttXlaTableByName,
     F_NM_XLA_ttXlaTableCheck,
     F_NM_XLA_ttXlaTableStatus,
@@ -1112,16 +1075,18 @@ XLAFuncName[NUM_XLA_FUNCTIONS][MAX_XLA_FUNCNAME_LEN+1] =
     F_NM_XLA_ttXlaVersionColumnInfo,
     F_NM_XLA_ttXlaVersionCompare,
     F_NM_XLA_ttXlaVersionTableInfo,
-    F_NM_XLA_ttXlaOpenTimesTen,
-    F_NM_XLA_ttXlaConfigBuffer,
     F_NM_XLA_ttXlaEpilog2,
     F_NM_XLA_ttXlaInvalidateTbl2,
     F_NM_XLA_ttXlaGenerateSQL2,
     F_NM_XLA_ttXlaTranslate,
-    F_NM_XLA_ttXlaSqlOption
-#if TT_LIB_VERSION >= 112100
-    , F_NM_XLA_ttXlaSqlOption
-#endif /* TT_LIB_VERSION >= 112100 */
+    F_NM_XLA_ttXlaSqlOption,
+    F_NM_XLA_ttXlaRowidToCString
+#if TT_LIB_VERSION < 181000
+    , F_NM_XLA_ttXlaResetStatus
+    , F_NM_XLA_ttXlaStatus
+    , F_NM_XLA_ttXlaOpenTimesTen
+    , F_NM_XLA_ttXlaConfigBuffer
+#endif /* TT_LIB_VERSION < 181000 */
 };
 #endif /* ENABLE_XLA_DIRECT */
 
@@ -1243,7 +1208,6 @@ debugPrintODBCErrorStack(
  ========================================================================
  */
 
-#if TT_LIB_VERSION >= 112200
 /*
  * Some 'wide character' routines. These are necessary because ODBC
  * 'W' routines work in UTF-16 in which code-point values are always
@@ -1547,8 +1511,6 @@ diagCopyW(int encoding,
     return rc;
 }
 
-#endif /* >= 112200 */
-
 #if defined(ENABLE_THREAD_SAFETY)
 
 /*
@@ -1780,19 +1742,14 @@ static SQLRETURN
 pushError(
           ODBC_ERR_STACK_t * stkptr,
           SQLRETURN      RC,
-#if TT_LIB_VERSION >= 112200
 	  int            encoding,
-#endif /* >= 112200 */
           SQLCHAR      * SQLSTATE,   /* may actually be SQLWCHAR * */
           SQLINTEGER     NATIVEERROR,
-          SQLCHAR      * ERRMSG      /* may actually be SQLWCHAR * */
-#if TT_LIB_VERSION >= 112200
-	  ,
+          SQLCHAR      * ERRMSG,     /* may actually be SQLWCHAR * */
 	  SQLCHAR      * DiagClassOrigin,    /* may be SQLWCHAR * */
 	  SQLCHAR      * DiagSubclassOrigin, /* may be SQLWCHAR * */
 	  SQLCHAR      * ConnectionName,     /* may be SQLWCHAR * */
 	  SQLCHAR      * ServerName          /* may be SQLWCHAR * */
-#endif /* >= 112200 */
 )
 {
     SQLRETURN    rc = SQL_SUCCESS;
@@ -1812,14 +1769,11 @@ pushError(
         {
             err->rc = RC;
             err->nativeError = NATIVEERROR;
-#if TT_LIB_VERSION >= 112200
             err->encoding = encoding;
 	    if (  encoding == ENCODING_ANSI  )
 	    {
-#endif /* >= 112200 */
                 strcpy((char *)err->sqlState,(char *)SQLSTATE);
                 strcpy((char *)err->errorMsg,(char *)ERRMSG);
-#if TT_LIB_VERSION >= 112200
 	    }
 	    else
 	    {
@@ -1830,7 +1784,6 @@ pushError(
             err->diagSubclassOrigin = DiagSubclassOrigin;
             err->diagConnectionName = ConnectionName;
             err->diagServerName = ServerName;
-#endif /* >= 112200 */
             err->next = (*stkptr).stack;
             (*stkptr).stack = err;
             (*stkptr).msgcnt += 1;
@@ -1846,19 +1799,14 @@ static SQLRETURN
 popError(
           ODBC_ERR_STACK_t * stkptr,
           SQLRETURN    * RC,
-#if TT_LIB_VERSION >= 112200
 	  int          * encoding,
-#endif /* >= 112200 */
           SQLCHAR      * SQLSTATE,      /* may actually be SQLWCHAR * */
           SQLINTEGER   * NATIVEERROR,
-          SQLCHAR      * ERRMSG         /* may actually be SQLWCHAR * */
-#if TT_LIB_VERSION >= 112200
-	  ,
+          SQLCHAR      * ERRMSG,        /* may actually be SQLWCHAR * */
 	  SQLCHAR    * * DiagClassOrigin,    /* may be SQLWCHAR * */
 	  SQLCHAR    * * DiagSubclassOrigin, /* may be SQLWCHAR * */
 	  SQLCHAR    * * ConnectionName,     /* may be SQLWCHAR * */
 	  SQLCHAR    * * ServerName          /* may be SQLWCHAR * */
-#endif /* >= 112200 */
 )
 {
     SQLRETURN    rc = SQL_SUCCESS;
@@ -1876,14 +1824,11 @@ popError(
         (*stkptr).msgcnt -= 1;
         *RC = err->rc;
         *NATIVEERROR = err->nativeError;
-#if TT_LIB_VERSION >= 112200
 	*encoding = err->encoding;
 	if (  err->encoding == ENCODING_ANSI  )
 	{
-#endif /* >= 112200 */
             strcpy((char *)SQLSTATE,(char *)err->sqlState);
             strcpy((char *)ERRMSG,(char *)err->errorMsg);
-#if TT_LIB_VERSION >= 112200
 	}
 	else
 	{
@@ -1898,7 +1843,6 @@ popError(
             *ConnectionName = err->diagConnectionName;
 	if (  ServerName != NULL  )
             *ServerName = err->diagServerName;
-#endif /* >= 112200 */
         free( (void *)err );
     }
 
@@ -1907,7 +1851,6 @@ popError(
     return rc;
 }
 
-#if TT_LIB_VERSION >= 112200
 /*
  * Retrieves a specific record number (starts from 1) off an error stack.
  */
@@ -1970,7 +1913,6 @@ getError(
 
     return rc;
 }
-#endif /* >= 112200 */
 
 static SQLRETURN
 getODBCConnectError(
@@ -2050,17 +1992,12 @@ populateConnErrorStack(TTSQLHDBC TThDbc, int isclient)
     while (  (rc == SQL_SUCCESS) || (rc == SQL_SUCCESS_WITH_INFO)  )
     {
         pushError(&(TThDbc->errorStack), rc,
-#if TT_LIB_VERSION >= 112200
 	          ENCODING_ANSI, 
-#endif /* >= 112200 */
-	          sqlState, nativeError, errorMsg
-#if TT_LIB_VERSION >= 112200
-	              ,
+	          sqlState, nativeError, errorMsg,
 	          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 	          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 	          TThDbc->connName,
 	          TThDbc->serverName
-#endif /* >= 112200 */
               );
         rc = getODBCConnectError( fPtr, hDbc, sqlState, &nativeError, errorMsg );
     }
@@ -2099,18 +2036,13 @@ isBogusError(
         TThEnv = (TTSQLHENV)henv;
         pushError(&(TThEnv->errorStack),
                           originalRC,
-#if TT_LIB_VERSION >= 112200
 			  ENCODING_ANSI,
-#endif /* >= 112200 */
                           SQLSTATE,
                           NATIVEERROR,
-                          ERRMSG
-#if TT_LIB_VERSION >= 112200
-                          ,
+                          ERRMSG,
 			  (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			  (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			  NULL, NULL
-#endif /* >= 112200 */
                           );
     }
 
@@ -2296,7 +2228,9 @@ loadLibrary(
                         ret = loadODBCfunctions(lh, libFuncs);
 #if defined(ENABLE_XLA_DIRECT)
                         if (  ret == 0  )
+                        {
                             ret = loadXLAfunctions(lh, libFuncs);
+                        }
 #endif /* ENABLE_XLA_DIRECT */
                     }
                     break;
@@ -2454,7 +2388,6 @@ freeTThDbc(
     hdbc->next = NULL;
     hdbc->head = NULL;
     hdbc->tail = NULL;
-#if TT_LIB_VERSION >= 112200
     hdbc->dhead = NULL;
     hdbc->dtail = NULL;
     if (  hdbc->connName != NULL  )
@@ -2477,7 +2410,6 @@ freeTThDbc(
 	free((void *)hdbc->serverNameW);
 	hdbc->serverNameW = NULL;
     }
-#endif /* >= 112200 */
     free( (void *)hdbc);
 
     TRACE_FLEAVE("freeTThDbc");
@@ -2506,7 +2438,6 @@ freeTThEnv(
     TRACE_FLEAVE("freeTThEnv");
 }
 
-#if TT_LIB_VERSION >= 112200
 static void
 freeTThDesc(
             TTSQLHDESC hdesc
@@ -2579,14 +2510,11 @@ sqlAllocDesc(
                               tt_ErrDMNoMemory,
                               (SQLCHAR *)"TimesTen Driver Manager: "
 			                 "SQLAllocHandle:"
-                                         " Unable to allocate memory for mutex"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                         " Unable to allocate memory for mutex",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      NULL,
 			      NULL
-#endif /* >= 112200 */
                              );
 		else
 		{
@@ -2847,8 +2775,6 @@ populateConnectionData(
 
 }
 
-#endif /* >= 112200 */
-
 #if defined(WINDOWS)
 /*
  ========================================================================
@@ -2949,22 +2875,17 @@ SQLAllocEnv(
                     pushError(&(TThEnv->errorStack),
                               /* rc = SQL_ERROR, */
                               rcDirect = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			      ENCODING_ANSI,
-#endif /* >= 112200 */
                               (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                               tt_ErrDMNoMemory,
                               (SQLCHAR *)"TimesTen Driver Manager: "
                                          "SQLAllocEnv:  "
                                          "Unable to allocate memory "
-                                         "to load direct mode driver"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                         "to load direct mode driver",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      NULL,
 			      NULL
-#endif /* >= 112200 */
 			     );
                 else
                 {
@@ -2975,22 +2896,17 @@ SQLAllocEnv(
                         DMGlobalData.directFuncs = NULL;
                         pushError(&(TThEnv->errorStack),
                                   rcDirect = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			          ENCODING_ANSI,
-#endif /* >= 112200 */
                                   (SQLCHAR *)TT_DM_SQLSTATE_LIBLOAD,
                                   tt_ErrDMDriverLoad,
                                   (SQLCHAR *)"TimesTen Driver Manager: "
                                              "SQLAllocEnv:  "
                                              "Unable to load "
-                                             "direct mode driver"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                             "direct mode driver",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          NULL,
 			          NULL
-#endif /* >= 112200 */
 			          );
                     }
                 }
@@ -3004,22 +2920,17 @@ SQLAllocEnv(
                 if (  DMGlobalData.clientFuncs == NULL  )
                     pushError(&(TThEnv->errorStack),
                               rcClient = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			      ENCODING_ANSI,
-#endif /* >= 112200 */
                               (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                               tt_ErrDMNoMemory,
                               (SQLCHAR *)"TimesTen Driver Manager: "
                                          "SQLAllocEnv:  "
                                          "Unable to allocate memory "
-                                         "to load client/server driver"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                         "to load client/server driver",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      NULL,
 			      NULL
-#endif /* >= 112200 */
 			      );
                 else
                 {
@@ -3030,22 +2941,17 @@ SQLAllocEnv(
                         DMGlobalData.clientFuncs = NULL;
                         pushError(&(TThEnv->errorStack),
                                   rcClient = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			          ENCODING_ANSI,
-#endif /* >= 112200 */
                                   (SQLCHAR *)TT_DM_SQLSTATE_LIBLOAD,
                                   tt_ErrDMDriverLoad,
                                   (SQLCHAR *)"TimesTen Driver Manager: "
                                              "SQLAllocEnv:  "
                                              "Unable to load "
-                                             "client/server driver"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                             "client/server driver",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          NULL,
 			          NULL
-#endif /* >= 112200 */
 			          );
                     }
                 }
@@ -3061,22 +2967,17 @@ SQLAllocEnv(
                 if (  DMGlobalData.utilFuncs == NULL  )
                     pushError(&(TThEnv->errorStack),
                               rcUtil = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			      ENCODING_ANSI,
-#endif /* >= 112200 */
                               (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                               tt_ErrDMNoMemory,
                               (SQLCHAR *)"TimesTen Driver Manager: "
                                          "SQLAllocEnv:  "
                                          "Unable to allocate memory "
-                                         "to load utility library"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                         "to load utility library",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      NULL,
 			      NULL
-#endif /* >= 112200 */
 			      );
                 else
                 {
@@ -3087,22 +2988,17 @@ SQLAllocEnv(
                         DMGlobalData.utilFuncs = NULL;
                         pushError(&(TThEnv->errorStack),
                                   rcUtil = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			          ENCODING_ANSI,
-#endif /* >= 112200 */
                                   (SQLCHAR *)TT_DM_SQLSTATE_LIBLOAD,
                                   tt_ErrDMDriverLoad,
                                   (SQLCHAR *)"TimesTen Driver Manager: "
                                              "SQLAllocEnv:  "
                                              "Unable to load "
-                                             "utility library"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                             "utility library",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          NULL,
 			          NULL
-#endif /* >= 112200 */
 			          );
                     }
                 }
@@ -3191,20 +3087,15 @@ SQLAllocConnect(
         CLEAR_ERROR_STACK(TThEnv);
         pushError(&(TThEnv->errorStack),
                   rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		  ENCODING_ANSI,
-#endif /* >= 112200 */
                   (SQLCHAR *)TT_DM_SQLSTATE_ARGERR,
                   0,
                   (SQLCHAR *)"TimesTen Driver Manager: SQLAllocConnect:"
-                             "NULL passed for connection handle pointer"
-#if TT_LIB_VERSION >= 112200
-		  ,
+                             "NULL passed for connection handle pointer",
 		  (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		  (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		  NULL,
 		  NULL
-#endif /* >= 112200 */
 	    );
         MUTEX_UNLOCK(TThEnv->mutex);
     }
@@ -3224,20 +3115,15 @@ SQLAllocConnect(
             if (  TThDbc == NULL  )
                 pushError(&(TThEnv->errorStack),
                           rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			  ENCODING_ANSI,
-#endif /* >= 112200 */
                           (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                           tt_ErrDMNoMemory,
                           (SQLCHAR *)"TimesTen Driver Manager: SQLAllocConnect:"
-                                     " Unable to allocate memory for Connection"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                     " Unable to allocate memory for Connection",
 			  (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			  (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			  NULL,
 			  NULL
-#endif /* >= 112200 */
                           );
             else
             {
@@ -3260,34 +3146,27 @@ SQLAllocConnect(
 #endif /* ENABLE_XLA_DIRECT */
                 TThDbc->head = NULL;
                 TThDbc->tail = NULL;
-#if TT_LIB_VERSION >= 112200
 		TThDbc->connName = NULL;
 		TThDbc->connNameW = NULL;
 		TThDbc->serverName = NULL;
 		TThDbc->serverNameW = NULL;
                 TThDbc->dhead = NULL;
                 TThDbc->dtail = NULL;
-#endif /* >= 112200 */
 #if defined(ENABLE_THREAD_SAFETY)
                 MUTEX_CREATE(TThDbc->mutex);
 		if (  TThDbc->mutex == NULL  )
                     pushError(&(TThEnv->errorStack),
                               rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			      ENCODING_ANSI,
-#endif /* >= 112200 */
                               (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                               tt_ErrDMNoMemory,
                               (SQLCHAR *)"TimesTen Driver Manager: "
 			                 "SQLAllocConnect:"
-                                         " Unable to allocate memory for mutex"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                         " Unable to allocate memory for mutex",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      NULL,
 			      NULL
-#endif /* >= 112200 */
                              );
 		else
 		{
@@ -3363,20 +3242,15 @@ SQLAllocStmt(
         CLEAR_ERROR_STACK(TThDbc);
         pushError(&(TThDbc->errorStack),
                   rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		  ENCODING_ANSI,
-#endif /* >= 112200 */
                   (SQLCHAR *)TT_DM_SQLSTATE_ARGERR,
                   0,
                   (SQLCHAR *)"TimesTen Driver Manager: SQLAllocStmt: "
-                             "NULL passed for statement handle pointer"
-#if TT_LIB_VERSION >= 112200
-		  ,
+                             "NULL passed for statement handle pointer",
 		  (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		  (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		  TThDbc->connName,
 		  TThDbc->serverName
-#endif /* >= 112200 */
               );
         MUTEX_UNLOCK(TThDbc->mutex);
     }
@@ -3393,20 +3267,15 @@ SQLAllocStmt(
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_NOTCONN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLAllocStmt: Not connected"
-#if TT_LIB_VERSION >= 112200
-	              ,
+                                 "SQLAllocStmt: Not connected",
 		      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		      TThDbc->connName,
 		      TThDbc->serverName
-#endif /* >= 112200 */
                  );
             MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -3418,20 +3287,15 @@ SQLAllocStmt(
             if (  TThStmt == NULL  )
                 pushError(&(TThDbc->errorStack),
                           rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			  ENCODING_ANSI,
-#endif /* >= 112200 */
                           (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                           tt_ErrDMNoMemory,
                           (SQLCHAR *)"TimesTen Driver Manager: SQLAllocStmt: "
-                                     "Unable to allocate memory for Statement"
-#if TT_LIB_VERSION >= 112200
-			  ,
+                                     "Unable to allocate memory for Statement",
 			  (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			  (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			  TThDbc->connName,
 			  TThDbc->serverName
-#endif /* >= 112200 */
                           );
             else
             {
@@ -3450,21 +3314,16 @@ SQLAllocStmt(
 		if (  TThStmt->mutex == NULL  )
                     pushError(&(TThDbc->errorStack),
                               rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			      ENCODING_ANSI,
-#endif /* >= 112200 */
                               (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                               tt_ErrDMNoMemory,
                               (SQLCHAR *)"TimesTen Driver Manager: "
 			                 "SQLAllocStmt:"
-                                         " Unable to allocate memory for mutex"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                         " Unable to allocate memory for mutex",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      TThDbc->connName,
 			      TThDbc->serverName
-#endif /* >= 112200 */
                              );
 		else
 		{
@@ -3522,9 +3381,7 @@ SQLError(
 {
     SQLRETURN  rc = SQL_SUCCESS;
     SQLRETURN  errRC = SQL_SUCCESS;
-#if TT_LIB_VERSION >= 112200
     int        encoding = 0;
-#endif /* >= 112200 */
     SQLCHAR    sqlState[2*(TT_SQLSTATE_LEN+1)];
     SQLINTEGER nativeError= 0;
     SQLCHAR    errorMsg[SQL_MAX_MESSAGE_LENGTH+1];
@@ -3644,25 +3501,18 @@ SQLError(
 
     if (  rc == SQL_SUCCESS  )
     {
-#if TT_LIB_VERSION >= 112200
         rc = popError(errorStack, &errRC, &encoding, 
 		      sqlState, &nativeError, tErrorMsg
 		      , NULL, NULL, NULL, NULL );
-#else /* < 112200 */
-        rc = popError(errorStack, &errRC, sqlState, &nativeError, tErrorMsg);
-#endif /* < 112200 */
         if (  rc == SQL_SUCCESS  )
         {
 	    if (  pfNativeError != NULL  )
                 *pfNativeError = nativeError;
-#if TT_LIB_VERSION >= 112200
 	    if (  encoding == ENCODING_ANSI  )
 	    { /* can copy directly */
-#endif /* >= 112200 */
 		if (  szSqlState != NULL  )
                     strcpy((char *)szSqlState,(const char *)sqlState);
 		strcpy((char *)errorMsg,(const char *)tErrorMsg);
-#if TT_LIB_VERSION >= 112200
 	    }
 	    else
 	    { /* need to convert UTF-16 to ANSI */
@@ -3670,7 +3520,6 @@ SQLError(
 		    translateUTF16toANSI((char *)szSqlState,(SQLWCHAR *)sqlState);
 		translateUTF16toANSI((char *)errorMsg,(SQLWCHAR *)tErrorMsg);
             }
-#endif /* >= 112200 */
 	    /* now copy error message to return buffer */
             errMsgLen = strlen((const char *)errorMsg);
 	    if (  pcbErrorMsg != NULL  )
@@ -3815,18 +3664,13 @@ SQLDriverConnect(
 		    {
 			/* a 'real' error, push it onto our stack */
                         pushError(&(TThDbc->errorStack), rc,
-#if TT_LIB_VERSION >= 112200
 			          ENCODING_ANSI, 
-#endif /* >= 112200 */
 				  sqlState, nativeError,
-                                  errorMsg
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                  errorMsg,
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          TThDbc->connName,
 			          TThDbc->serverName
-#endif /* >= 112200 */
                                  );
 		        /* push any additional errors/warnings onto our stack */
 			populateConnErrorStack(TThDbc, 1);
@@ -3886,10 +3730,8 @@ SQLDriverConnect(
         }
     }
 
-#if TT_LIB_VERSION >= 112200
     if (  (rc == SQL_SUCCESS) || (rc == SQL_SUCCESS_WITH_INFO)  )
 	populateConnectionData(TThDbc);
-#endif /* >= 112200 */
 
     TRACE_FLEAVE_RC("SQLDriverConnect",rc);
 
@@ -3936,20 +3778,15 @@ static SQLCHAR ansiPWD[] = ";PWD=";
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_CONNUSED,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLConnect: Already connected"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                 "SQLConnect: Already connected",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      TThDbc->connName,
 			      TThDbc->serverName
-#endif /* >= 112200 */
                               );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -3962,20 +3799,15 @@ static SQLCHAR ansiPWD[] = ";PWD=";
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_NODSN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLConnect: No DSN specified"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                 "SQLConnect: No DSN specified",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      TThDbc->connName,
 			      TThDbc->serverName
-#endif /* >= 112200 */
                               );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -4000,20 +3832,15 @@ static SQLCHAR ansiPWD[] = ";PWD=";
                 CLEAR_ERROR_STACK(TThDbc);
                 pushError(&(TThDbc->errorStack),
                           rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		          ENCODING_ANSI,
-#endif /* >= 112200 */
                           (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                           0,
                           (SQLCHAR *)"TimesTen Driver Manager: "
-                                     "SQLConnect: Memory allocation failed"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                     "SQLConnect: Memory allocation failed",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          TThDbc->connName,
 			          TThDbc->serverName
-#endif /* >= 112200 */
                                   );
 	        MUTEX_UNLOCK(TThDbc->mutex);
 	    }
@@ -4716,20 +4543,15 @@ SQLTransact(
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_NOTCONN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLTransact: Not connected"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                 "SQLTransact: Not connected",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      TThDbc->connName,
 			      TThDbc->serverName
-#endif /* >= 112200 */
                               );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -4938,20 +4760,15 @@ SQLGetFunctions(
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_FUNCSEQ,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLGetFunctions: Not connected"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                 "SQLGetFunctions: Not connected",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      TThDbc->connName,
 			      TThDbc->serverName
-#endif /* >= 112200 */
                               );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -4998,20 +4815,15 @@ SQLGetInfo(
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_BADLEN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLGetInfo: Buffer size negative"
-#if TT_LIB_VERSION >= 112200
-		      ,
+                                 "SQLGetInfo: Buffer size negative",
 		      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		      TThDbc->connName,
 		      TThDbc->serverName
-#endif /* >= 112200 */
                  );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -5028,20 +4840,15 @@ SQLGetInfo(
                     CLEAR_ERROR_STACK(TThDbc);
                     pushError(&(TThDbc->errorStack),
                               rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		              ENCODING_ANSI,
-#endif /* >= 112200 */
                               (SQLCHAR *)TT_DM_SQLSTATE_ARGERR,
                               0,
                               (SQLCHAR *)"TimesTen Driver Manager: "
-                                         "SQLGetInfo: NULL pointer passed"
-#if TT_LIB_VERSION >= 112200
-		              ,
+                                         "SQLGetInfo: NULL pointer passed",
 		              (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		              (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		              TThDbc->connName,
 		              TThDbc->serverName
-#endif /* >= 112200 */
                          );
 	            MUTEX_UNLOCK(TThDbc->mutex);
 	        }
@@ -5058,20 +4865,15 @@ SQLGetInfo(
                 CLEAR_ERROR_STACK(TThDbc);
                 pushError(&(TThDbc->errorStack),
                           rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		          ENCODING_ANSI,
-#endif /* >= 112200 */
                           (SQLCHAR *)TT_DM_SQLSTATE_NOTCONN,
                           0,
                           (SQLCHAR *)"TimesTen Driver Manager: "
-                                     "SQLGetInfo: Not connected"
-#if TT_LIB_VERSION >= 112200
-		          ,
+                                     "SQLGetInfo: Not connected",
 		          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		          TThDbc->connName,
 		          TThDbc->serverName
-#endif /* >= 112200 */
                      );
 	        MUTEX_UNLOCK(TThDbc->mutex);
 	    }
@@ -5121,43 +4923,33 @@ SQLGetInfo(
                           (TThStmt->hStmt == SQL_NULL_HSTMT)  )
                         pushError(&(TThDbc->errorStack),
                                   rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			          ENCODING_ANSI,
-#endif /* >= 112200 */
                                   (SQLCHAR *)TT_DM_SQLSTATE_ARGERR,
                                   tt_ErrDMInvalidArg,
                                   (SQLCHAR *)"TimesTen Driver Manager: "
                                              "SQLGetInfo:  "
                                              "Invalid value passed for"
-                                             "SQLHSTMT value"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                             "SQLHSTMT value",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          TThDbc->connName,
 			          TThDbc->serverName
-#endif /* >= 112200 */
                                   );
                     else
                     if (  TThStmt->hDbc != TThDbc->hDbc  )
                         pushError(&(TThDbc->errorStack),
                                   rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			          ENCODING_ANSI,
-#endif /* >= 112200 */
                                   (SQLCHAR *)TT_DM_SQLSTATE_ARGERR,
                                   tt_ErrDMInvalidArg,
                                   (SQLCHAR *)"TimesTen Driver Manager: "
                                              "SQLGetInfo:  "
                                              "SQLHSTMT does not belong"
-                                             "to the passed SQLHDBC"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                             "to the passed SQLHDBC",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          TThDbc->connName,
 			          TThDbc->serverName
-#endif /* >= 112200 */
                                   );
                     else
                     *(SQLHSTMT *)rgbInfoValue = TThStmt->hStmt;
@@ -5424,10 +5216,8 @@ SQLDisconnect(
     TTSQLHDBC  TThDbc = NULL;
     TTSQLHSTMT currTThStmt = NULL;
     TTSQLHSTMT nextTThStmt = NULL;
-#if TT_LIB_VERSION >= 112200
     TTSQLHDESC currTThDesc = NULL;
     TTSQLHDESC nextTThDesc = NULL;
-#endif /* >= 112200 */
 
     TRACE_FENTER("SQLDisconnect");
     TRACE_HVAL("hdbc",hdbc);
@@ -5447,20 +5237,15 @@ SQLDisconnect(
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_NOTCONN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLDisconnect: Not connected"
-#if TT_LIB_VERSION >= 112200
-		      ,
+                                 "SQLDisconnect: Not connected",
 		      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		      TThDbc->connName,
 		      TThDbc->serverName
-#endif /* >= 112200 */
                  );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -5488,7 +5273,6 @@ SQLDisconnect(
                 TThDbc->head = NULL;
                 TThDbc->tail = NULL;
 
-#if TT_LIB_VERSION >112200
                 /* free all dependant TThDesc */
                 currTThDesc = TThDbc->dhead;
                 while (  currTThDesc != NULL  )
@@ -5499,7 +5283,6 @@ SQLDisconnect(
                 }
                 TThDbc->dhead = NULL;
                 TThDbc->dtail = NULL;
-#endif /* >= 112200 */
 
 		MUTEX_UNLOCK(TThDbc->mutex);
             }
@@ -5540,20 +5323,15 @@ SQLFreeConnect(
         {
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 	              ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_FUNCSEQ,
                       tt_ErrDMNotDisconnected,
                       (SQLCHAR *)"TimesTen Driver Manager: SQLFreeConnect: "
-                                 "connection is still connected"
-#if TT_LIB_VERSION >= 112200
-	              ,
+                                 "connection is still connected",
 	              (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 	              (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 	              TThDbc->connName,
 	              TThDbc->serverName
-#endif /* >= 112200 */
                       );
         }
         else
@@ -5951,20 +5729,15 @@ SQLNativeSql(
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_NOTCONN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLNativeSql: Not connected"
-#if TT_LIB_VERSION >= 112200
-		      ,
+                                 "SQLNativeSql: Not connected",
 		      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		      TThDbc->connName,
 		      TThDbc->serverName
-#endif /* >= 112200 */
                  );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -6233,8 +6006,6 @@ SQLTablePrivileges(
 
     return rc;
 }
-
-#if TT_LIB_VERSION >= 112200
 
 SQLRETURN  SQL_API
 SQLColAttribute(
@@ -6611,10 +6382,8 @@ SQLDriverConnectW(
         }
     }
 
-#if TT_LIB_VERSION >= 112200
     if (  (rc == SQL_SUCCESS) || (rc == SQL_SUCCESS_WITH_INFO)  )
 	populateConnectionData(TThDbc);
-#endif /* >= 112200 */
 
     TRACE_FLEAVE_RC("SQLDriverConnectW",rc);
 
@@ -6654,20 +6423,15 @@ SQLEndTran(
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_NOTCONN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLEndTran: Not connected"
-#if TT_LIB_VERSION >= 112200
-		      ,
+                                 "SQLEndTran: Not connected",
 		      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		      TThDbc->connName,
 		      TThDbc->serverName
-#endif /* >= 112200 */
                  );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -7151,20 +6915,15 @@ SQLGetInfoW(
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_BADLEN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLGetInfoW: Buffer size negative"
-#if TT_LIB_VERSION >= 112200
-		      ,
+                                 "SQLGetInfoW: Buffer size negative",
 		      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		      TThDbc->connName,
 		      TThDbc->serverName
-#endif /* >= 112200 */
                  );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -7181,20 +6940,15 @@ SQLGetInfoW(
                     CLEAR_ERROR_STACK(TThDbc);
                     pushError(&(TThDbc->errorStack),
                               rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		              ENCODING_ANSI,
-#endif /* >= 112200 */
                               (SQLCHAR *)TT_DM_SQLSTATE_ARGERR,
                               0,
                               (SQLCHAR *)"TimesTen Driver Manager: "
-                                         "SQLGetInfoW: NULL pointer passed"
-#if TT_LIB_VERSION >= 112200
-		              ,
+                                         "SQLGetInfoW: NULL pointer passed",
 		              (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		              (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		              TThDbc->connName,
 		              TThDbc->serverName
-#endif /* >= 112200 */
                          );
 	            MUTEX_UNLOCK(TThDbc->mutex);
 	        }
@@ -7211,20 +6965,15 @@ SQLGetInfoW(
                 CLEAR_ERROR_STACK(TThDbc);
                 pushError(&(TThDbc->errorStack),
                           rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		          ENCODING_ANSI,
-#endif /* >= 112200 */
                           (SQLCHAR *)TT_DM_SQLSTATE_NOTCONN,
                           0,
                           (SQLCHAR *)"TimesTen Driver Manager: "
-                                     "SQLGetInfoW: Not connected"
-#if TT_LIB_VERSION >= 112200
-		          ,
+                                     "SQLGetInfoW: Not connected",
 		          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 		          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 		          TThDbc->connName,
 		          TThDbc->serverName
-#endif /* >= 112200 */
                      );
 	        MUTEX_UNLOCK(TThDbc->mutex);
 	    }
@@ -7274,43 +7023,33 @@ SQLGetInfoW(
                           (TThStmt->hStmt == SQL_NULL_HSTMT)  )
                         pushError(&(TThDbc->errorStack),
                                   rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			          ENCODING_ANSI,
-#endif /* >= 112200 */
                                   (SQLCHAR *)TT_DM_SQLSTATE_ARGERR,
                                   tt_ErrDMInvalidArg,
                                   (SQLCHAR *)"TimesTen Driver Manager: "
                                              "SQLGetInfoW:  "
                                              "Invalid value passed for"
-                                             "SQLHSTMT value"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                             "SQLHSTMT value",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          TThDbc->connName,
 			          TThDbc->serverName
-#endif /* >= 112200 */
                                   );
                     else
                     if (  TThStmt->hDbc != TThDbc->hDbc  )
                         pushError(&(TThDbc->errorStack),
                                   rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 			          ENCODING_ANSI,
-#endif /* >= 112200 */
                                   (SQLCHAR *)TT_DM_SQLSTATE_ARGERR,
                                   tt_ErrDMInvalidArg,
                                   (SQLCHAR *)"TimesTen Driver Manager: "
                                              "SQLGetInfoW:  "
                                              "SQLHSTMT does not belong"
-                                             "to the passed SQLHDBC"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                             "to the passed SQLHDBC",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          TThDbc->connName,
 			          TThDbc->serverName
-#endif /* >= 112200 */
                                   );
                     else
                     *(SQLHSTMT *)rgbInfoValue = TThStmt->hStmt;
@@ -7826,20 +7565,15 @@ static SQLWCHAR u16PWD[] = { 59, 80, 87, 68, 61, 0 };  /* ";PWD=" */
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_CONNUSED,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLConnectW: Already connected"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                 "SQLConnectW: Already connected",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      TThDbc->connName,
 			      TThDbc->serverName
-#endif /* >= 112200 */
                               );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -7852,20 +7586,15 @@ static SQLWCHAR u16PWD[] = { 59, 80, 87, 68, 61, 0 };  /* ";PWD=" */
             CLEAR_ERROR_STACK(TThDbc);
             pushError(&(TThDbc->errorStack),
                       rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		      ENCODING_ANSI,
-#endif /* >= 112200 */
                       (SQLCHAR *)TT_DM_SQLSTATE_NODSN,
                       0,
                       (SQLCHAR *)"TimesTen Driver Manager: "
-                                 "SQLConnectW: No DSN specified"
-#if TT_LIB_VERSION >= 112200
-			      ,
+                                 "SQLConnectW: No DSN specified",
 			      (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			      (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			      TThDbc->connName,
 			      TThDbc->serverName
-#endif /* >= 112200 */
                               );
 	    MUTEX_UNLOCK(TThDbc->mutex);
 	}
@@ -7890,20 +7619,15 @@ static SQLWCHAR u16PWD[] = { 59, 80, 87, 68, 61, 0 };  /* ";PWD=" */
                 CLEAR_ERROR_STACK(TThDbc);
                 pushError(&(TThDbc->errorStack),
                           rc = SQL_ERROR,
-#if TT_LIB_VERSION >= 112200
 		          ENCODING_ANSI,
-#endif /* >= 112200 */
                           (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                           0,
                           (SQLCHAR *)"TimesTen Driver Manager: "
-                                     "SQLConnectW: Memory allocation failed"
-#if TT_LIB_VERSION >= 112200
-			          ,
+                                     "SQLConnectW: Memory allocation failed",
 			          (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 			          (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 			          TThDbc->connName,
 			          TThDbc->serverName
-#endif /* >= 112200 */
                                   );
 	        MUTEX_UNLOCK(TThDbc->mutex);
 	    }
@@ -10231,8 +9955,6 @@ SQLGetDiagFieldW(
     return rc;
 }
 
-#endif /* TT_LIB_VERSION >= 112200 */
-
 #if defined(ENABLE_XLA_DIRECT)
 
 /*
@@ -10277,21 +9999,16 @@ ttXlaPersistOpen(
             if (  TThXla == NULL  )
                 pushError(&(TThDbc->errorStack),
                           rc = SQL_INVALID_HANDLE,
-#if TT_LIB_VERSION >= 112200
 			  ENCODING_ANSI,
-#endif /* >= 112200 */
                           (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                           tt_ErrDMNoMemory,
                           (SQLCHAR *)"TimesTen Driver Manager: "
                                      "ttXlaPersistOpen: "
-                                     "Unable to allocate memory for XLA handle"
-#if TT_LIB_VERSION >= 112200
-	                  ,
+                                     "Unable to allocate memory for XLA handle",
 	                  (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 	                  (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 	                  TThDbc->connName,
 	                  TThDbc->serverName
-#endif /* >= 112200 */
                           );
             else
             {
@@ -10940,65 +10657,6 @@ ttXlaNextUpdateWait(
 }
 
 SQLRETURN  XLA_API
-ttXlaStatus(
-                 ttXlaHandle_h handle,
-                 ttXlaStatus_t *status
-)
-{
-    SQLRETURN rc = SQL_SUCCESS;
-    TTXlaHandle_t * TThXla;
-
-    TRACE_FENTER("ttXlaStatus");
-    TRACE_HVAL("handle",handle);
-
-    if (  handle == NULL  )
-        rc = SQL_INVALID_HANDLE;
-    else
-    {
-        TThXla = (TTXlaHandle_t *)handle;
-        if (  (TThXla->tag != TTDM_STRUCT_TAG) ||
-	      (TThXla->hid != TTDM_HID_XLA)   ||
-              (TThXla->hXla == NULL)  )
-            rc = SQL_INVALID_HANDLE;
-        else
-            rc = (*((SQLRETURN (XLA_API *)(ttXlaHandle_h, ttXlaStatus_t *))(TThXla->pFuncMap->xlaFuncPtr[F_POS_XLA_ttXlaStatus])))(TThXla->hXla, status);
-    }
-
-    TRACE_FLEAVE_RC("ttXlaStatus",rc);
-
-    return rc;
-}
-
-SQLRETURN  XLA_API
-ttXlaResetStatus(
-                 ttXlaHandle_h handle
-)
-{
-    SQLRETURN rc = SQL_SUCCESS;
-    TTXlaHandle_t * TThXla;
-
-    TRACE_FENTER("ttXlaResetStatus");
-    TRACE_HVAL("handle",handle);
-
-    if (  handle == NULL  )
-        rc = SQL_INVALID_HANDLE;
-    else
-    {
-        TThXla = (TTXlaHandle_t *)handle;
-        if (  (TThXla->tag != TTDM_STRUCT_TAG) ||
-	      (TThXla->hid != TTDM_HID_XLA)   ||
-              (TThXla->hXla == NULL)  )
-            rc = SQL_INVALID_HANDLE;
-        else
-            rc = (*((SQLRETURN (XLA_API *)(ttXlaHandle_h))(TThXla->pFuncMap->xlaFuncPtr[F_POS_XLA_ttXlaResetStatus])))(TThXla->hXla);
-    }
-
-    TRACE_FLEAVE_RC("ttXlaResetStatus",rc);
-
-    return rc;
-}
-
-SQLRETURN  XLA_API
 ttXlaTableCheck(
                  ttXlaHandle_h handle,
                  ttXlaTblDesc_t *table,
@@ -11525,6 +11183,68 @@ ttXlaConvertCharType(
  * Legacy (non persistent) functions
  */
 
+#if TT_LIB_VERSION < 181000
+
+SQLRETURN  XLA_API
+ttXlaStatus(
+                 ttXlaHandle_h handle,
+                 ttXlaStatus_t *status
+)
+{
+    SQLRETURN rc = SQL_SUCCESS;
+    TTXlaHandle_t * TThXla;
+
+    TRACE_FENTER("ttXlaStatus");
+    TRACE_HVAL("handle",handle);
+
+    if (  handle == NULL  )
+        rc = SQL_INVALID_HANDLE;
+    else
+    {
+        TThXla = (TTXlaHandle_t *)handle;
+        if (  (TThXla->tag != TTDM_STRUCT_TAG) ||
+	      (TThXla->hid != TTDM_HID_XLA)   ||
+              (TThXla->hXla == NULL)  )
+            rc = SQL_INVALID_HANDLE;
+        else
+            rc = (*((SQLRETURN (XLA_API *)(ttXlaHandle_h, ttXlaStatus_t *))(TThXla->pFuncMap->xlaFuncPtr[F_POS_XLA_ttXlaStatus])))(TThXla->hXla, status);
+    }
+
+    TRACE_FLEAVE_RC("ttXlaStatus",rc);
+
+    return rc;
+}
+
+SQLRETURN  XLA_API
+ttXlaResetStatus(
+                 ttXlaHandle_h handle
+)
+{
+    SQLRETURN rc = SQL_SUCCESS;
+    TTXlaHandle_t * TThXla;
+
+    TRACE_FENTER("ttXlaResetStatus");
+    TRACE_HVAL("handle",handle);
+
+    if (  handle == NULL  )
+        rc = SQL_INVALID_HANDLE;
+    else
+    {
+        TThXla = (TTXlaHandle_t *)handle;
+        if (  (TThXla->tag != TTDM_STRUCT_TAG) ||
+	      (TThXla->hid != TTDM_HID_XLA)   ||
+              (TThXla->hXla == NULL)  )
+            rc = SQL_INVALID_HANDLE;
+        else
+            rc = (*((SQLRETURN (XLA_API *)(ttXlaHandle_h))(TThXla->pFuncMap->xlaFuncPtr[F_POS_XLA_ttXlaResetStatus])))(TThXla->hXla);
+    }
+
+    TRACE_FLEAVE_RC("ttXlaResetStatus",rc);
+
+    return rc;
+}
+
+
 SQLRETURN  XLA_API
 ttXlaOpenTimesTen(
                 SQLHDBC         hdbc,
@@ -11559,21 +11279,16 @@ ttXlaOpenTimesTen(
             if (  TThXla == NULL  )
                 pushError(&(TThDbc->errorStack),
                           rc = SQL_INVALID_HANDLE,
-#if TT_LIB_VERSION >= 112200
 			  ENCODING_ANSI,
-#endif /* >= 112200 */
                           (SQLCHAR *)TT_DM_SQLSTATE_NOMEM,
                           tt_ErrDMNoMemory,
                           (SQLCHAR *)"TimesTen Driver Manager: "
                                      "ttXlaOpenTimesTen: "
-                                     "Unable to allocate memory for XLA handle"
-#if TT_LIB_VERSION >= 112200
-	                  ,
+                                     "Unable to allocate memory for XLA handle",
 	                  (SQLCHAR *)TTDM_DIAG_CLASS_ORIGIN,
 	                  (SQLCHAR *)TTDM_DIAG_SUBCLASS_ORIGIN,
 	                  TThDbc->connName,
 	                  TThDbc->serverName
-#endif /* >= 112200 */
                           );
             else
             {
@@ -11629,6 +11344,8 @@ ttXlaConfigBuffer(
 
     return rc;
 }
+
+#endif /* TT_LIB_VERSION < 181000 */
 
 /*
  * Undocumented public functions
@@ -11794,8 +11511,6 @@ ttXlaSqlOption(
     return rc;
 }
 
-#if TT_LIB_VERSION >= 112100
-
 SQLRETURN  XLA_API
 ttXlaRowidToCString(
 		 void *fromData, 
@@ -11812,7 +11527,6 @@ ttXlaRowidToCString(
 
     return rc;
 }
-#endif /* TT_LIB_VERSION >= 112100 */
 
 #endif /* ENABLE_XLA_DIRECT */
 

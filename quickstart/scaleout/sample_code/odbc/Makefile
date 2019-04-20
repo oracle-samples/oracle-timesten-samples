@@ -5,20 +5,21 @@
 # at http://oss.oracle.com/licenses/upl
 #
 #
-# Makefile for GridSample C/ODBC sample program
+# Makefile for C/ODBC sample programs
 #
 
 TTDIR		= $(TIMESTEN_HOME)
 OBJDIR		= obj
 BINDIR		= bin
 INSTDIR		= $(TTDIR)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 
 CC		= gcc
 
-PLATCFLAGS	= -m64 -O2
-LDFLAGS		= -O2 -Wl,-rpath -Wl,$(INSTDIR)/lib
+PLATCFLAGS	= -m64 -O3
+LDFLAGS		= -O3 -Wl,-rpath -Wl,$(INSTDIR)/lib
 
-INCS		= -I. -I$(INSTDIR)/include
+INCS		= -I. -I$(INSTDIR)/include -I$(COMMDIR)
 #
 # Use OPTDEFS to enable optional features
 #
@@ -54,14 +55,19 @@ GSOBJSCS	= $(OBJDIR)/GridSampleCS.o $(OBJDIR)/GSOdbcCS.o \
 GRIDSAMPLE	= $(BINDIR)/GridSample
 GRIDSAMPLECS	= $(BINDIR)/GridSampleCS
 
+TPTBMDC         = $(BINDIR)/tptbm
+TPTBMDCOBJS     = $(OBJDIR)/tptbm.o $(OBJDIR)/utils.o $(OBJDIR)/ttgetopt.o
+TPTBMCS         = $(BINDIR)/tptbmCS
+TPTBMCSOBJS     = $(OBJDIR)/tptbmCS.o $(OBJDIR)/utils.o $(OBJDIR)/ttgetopt.o
+
 all:		csonly direct
 
-direct:		$(GRIDSAMPLE)
+direct:		$(GRIDSAMPLE) $(TPTBMDC)
 
-csonly:		$(GRIDSAMPLECS)
+csonly:		$(GRIDSAMPLECS) $(TPTBMCS)
 
 clean:
-	rm -f $(GRIDSAMPLECS) $(GRIDSAMPLE) $(OBJDIR)/*.o
+	rm -f $(GRIDSAMPLECS) $(GRIDSAMPLE) $(TPTBMDC) $(TPTBMCS) $(OBJDIR)/*.o
 
 # Targets for binaries
 
@@ -71,7 +77,24 @@ $(GRIDSAMPLE):	$(GSOBJS)
 $(GRIDSAMPLECS):	$(GSOBJSCS)
 	$(CC) -o $@ $(LDFLAGS) $(GSOBJSCS) $(CSLIBS)
 
+$(TPTBMDC):	$(TPTBMDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMDCOBJS) $(DCLIBS)
+
+$(TPTBMCS):	$(TPTBMCSOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS)
+
 # Targets for object files
+$(OBJDIR)/utils.o:	$(COMMDIR)/utils.c $(COMMDIR)/utils.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/utils.c
+
+$(OBJDIR)/ttgetopt.o:	$(COMMDIR)/ttgetopt.c $(COMMDIR)/ttgetopt.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/ttgetopt.c
+
+$(OBJDIR)/tptbm.o:	tptbm.c $(COMMDIR)/tt_version.h $(COMMDIR)/ttgetopt.h $(COMMDIR)/utils.h
+	$(CC) -o $@ -c $(CFLAGS)  -DSCALEOUT tptbm.c
+
+$(OBJDIR)/tptbmCS.o:	tptbm.c $(COMMDIR)/tt_version.h $(COMMDIR)/ttgetopt.h $(COMMDIR)/utils.h
+	$(CC) -o $@ -c $(CFLAGS) $(CSDEFS) -DSCALEOUT tptbm.c
 
 $(OBJDIR)/GridSample.o:	GridSample.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GridSample.c

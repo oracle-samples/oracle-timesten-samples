@@ -13,8 +13,8 @@ TTDMDIR         = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
 
 CC              = gcc
 
-PLATCFLAGS      = -Os -finline-functions
-LDFLAGS         =
+PLATCFLAGS      = -O3 -finline-functions
+LDFLAGS         = 
 SHLIB_SUFFIX    = so
 
 ifeq ($(TT_MVL_LINUX),1)
@@ -24,9 +24,8 @@ endif
 
 INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
 
-DEFS		= -DSCALEOUT
 CSDEFS          = -DTTCLIENTSERVER
-CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
+CFLAGS          = $(PLATCFLAGS) $(INCS)
 
 TTLINK           = -L$(INSTDIR)/lib -Wl,-rpath,$(INSTDIR)/lib
 TTDMLINK        = -L$(QUICKSTART_HOME)/lib -Wl,-rpath,$(QUICKSTART_HOME)/lib 
@@ -95,13 +94,13 @@ $(PLSQLODBCDC): $(PLSQLODBCDCOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCDCOBJS) $(DCLIBS)
 
 $(TPCBDC):	$(TPCBDCOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPCBDCOBJS) $(DCLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(TPCBDCOBJS) $(DCLIBS)
 
 $(TPTBMDC):	$(TPTBMDCOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPTBMDCOBJS) $(DCLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMDCOBJS) $(DCLIBS)
 
 $(WISCBMDC):	$(WISCBMDCOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(WISCBMDCOBJS) $(DCLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMDCOBJS) $(DCLIBS)
 
 
 #
@@ -115,13 +114,13 @@ $(PLSQLODBCCS): $(PLSQLODBCCSOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCCSOBJS) $(CSLIBS)
 
 $(TPCBCS):	$(TPCBCSOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPCBCSOBJS) $(CSLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(TPCBCSOBJS) $(CSLIBS)
 
 $(TPTBMCS):	$(TPTBMCSOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS) 
 
 $(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
-	$(CC) -o $@ $(LDFLAGS) $(WISCBMCSOBJS) $(CSLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMCSOBJS) $(CSLIBS)
 
 #
 # Targets for TimesTen Driver Manager building executables

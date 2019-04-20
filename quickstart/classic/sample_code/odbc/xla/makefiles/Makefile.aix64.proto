@@ -9,12 +9,11 @@ INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 TTDMDIR         = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
 
-CC              = cc_r
+CC              = xlc_r
 
 PLATCFLAGS      = -O -qmaxmem=8192 -q64
 LDFLAGS         = -q64
 SHLIB_SUFFIX    = so
-AR_SUFFIX       = a
 EXTRALIBS       = -lm
 
 INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
@@ -29,12 +28,10 @@ DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
 CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS) -lC_r
 TTDMLIBS        = $(TTDMLINK) -lttdrvmgr $(EXTRALIBS)
 
-
 #
 # TimesTen Driver Manager Shared Library
 #
 TTDMSHLIB       = $(QUICKSTART_HOME)/lib/libttdrvmgr.$(SHLIB_SUFFIX)
-
 
 XLASIMPLEDC     = xlaSimple
 XLASIMPLEDCOBJS = xlaSimple.o ttgetopt.o

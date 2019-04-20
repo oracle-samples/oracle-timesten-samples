@@ -19,28 +19,19 @@ POSIX_THREADS = -D_POSIX_PTHREAD_SEMANTICS
 OPTFLAG       = -O3 -qstrict
 DEBUGFLAG     = -g -DTTDEBUG
 
-CFLAGS        = $(DEBUGFLAG) $(THREAD_SAFE) -I$(TTC_INCLUDEDIR) \
-                -I$(INSTDIR)/include $(CF64) -DAIX -DUSE_OLD_CPP_STREAMS \
-                -I$(COMMON)
+CFLAGS        = $(OPTFLAG) $(THREAD_SAFE) -I$(TTC_INCLUDEDIR) \
+                -I$(SAMPLES) -I$(INSTDIR)/include $(CF64) -DAIX \
+                -DUSE_OLD_CPP_STREAMS -I$(COMMON)
 
 LDFLAGS       = $(LD64) -bh:5
 DIRLIBS       = -L$(INSTDIR)/lib -ltten -lttclasses -lm -lpthread -lC_r
 
-CPLUSPLUS     = xlC_r
-CC            = cc_r
+CPLUSPLUS     = xlc_r
+CC            = xlc_r
 
-# default LINK line (both opt/debug)
-LINK          =  ar $(ARFLAGS) cr
+OBJ_DIR       = obj
 
-ARFLAGS       = -X64
-
-SHLDEXT       = so
-AREXT         = a
-
-OBJ_DIR = obj
-
-# used to determine library names
-TT_LIBTTEN    = $(wildcard $(INSTDIR)/lib/libtten.$(SHLDEXT))
+TT_LIBTTEN    = $(INSTDIR)/lib/libtten.so
 
 # -----------------------------------------------------------------------------
 # file lists
@@ -62,29 +53,30 @@ xlasubscriber2
 # -----------------------------------------------------------------------------
 #  Top-level targets
 # -----------------------------------------------------------------------------
-ifneq ($(strip $(TT_LIBTTEN)),)
+
 PROGS = $(TESTPROGS)
-endif
 
 all: $(PROGS)
 
 clean:
-		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS)
-		$(PLAT_SPECIFIC_CLEAN)
+	-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS)
 
 # -----------------------------------------------------------------------------
 # build targets
 # -----------------------------------------------------------------------------
 
-.SUFFIXES: .cpp $(SUFFIXES)
+#
+# TTClasses samples object files
+#
 
-.KEEP.STATE:
+$(OBJ_DIR)/ttXlaAdmin.o: ttXlaAdmin.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c ttXlaAdmin.cpp -o $@
 
-$(OBJ_DIR)/%.o:%.c
-	$(CC) $(CFLAGS) -c $*.c -o $@
+$(OBJ_DIR)/xlasubscriber1.o: xlasubscriber1.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c xlasubscriber1.cpp -o $@
 
-$(OBJ_DIR)/%.o:%.cpp
-	$(CPLUSPLUS) $(CFLAGS) -c $*.cpp -o $@
+$(OBJ_DIR)/xlasubscriber2.o: xlasubscriber2.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c xlasubscriber2.cpp -o $@
 
 #
 # TTClasses direct linked sample programs

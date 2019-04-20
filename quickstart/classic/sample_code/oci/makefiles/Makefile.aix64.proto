@@ -10,9 +10,9 @@ COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_11_2
 OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
-CC              = cc_r
+CC              = xlc_r
 
-PLATCFLAGS      = -O -qmaxmem=8192 -q64
+PLATCFLAGS      = -O -qmaxmem=49152 -q64
 LDFLAGS         = -q64
 
 INCS            = -I$(OCIINCS) -I$(INSTDIR)/include -I$(COMMDIR)

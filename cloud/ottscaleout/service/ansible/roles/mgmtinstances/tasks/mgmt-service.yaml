@@ -1,0 +1,79 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Be aware of what runs where
+# Assumed to be run by root user
+# 
+---
+
+# in new installation, systemd control files not present, ok to stop active
+# otherwise, if systemd control files are present, use mgmtexamine to determine action
+
+- name: check whether systemd control files already installed
+  stat:
+    path:           "{{ systemddir }}/{{ dbname }}-mgmt.service"
+  register:         systemdsvcfile
+  become:           true
+  become_user:      root
+
+- name: find path to mgmt instance
+  include_tasks: roles/mgmtinstances/tasks/mgmt-path.yaml
+
+# set service timer 
+# for active, every 1 minute for standby every 2 minutes
+- name: get replication role
+  shell: "{{ mgmt }} ttisql -v1 -e\"set rowdelimiters off; call ttrepstateget; quit;\" dsn=ttgridadmin"
+  register:         role
+  when:             systemdsvcfile.stat.isdir is undefined
+  become:           true
+  become_user:      oracle
+
+- name: set timer
+  set_fact:
+    ttservicetimer: 1
+  when:             systemdsvcfile.stat.isdir is undefined and role.stdout == "ACTIVE"
+
+- name: set timer
+  set_fact:
+    ttservicetimer: 2
+  when:             systemdsvcfile.stat.isdir is undefined and role.stdout == "STANDBY"
+
+- name: install service files from templates
+  template:
+    src:            "{{ item }}.j2"
+    dest:           "{{ systemddir }}/{{ dbname }}-{{ item }}"
+    owner:          oracle
+    group:          oracle
+    mode:           0444
+  with_items:       ['mgmt.service', 'mgmt.timer']
+  when:             systemdsvcfile.stat.isdir is undefined
+  become:           true
+  become_user:      root
+
+- name: disable service before start
+  systemd:
+    name:           "{{ dbname }}-{{ item }}"
+    enabled:        no
+  with_items:       ['mgmt.service', 'mgmt.timer']
+  become:           true
+  become_user:      root
+  ignore_errors:    true
+
+- name: enable service
+  systemd:
+    name:           "{{ dbname }}-{{ item }}"
+    enabled:        yes
+  with_items:       ['mgmt.service', 'mgmt.timer']
+  become:           true
+  become_user:      root
+
+- name: start service timer
+  systemd:
+    name:           "{{ dbname }}-{{ item }}"
+    state:          started
+  with_items:       ['mgmt.timer']
+  become:           true
+  become_user:      root
+

@@ -1,0 +1,22 @@
+# Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# run on data instances
+#
+---
+- name: create instance directory
+  file: 
+    path:           "{{ ttinstancedir }}"
+    owner:          oracle
+    group:          oracle
+    mode:           0770
+    state:          directory
+  become:           true
+  become_user:      oracle
+#    recurse:        true
+
+
+
+

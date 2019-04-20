@@ -17,17 +17,12 @@ COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_11_2
 OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
-CC              = cc_r
+CC              = xlc_r
 
 PLATCFLAGS      = -O -qmaxmem=8192 -q64
 LDFLAGS         = -q64
 
-
 EXTRALIBS       = -lpthread -lm -lrt
-
-ifeq ($(TT_MVL_LINUX),1)
-EXTRALIBS       += -ldl -lnsl -lnnz11
-endif
 
 INCS 		= -I$(INSTDIR)/include -I$(COMMDIR) -I$(OCIINCS)
 
@@ -118,9 +113,5 @@ getempPROC.c: getempPROC.pc
 	@proc include=$(COMMDIR) iname=getempPROC.pc config=pcscfg.cfg 
 
 plsqlPROC.c: plsqlPROC.pc
-ifeq ($(TT_MVL_LINUX),1)
-	@TWO_TASK=sampledb;export TWO_TASK;LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) proc include=$(COMMDIR) USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics
-else
 	@TWO_TASK=sampledb;export TWO_TASK;proc include=$(COMMDIR) USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics
-endif
 

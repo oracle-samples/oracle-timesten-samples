@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
  *
  * Project:    TimesTen Driver Manager
- * Version:    2.1
- * Date:       25th January 2018
+ * Version:    2.2
+ * Date:       11th April 2019
  * Author:     chris.jenkins@oracle.com
  *
  * This is the header file for the TimesTen Driver Manager (ttdrvmgr).

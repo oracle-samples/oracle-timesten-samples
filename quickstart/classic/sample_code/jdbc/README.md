@@ -10,31 +10,33 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
   
      Set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
-     $ source /home/timesten/instance/tt181/bin/ttenv.sh
+     `source /home/timesten/instance/tt181/bin/ttenv.sh`
 
      Run the _quickstart/classic/sample\_scripts/createdb/build\_sampledb_ script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
 
       Unix/Linux:
       
-      $ cd  quickstart/classic/sample\_scripts/createdb
+      `cd  quickstart/classic/sample\_scripts/createdb`
       
-      $ ./build\_sampledb.sh
+      `./build\_sampledb.sh`
 
 3. Set up environment to compile and run the sample application
 
-     The following script must be run for each of the terminal session:
+     The following scripts must be run for each of your terminal sessions...
 
     Set up the Instance environment variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
-    $ source /home/timesten/instance/tt181/bin/ttenv.sh
+    `source /home/timesten/instance/tt181/bin/ttenv.sh`
 
     Set up quickstart environment variables:
     
     Unix/Linux: 	  	
     
-    $ . quickstart/classic/ttquickstartenv.sh   OR
+    `. quickstart/classic/ttquickstartenv.sh`
     
-    $ source quickstart/classic/ttquickstartenv.csh
+    or
+    
+    `source quickstart/classic/ttquickstartenv.csh`
 
 ## How to compile the sample JDBC programs
 
@@ -42,11 +44,11 @@ To compile the sample programs in the sample\_code/jdbc directory, use the relev
 
 To compile specific program:
 
-javac \<progname.java\>
+`javac <progname>.java`
 
 To compile the sample programs all at once:
 
-javac *.java
+`javac *.java`
 
 ## How to run the sample JDBC programs
 
@@ -78,19 +80,19 @@ Either the level1 - level4 JDBC programs or ttIsql can be used to apply committe
 
 Examples:
 
-  (Connect using the default DSN sampledb, uid=xlauser, prompted password, listen to APPUSER.CUSTOMER)
+  Connect using the default DSN sampledb, uid=xlauser, prompted password, listen to APPUSER.CUSTOMER
   
-  java asyncJMS
+  `java asyncJMS`
 
-  (Connect using the default DSN sampledb, uid=xlauser, listen to APPUSER.CUSTOMER)
+  Connect using the default DSN sampledb, uid=xlauser, listen to APPUSER.CUSTOMER
  
-  java asyncJMS -xlauser <xlausername>
+  `java asyncJMS -xlauser <xlausername>`
 
-  (Connect using the default DSN sampledb, uid=xlauser and listen to the MYUSER.CUSTOMER table)
+  Connect using the default DSN sampledb, uid=xlauser and listen to the MYUSER.CUSTOMER table
   
-  java asyncJMS -xlauser <xlausername> -schema myUser
+  `java asyncJMS -xlauser <xlausername> -schema myUser`
 
-  For full syntax of the program, try "java asyncJMS -h".
+  For the full syntax of the program, use "java asyncJMS -h".
 
 **level1**
 
@@ -108,19 +110,19 @@ e) Disconnect from the database
 
 Examples:
 
-  (Connect using default dsn sampledb, uid=appuser, and direct-linked)
+  Connect using default dsn sampledb, uid=appuser, and direct-linked
   
-  java level1
+  `java level1`
 
-  (Connect using default dsn and uid, and client/server mode)
+  Connect using default dsn and uid, and client/server mode
   
-  java level1 -c
+  `java level1 -c`
 
-  (connect using my own dsn my_dsn)
+  Connect using the dsn **my_dsn**
   
-  java level1 my_dsn
+  `java level1 my_dsn`
 
-  For full syntax of the program, try "java level1 -h".
+  For the full syntax of the program, use "java level1 -h".
 
 **level2**
 
@@ -142,19 +144,19 @@ g) Disconnect from the database.
 
 Examples:
 
-  (Connect using default dsn sampledb, uid=appuser, and direct-linked)
+  Connect using default dsn sampledb, uid=appuser, and direct-linked
   
-  java level2
+  `java level2`
 
-  (Connect using default dsn and uid, and client/server mode)
+  Connect using default dsn and uid, and client/server mode
   
-  java level2 -c
+  `java level2 -c`
 
-  (connect using my own dsn my_dsn)
+  Connect using the dsn **my_dsn**
   
-  java level2 my_dsn
+  `java level2 my_dsn`
 
-  For full syntax of the program, try "java level2 -h".
+  For the full syntax of the program, use "java level2 -h".
 
 **level3**
 
@@ -168,19 +170,19 @@ c) Disconnect from the database.
 
 Examples:
 
-  (Connect using default dsn sampledb, uid=appuser, and direct-linked)
+  Connect using default dsn sampledb, uid=appuser, and direct-linked
   
-  java level3
+  `java level3`
 
-  (Connect using default dsn and uid, and client/server mode)
+  Connect using default dsn and uid, and client/server mode
   
-  java level3 -c
+  `java level3 -c`
 
-  (connect using my own dsn my_dsn)
+  Connect using the dsn **my_dsn**
   
-  java level3 my_dsn
+  `java level3 my_dsn`
 
-  For full syntax of the program, try "java level3 -h".
+  For the full syntax of the program, use "java level3 -h".
 
 **level4**
 
@@ -188,19 +190,19 @@ This program is the multi-threaded version of the level3.java program. This prog
 
 Examples:
 
-  (Connect using default dsn sampledb, uid=appuser, and direct-linked)
+  Connect using default dsn sampledb, uid=appuser, and direct-linked
   
-  java level4
+  `java level4`
 
-  (Connect using default dsn and uid, and client/server mode)
+  Connect using default dsn and uid, and client/server mode
   
-  java level4 -c
+  `java level4 -c`
 
-  (connect using my own dsn my_dsn)
+  Connect using the dsn **my_dsn**
   
-  java level4 my_dsn
+  `java level4 my_dsn`
 
-  For full syntax of the program, try "java level4 -h".
+  For the full syntax of the program, use "java level4 -h".
 
 **plsqlJDBC**
 
@@ -219,11 +221,11 @@ The EMP table and the emp\_pkg and sample\_pkg PLSQL packages need to exist for 
 
 Examples:
 
-  (run the program using the default DSN sampledb, will prompt for the username and password)
+  Run the program using the default DSN sampledb, it will prompt for the username and password
   
-  java plsqlJDBC
+  `java plsqlJDBC`
 
-For full syntax of the program, try "java plsqlJDBC -help".
+For the full syntax of the program, use "java plsqlJDBC -help".
 
 **syncJMS**
 
@@ -245,19 +247,19 @@ Either the level1 - level4 JDBC programs or ttIsql can be used to apply committe
 
 Examples:
 
-  (Connect using the default DSN sampledb, uid=xlauser, prompted password, listen to APPUSER.CUSTOMER)
+  Connect using the default DSN sampledb, uid=xlauser, prompted password, listen to APPUSER.CUSTOMER
   
-  java syncJMS
+  `java syncJMS`
 
-  (Connect using the default DSN sampledb, uid=xlauser, listen to APPUSER.CUSTOMER)
+  Connect using the default DSN sampledb, uid=xlauser, listen to APPUSER.CUSTOMER
   
-  java syncJMS -xlauser <xlausername>
+  `java syncJMS -xlauser <xlausername>`
 
-  (Connect using the default DSN sampledb, uid=xlauser and listen to the MYUSER.PRODUCT table)
+  Connect using the default DSN sampledb, uid=xlauser and listen to the MYUSER.PRODUCT table
   
-  java syncJMS -xlauser <xlausername> -schema myUser -table product 
+  `java syncJMS -xlauser <xlausername> -schema myUser -table product `
 
-For full syntax of the program, try "java syncJMS -h".
+For the full syntax of the program, use "java syncJMS -h".
 
 **Tptbm**
 
@@ -272,19 +274,20 @@ The schema for this test is described in the program source file tptbm.java.
 
 Examples:
 
-  (Run the program using default workload mix of 80% reads, 20% updates, dsn=sampledb, uid=appuser)
   
-  java Tptbm
-
-  (80% reads, 20% updates, 4 threads, populate the table with 400,000 rows, and run 100,000 transactions)
+Run the program using default workload mix of 80% reads, 20% updates, dsn=sampledb, uid=appuser
   
-  java Tptbm -threads 4 -key 200 -xacts 100000
+  `java Tptbm`
 
-  (85% reads, 10% inserts, 5% updates, 4 threads, 10,000 transactions)
+80% reads, 20% updates, 4 threads, populate the table with 400,000 rows, and run 100,000 transactions
   
-  java Tptbm -threads 4 -reads 85 -inserts 10 -xacts 10000
+  `java Tptbm -threads 4 -key 200 -xacts 100000`
 
-  For full syntax of the program, try "java Tptbm -h".
+85% reads, 10% inserts, 5% updates, 4 threads, 10,000 transactions
+  
+  `java Tptbm -threads 4 -reads 85 -inserts 10 -xacts 10000`
+
+For the full syntax of the program, use "java Tptbm -h".
 
 
 **TTJdbcExamples**
@@ -301,19 +304,19 @@ d) Execute batch updates
 
 Examples:
 
-  (run all examples, connect using the default DSN sampledb, uid=appuser)
+  Run all examples, connect using the default DSN (sampledb) as user appuser
   
-  java TTJdbcExamples
+  `java TTJdbcExamples`
 
-  (To run only example 2)
+  To run only example 2
   
-  java TTJdbcExamples -run 2
+  `java TTJdbcExamples -run 2`
 
-  (To run the 64-bit JDK for example 2)
+  To run the 64-bit JDK for example 2
   
-  java -d64 TTJdbcExamples -run 2
+  `java -d64 TTJdbcExamples -run 2`
 
-  For full syntax of the program, try "java TTJdbcExamples -h".
+  For the full syntax of the program, use "java TTJdbcExamples -h".
 
 
-For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/cd/E21901_01/timesten.1122/e21638/toc.htm).
+For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/database/timesten-18.1/TTJDV/toc.htm).

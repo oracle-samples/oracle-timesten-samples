@@ -28,7 +28,7 @@ OPTFLAG       = -O3 -qstrict
 DEBUGFLAG     = -g -DTTDEBUG
 CSDEFS        = -DTTCLIENTSERVER
 
-CFLAGS        = $(DEBUGFLAG) $(THREAD_SAFE) -I$(TTC_INCLUDEDIR) \
+CFLAGS        = $(OPTFLAG) $(THREAD_SAFE) -I$(TTC_INCLUDEDIR) \
                 -I$(INSTDIR)/include $(CF64) -DAIX -DUSE_OLD_CPP_STREAMS \
                 -I$(COMMON)
 
@@ -36,24 +36,14 @@ LDFLAGS       = $(LD64) -bh:5
 DIRLIBS       = -L$(INSTDIR)/lib -ltten -lttclasses -lm -lpthread -lC_r
 CSLIBS        = -L$(INSTDIR)/lib -lttclient -lttclassesCS -lm -lpthread -lC_r
 
+CPLUSPLUS     = xlc_r
+CC            = xlc_r
 
-
-CPLUSPLUS     = xlC_r
-CC            = cc_r
-
-# default LINK line (both opt/debug)
-LINK          =  ar $(ARFLAGS) cr
-
-ARFLAGS       = -X64
-
-SHLDEXT       = so
-AREXT         = a
-
-OBJ_DIR = obj
+OBJ_DIR       = obj
 
 # used to determine library names
-TT_CLIENTLIB  = $(wildcard $(INSTDIR)/lib/libttclient.$(SHLDEXT))
-TT_LIBTTEN    = $(wildcard $(INSTDIR)/lib/libtten.$(SHLDEXT))
+TT_CLIENTLIB  = $(INSTDIR)/lib/libttclient.so
+TT_LIBTTEN    = $(INSTDIR)/lib/libtten.so
 
 # -----------------------------------------------------------------------------
 # file lists
@@ -100,39 +90,81 @@ $(OBJ_DIR)/testprog_utils.o
 # -----------------------------------------------------------------------------
 #  Top-level targets
 # -----------------------------------------------------------------------------
-ifneq ($(strip $(TT_LIBTTEN)),)
-PROGS = $(TESTPROGS)
-endif
 
-ifneq ($(strip $(TT_CLIENTLIB)),)
-PROGS += $(TESTPROGS_CS)
-endif
+PROGS = $(TESTPROGS) $(TESTPROGS_CS)
 
 all: $(PROGS)
 
 clean:
-		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS) $(TESTPROGS_CS) 
-		$(PLAT_SPECIFIC_CLEAN)
+	-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS) $(TESTPROGS_CS) 
 
 # -----------------------------------------------------------------------------
 # build targets
 # -----------------------------------------------------------------------------
 
-.SUFFIXES: .cpp $(SUFFIXES)
+#
+# Object files
+#
 
-.KEEP.STATE:
+$(OBJ_DIR)/basics.o:	basics.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c basics.cpp -o $@
 
-$(OBJ_DIR)/%.o:%.c
-	$(CC) $(CFLAGS) -c $*.c -o $@
+$(OBJ_DIR)/bulktest.o:	bulktest.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c bulktest.cpp -o $@
 
-$(OBJ_DIR)/%_client.o:%.c
-	$(CC) $(CFLAGS) $(CSDEFS) -c $*.c -o $@
+$(OBJ_DIR)/bulkcp.o:	bulkcp.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c bulkcp.cpp -o $@
 
-$(OBJ_DIR)/%.o:%.cpp
-	$(CPLUSPLUS) $(CFLAGS) -c $*.cpp -o $@
+$(OBJ_DIR)/catalog.o:	catalog.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c catalog.cpp -o $@
 
-$(OBJ_DIR)/%_client.o:%.cpp
-	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c $*.cpp -o $@
+$(OBJ_DIR)/plsqlTTCLASSES.o:	plsqlTTCLASSES.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c plsqlTTCLASSES.cpp -o $@
+
+$(OBJ_DIR)/pooltest.o:	pooltest.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c pooltest.cpp -o $@
+
+$(OBJ_DIR)/testprog_utils.o:	testprog_utils.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c testprog_utils.cpp -o $@
+
+$(OBJ_DIR)/typetest.o:	typetest.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c typetest.cpp -o $@
+
+$(OBJ_DIR)/ttSizeAll.o:	ttSizeAll.cpp
+	$(CPLUSPLUS) $(CFLAGS) -c ttSizeAll.cpp -o $@
+
+$(OBJ_DIR)/basics_client.o:	basics.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c basics.cpp -o $@
+
+$(OBJ_DIR)/bulktest_client.o:	bulktest.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c bulktest.cpp -o $@
+
+$(OBJ_DIR)/bulkcp_client.o:	bulkcp.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c bulkcp.cpp -o $@
+
+$(OBJ_DIR)/catalog_client.o:	catalog.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c catalog.cpp -o $@
+
+$(OBJ_DIR)/plsqlTTCLASSES_client.o:	plsqlTTCLASSES.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c plsqlTTCLASSES.cpp -o $@
+
+$(OBJ_DIR)/pooltest_client.o:	pooltest.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c pooltest.cpp -o $@
+
+$(OBJ_DIR)/testprog_utils_client.o:	testprog_utils.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c testprog_utils.cpp -o $@
+
+$(OBJ_DIR)/typetest_client.o:	typetest.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c typetest.cpp -o $@
+
+$(OBJ_DIR)/ttSizeAll_client.o:	ttSizeAll.cpp
+	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c ttSizeAll.cpp -o $@
+
+$(OBJ_DIR)/portable_thread_unix.o: portable_thread_unix.c
+	$(CC) $(CFLAGS) -c portable_thread_unix.c -o $@
+
+$(OBJ_DIR)/portable_thread_unix_client.o: portable_thread_unix.c
+	$(CC) $(CFLAGS) -c portable_thread_unix.c -o $@
 
 #
 # TTClasses direct linked sample programs

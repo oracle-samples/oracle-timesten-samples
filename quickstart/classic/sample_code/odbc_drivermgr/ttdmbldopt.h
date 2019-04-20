@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
  *
  * Project:    TimesTen Driver Manager
- * Version:    2.1
- * Date:       25th January 2018
+ * Version:    2.2
+ * Date:       11th April 2019
  * 
  * Author:     chris.jenkins@oracle.com
  *
@@ -169,7 +169,7 @@
 #define    ENABLE_UTIL_LIB        1
 #define    SHLIB_SUFFIX           ".so"
 #if !defined(TT_LIB_VERSION)
-#define    TT_LIB_VERSION         181110
+#define    TT_LIB_VERSION         181210
 #endif
 
 #endif

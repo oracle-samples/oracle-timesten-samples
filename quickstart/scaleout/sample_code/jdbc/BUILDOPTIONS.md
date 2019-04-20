@@ -1,6 +1,6 @@
 Copyright (c) 1997, 2018, Oracle and/or its affiliates. All rights reserved.
 
-# Compile time program options
+# Compile time program options for GridSample
 
 When building this sample program you can control some optional features at build time by setting values for specific constants defined in **GSConstants.java**.
 

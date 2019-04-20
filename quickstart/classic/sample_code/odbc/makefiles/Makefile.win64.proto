@@ -5,6 +5,8 @@
 # $Revision: /main/1 $
 #
 
+TTVER		= 181
+
 INSTDIR         = $(TIMESTEN_HOME)\install
 
 QUICKCODEDIR    = $(QUICKSTART_HOME)\sample_code
@@ -14,23 +16,10 @@ TTDMDIR         = $(QUICKCODEDIR)\odbc_drivermgr
 
 CC              = cl.exe /nologo
 
-
-!IF DEFINED(DEBUG)
-LIBEXT = D
-RTLIBEXT = d
-DEBUGFLAG = /DDEBUG /D_DEBUG
-!ENDIF
-
-!IF DEFINED(DEBUG)
-OFLAG = /Od
-!ELSE
-OFLAG = /Ox
-!ENDIF
-
-
+OFLAG 		= /Ox
 
 # WIN64 NON Driver Manager
-PLATCFLAGS      = /DWIN64 /DWIN32 /DWINVER=0x500 /MT$(RTLIBEXT) /EHsc $(OFLAG) /D_CRT_SECURE_NO_DEPRECATE
+PLATCFLAGS      = /DWIN64 /DWIN32 /DWINVER=0x500 /MT /EHsc $(OFLAG) /D_CRT_SECURE_NO_DEPRECATE
 LDFLAGS         = /link /STACK:3000000 /FIXED:NO bufferoverflowu.lib
 
 
@@ -42,52 +31,40 @@ CFLAGS          = $(PLATCFLAGS) $(INCS)
 
 TTLINK          = /LIBPATH:$(QUICKSTART_HOME)\lib
 
-DCLIBS          = $(TTLINK) ttdv$(TTVER)$(LIBEXT).lib tten$(TTVER)$(LIBEXT).lib
 CSLIBS          = $(TTLINK) ttclient$(TTVER).lib
 DMLIBS          = odbc32.lib
-TTDMLIBS        = $(TTLINK) ttdrvmgr$(TTVER)$(LIBEXT).lib
+TTDMLIBS        = $(TTLINK) ttdrvmgr$(TTVER).lib
 
 # For TTDM Dependencies
-TTDMLIB     = $(INSTDIR)\lib\ttdrvmgr$(TTVER)$(LIBEXT).lib
-TTDMDLL     = $(INSTDIR)\bin\ttdrvmgr$(TTVER)$(LIBEXT).dll
+TTDMLIB     = $(INSTDIR)\lib\ttdrvmgr$(TTVER).lib
+TTDMDLL     = $(INSTDIR)\bin\ttdrvmgr$(TTVER).dll
 TTDMDEPS    = $(TTDMLIB) $(TTDMDLL)
 
-BLKINSDC        = bulkinsert.exe
-BLKINSDCOBJS    = bulkinsert.obj ttTime.obj utils.obj ttgetopt.obj
 BLKINSCS        = bulkinsertCS.exe
 BLKINSCSOBJS    = bulkinsertCS.obj ttTime.obj utils.obj ttgetopt.obj
 BLKINSDM        = bulkinsertDM.exe
 BLKINSTTDM      = bulkinsertTTDM.exe
 
-PLSQLODBCDC     = plsqlODBC.exe
-PLSQLODBCDCOBJS = plsqlODBC.obj ttTime.obj utils.obj ttgetopt.obj
 PLSQLODBCCS     = plsqlODBCCS.exe
 PLSQLODBCCSOBJS = plsqlODBCCS.obj ttTime.obj utils.obj ttgetopt.obj
 PLSQLODBCTTDM   = plsqlODBCTTDM.exe
 
-TPCBDC          = tpcb.exe
-TPCBDCOBJS      = tpcb.obj ttRand.obj ttTime.obj utils.obj ttgetopt.obj
 TPCBCS          = tpcbCS.exe
 TPCBCSOBJS      = tpcbCS.obj ttRand.obj ttTime.obj utils.obj ttgetopt.obj
 TPCBDM          = tpcbDM.exe
 TPCBTTDM        = tpcbTTDM.exe
 
-TPTBMDC         = tptbm.exe
-TPTBMDCOBJS     = tptbm.obj utils.obj ttgetopt.obj
 TPTBMCS         = tptbmCS.exe
 TPTBMCSOBJS     = tptbmCS.obj utils.obj ttgetopt.obj
 TPTBMDM         = tptbmDM.exe
 TPTBMTTDM       = tptbmTTDM.exe
 
-WISCBMDC        = wiscbm.exe
-WISCBMDCOBJS    = wiscbm.obj wiscextra.obj ttRand.obj ttTime.obj utils.obj ttgetopt.obj
 WISCBMCS        = wiscbmCS.exe
 WISCBMCSOBJS    = wiscbmCS.obj wiscextra.obj ttRand.obj ttTime.obj utils.obj ttgetopt.obj
 WISCBMDM        = wiscbmDM.exe
 WISCBMTTDM      = wiscbmTTDM.exe
 
-PROGS           = $(BLKINSDC) $(PLSQLODBCDC) $(TPCBDC) $(TPTBMDC) $(WISCBMDC) \
-                  $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) \
+PROGS           = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) \
                   $(BLKINSDM) $(TPCBDM) $(TPTBMDM) $(WISCBMDM) \
                   $(BLKINSTTDM) $(PLSQLODBCTTDM) $(TPCBTTDM) $(TPTBMTTDM) $(WISCBMTTDM)
 
@@ -103,25 +80,6 @@ clean:
 #
 # Targets for building executables
 #
-
-#
-# Direct Linked targets
-#
-
-$(BLKINSDC):	$(BLKINSDCOBJS)
-	$(CC) /Fe$@ $(BLKINSDCOBJS) $(LDFLAGS) $(DCLIBS)
-
-$(PLSQLODBCDC):	$(PLSQLODBCDCOBJS)
-	$(CC) /Fe$@ $(PLSQLODBCDCOBJS) $(LDFLAGS) $(DCLIBS)
-
-$(TPCBDC):	$(TPCBDCOBJS)
-	$(CC) /Fe$@ $(TPCBDCOBJS) $(LDFLAGS) $(DCLIBS)
-
-$(TPTBMDC):	$(TPTBMDCOBJS)
-	$(CC) /Fe$@ $(TPTBMDCOBJS) $(LDFLAGS) $(DCLIBS)
-
-$(WISCBMDC):	$(WISCBMDCOBJS)
-	$(CC) /Fe$@ $(WISCBMDCOBJS) $(LDFLAGS) $(DCLIBS)
 
 #
 # Client Server targets
@@ -189,14 +147,8 @@ ttgetopt.obj:	$(COMMDIR)\ttgetopt.c $(COMMDIR)\ttgetopt.h
 ttTime.obj:	$(COMMDIR)\ttTime.c $(COMMDIR)\ttTime.h
 	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c $(COMMDIR)\ttTime.c
 
-bulkinsert.obj:	bulkinsert.c
-	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c bulkinsert.c
-
 bulkinsertCS.obj: bulkinsert.c
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c bulkinsert.c
-
-plsqlODBC.obj:	plsqlODBC.c
-	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c plsqlODBC.c
 
 plsqlODBCCS.obj:	plsqlODBC.c
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c plsqlODBC.c
@@ -204,23 +156,14 @@ plsqlODBCCS.obj:	plsqlODBC.c
 ttRand.obj:	ttRand.c
 	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c ttRand.c
 
-tpcb.obj:	tpcb.c
-	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c tpcb.c
-
 tpcbCS.obj:	tpcb.c
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c tpcb.c
-
-tptbm.obj:	tptbm.c
-	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c tptbm.c
 
 tptbmCS.obj:	tptbm.c
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c tptbm.c
 
 wiscextra.obj:	wiscextra.c
 	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c wiscextra.c
-
-wiscbm.obj:	wiscbm.c wiscprotos.h sqlfunc.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c wiscbm.c
 
 wiscbmCS.obj:	wiscbm.c wiscprotos.h sqlfunc.h
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c wiscbm.c

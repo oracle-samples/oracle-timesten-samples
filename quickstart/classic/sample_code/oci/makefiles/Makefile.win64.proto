@@ -13,14 +13,11 @@ OCILIBDIR       = $(TTORACLE_HOME)\sdk\lib\msvc
 PLATCFLAGS      = /DWIN32 /DWINVER=0x400 /MT /EHsc /Ox /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 LDFLAGS         = /link /STACK:3000000 /FIXED:NO
 
-TTVER           = 1211
-
 CC              = cl.exe /nologo
 
 PLATCFLAGS      = $(PLATCFLAGS) /DWIN64 
 
 LDFLAGS = $(LDFLAGS) bufferoverflowu.lib
-
 
 INCS            = /I$(OCIINCS) /I$(INSTDIR)\include /I$(COMMDIR) /I$(OCIINCS)
 
@@ -40,8 +37,6 @@ PLSQLOCIOBJS    = plsqlOCI.obj psswds.obj
 
 PROGS           = $(ADDEMP) $(TPTBMOCI) $(PLSQLOCI)
 
-
-
 #
 # Top level targets
 #
@@ -50,7 +45,6 @@ all:		$(PROGS)
 
 clean:
 	-erase /Q *.exe *.obj *.pdb *.sbr
-
 
 #
 # Targets for building executables

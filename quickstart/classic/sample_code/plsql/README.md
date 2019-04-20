@@ -13,53 +13,57 @@ in the Oracle database. In this release, a subset of the PL/SQL packages targete
 
    The following build_sampledb script should be run once to set up the sample database and user accounts; first set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
-    $ source /home/timesten/instance/tt181/bin/ttenv.sh
+    `source /home/timesten/instance/tt181/bin/ttenv.sh`
 
     Run the quickstart/classic/sample\_scripts/createdb/build\_sampledb script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
 
     Unix/Linux:
     
-    $ cd quickstart/classic/sample\_scripts/createdb
+    `cd quickstart/classic/sample\_scripts/createdb`
     
-    $ ./build\_sampledb.sh
+    `./build\_sampledb.sh`
 
 3. Set up the environment to compile and run the sample application
 
-    The following script must be run for each of the terminal session:
+    The following scripts must be run in each of your terminal sessions...
 
     Set up the Instance environment variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
-    $ source /home/timesten/instance/tt181/bin/ttenv.sh
+    `source /home/timesten/instance/tt181/bin/ttenv.sh`
 
     Set up quickstart environment variables:
     
     Unix/Linux:
     
-    $ . quickstart/classic/ttquickstartenv.sh OR
+    `. quickstart/classic/ttquickstartenv.sh`
     
-    $ source quickstart/classic/ttquickstartenv.csh
+    or
+    
+    `source quickstart/classic/ttquickstartenv.csh`
 
 ## How to run the sample PL/SQL code
 
 To run the PL/SQL sample code using ttIsql, do
 
-$ ttIsql "dsn=<name>;uid=<username>"
+`ttIsql "dsn=<name>;uid=<username>"
 ...
-Command\> @\<plsql_filename\>;
+Command\> @\<plsql_filename\>;`
 
-OR
+or
 
-ttIsql -f \<plsql_filename\> "dsn=<name>;uid=<username>"
+`ttIsql -f <plsql_filename> "dsn=<name>;uid=<username>"`
 
 Examples:
 
-$ ttIsql "dsn=sampledb; uid=appuser"
+`ttIsql "dsn=sampledb; uid=appuser"
 Enter the password for appuser
-Command\> @basics.sql;
+Command\> @basics.sql;`
 
-$ttIsql -f basics.sql "dsn=sampledb; uid=appuser"
+or
 
-Sample Description
+`ttIsql -f basics.sql "dsn=sampledb; uid=appuser"`
+
+_Sample Descriptions_
 
 **basics.sql**
 
@@ -143,4 +147,4 @@ This PL/SQL block processes orders for tennis rackets. It decrements the quantit
 
 This program can be executed from ttIsql (or from a TimesTen API) and output goes to the INVENTORY2 and PURCHASE\_RECORD tables. Check the values in the INVENTORY2 and PURCHASE\_RECORD tables before and after running this program.
 
-For more information on PL/SQL support in TimesTen, refer to the [Oracle TimesTen In-Memory Database PL/SQL Developer's Guide](https://docs.oracle.com/cd/E21901_01/timesten.1122/e21639/toc.htm). 
+For more information on PL/SQL support in TimesTen, refer to the [Oracle TimesTen In-Memory Database PL/SQL Developer's Guide](https://docs.oracle.com/database/timesten-18.1/TTPLS/toc.htm). 

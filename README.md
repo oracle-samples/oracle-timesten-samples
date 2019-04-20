@@ -8,7 +8,7 @@ This repository stores a variety of examples demonstrating how to use the Oracle
 
 
 ## More information
-You can find more information about the Oracle TimesTen In-Memory Database on our [OTN Page](https://www.oracle.com/technetwork/database/database-technologies/timesten/overview/index.html)
+You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
 
 ## Documentation
 You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/)

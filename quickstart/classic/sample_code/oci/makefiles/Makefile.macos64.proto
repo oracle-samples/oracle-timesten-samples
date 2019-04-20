@@ -41,7 +41,6 @@ all: $(PROGS)
 clean:
 	rm -f $(PROGS) *.o
 
-
 #
 # Targets for building executables
 #

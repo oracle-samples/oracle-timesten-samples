@@ -1,12 +1,12 @@
-Copyright (c) 2010, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 
 # TimesTen Driver Manager
 
 # User Guide
 
-# Version: 2.1
+# Version: 2.2
 
-# Date: 25th January 2018
+# Date: 11th April 2019
 
 # Introduction to the TimesTen Driver Manager
 
@@ -117,13 +117,13 @@ For remote client/server connections the overhead of TTDM typically ranges from 
 
 This version of TTDM currently supports the following TimesTen versions:
 
-TimesTen 11.2.1 - 32 and 64 bit
+TimesTen 11.2.2
 
-TimesTen 11.2.2 - 32 and 64 bit
-
-TimesTen 18.1   - 64 bit only
+TimesTen 18.1   - 64 bit only, ODBC 2.5 only
 
 The version of TimesTen to be supported is controlled by a build time define in the Makefile or the ttdmbldopt.h header file.
+
+For the OS platforms currently supported, see the set of makefiles in the makefiles directory.
 
 # Building and Installing TTDM
 
