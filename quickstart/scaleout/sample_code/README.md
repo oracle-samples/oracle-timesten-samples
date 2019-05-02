@@ -8,5 +8,5 @@ The sub-directories contained here are as follows:
 
 | Directory | Description |
 | :-------- | :----------|
-| [odbc](./odbc) | Source code, Makefile and README for the C/ODBC version of the GridSample sample program. See the [README](./odbc/README.md) file for full instructions. |
+| [odbc](./odbc) | Source code, Makefile and README for the C/ODBC version of the GridSample sample program and the TptBm benchmark program. See the [README](./odbc/README.md) file for full instructions. |
 | [jdbc](./jdbc) | Source code, Makefile and README for the Java/JDBC version of the GridSample sample program. See the [README](./jdbc/README.md) file for full instructions. |

@@ -20,6 +20,6 @@ In order to use the sample programs you must perform the following steps:
 
 1. Install, configure and deploy a TimesTen Scaleout grid, create the physical sample database and optionally configure client/server connectivity. See  [sample\_config/database/README.md](./sample\_config/database/README.md) for detailed instructions.
 
-2. Create the database user then create and and populate the Mobile Payments sample database. See [sample\_scripts/database/README.md](./sample\_scripts/database/README.md) for detailed instructions.
+2. Create the database user then create and and populate the Mobile Payments sample database (populating the database is not necessary for the **TptBm** sample program). See [sample\_scripts/database/README.md](./sample\_scripts/database/README.md) for detailed instructions.
 
 3. Compile and execute the sample programs. See [sample\_code/odbc/README.md](./sample\_code/odbc/README.md) and [sample\_code/jdbc/README.md](./sample\_code/jdbc/README.md) for detailed instructions.
