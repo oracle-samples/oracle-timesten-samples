@@ -94,9 +94,13 @@
 #define PROC_READY       1
 #define PROC_SET         2
 #define PROC_GO          3
-#define PROC_STARTBENCH  4
-#define PROC_STOP        5
-#define PROC_END         6
+#define PROC_RUNNING     4
+#define PROC_STARTBENCH  5
+#define PROC_MEASURING   6
+#define PROC_STOPBENCH   7
+#define PROC_STOPPING    8
+#define PROC_STOP        9
+#define PROC_END         10
 
 #define TTCSERVERDSN     "TTC_SERVER_DSN="
 
@@ -1760,10 +1764,6 @@ void OpenShmSeg (int  shmSize)
 
     if ( procId == 0  ) {
         /* initialize shared memory segment */
-        /*    Used for array of PIDs and DSN to pass to child processes */
-        // for (i = 0; i < (shmSize / sizeof(int)); i++) {
-          // shmhdr [i] = 0; 
-        // }
         memset( (void *)shmhdr, 0, shmSize );
     
         /* Set the number of processes for the children to get the correct offsets */
@@ -2480,6 +2480,7 @@ void ExecuteTptBm (int          seed,
             goto cleanup;
         tt_yield();
       }
+      shmhdr[procId].state = PROC_RUNNING; // indicate running
   }
 
   insert_start = key_cnt + procId;   /* start mark for this process */
@@ -2523,16 +2524,20 @@ void ExecuteTptBm (int          seed,
         /* child */
         if ( procId > 0 ) {
           /* check this first for performance */
-          if (shmhdr[procId].state != PROC_GO) {
+          if (shmhdr[procId].state > PROC_RUNNING) {
             if (shmhdr[procId].state == PROC_STARTBENCH) {
               i = 0; /* reset the counter */
-              shmhdr[procId].state = PROC_GO;
+              shmhdr[procId].state = PROC_MEASURING;
             }
-            else if (shmhdr[procId].state == PROC_STOP) {
+            else if (shmhdr[procId].state == PROC_STOPBENCH) {
               if (verbose >= VERBOSE_ALL)
                 status_msg2("Process %d finished %.0f xacts\n",
                             procId, (double)i);
               shmhdr[procId].xacts = i; /* store the number of xacts */
+              shmhdr[procId].state = PROC_STOPPING;
+            }
+            else if (shmhdr[procId].state == PROC_STOP) {
+              shmhdr[procId].state = PROC_STOPPING;
               goto finish_loop;
             }
           }
@@ -2546,7 +2551,7 @@ void ExecuteTptBm (int          seed,
           {
               if (  rampingup  ) {
                 /* RAMP-UP done */
-                status_msg0("Ramp-up done...benchmark begins\n");
+                status_msg0("Ramp-up done...measuring begins\n");
                 ttGetTime(&main_start); /* reset the start time */
                 if (the_num_processes > 1) {
                   for (child = 1; child < the_num_processes; child++) {
@@ -2564,6 +2569,12 @@ void ExecuteTptBm (int          seed,
                     /* RAMP-UP done */
                     status_msg0("Ramp-down done...terminating\n");
                     rampingdown = 0;
+                    if (the_num_processes > 1) {
+                      for (child = 1; child < the_num_processes; child++) {
+                        /* tell children to stop */
+                        shmhdr[child].state = PROC_STOP;
+                      }
+                    }
                     goto finish_loop;
                 } else {
                     /* record time at the end of the measured part of the run */
@@ -2572,20 +2583,34 @@ void ExecuteTptBm (int          seed,
 
                     if (the_num_processes > 1) {
                       for (child = 1; child < the_num_processes; child++) {
-                        /* tell children to stop */
-                        shmhdr[child].state = PROC_STOP;
+                        /* tell children to stop measuring */
+                        shmhdr[child].state = PROC_STOPBENCH;
                       }
+                        /* and wait for them to acknowledge */
+                      do {
+                          tt_yield();
+                          j = 1;
+                          for ( child = 1; child < the_num_processes; child++ ) {
+                              if ( shmhdr[child].state != PROC_STOPPING  )
+                                  j = 0;
+                          }
+                      } while ( j == 0 );
                     }
                     if (verbose >= VERBOSE_ALL)
                       status_msg2("Process %d finished %.0f xacts\n",
                                   procId, (double)i);
-                    if (  duration && ramptime  ) {
+                    if (  ramptime  ) {
                         duration_start = duration_cur;
                         duration_target = ramptime;
                         rampingdown = 1;
-                        if (verbose < VERBOSE_ALL)
-                            status_msg0("Benchmark timing finished...ramping down\n");
+                        status_msg0("Measuring finished...ramping down\n");
                     } else {
+                        if (the_num_processes > 1) {
+                          for (child = 1; child < the_num_processes; child++) {
+                            /* tell children to stop */
+                            shmhdr[child].state = PROC_STOP;
+                          }
+                        }
                         goto finish_loop;
                     }
                 }
