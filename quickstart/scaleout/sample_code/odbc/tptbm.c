@@ -141,9 +141,8 @@ static char usageStr[] =
   "                      transactions. The default is " S(DFLT_DELETES) ".\n"
   "  -xact    <xacts>    Specifies that <xacts> is the number of transactions\n"
   "                      that each process should run. The default is " S(DFLT_XACT) ".\n"
-  "  -sec     <seconds>  Specifies that <seconds> is the test duration.\n"
-  "                      that each process should run. Default is to run in\n"
-  "                      transaction mode (-xact).\n"
+  "  -sec     <seconds>  Specifies that <seconds> is the test measurement duration.\n"
+  "                      The default is to run in transaction mode (-xact).\n"
   "  -ramp  <rseconds>   Specifies that <rseconds> is the ramp up & down time in\n"
   "                      duration mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n"
   "  -ops     <ops>      Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
@@ -202,7 +201,9 @@ static char usageStr[] =
   "If no DSN or connection string is specified, the default is\n"
   "  \"DSN=sampledb;UID=appuser\".\n\n"
   "The percentage of update operations is 100 minus the percentages of reads,\n"
-  "inserts and deletes.\n\n";
+  "inserts and deletes.\n\n"
+  "For the most accurate results, use duration mode (-sec) with a measurement\n"
+  "time of at least several minutes and a ramp time of at least 30 seconds.\n\n";
 
 #define DFLT_DSN DEMODSN
 #define DFLT_UID UIDNAME
