@@ -151,19 +151,19 @@ The schema for this test is described in the program source file tptbm.c.
 
 Examples:
 
-  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions
+  Default connection string, 80% reads, 20% updates, 1 process, 100,000 transactions
   
   `tptbm`
 
-  Default connection string, 80% reads, 20% updates, 2 process, 100,000 transactions, random number generator uses 3 as the seed
+  Default connection string, 80% reads, 20% updates, 2 process, 10,000,000 transactions, random number generator uses 3 as the seed
   
-  `tptbm -proc 2 -xact 100000 -seed 3`
+  `tptbm -proc 2 -xact 10000000 -seed 3`
 
-  Default connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 600 seconds with a 30 second ramp-up time
+  Default connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 600 seconds with a 30 second ramp time
   
   `tptbm -read 85 -insert 10 -sec 600 -ramp 30`
 
-  For the full syntax of the program, use "tptbm -help").
+  For the full syntax of the program, use "tptbm -help".
 
 
 **wiscbm**

@@ -168,13 +168,13 @@ The schema for this test  is described in the program source file <span class="c
   </tr>
 </table>
 <p class="normal">Examples:</p>
-<p class="normal">&nbsp;&nbsp;(80% reads, 20% updates, 1 process, 10,000 transactions)<br />
+<p class="normal">&nbsp;&nbsp;(80% reads, 20% updates, 1 process, 100,000 transactions)<br />
   <strong><em>&nbsp;<span class="codetext">&nbsp;tptbm</span></em></strong></p>
-<p class="normal">&nbsp;&nbsp;(80% reads, 20% updates, 2 process, 100,000 transactions, random number generator uses 3 as the seed)<br />
-  <strong><em>&nbsp;<span class="codetext">&nbsp;tptbm -proc 2 -xact 100000 -seed 3 </span></em></strong></p>
-<p class="normal">&nbsp;&nbsp;(85% reads, 10% inserts, 5% updates, 1 process, 10,000 transactions)<br />
+<p class="normal">&nbsp;&nbsp;(80% reads, 20% updates, 2 process, 10,000,000 transactions, random number generator uses 3 as the seed)<br />
+  <strong><em>&nbsp;<span class="codetext">&nbsp;tptbm -proc 2 -xact 10000000 -seed 3 </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(85% reads, 10% inserts, 5% updates, 1 process, 100,000 transactions)<br />
   <strong><em>&nbsp;&nbsp;<span class="codetext">tptbm -read 85 -insert 10 </span></em></strong></p>
-<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="codetext"><em>tptbm -help</em></span>&quot;).<br />
+<p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="codetext"><em>tptbm -help</em></span>&quot;.<br />
 </p>
 <p class="normal">&nbsp;</p>
 <table width="800" border="1">

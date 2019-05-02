@@ -72,10 +72,10 @@
 #endif /* TTCLIENTSERVER */
 #endif /* ROUTINGAPI */
 #endif /* SCALEOUT */
-#define DFLT_XACT           10000
+#define DFLT_XACT           100000
 #define DFLT_SEED           1
 #define DFLT_PROC           1
-#define DFLT_RAMPUP         5
+#define DFLT_RAMPTIME       10
 #define DFLT_READS          80
 #define DFLT_INSERTS        0
 #define DFLT_DELETES        0
@@ -140,8 +140,8 @@ static char usageStr[] =
   "  -sec     <seconds>  Specifies that <seconds> is the test duration.\n"
   "                      that each process should run. Default is to run in\n"
   "                      transaction mode (-xact).\n"
-  "  -ramp  <rseconds>   Specifies that <rseconds> is the ramp up time in duration\n"
-  "                      mode (-sec). Default is " S(DFLT_RAMPUP) ".\n"
+  "  -ramp  <rseconds>   Specifies that <rseconds> is the ramp up & down time in\n"
+  "                      duration mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n"
   "  -ops     <ops>      Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
   "                      In the special case where 0 is specified, no commit\n"
   "                      is done. This may be useful for read-only testing.\n"
@@ -335,7 +335,7 @@ cCliDSN_t*  routingDSNs = NULL;
 int        rand_seed = NO_VALUE;       /* seed for the random numbers */
 int        num_processes = NO_VALUE;   /* # of concurrent processes for the test */
 int        duration = NO_VALUE;        /* test duration */
-int        rampup = NO_VALUE;          /* rampup in the duration mode */
+int        ramptime = NO_VALUE;        /* ramp time in the duration mode */
 int        reads = NO_VALUE;           /* read percentage */
 int        inserts = NO_VALUE;         /* insert percentage */
 int        deletes = NO_VALUE;         /* delete percentage */
@@ -641,7 +641,7 @@ int parse_args (int      argc,
     else
     if (  strcmp(argv[argno], "-xact") == 0  ) {
       if (  (++argno >= argc) || ( num_xacts != NO_VALUE) || 
-            (duration != NO_VALUE ) || (rampup != NO_VALUE)  )
+            (duration != NO_VALUE ) || (ramptime != NO_VALUE)  )
           usage( cmdname );
       num_xacts = isnumeric( argv[argno] );
       if (  num_xacts <= 0  )
@@ -658,11 +658,11 @@ int parse_args (int      argc,
     }
     else
     if (  strcmp(argv[argno], "-ramp") == 0  ) {
-      if (  (++argno >= argc) || ( rampup != NO_VALUE) || 
+      if (  (++argno >= argc) || ( ramptime != NO_VALUE) || 
             (num_xacts != NO_VALUE )  )
           usage( cmdname );
-      rampup = isnumeric( argv[argno] );
-      if (  rampup < 0  )
+      ramptime = isnumeric( argv[argno] );
+      if (  ramptime < 0  )
           usage( cmdname );
     }
     else
@@ -810,12 +810,12 @@ int parse_args (int      argc,
 
   /* Assign defaults and computed values as required */
   if (  duration != NO_VALUE  ) {
-      if (  rampup == NO_VALUE  )
-          rampup = DFLT_RAMPUP;
+      if (  ramptime == NO_VALUE  )
+          ramptime = DFLT_RAMPTIME;
       num_xacts = 0;
   }
   else {
-    if (  rampup != NO_VALUE  )
+    if (  ramptime != NO_VALUE  )
         usage( cmdname );
     if (  num_xacts == NO_VALUE  )
       num_xacts = DFLT_XACT;
@@ -1855,7 +1855,7 @@ void CreateChildProcs (char*    progName)
       if (  num_xacts > 0  )
           pos += sprintf( cmdLine+pos, "-xact %d ", num_xacts );
       else
-          pos += sprintf( cmdLine+pos, "-sec %d -ramp %d ", duration, rampup );
+          pos += sprintf( cmdLine+pos, "-sec %d -ramp %d ", duration, ramptime );
 
       if (CreateProcess (NULL, cmdLine, NULL, NULL, FALSE,
                          CREATE_DEFAULT_ERROR_MODE, NULL,
@@ -2006,7 +2006,8 @@ void ExecuteTptBm (int          seed,
   time_t    duration_start, duration_cur, duration_diff;
   int       duration_target = 0;
   UBIGINT   duration_est = 10000;    /* duration estimate; initial guess = 10000 xacts / sec */
-  int       rampingup;
+  int       rampingup = 0;    /* currently in ramp-up */
+  int       rampingdown = 0;  /* currently in ramp-down */
   int       rand_int;         /* rand integer */
   int       insert_start;     /* start mark for inserts */
   int       insert_present;   /* present mark for inserts */
@@ -2492,8 +2493,8 @@ void ExecuteTptBm (int          seed,
   time(&interval_start);
   if ( (procId == 0) && duration) {
     duration_start = interval_start;
-    if (rampup > 0) {
-      duration_target = rampup;
+    if (ramptime > 0) {
+      duration_target = ramptime;
       rampingup = 1;
     } else {
       duration_target = duration;
@@ -2559,17 +2560,35 @@ void ExecuteTptBm (int          seed,
                 i = 0;
               } else {
                 /* Benchmark finished */
-                if (the_num_processes > 1) {
-                  for (child = 1; child < the_num_processes; child++) {
-                    /* tell children to stop */
-                    shmhdr[child].state = PROC_STOP;
-                  }
+                if (  rampingdown  ) {
+                    /* RAMP-UP done */
+                    status_msg0("Ramp-down done...terminating\n");
+                    rampingdown = 0;
+                    goto finish_loop;
+                } else {
+                    /* record time at the end of the measured part of the run */
+                    ttGetTime (&main_end);
+                    shmhdr[procId].xacts = i; /* store the number of xacts */
+
+                    if (the_num_processes > 1) {
+                      for (child = 1; child < the_num_processes; child++) {
+                        /* tell children to stop */
+                        shmhdr[child].state = PROC_STOP;
+                      }
+                    }
+                    if (verbose >= VERBOSE_ALL)
+                      status_msg2("Process %d finished %.0f xacts\n",
+                                  procId, (double)i);
+                    if (  duration && ramptime  ) {
+                        duration_start = duration_cur;
+                        duration_target = ramptime;
+                        rampingdown = 1;
+                        if (verbose < VERBOSE_ALL)
+                            status_msg0("Benchmark timing finished...ramping down\n");
+                    } else {
+                        goto finish_loop;
+                    }
                 }
-                shmhdr[procId].xacts = i; /* store the number of xacts */
-                if (verbose >= VERBOSE_ALL)
-                  status_msg2("Process %d finished %.0f xacts\n",
-                              procId, (double)i);
-                goto finish_loop;
               }
           }
         } /* end of parent */
@@ -2822,8 +2841,10 @@ finish_loop:
     }
   }
 
-  /* time at the end of the run */
-  ttGetTime (&main_end);
+  if (  ! duration ) {
+      /* time at the end of the measured part of the run */
+      ttGetTime (&main_end);
+  }
 
   /* Only calculate stats in main process */
   if ( (procId == 0) && verbose)

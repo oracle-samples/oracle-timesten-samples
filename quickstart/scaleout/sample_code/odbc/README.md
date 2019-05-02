@@ -25,17 +25,17 @@ The program treats the target database as a TimesTen Classic database. In this m
 
 Examples:
 
-  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions
+  Default connection string, 80% reads, 20% updates, 1 process, 100,000 transactions
   
 `  tptbm`
   
-  Default connection string, 80% reads, 20% updates, 4 processes, run for 600 seconds with a 30 second ramp-up, random number generator uses 3 as the seed
+  Default connection string, 80% reads, 20% updates, 4 processes, run for 600 seconds with a 30 second ramp time, random number generator uses 3 as the seed
   
   `tptbm -proc 4 -sec 600 -ramp 30 -seed 3`
 
-  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 5 second ramp-up time
+  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 10 second ramp time
   
-  `tptbm -read 85 -insert 10 -sec 300 -ramp 5 -connstr "DSN=mytestdb;UID=someuser"`
+  `tptbm -read 85 -insert 10 -sec 300 -connstr "DSN=mytestdb;UID=someuser"`
 
 _Scaleout mode - use '-scaleout' on the command line: direct and client-server_
 
@@ -43,18 +43,18 @@ The program treats the target database as a TimesTen Scaleout database. In this 
 
 Examples:
 
-  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions
+  Default connection string, 80% reads, 20% updates, 1 process, 100,000 transactions
   
 `  tptbm -scaleout
 `
   
-  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp-up
+  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp time
   
   `tptbm -scaleout -proc 8 -sec 600 -ramp 30`
 
-  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 5 second ramp-up time
+  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 10 second ramp time
   
-  `tptbm -scaleout -read 85 -insert 10 -sec 300 -ramp 5 -connstr "DSN=mytestdb;UID=someuser"`
+  `tptbm -scaleout -read 85 -insert 10 -sec 300 -connstr "DSN=mytestdb;UID=someuser"`
 
 _Scaleout Local mode - use '-scaleout local' on the command line: direct and client-server_
 
@@ -62,18 +62,18 @@ Behaves like the regular scaleout mode but in addition each benchmark process us
 
 Examples:
 
-  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions, throtle each process to no more than 1000 TPS
+  Default connection string, 80% reads, 20% updates, 1 process, 100,000 transactions, throttle each process to no more than 1000 TPS
   
 `  tptbm -scaleout local -throttle 1000
 `
   
-  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp-up
+  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp time
   
   `tptbm -scaleout local -proc 8 -sec 600 -ramp 30`
 
-  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 5 second ramp-up time
+  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 10 second ramp time
   
-  `tptbm -scaleout local -read 85 -insert 10 -sec 300 -ramp 5 -connstr "DSN=mytestdb;UID=someuser"`
+  `tptbm -scaleout local -read 85 -insert 10 -sec 300 -connstr "DSN=mytestdb;UID=someuser"`
 
 _Scaleout Routing mode - use '-scaleout routing' on the command line: client-server only_
 
@@ -81,18 +81,18 @@ This mode is only available in the client-server version of the program, tptbmCS
 
 Examples:
 
-  Default connection string, 80% reads, 20% updates, 1 process, 10,000 transactions, throtle each process to no more than 1000 TPS
+  Default connection string, 80% reads, 20% updates, 1 process, 100,000 transactions, throtle each process to no more than 1000 TPS
   
 `  tptbmCS -scaleout routing -throttle 1000
 `
   
-  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp-up
+  Default connection string, 80% reads, 20% updates, 8 processes, run for 600 seconds with a 30 second ramp time
   
   `tptbmCS -scaleout routing -proc 8 -sec 600 -ramp 30`
 
-  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 5 second ramp-up time
+  Custom connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 300 seconds with a 10 second ramp time
   
-  `tptbmCS -scaleout rouing -read 85 -insert 10 -sec 300 -ramp 5 -connstr "DSN=mytestdbCS;UID=someuser"`
+  `tptbmCS -scaleout rouing -read 85 -insert 10 -sec 300 -connstr "DSN=mytestdbCS;UID=someuser"`
 
 **GridSample**
 
