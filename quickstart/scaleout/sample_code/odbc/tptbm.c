@@ -329,7 +329,6 @@ typedef struct _ttclientdsn {
 } cCliDSN_t;
 
 cCliDSN_t*  routingDSNs = NULL;
-// int*        eidToCliDSN = NULL;
 #endif /* TTCLIENTSERVER */
 
 /* End of ODBC routing API */
@@ -381,7 +380,6 @@ HANDLE     shmHndl;           /* handle to shared memory segment */
 #else
 int        shmid;             /* shared memory segment id  */
 #endif
-// int*       shmhdr;            /* shared memory segment to sync processes */
 volatile procinfo_t *shmhdr = NULL;   /* shared memory segment to sync processes */
 int        procId = NO_VALUE; /* process # in shared memory array */
 int        sigReceived;       /* zero if no signal received or signum */
@@ -415,24 +413,12 @@ char* create_stmnt = "CREATE TABLE vpn_users("
                      "last_calling_party CHAR(10)  NOT NULL,"
                      "descr              CHAR(100) NOT NULL,"
                      "PRIMARY KEY (vpn_id,vpn_nb))";
-#if 0
-                    "unique hash on (vpn_id,vpn_nb) pages = %d";
-
-char* create_stmnt_nohash = "CREATE TABLE vpn_users("
-                            "vpn_id             TT_INT   NOT NULL,"
-                            "vpn_nb             TT_INT   NOT NULL,"
-                            "directory_nb       CHAR(10)  NOT NULL,"
-                            "last_calling_party CHAR(10)  NOT NULL,"
-                            "descr              CHAR(100) NOT NULL)";
-#endif
 
 char * hash_clause = " unique hash on (vpn_id,vpn_nb) pages = %d";
 
 char * dist_clause = " distribute by hash(vpn_id, vpn_nb)";
 
 char* drop_stmnt = "DROP TABLE vpn_users";
-
-// char* create_index = "create index tindex on vpn_users(vpn_id,vpn_nb)";
 
 /* The insert statement used to populate the datastore */
 char * insert_stmnt = "insert into vpn_users values (?,?,?,?,?)";
@@ -598,8 +584,8 @@ int getServerDSN( char * connstr, char ** dsnval )
  *
  *********************************************************************/
 
-int parse_args (int      argc,
-                char**   argv)
+int parse_args(int      argc,
+               char**   argv)
 {
   int argno = 1;
   int pos = 0;
@@ -1036,7 +1022,6 @@ SQLHDBC routingAPI_getConn(int* k1, int* k2,
   if (  mode == M_SCALEOUT_ROUTING  )
   {
       i = (int)((kFactor * rand()) / ((unsigned int)RAND_MAX + 1));
-      // dsn = &(routingDSNs[eidToCliDSN[elems[i]]]);
       dsn = &(routingDSNs[elems[i]]);
       *sel = dsn->selstmt;
       *upd = dsn->updstmt;
@@ -1070,7 +1055,7 @@ void freeRouting( void )
     {
         for (i = 1; i <= nElements; i++)
         {
-            /* rollback, just in case */
+            /* commit, just in case */
             rc = SQLTransact(henv, routingDSNs[i].hdbc, SQL_COMMIT);
             handle_errors(routingDSNs[i].hdbc, NULL, rc, DISCONNECT_EXIT, 
                            "Unable to commit transaction",
@@ -1111,11 +1096,6 @@ void freeRouting( void )
         free( (void *)routingDSNs );
         routingDSNs = NULL;
     }
-    // if (  eidToCliDSN != NULL  )
-    // {
-        // free( (void *)eidToCliDSN );
-        // eidToCliDSN = NULL;
-    // }
 #endif /* TTCLIENTSERVER */
     rc = ttGridDistFree(rhdbc, routingHDist);
     handle_errors(rhdbc, NULL, rc, JUST_DISCONNECT_EXIT,
@@ -1227,11 +1207,6 @@ void initRouting( void )
           status_msg0 ("Unable to allocate memory for client DSNs\n\n");
           handle_errors(rhdbc, NULL, SQL_ERROR, JUST_DISCONNECT_EXIT, NULL, __FILE__, __LINE__);
         }
-        // eidToCliDSN = (int*)calloc((nElements + 1), sizeof (int));
-        // if (eidToCliDSN == (int*) NULL) {
-          // status_msg0("Unable to allocate memory for elementid map\n");
-          // handle_errors(rhdbc, NULL, SQL_ERROR, JUST_DISCONNECT_EXIT, NULL, __FILE__, __LINE__);
-        // }
     
         /* create element, repset, dsn map */
         rc = SQLAllocStmt(rhdbc, &hstmt);
@@ -1267,7 +1242,6 @@ void initRouting( void )
           rc = SQLFetch(hstmt);
           handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to fetch elementid",
                         __FILE__, __LINE__);
-          // eidToCliDSN[routingDSNs[i].elementid] = i;
           sprintf(routingDSNs[i].clientdsn, "TTC_SERVER_DSN=%s;UID=%s;PWD=%s;%s", "sampledb", username, password, tmpdsn);
 
           /* Allocate connection handle for this element */
@@ -1386,9 +1360,6 @@ void populate(void)
                  __FILE__, __LINE__);
 
   ghdbc = hdbc;
-#if defined(SCALEOUT) && defined (ROUTINGAPI)
-  rhdbc = hdbc;
-#endif /* SCALEOUT && ROUTINGAPI */
 
   /* connect */
   printf("\nConnecting to the database as %s\n", connstr_no_password);
@@ -1401,8 +1372,6 @@ void populate(void)
                  "connecting to database",
                  __FILE__, __LINE__);
 
-  /* NOTE, Cannot erase the connstr_real yet as it may be used by child processes */
-  
   /* Trying to connect output */
   sprintf (buff2, "Connecting to driver (connect string: %s)\n",
            connstr_no_password);
@@ -1508,7 +1477,9 @@ void populate(void)
     strcpy(directory, DBMODE_FILLER);
     strcpy(last_calling_party, DBMODE_FILLER);
     dbkey = key_cnt;
+#if defined(SCALEOUT)
     if (  mode == M_CLASSIC  )
+#endif /* SCALEOUT */
         strcpy(dbmode, DBMODE_CLASSIC);
 #if defined(SCALEOUT)
     else
@@ -1670,7 +1641,7 @@ void populate(void)
  *********************************************************************/
 
 #if defined(WIN32)
-void OpenShmSeg (int  shmSize)
+void OpenShmSeg(int  shmSize)
 {
     int  i;
     int  j;
@@ -1730,7 +1701,7 @@ void OpenShmSeg (int  shmSize)
     }
 }
 #else /* UNIX */
-void OpenShmSeg (int  shmSize)
+void OpenShmSeg(int  shmSize)
 {
     int i;
     int fd;
@@ -1792,7 +1763,7 @@ void OpenShmSeg (int  shmSize)
  *
  *********************************************************************/
 
-void CreateChildProcs (char*    progName)
+void CreateChildProcs(char*    progName)
 {
   int   i;
   int   pid;
@@ -1894,7 +1865,7 @@ void CreateChildProcs (char*    progName)
  *
  *********************************************************************/
 
-int main (int argc, char** argv)
+int main(int argc, char** argv)
 {
   int         retval;
   SQLRETURN   rc;
@@ -1933,9 +1904,6 @@ int main (int argc, char** argv)
     populate();
     if (buildOnly)
     {
-#if defined(SCALEOUT) && defined(ROUTINGAPI)
-      rhdbc = SQL_NULL_HDBC;
-#endif /* SCALEOUT && ROUTINGAPI */
       rc = SQLDisconnect (ghdbc);
       handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                      "disconnecting from database",
@@ -1989,8 +1957,8 @@ leaveMain:
  *
  *********************************************************************/
 
-void ExecuteTptBm (int          seed,
-                   int          procId)
+void ExecuteTptBm(int          seed,
+                  int          procId)
 {
   SQLHSTMT    updstmt = SQL_NULL_HSTMT;
   SQLHSTMT    selstmt = SQL_NULL_HSTMT;
@@ -2028,7 +1996,7 @@ void ExecuteTptBm (int          seed,
   int       nb;
   int       path = 0;         /* type of transaction */
 
-  SQLHDBC   hdbc = SQL_NULL_HDBC;
+  SQLHDBC   thdbc = SQL_NULL_HDBC; // temp HDBC
 
   int the_num_processes = 0;
   int connStrLen ;
@@ -2052,9 +2020,13 @@ void ExecuteTptBm (int          seed,
   descr     [100] = '\0';
 
   if (procId == 0) {
-    hdbc = ghdbc;
+#if defined(SCALEOUT) && defined (ROUTINGAPI)
+    if (  mode > M_SCALEOUT  )
+        rhdbc = ghdbc;
+#endif /* SCALEOUT && ROUTINGAPI */
     the_num_processes = num_processes;
   } else {
+    ghdbc = SQL_NULL_HDBC;
     /* Get the num_processes from SHM */
     the_num_processes = shmhdr[0].state;
 
@@ -2080,44 +2052,31 @@ void ExecuteTptBm (int          seed,
                    "allocating an environment handle",
                    __FILE__, __LINE__);
     
-#if defined(SCALEOUT) && defined (ROUTINGAPI)
-    rc = SQLAllocConnect (henv, &rhdbc);
-    handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "allocating a connection handle",
-                   __FILE__, __LINE__);
-    rc = SQLDriverConnect (rhdbc, NULL, (SQLCHAR*) connstr_real, SQL_NTS,
-                           NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
-    handle_errors (rhdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "connecting to the database",
-                   __FILE__, __LINE__);
-#if defined(TTCLIENTSERVER)
-    if (  mode != M_SCALEOUT_ROUTING  )
-    {
-#endif /* TTCLIENTSERVER */
-#endif /* SCALEOUT && ROUTINGAPI */
-    rc = SQLAllocConnect (henv, &hdbc);
+    rc = SQLAllocConnect (henv, &ghdbc);
     handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                    "allocating a connection handle",
                    __FILE__, __LINE__);
     
     sprintf (errstr, "Connecting to database (connect string %s)\n",
              connstr_no_password);
-    rc = SQLDriverConnect (hdbc, NULL, (SQLCHAR*) connstr_real, SQL_NTS,
+    rc = SQLDriverConnect (ghdbc, NULL, (SQLCHAR*) connstr_real, SQL_NTS,
                            NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
-    handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+    handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                    "connecting to the database",
                    __FILE__, __LINE__);
-#if defined(SCALEOUT) && defined (ROUTINGAPI) && defined(TTCLIENTSERVER)
-    }
-#endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
 
+#if defined(SCALEOUT) && defined (ROUTINGAPI)
+    if (  mode > M_SCALEOUT  )
+        rhdbc = ghdbc;
+#endif /* SCALEOUT && ROUTINGAPI */
+   
     /* Now erase the connect strings and password to get rid of the password */
     erasePassword(connstr_real, strlen(connstr_real));
     erasePassword(connstr, strlen(connstr));
   }
 
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
-  if (  mode != M_CLASSIC  )
+  if (  mode > M_SCALEOUT  )
       initRouting();
 #endif /* SCALEOUT && ROUTING */
   erasePassword(password, strlen(password));
@@ -2126,8 +2085,8 @@ void ExecuteTptBm (int          seed,
   {
 #endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
       /* turn off autocommit */
-      rc = SQLSetConnectOption (hdbc, SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+      rc = SQLSetConnectOption (ghdbc, SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
+      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
                      "turning AUTO_COMMIT option OFF",
                      __FILE__, __LINE__);
     
@@ -2144,33 +2103,33 @@ void ExecuteTptBm (int          seed,
         /* value was error checked above */
         }
 
-        rc = SQLSetConnectOption (hdbc, SQL_TXN_ISOLATION, tIso);
-        handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, DISCONNECT_EXIT,
+        rc = SQLSetConnectOption (ghdbc, SQL_TXN_ISOLATION, tIso);
+        handle_errors (ghdbc, SQL_NULL_HSTMT, rc, DISCONNECT_EXIT,
                        "setting connection option",
                        __FILE__, __LINE__);
       }
 
       /* allocate an update statement */
-      rc = SQLAllocStmt (hdbc, &updstmt);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+      rc = SQLAllocStmt (ghdbc, &updstmt);
+      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
                      "allocating an update statement handle",
                      __FILE__, __LINE__);
 
       /* allocate a select statement */
-      rc = SQLAllocStmt (hdbc, &selstmt);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+      rc = SQLAllocStmt (ghdbc, &selstmt);
+      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
                      "allocating a select statement handle",
                      __FILE__, __LINE__);
     
       /* allocate an insert statement */
-      rc = SQLAllocStmt (hdbc, &insstmt);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+      rc = SQLAllocStmt (ghdbc, &insstmt);
+      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
                      "allocating an insert statement handle",
                      __FILE__, __LINE__);
     
       /* allocate a  delete statement */
-      rc = SQLAllocStmt (hdbc, &delstmt);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+      rc = SQLAllocStmt (ghdbc, &delstmt);
+      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
                      "allocating a delete statement handle",
                      __FILE__, __LINE__);
 #if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
@@ -2180,7 +2139,7 @@ void ExecuteTptBm (int          seed,
   {
       for (i = 1; i <= nElements; i++)
       {
-          hdbc = routingDSNs[i].hdbc;
+          thdbc = routingDSNs[i].hdbc;
           updstmt = routingDSNs[i].updstmt;
           selstmt = routingDSNs[i].selstmt;
           delstmt = routingDSNs[i].delstmt;
@@ -2188,68 +2147,68 @@ void ExecuteTptBm (int          seed,
     
           /* prepare the select statement */
           rc = SQLPrepare (selstmt, (SQLCHAR*) select_stmnt, SQL_NTS);
-          handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                          "preparing select",
                          __FILE__, __LINE__);
 
           /* Bind the selected columns  */
           rc = SQLBindCol (selstmt, 1, SQL_C_CHAR, &directory, 11, NULL);
-          handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding column",
                      __FILE__, __LINE__);
         
           rc = SQLBindCol (selstmt, 2, SQL_C_CHAR, &last, 11, NULL);
-          handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding column",
                          __FILE__, __LINE__);
         
           rc = SQLBindCol (selstmt, 3, SQL_C_CHAR, &descr, 101, NULL);
-          handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding column",
                          __FILE__, __LINE__);
         
           /* bind the input parameters */
           rc = SQLBindParameter (selstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, 
                                  SQL_INTEGER, 0, 0, &id, 0, NULL);
-          handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           rc = SQLBindParameter (selstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, 
                                  SQL_INTEGER, 0, 0, &nb, 0, NULL);
-          handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           /* prepare the update statement */
           rc = SQLPrepare (updstmt, (SQLCHAR*) update_stmnt, SQL_NTS);
-          handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                          "preparing update",
                          __FILE__, __LINE__);
         
           /* bind the input parameters */
           rc = SQLBindParameter (updstmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                                  11, 0, last, 0, NULL);
-          handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           rc = SQLBindParameter (updstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                                  0, 0, &id, 0, NULL);
-          handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           rc = SQLBindParameter (updstmt, 3, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                                  0, 0, &nb, 0, NULL);
-          handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           /* prepare the delete statement */
         
           rc = SQLPrepare(delstmt,(SQLCHAR *) delete_stmnt, SQL_NTS);
-          handle_errors(hdbc, delstmt, rc, 1,
+          handle_errors(thdbc, delstmt, rc, 1,
                         "Unable to prepare delete",
                         __FILE__, __LINE__);
         
@@ -2257,55 +2216,55 @@ void ExecuteTptBm (int          seed,
         
           rc = SQLBindParameter(delstmt,1,SQL_PARAM_INPUT,SQL_C_SLONG,SQL_INTEGER,
                                 0,0,&id,0,NULL);
-          handle_errors(hdbc, delstmt, rc, 1, "Unable to bind parameter",
+          handle_errors(thdbc, delstmt, rc, 1, "Unable to bind parameter",
                         __FILE__, __LINE__);
         
           rc = SQLBindParameter(delstmt,2,SQL_PARAM_INPUT,SQL_C_SLONG,SQL_INTEGER,
                                 0,0,&nb,0,NULL);
-          handle_errors(hdbc, delstmt, rc, 1, "Unable to bind parameter",
+          handle_errors(thdbc, delstmt, rc, 1, "Unable to bind parameter",
                         __FILE__, __LINE__);
         
         
           /* prepare the insert */
           rc = SQLPrepare (insstmt, (SQLCHAR*) insert_stmnt, SQL_NTS);
-          handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                          "preparing insert",
                          __FILE__, __LINE__);
         
           /* bind the input parameters */
           rc = SQLBindParameter (insstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                                  0, 0, &id, 0, NULL);
-          handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           rc = SQLBindParameter (insstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                                  0, 0, &nb, 0, NULL);
-          handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           rc = SQLBindParameter (insstmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                                  11, 0, directory, 0, NULL);
-          handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           rc = SQLBindParameter (insstmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR,
                                  SQL_CHAR, 11, 0, last_calling_party, 0, NULL);
-          handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           rc = SQLBindParameter (insstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                                  101, 0, descr, 0, NULL);
-          handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
           /* commit the transaction */
-          rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-          handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+          rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+          handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                          "committing transaction",
                          __FILE__, __LINE__);
       } 
@@ -2314,121 +2273,121 @@ void ExecuteTptBm (int          seed,
 #endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
       /* prepare the select statement */
       rc = SQLPrepare (selstmt, (SQLCHAR*) select_stmnt, SQL_NTS);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                      "preparing select",
                      __FILE__, __LINE__);
 
       /* Bind the selected columns  */
       rc = SQLBindCol (selstmt, 1, SQL_C_CHAR, &directory, 11, NULL);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                  "binding column",
                  __FILE__, __LINE__);
         
       rc = SQLBindCol (selstmt, 2, SQL_C_CHAR, &last, 11, NULL);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding column",
                      __FILE__, __LINE__);
         
       rc = SQLBindCol (selstmt, 3, SQL_C_CHAR, &descr, 101, NULL);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding column",
                      __FILE__, __LINE__);
         
       /* bind the input parameters */
       rc = SQLBindParameter (selstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, 
                              SQL_INTEGER, 0, 0, &id, 0, NULL);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       rc = SQLBindParameter (selstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, 
                              SQL_INTEGER, 0, 0, &nb, 0, NULL);
-      handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       /* prepare the update statement */
       rc = SQLPrepare (updstmt, (SQLCHAR*) update_stmnt, SQL_NTS);
-      handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                      "preparing update",
                      __FILE__, __LINE__);
         
       /* bind the input parameters */
       rc = SQLBindParameter (updstmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                              11, 0, last, 0, NULL);
-      handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       rc = SQLBindParameter (updstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                              0, 0, &id, 0, NULL);
-      handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       rc = SQLBindParameter (updstmt, 3, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                              0, 0, &nb, 0, NULL);
-      handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       /* prepare the delete statement */
       rc = SQLPrepare(delstmt,(SQLCHAR *) delete_stmnt, SQL_NTS);
-      handle_errors(hdbc, delstmt, rc, 1,
+      handle_errors(ghdbc, delstmt, rc, 1,
                     "Unable to prepare delete",
                     __FILE__, __LINE__);
         
       /* bind the input parameters */
       rc = SQLBindParameter(delstmt,1,SQL_PARAM_INPUT,SQL_C_SLONG,SQL_INTEGER,
                             0,0,&id,0,NULL);
-      handle_errors(hdbc, delstmt, rc, 1, "Unable to bind parameter",
+      handle_errors(ghdbc, delstmt, rc, 1, "Unable to bind parameter",
                     __FILE__, __LINE__);
         
       rc = SQLBindParameter(delstmt,2,SQL_PARAM_INPUT,SQL_C_SLONG,SQL_INTEGER,
                             0,0,&nb,0,NULL);
-      handle_errors(hdbc, delstmt, rc, 1, "Unable to bind parameter",
+      handle_errors(ghdbc, delstmt, rc, 1, "Unable to bind parameter",
                     __FILE__, __LINE__);
         
       /* prepare the insert */
       rc = SQLPrepare (insstmt, (SQLCHAR*) insert_stmnt, SQL_NTS);
-      handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                      "preparing insert",
                      __FILE__, __LINE__);
         
       /* bind the input parameters */
       rc = SQLBindParameter (insstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                              0, 0, &id, 0, NULL);
-      handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       rc = SQLBindParameter (insstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                              0, 0, &nb, 0, NULL);
-      handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       rc = SQLBindParameter (insstmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                              11, 0, directory, 0, NULL);
-      handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       rc = SQLBindParameter (insstmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR,
                              SQL_CHAR, 11, 0, last_calling_party, 0, NULL);
-      handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                      "binding parameter",
                      __FILE__, __LINE__);
         
       rc = SQLBindParameter (insstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                              101, 0, descr, 0, NULL);
-      handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                          "binding parameter",
                          __FILE__, __LINE__);
         
       /* commit the transaction */
-      rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+      rc = SQLTransact (henv, ghdbc, SQL_COMMIT);
+      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                      "committing transaction",
                      __FILE__, __LINE__);
 #if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
@@ -2672,34 +2631,35 @@ void ExecuteTptBm (int          seed,
                 nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
             }
 #if defined(TTCLIENTSERVER)
-        else
         if (  mode == M_SCALEOUT_ROUTING  )
-            hdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
+            thdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
+        else
 #endif /* TTCLIENTSERVER */
 #endif /* SCALEOUT && ROUTINGAPI */
+            thdbc = ghdbc;
 
         if ( ! nodbexec )
         {
             /* execute, fetch, free and commit */
             rc = SQLExecute (selstmt);
-            handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+            handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                            "executing select",
                            __FILE__, __LINE__);
     
             rc = SQLFetch (selstmt);
-            handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+            handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                            "fetching select",
                            __FILE__, __LINE__);
     
             rc = SQLFreeStmt (selstmt,SQL_CLOSE);
-            handle_errors (hdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+            handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
                            "closing select",
                            __FILE__, __LINE__);
     
             if (op_count == opsperxact) {
               /* TimesTen doesn't require reads to be committed          */
-              rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-              handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+              rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                              "committing transaction",
                              __FILE__, __LINE__);
               op_count = 0;
@@ -2719,11 +2679,12 @@ void ExecuteTptBm (int          seed,
                 nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
             }
 #if defined(TTCLIENTSERVER)
-        else
         if (  mode == M_SCALEOUT_ROUTING  )
-            hdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
+            thdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
+        else
 #endif /* TTCLIENTSERVER */
 #endif /* SCALEOUT && ROUTINGAPI */
+            thdbc = ghdbc;
 
         sprintf ((char*)last, "%dx%d", id, nb);
         last[10] = 0;
@@ -2732,13 +2693,13 @@ void ExecuteTptBm (int          seed,
         {
             /* execute and commit */
             rc = SQLExecute (updstmt);
-            handle_errors (hdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+            handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
                            "executing update",
                            __FILE__, __LINE__);
     
             if (op_count == opsperxact) {
-              rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-              handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+              rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                              "committing transaction",
                              __FILE__, __LINE__);
               op_count = 0;
@@ -2765,22 +2726,23 @@ void ExecuteTptBm (int          seed,
                 }
             }
 #if defined(TTCLIENTSERVER)
-        else
         if (  mode == M_SCALEOUT_ROUTING  )
-            hdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
+            thdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
+        else
 #endif /* TTCLIENTSERVER */
 #endif /* SCALEOUT && ROUTINGAPI */
+            thdbc = ghdbc;
 
         if ( ! nodbexec )
         {
             rc = SQLExecute (delstmt);
-            handle_errors (hdbc, delstmt, rc, ABORT_DISCONNECT_EXIT,
+            handle_errors (thdbc, delstmt, rc, ABORT_DISCONNECT_EXIT,
                            "executing delete",
                            __FILE__, __LINE__);
 
             if (op_count == opsperxact) {
-              rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-              handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+              rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                              "committing delete transaction",
                              __FILE__, __LINE__);
               op_count = 0;
@@ -2809,11 +2771,12 @@ void ExecuteTptBm (int          seed,
                 }
             }
 #if defined(TTCLIENTSERVER)
-        else
         if (  mode == M_SCALEOUT_ROUTING  )
-            hdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
+            thdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
+        else
 #endif /* TTCLIENTSERVER */
 #endif /* SCALEOUT && ROUTINGAPI */
+            thdbc = ghdbc;
 
         snprintf ((char*) directory, 10, "55%d%d", id, nb);
         sprintf ((char*) descr,
@@ -2823,13 +2786,13 @@ void ExecuteTptBm (int          seed,
         {
             /* execute and commit */
             rc = SQLExecute (insstmt);
-            handle_errors (hdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+            handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
                            "executing insert",
                            __FILE__, __LINE__);
     
             if (op_count == opsperxact) {
-              rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-              handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+              rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                              "committing transaction",
                              __FILE__, __LINE__);
               op_count = 0;
@@ -2909,84 +2872,53 @@ finish_loop:
 
 cleanup:
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
-  if (  mode != M_CLASSIC  )
+  if (  mode > M_SCALEOUT  )
       freeRouting();
 #if defined(TTCLIENTSERVER)
   if (  mode != M_SCALEOUT_ROUTING  )
   {
 #endif /* TTCLIENTSERVER */
 #endif /* SCALEOUT && ROUTING */
-      rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+      rc = SQLTransact (henv, ghdbc, SQL_COMMIT);
+      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
                      "committing transaction",
                      __FILE__, __LINE__);
 
       /* drop and free the update statement */
       rc = SQLFreeStmt (updstmt, SQL_DROP);
-      handle_errors (hdbc, updstmt, rc, DISCONNECT_EXIT,
+      handle_errors (ghdbc, updstmt, rc, DISCONNECT_EXIT,
                      "freeing statement handle",
                      __FILE__, __LINE__);
 
       /* drop and free the select statement */
       rc = SQLFreeStmt (selstmt, SQL_DROP);
-      handle_errors (hdbc, selstmt, rc, DISCONNECT_EXIT,
+      handle_errors (ghdbc, selstmt, rc, DISCONNECT_EXIT,
                      "freeing statement handle",
                      __FILE__, __LINE__);
 
       /* drop and free the insert statement */
       rc = SQLFreeStmt (insstmt, SQL_DROP);
-      handle_errors (hdbc, insstmt, rc, DISCONNECT_EXIT,
+      handle_errors (ghdbc, insstmt, rc, DISCONNECT_EXIT,
                      "freeing statement handle",
                      __FILE__, __LINE__);
 
       /* drop and free the delete statement */
       rc = SQLFreeStmt (delstmt, SQL_DROP);
-      handle_errors (hdbc, delstmt, rc, DISCONNECT_EXIT,
+      handle_errors (ghdbc, delstmt, rc, DISCONNECT_EXIT,
                      "freeing delete statement handle",
                      __FILE__, __LINE__);
-#if defined(SCALEOUT) && defined(ROUTINGAPI)
-#if defined(TTCLIENTSERVER)
-  }
-#endif /* TTCLIENTSERVER */
-  if (  procId > 0  )
-  {
-      rc = SQLDisconnect (rhdbc);
-      handle_errors (rhdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "disconnecting from database",
-                     __FILE__, __LINE__);
-      rc = SQLFreeConnect(rhdbc);
-      handle_errors(rhdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "freeing connection handle",
-                     __FILE__, __LINE__);
-      rhdbc = SQL_NULL_HDBC;
-  }
-#if defined(TTCLIENTSERVER)
-  if (  (mode != M_SCALEOUT_ROUTING) || (procId == 0)  )
-  {
-#endif /* TTCLIENTSERVER */
-#endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
-      if (  procId == 0  ) {
-          rc = SQLDisconnect(ghdbc);
-          handle_errors(ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                         "disconnecting from database",
-                         __FILE__, __LINE__);
-          rc = SQLFreeConnect(ghdbc);
-          handle_errors(ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                         "freeing connection handle",
-                         __FILE__, __LINE__);
-    } else {
-          rc = SQLDisconnect(hdbc);
-          handle_errors(hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                         "disconnecting from database",
-                         __FILE__, __LINE__);
-          rc = SQLFreeConnect(hdbc);
-          handle_errors(hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                         "freeing connection handle",
-                         __FILE__, __LINE__);
-    }
 #if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
   }
 #endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
+
+  rc = SQLDisconnect(ghdbc);
+  handle_errors(ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                      "disconnecting from database",
+                         __FILE__, __LINE__);
+  rc = SQLFreeConnect(ghdbc);
+  handle_errors(ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                       "freeing connection handle",
+                         __FILE__, __LINE__);
 
   rc = SQLFreeEnv(henv);
   handle_errors(SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
