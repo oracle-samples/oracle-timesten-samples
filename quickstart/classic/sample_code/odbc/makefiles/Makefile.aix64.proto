@@ -1,8 +1,11 @@
 #
-# Build TimesTen Sample Programs (Unix)
-# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
 #
-# $Revision: /main/1 $
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+#
+# Makefile for C/ODBC sample programs
 #
 
 INSTDIR         = $(TIMESTEN_HOME)/install

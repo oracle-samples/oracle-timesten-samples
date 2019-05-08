@@ -20,14 +20,16 @@ PLATCFLAGS	= -m64 -O3
 LDFLAGS		= -O3 -Wl,-rpath -Wl,$(INSTDIR)/lib
 
 INCS		= -I. -I$(INSTDIR)/include -I$(COMMDIR)
+
 #
 # Use OPTDEFS to enable optional features
 #
 #OPTDEFS		= -DDEBUG -DSPECIAL_FEATURES
+
 CSDEFS		= -DTTCLIENTSERVER
 CFLAGS		= $(PLATCFLAGS) $(OPTDEFS) $(INCS)
 
-TTLINK		= -L$(INSTDIR)/lib
+TTLINK		= -L$(TTDIR)/lib
 DCLIBS		= $(TTLINK) -ltten
 CSLIBS		= $(TTLINK) -lttclient
 
@@ -55,10 +57,10 @@ GSOBJSCS	= $(OBJDIR)/GridSampleCS.o $(OBJDIR)/GSOdbcCS.o \
 GRIDSAMPLE	= $(BINDIR)/GridSample
 GRIDSAMPLECS	= $(BINDIR)/GridSampleCS
 
-TPTBMDC         = $(BINDIR)/tptbm
 TPTBMDCOBJS     = $(OBJDIR)/tptbm.o $(OBJDIR)/utils.o $(OBJDIR)/ttgetopt.o
-TPTBMCS         = $(BINDIR)/tptbmCS
+TPTBMDC         = $(BINDIR)/tptbm
 TPTBMCSOBJS     = $(OBJDIR)/tptbmCS.o $(OBJDIR)/utils.o $(OBJDIR)/ttgetopt.o
+TPTBMCS         = $(BINDIR)/tptbmCS
 
 all:		csonly direct
 
@@ -69,7 +71,9 @@ csonly:		$(GRIDSAMPLECS) $(TPTBMCS)
 clean:
 	rm -f $(GRIDSAMPLECS) $(GRIDSAMPLE) $(TPTBMDC) $(TPTBMCS) $(OBJDIR)/*.o
 
+#
 # Targets for binaries
+#
 
 $(GRIDSAMPLE):	$(GSOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(GSOBJS) $(DCLIBS)
@@ -83,7 +87,10 @@ $(TPTBMDC):	$(TPTBMDCOBJS)
 $(TPTBMCS):	$(TPTBMCSOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS)
 
+#
 # Targets for object files
+#
+
 $(OBJDIR)/utils.o:	$(COMMDIR)/utils.c $(COMMDIR)/utils.h
 	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/utils.c
 

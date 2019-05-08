@@ -1408,7 +1408,7 @@ void populate(void)
     rc = SQLExecDirect (hstmt, (SQLCHAR*) drop_stmnt, SQL_NTS);
 
     /* make create statement */
-    pos = sprintf( buff1, create_stmnt );
+    pos = sprintf( buff1, "%s", create_stmnt );
     if (  ! rangeFlag  )
         pos += sprintf (buff1+pos, hash_clause, ((key_cnt * key_cnt)/256)+1);
 #if defined(SCALEOUT)
@@ -1474,8 +1474,8 @@ void populate(void)
     /* Store the database mode  and key value */
     id = DBMODE_ID;
     nb = DBMODE_NB;
-    strcpy(directory, DBMODE_FILLER);
-    strcpy(last_calling_party, DBMODE_FILLER);
+    strcpy((char *)directory, DBMODE_FILLER);
+    strcpy((char *)last_calling_party, DBMODE_FILLER);
     dbkey = key_cnt;
 #if defined(SCALEOUT)
     if (  mode == M_CLASSIC  )
@@ -1485,7 +1485,7 @@ void populate(void)
     else
         strcpy(dbmode, DBMODE_SCALEOUT);
 #endif /* SCALEOUT */
-    sprintf(descr, "%s/%d", dbmode, dbkey);
+    sprintf((char *)descr, "%s/%d", dbmode, dbkey);
     rc = SQLExecute (hstmt);
     handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
                    "executing insert",
@@ -1566,11 +1566,11 @@ void populate(void)
     else
     if (  rc == SQL_SUCCESS  )
     {
-        p = strchr( descr, '/' );
+        p = strchr( (char *)descr, '/' );
         if (  p != NULL  )
         {
             *p++ = '\0';
-            strcpy( dbmode, descr );
+            strcpy( dbmode, (char *)descr );
             q = strchr( p, ' ' );
             if (  q != NULL  )
             {

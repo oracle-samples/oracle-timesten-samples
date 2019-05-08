@@ -203,25 +203,35 @@ To build and run the sample programs:
 
 1.    Make sure that you have a suitable C development environment installed (compiler, linker etc.) and a suitable TimesTen instance (a client instance is sufficient).
 
-2.    Make sure that you have deployed a TimesTen Scaleout grid, created a database, created the Mobile Payments user and schema and populated it with the Mobile Payments example data set. See the 'database' directory for more information. For TptBm only the user need be created.
+2.    Select the platform specific Makefile and copy from quickstart/classic/sample\_code/odbc/makefiles to the upper level directory.
 
-3.    Set your environment for the TimesTen instance that you will use to connect to the database (this instance must be configured with a suitable connectable):
+	For example, if your platform is Linux x86-64bit, execute the following commands:
+
+	`cd quickstart/scaleout/sample_code/odbc/makefiles`
+
+	`cp Makefile.linux8664.proto ../Makefile`
+
+	`cd ..`
+
+3.    Make sure that you have deployed a TimesTen Scaleout grid, created a database, created the Mobile Payments user and schema and populated it with the Mobile Payments example data set. See the 'database' directory for more information. For TptBm only the user need be created.
+
+4.    Set your environment for the TimesTen instance that you will use to connect to the database (this instance must be configured with a suitable connectable):
 
       `source <instance_home>/bin/ttenv.[c]sh`
       
       `source <quickstart_install_dir>/scaleout/ttquickstartenv.[c]sh`
 
 
-4.    Build the binaries using the provided Makefile. If you have a full instance then you can build both the direct mode and client/server binaries:
+5.    Build the binaries using the provided Makefile. If you have a full instance then you can build both the direct mode and client/server binaries:
 
       `make clean`
   
       `make`
 
-5.   If you have a client instance then instead build just the client/server binaries:
+6.   If you have a client instance then instead build just the client/server binaries:
 
       `make clean`
 
       `make csonly`
 
-6.    Run the sample program(s). 
+7.    Run the sample program(s). Note that the executables are located in the **bin** directory.

@@ -1,0 +1,127 @@
+#
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+#
+# Makefile for C/ODBC sample programs - Client/Server ONLY
+#
+
+TTVER		= 181
+TTDIR           = $(TIMESTEN_HOME)
+OBJDIR          = obj
+BINDIR          = bin
+INSTDIR         = $(TTDIR)\install
+COMMDIR         = $(QUICKSTART_HOME)\sample_code\common
+
+INSTDIR         = $(TIMESTEN_HOME)\install
+
+CC              = cl.exe /nologo
+
+OFLAG 		= /Ox
+
+# WIN64 NON Driver Manager
+PLATCFLAGS      = /DWIN64 /DWIN32 /DWINVER=0x500 /MT /EHsc $(OFLAG) /D_CRT_SECURE_NO_DEPRECATE
+LDFLAGS         = /link /STACK:3000000 /FIXED:NO bufferoverflowu.lib
+
+INCS            = /I$(INSTDIR)\include /I$(COMMDIR)
+
+#
+# Use OPTDEFS to enable optional features
+#
+#OPTDEFS         = /DDEBUG /DSPECIAL_FEATURES
+
+CSDEFS          = /DTTCLIENTSERVER
+CFLAGS          = $(PLATCFLAGS) $(OPTDEFS) $(CSDEFS) $(INCS)
+
+TTLINK          = /LIBPATH:$(TTDIR)\lib
+
+CSLIBS          = $(TTLINK) ttclient$(TTVER).lib
+
+GSOBJSCS        = $(OBJDIR)\GridSampleCS.obj $(OBJDIR)\GSOdbcCS.obj \
+                  $(OBJDIR)\GSArgsCS.obj $(OBJDIR)\GSUtilCS.obj \
+                  $(OBJDIR)\GSUsageCS.obj $(OBJDIR)\GSErrorsCS.obj \
+                  $(OBJDIR)\GSTxnUpdateGridInfoCS.obj \
+                  $(OBJDIR)\GSTxnGetCountsCS.obj \
+                  $(OBJDIR)\GSTxnClearHistoryCS.obj \
+                  $(OBJDIR)\GSTxnPurgeCS.obj \
+                  $(OBJDIR)\GSTxnQueryCS.obj \
+                  $(OBJDIR)\GSTxnAuthorizeCS.obj \
+                  $(OBJDIR)\GSTxnChargeCS.obj \
+                  $(OBJDIR)\GSTxnTopupCS.obj
+GRIDSAMPLECS    = $(BINDIR)\GridSampleCS.exe
+
+TPTBMCSOBJS     = $(OBJDIR)\tptbmCS.obj $(OBJDIR)\utils.obj $(OBJDIR)\ttgetopt.obj
+TPTBMCS         = $(BINDIR)\tptbmCS.exe
+
+all:            $(GRIDSAMPLECS) $(TPTBMCS)
+
+clean:
+	-erase /Q $(BINDIR)\*.exe $(OBJDIR)\*.obj $(OBJDIR)\*.pdb $(OBJDIR)\*.sbr *.pdb
+
+#
+# Targets for binaries
+#
+
+$(GRIDSAMPLECS):        $(GSOBJSCS)
+	$(CC) /Fe$@ $(LDFLAGS) $(GSOBJSCS) $(CSLIBS)
+
+$(TPTBMCS):     $(TPTBMCSOBJS)
+	$(CC) /Fe$@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS)
+
+#
+# Targets for object files
+#
+
+$(OBJDIR)\utils.obj:      $(COMMDIR)\utils.c $(COMMDIR)\utils.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c $(COMMDIR)\utils.c
+
+$(OBJDIR)\ttgetopt.obj:   $(COMMDIR)\ttgetopt.c $(COMMDIR)\ttgetopt.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c $(COMMDIR)\ttgetopt.c
+
+$(OBJDIR)\tptbmCS.obj:    tptbm.c $(COMMDIR)\tt_version.h $(COMMDIR)\ttgetopt.h $(COMMDIR)\utils.h
+	$(CC) $(CFLAGS) $(CSDEFS) /DSCALEOUT /Fo$@ /FR$(OBJDIR)\$*.sbr /c tptbm.c
+
+$(OBJDIR)\GridSampleCS.obj:       GridSample.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GridSample.c
+
+$(OBJDIR)\GSUtilCS.obj:   GSUtil.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSUtil.c
+
+$(OBJDIR)\GSUsageCS.obj:  GSUsage.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSUsage.c
+
+$(OBJDIR)\GSArgsCS.obj:   GSArgs.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSArgs.c
+
+$(OBJDIR)\GSOdbcCS.obj:   GSOdbc.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSOdbc.c
+
+$(OBJDIR)\GSErrorsCS.obj: GSErrors.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSErrors.c
+
+$(OBJDIR)\GSTxnUpdateGridInfoCS.obj:      GSTxnUpdateGridInfo.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnUpdateGridInfo.c
+
+$(OBJDIR)\GSTxnGetCountsCS.obj:   GSTxnGetCounts.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnGetCounts.c
+
+$(OBJDIR)\GSTxnClearHistoryCS.obj:        GSTxnClearHistory.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnClearHistory.c
+
+$(OBJDIR)\GSTxnPurgeCS.obj:       GSTxnPurge.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnPurge.c
+
+$(OBJDIR)\GSTxnQueryCS.obj:       GSTxnQuery.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnQuery.c
+
+$(OBJDIR)\GSTxnAuthorizeCS.obj:   GSTxnAuthorize.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnAuthorize.c
+
+$(OBJDIR)\GSTxnChargeCS.obj:      GSTxnCharge.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnCharge.c
+
+$(OBJDIR)\GSTxnTopupCS.obj:       GSTxnTopup.c GridSample.h
+	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnTopup.c
+

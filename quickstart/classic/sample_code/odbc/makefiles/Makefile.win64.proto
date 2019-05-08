@@ -1,8 +1,11 @@
 #
-# Build TimesTen Sample Programs (Windows)
-# Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
 #
-# $Revision: /main/1 $
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+#
+# Makefile for C/ODBC sample programs - Client/Server ONLY
 #
 
 TTVER		= 181
@@ -11,7 +14,6 @@ INSTDIR         = $(TIMESTEN_HOME)\install
 
 QUICKCODEDIR    = $(QUICKSTART_HOME)\sample_code
 COMMDIR         = $(QUICKCODEDIR)\common
-TTVER           = 181
 TTDMDIR         = $(QUICKCODEDIR)\odbc_drivermgr
 
 CC              = cl.exe /nologo
@@ -21,7 +23,6 @@ OFLAG 		= /Ox
 # WIN64 NON Driver Manager
 PLATCFLAGS      = /DWIN64 /DWIN32 /DWINVER=0x500 /MT /EHsc $(OFLAG) /D_CRT_SECURE_NO_DEPRECATE
 LDFLAGS         = /link /STACK:3000000 /FIXED:NO bufferoverflowu.lib
-
 
 INCS            = /I$(INSTDIR)\include /I$(COMMDIR)
 
