@@ -396,7 +396,7 @@ static  int sbThreadCreate(void(*start_address)(void*),
   return 0;
 }
 
-static int sbThreadJoin(sbThread t, void** statusPP, int* errorP)
+static int sbThreadJoin(sbThread t, void** statusPP)
 {
   int rc;
   rc = pthread_join(t, statusPP);
@@ -418,12 +418,11 @@ static int sbThreadCreate(void(*start_address)(void*),
     return -1;
 }
 
-static void
-sbThreadJoin(sbThread t, void ** statusPP, int* errorP)
+static int sbThreadJoin(sbThread t)
 {
   
   WaitForSingleObject((HANDLE) t, INFINITE);
-  return;
+  return 0;
 }
 #endif /* WIN32 */
 
@@ -1177,7 +1176,11 @@ int main(int argc, char **argv)
 
   /* Clean up all threads and gather summary stats */
   for (t = 0; t < numThread; t++){
-    rc = sbThreadJoin(threadInfo[t].tid, (void **)NULL, (int *)NULL);
+#ifndef WIN32
+    rc = sbThreadJoin(threadInfo[t].tid, (void **)NULL);
+#else /* WIN32 */
+    rc = sbThreadJoin(threadInfo[t].tid);
+#endif /* WIN32 */
     misses += threadInfo[t].misses;
     attempts += threadInfo[t].attempts;
     fetches += threadInfo[t].fetches;
