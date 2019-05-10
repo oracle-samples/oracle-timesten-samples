@@ -332,7 +332,7 @@ parse_args(int argc,char **argv)
   int           i              = 1;
 
   /* Initialize the service name */
-  memset(service, sizeof(service), 0);
+  memset(service, 0, sizeof(service));
 
   /* Use the default Service Name, can override from command-line */
   strcpy(service, DEMODSN);
@@ -367,7 +367,7 @@ parse_args(int argc,char **argv)
       } else {
 
         /* Initialize the service name */
-        memset(service, sizeof(service), 0);
+        memset(service, 0, sizeof(service));
 
         /* Get the Oracle Net Service Name */
         strcpy(service, argv[i+1]);
@@ -390,7 +390,7 @@ parse_args(int argc,char **argv)
       } else {
 
         /* Initialize the username */
-        memset(username, sizeof(username), 0);
+        memset(username, 0, sizeof(username));
 
         /* Get the username */
         strcpy(username, argv[i+1]);
@@ -412,7 +412,7 @@ parse_args(int argc,char **argv)
       } else {
 
         /* Initialize the password */
-        memset(password, sizeof(password), 0);
+        memset(password, 0, sizeof(password));
 
         /* Get the password */
         strcpy(password, argv[i+1]);
@@ -464,7 +464,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -478,7 +478,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -492,7 +492,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -506,7 +506,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -522,7 +522,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -536,7 +536,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -550,7 +550,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -564,7 +564,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -580,7 +580,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -594,7 +594,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -608,7 +608,7 @@ void doBinds( void )
                                SQLT_FLT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -622,7 +622,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -636,7 +636,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -651,7 +651,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -665,7 +665,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -679,7 +679,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -693,7 +693,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -707,7 +707,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -723,7 +723,7 @@ void doBinds( void )
                                SQLT_RSET, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -737,7 +737,7 @@ void doBinds( void )
                                SQLT_INT, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));
@@ -751,7 +751,7 @@ void doBinds( void )
                                SQLT_STR, 
                                (dvoid *) 0,
                                (ub2 *) 0,
-                               (ub2) 0,
+                               (ub2 *) 0,
                                (ub4) 0,
                                (ub4 *) 0,
                                OCI_DEFAULT));

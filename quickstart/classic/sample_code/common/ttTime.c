@@ -19,7 +19,6 @@
 #ifdef _WIN32
 
 #include <stdio.h>
-#include <mapiutil.h>
 
 /*-----------------*/
 /* WINDOWS VERSION */

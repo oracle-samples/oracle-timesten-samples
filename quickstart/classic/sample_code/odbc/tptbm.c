@@ -1676,7 +1676,7 @@ void OpenShmSeg(int  shmSize)
       shmhdr[0].state = num_processes;
 
       /* Save the connection string for the children to read */
-      p = (char *)shmhdr + ((sizeof(procinfo_t) * num_processes);
+      p = (char *)shmhdr + ((sizeof(procinfo_t) * num_processes));
       strcpy( p, connstr );
 
     }
@@ -1837,7 +1837,7 @@ void CreateChildProcs(char*    progName)
         exit (1);
       }
 
-      shmdhr[i].pid = (tt_ptrint) pInfo.hProcess;
+      shmhdr[i].pid = (tt_ptrint) pInfo.hProcess;
     }
 
     pid = 1;
@@ -2430,7 +2430,7 @@ void ExecuteTptBm(int          seed,
       {
         if (StopRequested())
             goto cleanup;
-        tt_sleep(1)
+        tt_sleep(1);
       }
       shmhdr[procId].state = PROC_SET; // indicate ready
       // wait to be started
@@ -2815,7 +2815,7 @@ finish_loop:
 #if defined(WIN32)
         DWORD exitcode;
 
-        while ((GetExitCodeProcess((HANDLE) shmhdr[i].pid, &exitcode) 
+        while ((GetExitCodeProcess((HANDLE)shmhdr[i].pid, &exitcode) 
              && (exitcode == STILL_ACTIVE))
            && (shmhdr[i].state < PROC_END))
 #else
@@ -2926,7 +2926,7 @@ cleanup:
                  __FILE__, __LINE__);
 
 #if defined(WIN32)
-    UnmapViewOfFile(shmhdr);
+    UnmapViewOfFile((LPVOID)shmhdr);
     CloseHandle(shmHndl);
     DeleteFile("CloseHandle");
 #else

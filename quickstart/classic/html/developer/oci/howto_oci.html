@@ -139,7 +139,7 @@ The ‘servicename’ can be either an entry in the TNSnames.ora file or an easy
 <p>&nbsp;&nbsp;(run the program specifying the username, password and service name)<br />
     <br />
     <strong class="codetext"><em>&nbsp;&nbsp;&gt; plsqlOCI -user &lt;myuser&gt; -password &lt;mypassword&gt; -service &lt;myservice&gt;</em></strong></p>
-<p>For full syntax of the program, try &quot;<em>plsqlOCI -help</em>&quot;.</p>
+<p>For the full syntax of the program, try &quot;<em>plsqlOCI -help</em>&quot;.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <table width="800" border="1">
@@ -172,7 +172,16 @@ The ‘servicename’ can be either an entry in the TNSnames.ora file or an easy
  <p class="normal">(80% reads, 20% updates<span class="codetext"></span> for &lt;myuser&gt;@&lt;myservice&gt; with 1,000 transactions in the database with 33<sup>2</sup> (1,089) rows.)<br />
     <br />
   <span class="codetext"><strong><em>&nbsp;&nbsp;&gt; tptbmOCI -user &lt;myuser&gt; -service &lt;myservice&gt; -xact 1000 -key 33</em></strong></span> </p>
-<p class="normal">For full syntax of the program, try &quot;<em>tptbmOCI   -help</em>&quot;.<br />
+<p class="normal">For the full syntax of the program, try &quot;<em>tptbmOCI   -help</em>&quot;.<br />
+  <br />
+  <br />
+<table width="800" border="1">
+  <tr>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>ocimtquery</strong></td>
+    <td width="608" valign="top" class="normal">This program runs a set of queries provided in a file measuring  various aspects of the performance such as throughput, min/avg/max and 95/99 percentile response times etc. It allows you to specify how many times each query is to be run and also the number of concurrent threads to use to run the queries.<br />
+  </tr>
+</table>
+<p class="normal">For the full syntax of the program, try &quot;<em>ocimtquery   -help</em>&quot;.<br />
   <br />
   <br />
 <p class="normal">&nbsp;</p>

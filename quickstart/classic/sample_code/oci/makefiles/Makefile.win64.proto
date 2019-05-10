@@ -4,7 +4,7 @@
 #
 # $Revision: /main/1 $
 #
-INSTDIR         = $(TIMESTEN_HOME)\install
+INSTDIR         = $(TIMESTEN_HOME)
 COMMDIR         = $(QUICKSTART_HOME)\sample_code\common
 TTORACLE_HOME   = $(INSTDIR)\ttoracle_home\instantclient_11_2
 OCIINCS         = $(TTORACLE_HOME)\sdk\include
@@ -34,8 +34,10 @@ TPTBMOCI        = tptbmOCI.exe
 TPTBMOCIOBJS    = tptbmOCI.obj psswds.obj
 PLSQLOCI        = plsqlOCI.exe
 PLSQLOCIOBJS    = plsqlOCI.obj psswds.obj
+MTQUERY         = ocimtquery.exe
+MTQUERYOBJS     = ocimtquery.obj
 
-PROGS           = $(ADDEMP) $(TPTBMOCI) $(PLSQLOCI)
+PROGS           = $(ADDEMP) $(TPTBMOCI) $(PLSQLOCI) $(MTQUERY)
 
 #
 # Top level targets
@@ -59,6 +61,9 @@ $(TPTBMOCI):	$(TPTBMOCIOBJS)
 $(PLSQLOCI):	$(PLSQLOCIOBJS)
 		$(CC) /Fe$@ $(PLSQLOCIOBJS) $(LDFLAGS) $(ICLIBS)
 
+$(MTQUERY):	$(MTQUERYOBJS)
+		$(CC) /Fe$@ $(MTQUERYOBJS) $(LDFLAGS) $(ICLIBS)
+
 #
 # Targets for building object files
 #
@@ -71,6 +76,9 @@ tptbmOCI.obj:	tptbmOCI.c
 
 plsqlOCI.obj:	plsqlOCI.c
 	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c plsqlOCI.c
+
+ocimtquery.obj:	ocimtquery.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c ocimtquery.c
 
 psswds.obj:	psswds.c
 	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c psswds.c

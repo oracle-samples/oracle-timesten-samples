@@ -145,4 +145,11 @@ Use a client/server workload with 10 * (3 reads, 1 insert and 1 update)  per tra
 
 For the full syntax of the program, use "tptbmOCI -help".
 
+
+**ocimtquery**
+
+This program runs a set of queries provided in a file and measures (and reports) various aspects of query performance such as throughput, min/avg/max and 95/99 percentile response times. You can control how many times each query is run and how many concurrent threads are used to run the queries.
+
+For the full syntax of the program, use "ocimtquery -help".
+
 For more information on OCI, refer to the OCI chapter in the [Oracle TimesTen In-Memory Database C Developer's Guide](https://docs.oracle.com/database/timesten-18.1/TTCDV/toc.htm).

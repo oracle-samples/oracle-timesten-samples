@@ -494,7 +494,7 @@ parse_args(int argc,char **argv)
 
 
   /* Initialize the service name */
-  memset(service, sizeof(service), 0);
+  memset(service, 0, sizeof(service));
 
   /* Use the default Service Name, can override from command-line */
   strcpy(service, DEMODSN);
@@ -691,7 +691,7 @@ parse_args(int argc,char **argv)
       } else {
 
         /* Initialize the service name */
-        memset(service, sizeof(service), 0);
+        memset(service, 0, sizeof(service));
 
         /* Get the Oracle Net Service Name */
         strcpy(service, argv[i+1]);
@@ -714,7 +714,7 @@ parse_args(int argc,char **argv)
       } else {
 
         /* Initialize the username */
-        memset(username, sizeof(username), 0);
+        memset(username, 0, sizeof(username));
 
         /* Get the username */
         strcpy(username, argv[i+1]);
@@ -966,16 +966,16 @@ populate( void )
   */
 
   checkerr(errhp, OCIBindByPos(stmthp, &bnd1p, errhp,1, &id,sizeof(id),SQLT_INT, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp, &bnd2p, errhp,2, &nb,sizeof(nb),SQLT_INT, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp, &bnd3p, errhp,3, directory,sizeof(directory),SQLT_STR, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
-  checkerr(errhp, OCIBindByPos(stmthp, &bnd4p, errhp,4, last,sizeof(last),SQLT_STR, (dvoid *) 0, (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
-  checkerr(errhp, OCIBindByPos(stmthp, &bnd5p, errhp,5, descr,sizeof(descr),SQLT_STR, (dvoid *) 0, (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+  checkerr(errhp, OCIBindByPos(stmthp, &bnd4p, errhp,4, last,sizeof(last),SQLT_STR, (dvoid *) 0, (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+  checkerr(errhp, OCIBindByPos(stmthp, &bnd5p, errhp,5, descr,sizeof(descr),SQLT_STR, (dvoid *) 0, (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   printf("\nLoad the %s.vpn_users table with %d rows of data\n", 
 		  username, key_cnt * key_cnt);
@@ -1471,34 +1471,34 @@ int main(int argc, char** argv)
                     (ub4) strlen(lock_timeout_stmnt), OCI_NTV_SYNTAX, OCI_DEFAULT));
   
   checkerr(errhp, OCIBindByPos(stmthp3, &bnd31p, errhp,1, &id,sizeof(id),SQLT_INT, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp3, &bnd32p, errhp,2, &nb,sizeof(nb),SQLT_INT, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp3, &bnd33p, errhp,3, directory,sizeof(directory),SQLT_STR, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp3, &bnd34p, errhp,4, last,sizeof(last),SQLT_STR, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp3, &bnd35p, errhp,5, descr,sizeof(descr),SQLT_STR, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
   
   checkerr(errhp, OCIBindByPos(stmthp2, &bnd21p, errhp,1, last,sizeof(last),SQLT_STR, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp2, &bnd22p, errhp,2, &id,sizeof(id),SQLT_INT, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp2, &bnd23p, errhp,3, &nb,sizeof(nb),SQLT_INT, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
   checkerr(errhp, OCIBindByPos(stmthp1, &bnd11p, errhp,1, &id,sizeof(id),SQLT_INT, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
   
   checkerr(errhp, OCIBindByPos(stmthp1, &bnd12p, errhp,2, &nb,sizeof(nb),SQLT_INT, (dvoid *) 0,
-                    (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+                    (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
   
   checkerr(errhp, OCIDefineByPos(stmthp1, &defnp1, errhp, 1,(dvoid *) directory, sizeof(directory), SQLT_STR,
                              (dvoid *) 0, (ub2 *) 0, (ub2 *) 0, OCI_DEFAULT));
@@ -1509,9 +1509,9 @@ int main(int argc, char** argv)
   checkerr(errhp, OCIDefineByPos(stmthp1, &defnp3, errhp, 3,(dvoid *) descr, sizeof(descr), SQLT_STR,
                              (dvoid *) 0, (ub2 *) 0, (ub2 *) 0, OCI_DEFAULT));
 
-  checkerr(errhp, OCIBindByPos(stmthp4, &bnd41p, errhp,1, &id,sizeof(id),SQLT_INT, (dvoid *) 0, (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+  checkerr(errhp, OCIBindByPos(stmthp4, &bnd41p, errhp,1, &id,sizeof(id),SQLT_INT, (dvoid *) 0, (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
-  checkerr(errhp, OCIBindByPos(stmthp4, &bnd42p, errhp,2, &nb,sizeof(nb),SQLT_INT, (dvoid *) 0, (ub2 *) 0, (ub2) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
+  checkerr(errhp, OCIBindByPos(stmthp4, &bnd42p, errhp,2, &nb,sizeof(nb),SQLT_INT, (dvoid *) 0, (ub2 *) 0, (ub2 *) 0, (ub4) 0, (ub4 *) 0, OCI_DEFAULT));
 
     /* Get the DB Server version (Oracle or TimesTen) */
 /*  checkerr(errhp, OCIServerVersion(svchp, errhp, dbServerVersion, sizeof(dbServerVersion), (ub1) OCI_HTYPE_SERVER)); */

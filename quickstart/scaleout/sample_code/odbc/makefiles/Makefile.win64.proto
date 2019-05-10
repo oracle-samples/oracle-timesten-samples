@@ -55,7 +55,8 @@ GRIDSAMPLECS    = $(BINDIR)\GridSampleCS.exe
 TPTBMCSOBJS     = $(OBJDIR)\tptbmCS.obj $(OBJDIR)\utils.obj $(OBJDIR)\ttgetopt.obj
 TPTBMCS         = $(BINDIR)\tptbmCS.exe
 
-all:            $(GRIDSAMPLECS) $(TPTBMCS)
+#all:            $(GRIDSAMPLECS) $(TPTBMCS)
+all:            $(TPTBMCS)
 
 clean:
 	-erase /Q $(BINDIR)\*.exe $(OBJDIR)\*.obj $(OBJDIR)\*.pdb $(OBJDIR)\*.sbr *.pdb
@@ -65,63 +66,63 @@ clean:
 #
 
 $(GRIDSAMPLECS):        $(GSOBJSCS)
-	$(CC) /Fe$@ $(LDFLAGS) $(GSOBJSCS) $(CSLIBS)
+	$(CC) /Fe$@ $(GSOBJSCS) $(LDFLAGS) $(CSLIBS)
 
 $(TPTBMCS):     $(TPTBMCSOBJS)
-	$(CC) /Fe$@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS)
+	$(CC) /Fe$@ $(TPTBMCSOBJS) $(LDFLAGS) $(CSLIBS)
 
 #
 # Targets for object files
 #
 
 $(OBJDIR)\utils.obj:      $(COMMDIR)\utils.c $(COMMDIR)\utils.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c $(COMMDIR)\utils.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c $(COMMDIR)\utils.c
 
 $(OBJDIR)\ttgetopt.obj:   $(COMMDIR)\ttgetopt.c $(COMMDIR)\ttgetopt.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c $(COMMDIR)\ttgetopt.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c $(COMMDIR)\ttgetopt.c
 
 $(OBJDIR)\tptbmCS.obj:    tptbm.c $(COMMDIR)\tt_version.h $(COMMDIR)\ttgetopt.h $(COMMDIR)\utils.h
-	$(CC) $(CFLAGS) $(CSDEFS) /DSCALEOUT /Fo$@ /FR$(OBJDIR)\$*.sbr /c tptbm.c
+	$(CC) $(CFLAGS) $(CSDEFS) /DSCALEOUT /Fo$@ /FR$*.sbr /c tptbm.c
 
 $(OBJDIR)\GridSampleCS.obj:       GridSample.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GridSample.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GridSample.c
 
 $(OBJDIR)\GSUtilCS.obj:   GSUtil.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSUtil.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSUtil.c
 
 $(OBJDIR)\GSUsageCS.obj:  GSUsage.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSUsage.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSUsage.c
 
 $(OBJDIR)\GSArgsCS.obj:   GSArgs.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSArgs.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSArgs.c
 
 $(OBJDIR)\GSOdbcCS.obj:   GSOdbc.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSOdbc.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSOdbc.c
 
 $(OBJDIR)\GSErrorsCS.obj: GSErrors.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSErrors.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSErrors.c
 
 $(OBJDIR)\GSTxnUpdateGridInfoCS.obj:      GSTxnUpdateGridInfo.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnUpdateGridInfo.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSTxnUpdateGridInfo.c
 
 $(OBJDIR)\GSTxnGetCountsCS.obj:   GSTxnGetCounts.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnGetCounts.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSTxnGetCounts.c
 
 $(OBJDIR)\GSTxnClearHistoryCS.obj:        GSTxnClearHistory.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnClearHistory.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSTxnClearHistory.c
 
 $(OBJDIR)\GSTxnPurgeCS.obj:       GSTxnPurge.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnPurge.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSTxnPurge.c
 
 $(OBJDIR)\GSTxnQueryCS.obj:       GSTxnQuery.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnQuery.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSTxnQuery.c
 
 $(OBJDIR)\GSTxnAuthorizeCS.obj:   GSTxnAuthorize.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnAuthorize.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSTxnAuthorize.c
 
 $(OBJDIR)\GSTxnChargeCS.obj:      GSTxnCharge.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnCharge.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSTxnCharge.c
 
 $(OBJDIR)\GSTxnTopupCS.obj:       GSTxnTopup.c GridSample.h
-	$(CC) $(CFLAGS) /Fo$@ /FR$(OBJDIR)\$*.sbr /c GSTxnTopup.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c GSTxnTopup.c
 

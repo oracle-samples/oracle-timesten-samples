@@ -14,7 +14,7 @@ OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
 CC              = gcc
 
-PLATCFLAGS      = -Os -finline-functions
+PLATCFLAGS      = -O2 -finline-functions
 LDFLAGS         = 
 
 INCS            = -I$(OCIINCS) -I$(INSTDIR)/include -I$(COMMDIR)
@@ -26,7 +26,7 @@ ifeq ($(TT_MVL_LINUX),1)
 EXTRALIBS       = -ldl -lnsl -lstdc++
 endif
 
-ICLIBS          = $(TTLINK) -lc -lclntsh -lpthread -lm -lrt $(EXTRALIBS)
+ICLIBS          = $(TTLINK) -lc -lclntsh -lpthread -lm $(EXTRALIBS)
 
 ADDEMP          = addemp
 ADDEMPOBJS      = addemp.o psswds.o
@@ -34,8 +34,10 @@ TPTBM           = tptbmOCI
 TPTBMOBJS       = tptbmOCI.o psswds.o
 PLSQLOCI        = plsqlOCI
 PLSQLOCIOBJS    = plsqlOCI.o psswds.o
+MTQUERY		= ocimtquery
+MTQUERYOBJS	= ocimtquery.o
 
-PROGS           = $(ADDEMP) $(TPTBM) $(PLSQLOCI)
+PROGS           = $(ADDEMP) $(TPTBM) $(PLSQLOCI) $(MTQUERY)
 
 #
 # Top level targets
@@ -59,6 +61,9 @@ $(TPTBM): $(TPTBMOBJS)
 
 $(PLSQLOCI): $(PLSQLOCIOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(PLSQLOCIOBJS) $(ICLIBS)
+
+$(MTQUERY): $(MTQUERYOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(MTQUERYOBJS) $(ICLIBS)
 
 #
 # Target for building object files
