@@ -115,15 +115,21 @@ typedef unsigned int  sbThread;
 
 #endif /* WIN32 */
 
-#define MAXQRYLEN      1024*1024
-#define MAXROWLEN      1024*1024
-#define MAXQUERIES     1024
-#define MAXITERATIONS  10000
-#define DFLTITERATIONS 100
-#define MAXSRVNAMELEN  128
-#define MAXPWDLEN      128
-#define SQUOTE         '\''
-#define DQUOTE         '"'
+#define MAXQRYLEN            1024*1024
+#define MAXROWLEN            1024*1024
+#define MAXQUERIES           1024
+#define MAXITERATIONS        10000
+#define DFLTITERATIONS       100
+#define MAXSRVNAMELEN        128
+#define MAXPWDLEN            128
+#define SQUOTE               '\''
+#define DQUOTE               '"'
+#define MIN_VERBOSE          0
+#define VB_BASIC             0
+#define VB_DETAIL            1
+#define VB_FULL              2
+#define MAX_VERBOSE          2
+#define ITER_PCILE_THRESHOLD 50
 
 /*
  * Stats structure for a query.
@@ -178,10 +184,11 @@ char   * passWord = NULL;
 char   * qryFile = NULL;
 int      secs = 0;
 int      numThread = 0;
-int      verbose = 0;
+int      verbose = -1;
 char   * qlist[MAXQUERIES];
 int      nQueries = 0;
 int      nIterations = 0;
+int enablePercentiles = 1;
 OCIEnv * env;
 
 /*
@@ -189,14 +196,13 @@ OCIEnv * env;
  */
 void usage(){
   printf(
-  "\nRun one or more SQL statements multiple times using one or more concurrent\n"
-  "connections/threads and perform detailed throughput and response time\n"
-  "measurements. While in theory any SQL statement can be executed this utility\n"
-  "is really intended to run queries.\n\n"
+  "\nRun one or more SQL SELECT statements multiple times using one or more\n"
+  "concurrent connections/threads and perform detailed throughput and response\n"
+  "time measurements.\n\n"
   "Usage:\n\n"
   "  ocimtquery [ -h | -help ]\n"
   "  ocimtquery -oraclesrv srvstr -uid userid -file qfile [-pwd password]\n"
-  "             [-threads nthread] [-qiter niter] [-secs nsecs] [-verbose]\n\n"
+  "             [-threads nthread] [-qiter niter] [-secs nsecs] [-verbose vb]\n\n"
   "where\n\n"
   "  srvstr   - Specifies the database server to use. This can be a TNS name\n"
   "             or an EasyConnect string.\n\n"
@@ -207,20 +213,20 @@ void usage(){
   "             prompted to enter the password.\n\n"
   "  nthread  - Use this many concurrent threads. All threads run the entire\n"
   "             set of queries (subject to any time limit). Default is 1.\n\n"
-  "  qiter    - Run this many iterations of each query (default is 100).\n\n"
+  "  niter    - Run this many iterations of each query (default is 100).\n\n"
   "  nsecs    - Limit the run time to this many seconds. This may result in\n"
   "             incomplete statistics as not all queries may be executed.\n"
   "             The time limit is only checked at the end of each query\n"
   "             execution in order to not impact the timing operations so\n"
   "             the limit is only applied approximately. Default is no\n"
   "             time limit.\n\n"
-  "  -verbose - Increase the detail of output. Can be specified multiple times\n"
-  "             to increase the verbosity. By default basic stats are output\n"
-  "             for each query. With one '-verbose' the query text and also\n"
-  "             'exec only' stats (doesn't include time for fetching data)\n"
-  "             are also output and with two '-verbose' additional thread\n"
-  "             level info is included.\n\n"
+  "  vb       - Increase the detail level of the output.\n"
+  "               0 - basic stats (the default).\n"
+  "               1 - also show the query text and exec only stats.\n"
+  "               2 - include extra thread level info.\n\n"
   "For the most accurate results, nthread * qiter should be a multiple of 100.\n\n"
+  "If 'niter' is less that 10 then 95 and 99 percentile response times will\n"
+  "not be reported.\n\n"
   );
   exit (-1);
 }
@@ -644,8 +650,17 @@ void parseArguments(int argc, char **argv)
           exit(-1);
       }
     }
-    else if (strcmp(argv[i], "-verbose") == 0)
-      verbose++;
+    else if (strcmp(argv[i], "-verbose") == 0) {
+      i++;
+      if ( (verbose >= 0) || (i >= argc) )
+        usage();
+      verbose = isnumeric(argv[i]);
+      if ( (verbose < MIN_VERBOSE) || (verbose > MAX_VERBOSE)  ) {
+        fprintf(stderr, "Value for '-verbose' must be between %d and %d\n",
+                        MIN_VERBOSE, MAX_VERBOSE );
+        exit(-1);
+      }
+    }
     else if (strcmp(argv[i], "-threads") == 0) {
       i++;
       if ( (numThread > 0) || (i >= argc) )
@@ -664,6 +679,10 @@ void parseArguments(int argc, char **argv)
       if ( nIterations < 1 ) {
         fprintf(stderr, "Value for '-qiter' must be > 0\n");
         exit(-1);
+      }
+      if ( nIterations < ITER_PCILE_THRESHOLD ) {
+          enablePercentiles = 0;
+          fprintf(stderr,"\nWarning: '-qiter' is less than %d so perentile reporting is disabled\n\n",ITER_PCILE_THRESHOLD);
       }
     }
     else
@@ -692,6 +711,8 @@ void parseArguments(int argc, char **argv)
       numThread = 1;
   if ( nIterations == 0  )
       nIterations = DFLTITERATIONS;
+  if (  verbose < 0 )
+      verbose = VB_BASIC;
 }
 
 /*
@@ -748,6 +769,11 @@ int readQueries (char *filename)
     } /* instmt */
   }
   fclose(fp);
+
+  if (  nQueries == 0  ) {
+      fprintf(stderr,"No queries found in file '%s'\n",filename);
+      return 1;
+  }
 
   return 0;
 }
@@ -961,7 +987,7 @@ void OraThread(void *arg)
       }
 
       stmt = stmts[qno];
-      if (verbose>1) 
+      if (verbose > VB_DETAIL) 
         fprintf(stderr,"OraThread %d: running query %d\n", threadNo, qno+1);
       
       rc = OCIStmtPrepare(stmt, err, (text *)qlist[qno], 
@@ -1080,8 +1106,8 @@ void OraThread(void *arg)
   	    qhist[qno].maxexecrt = elapsed0;
       }
 
-      if (verbose>1) 
-        fprintf(stderr,"OraThread %d: finished query %d, avgrt %.03f usec\n", 
+      if (verbose > VB_DETAIL) 
+        fprintf(stderr,"OraThread %d: finished query %d, avgrt %.01f usec\n", 
   	      threadNo, qno+1, ((double)qhist[qno].sumrt/(double)qhist[qno].execs));
 
       if ( tinfo->timeout )
@@ -1166,7 +1192,7 @@ int main(int argc, char **argv)
  /* Wait for all threads to be ready */
   while (  ! allState( threadInfo, numThread, READY )  )
     sbSleep(100);
-  printf ("Running test...%s", (verbose>1)?"\n":"");
+  printf ("Running test...%s", (verbose > VB_DETAIL)?"\n":"");
   fflush(stdout);
 
   /* Start queries in all threads and wait for them all to finish */
@@ -1189,7 +1215,7 @@ int main(int argc, char **argv)
     for (i = 0; i < nQueries; i++)
         overall += threadInfo[t].qhist[i].elapsed;
   }
-  printf("%sdone\n", (verbose>1)?"Test ":"");
+  printf("%sdone\n", (verbose > VB_DETAIL)?"Test ":"");
   fflush(stdout);
 
   /* Clean up OCI */
@@ -1201,23 +1227,28 @@ int main(int argc, char **argv)
   "Run summary\n"
   "  Threads                         : %d\n"
   "  Total query time (milliseconds) : %ld\n"
-  "  Total queries                   : %ld\n"
-  "  Total rows fetched              : %ld\n"
-  "  Average rows fetched per query  : %.3f\n"
-  "  Errors                          : %ld\n",
-  numThread, (overall/1000L), attempts, fetches,
-  ((double)fetches / (double)attempts), errors
-  );
+  "  Total queries executed          : %ld\n"
+  "  Total rows fetched              : %ld\n",
+  numThread, (overall/1000L), (attempts-errors), fetches
+    );
+  if ( (attempts-errors) > 0L) 
+    printf(
+  "  Average rows fetched per query  : %.1f\n",
+  ((double)fetches / (double)(attempts-errors))
+    );
+  printf(
+  "  Errors                          : %ld\n", errors
+  );  
   if (overall > 0L) 
     printf(
-    "  Average queries per second      : %.3f\n", ((double)attempts*1000000.0)/(double)overall
+    "  Average queries per second      : %.1f\n", ((double)attempts*1000000.0)/(double)overall
     );
   printf("\n");
   fflush(stdout);
 
   /* Display detailed stats depending on verbosity level */
   for (i = 0; i < nQueries; i++) {
-    if (  ! calculatePercentiles( threadInfo, i, &p95, &p99 )  )
+    if (  enablePercentiles && ! calculatePercentiles( threadInfo, i, &p95, &p99 )  )
         exit(-1);
     texecs = trows = telapsed = 0L;
     tminrt = tminexecrt = 9999999999L;
@@ -1244,7 +1275,7 @@ int main(int argc, char **argv)
   "------------------------------------------------------------\n\n"  
   "Query %d\n", i+1
       );
-      if (verbose) {
+      if (verbose > VB_BASIC) {
         printf( "  SQL statement\n" );
         sqlPrettyPrint(stdout, qlist[i], "    ");
         printf( "\n" );
@@ -1254,18 +1285,21 @@ int main(int argc, char **argv)
       if ( texecs > 0 ) {
         printf(
   "    Rows/query                    : %ld\n"
-  "    Queries/second                : %.3f\n"
+  "    Queries/second                : %.1f\n"
   "  Response times (microseconds)\n"
   "    Minimum                       : %ld\n"
   "    Average                       : %ld\n"
-  "    Maximum                       : %ld\n"
+  "    Maximum                       : %ld\n",
+      trows / texecs, ( (double)texecs * 1000000.0 ) / (double)telapsed,
+      tminrt, tsumrt / texecs, tmaxrt
+      );
+      if ( enablePercentiles )
+        printf(
   "    95th perentile                : %ld\n"
   "    99th perentile                : %ld\n",
-      trows / texecs, ( (double)texecs * 1000000.0 ) / (double)telapsed,
-      tminrt, tsumrt / texecs, tmaxrt,
       p95, p99
         );
-        if (verbose) {
+        if (verbose > VB_BASIC) {
            printf(
   "  Exec only response times (microseconds)\n"
   "    Minimum                       : %ld\n"
