@@ -1225,23 +1225,23 @@ int main(int argc, char **argv)
   printf(
   "\n------------------------------------------------------------\n\n"  
   "Run summary\n"
-  "  Threads                         : %d\n"
-  "  Total query time (milliseconds) : %ld\n"
-  "  Total queries executed          : %ld\n"
-  "  Total rows fetched              : %ld\n",
+  "  Threads                           : %d\n"
+  "  Total query time (milliseconds)   : %ld\n"
+  "  Total queries executed            : %ld\n"
+  "  Total rows fetched                : %ld\n",
   numThread, (overall/1000L), (attempts-errors), fetches
     );
   if ( (attempts-errors) > 0L) 
     printf(
-  "  Average rows fetched per query  : %.1f\n",
+  "  Average rows fetched per query    : %.1f\n",
   ((double)fetches / (double)(attempts-errors))
     );
   printf(
-  "  Errors                          : %ld\n", errors
+  "  Errors                            : %ld\n", errors
   );  
   if (overall > 0L) 
     printf(
-    "  Average queries per second      : %.1f\n", ((double)attempts*1000000.0)/(double)overall
+    "  Average queries per second        : %.1f\n", ((double)attempts*1000000.0)/(double)overall
     );
   printf("\n");
   fflush(stdout);
@@ -1281,30 +1281,31 @@ int main(int argc, char **argv)
         printf( "\n" );
       }
       printf("  Execution statistics\n");
-      printf( "    Executions                    : %ld\n", texecs );
-      if ( texecs > 0 ) {
+      printf( "    Executions                      : %ld\n", texecs );
+      printf( "    Total query time (microseconds) : %ld\n", telapsed );
+      if ( (texecs > 0) && (telapsed > 0) ) {
         printf(
-  "    Rows/query                    : %ld\n"
-  "    Queries/second                : %.1f\n"
+  "    Rows/query                      : %ld\n"
+  "    Queries/second                  : %.1f\n"
   "  Response times (microseconds)\n"
-  "    Minimum                       : %ld\n"
-  "    Average                       : %ld\n"
-  "    Maximum                       : %ld\n",
+  "    Minimum                         : %ld\n"
+  "    Average                         : %ld\n"
+  "    Maximum                         : %ld\n",
       trows / texecs, ( (double)texecs * 1000000.0 ) / (double)telapsed,
       tminrt, tsumrt / texecs, tmaxrt
       );
       if ( enablePercentiles )
         printf(
-  "    95th perentile                : %ld\n"
-  "    99th perentile                : %ld\n",
+  "    95th perentile                  : %ld\n"
+  "    99th perentile                  : %ld\n",
       p95, p99
         );
         if (verbose > VB_BASIC) {
            printf(
   "  Exec only response times (microseconds)\n"
-  "    Minimum                       : %ld\n"
-  "    Average                       : %ld\n"
-  "    Maximum                       : %ld\n",
+  "    Minimum                         : %ld\n"
+  "    Average                         : %ld\n"
+  "    Maximum                         : %ld\n",
         tminexecrt,
         tsumexecrt / texecs,
         tmaxexecrt
