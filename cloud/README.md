@@ -4,7 +4,7 @@ This folder contains various examples and samples that illustrate and facilitate
 
 | Repo/Folder name            | Description                                     |
 | :-------------------------- | :---------------------------------------------- |
-| [ottscaleout](./ottscaleout) | Sscripts to facilitate easy deployment of TimesTen Scleout in OCI.                      |
+| [ottscaleout](./ottscaleout) | Scripts to facilitate easy deployment of TimesTen Scleout in OCI.                      |
 
 ## More information
 You can find more information on the Oracle TimesTen In-Memory Database on our [OTN Page](https://www.oracle.com/technetwork/database/database-technologies/timesten/overview/index.html)

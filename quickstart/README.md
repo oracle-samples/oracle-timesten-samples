@@ -17,4 +17,4 @@ This folder contains the original TimesTen Classic QuickStart (which also covers
 You can find more information on the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memoty Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/)
+You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/)
