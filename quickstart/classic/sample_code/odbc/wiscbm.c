@@ -1239,29 +1239,29 @@ static void populateTable (SQLHDBC  hdbc,
 
       memset (&charVal [0] [charPos], 'x', 52);
       charVal [0] [charPos + 52] = '\0';
-      convert (randInt, &charVal [0] [charPos]);    /* stringu1: order is random */
+      convert (randInt, (char *)&charVal [0] [charPos]);    /* stringu1: order is random */
 
       memset (&charVal [1] [charPos], 'x', 52);
       charVal [1] [charPos + 52] = '\0';
-      convert (tupNum, &charVal [1] [charPos]);          /* stringu2: order is sequential */
+      convert (tupNum, (char *)&charVal [1] [charPos]);          /* stringu2: order is sequential */
 
       /* string4: order is cyclic */
       switch (tupNum % 4)
       {
         case 0:
-          strcpy (&charVal [2] [charPos], "AAAAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+          strcpy ( (char *)&charVal [2] [charPos], "AAAAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
           break;
 
         case 1:
-          strcpy (&charVal [2] [charPos], "HHHHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+          strcpy ( (char *)&charVal [2] [charPos], "HHHHxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
           break;
 
         case 2:
-          strcpy (&charVal [2] [charPos], "OOOOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+          strcpy ( (char *)&charVal [2] [charPos], "OOOOxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
           break;
 
         case 3:
-          strcpy (&charVal [2] [charPos],"VVVVxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+          strcpy ( (char *)&charVal [2] [charPos],"VVVVxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
           break;
       }
     }
@@ -2879,11 +2879,11 @@ static void BuildDatabase (SQLHDBC   hdbc,
   
       /* Now create the tables */
       if (grid) {
-        sprintf(crTblBuf, crTblStmtsGrid [i]);
+        sprintf(crTblBuf, "%s", crTblStmtsGrid [i]);
       } else if (grid_compat) {
-        sprintf(crTblBuf, crTblStmtsGridCompat [i]);
+        sprintf(crTblBuf, "%s", crTblStmtsGridCompat [i]);
       } else {
-        sprintf(crTblBuf, crTblStmts [i]);
+        sprintf(crTblBuf, "%s", crTblStmts [i]);
       }
       rc = SQLExecDirect (hstmt, (SQLCHAR*) crTblBuf, SQL_NTS);
       handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,

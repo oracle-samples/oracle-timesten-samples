@@ -6,7 +6,7 @@
  */
 
 #ifndef SQLFUNCH
-#define SQLFUN
+#define SQLFUNCH
 
 #include "sql.h"
 #include "sqlext.h"

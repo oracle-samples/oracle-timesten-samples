@@ -479,7 +479,7 @@ pr_error(char* errmsgbuf, int errmsgbuflen, int do_print,
     }
     vsnprintf(errmsgbuf + len, errmsgbuflen - len, fmt, ap);
     if (do_print) {
-      fprintf(stderr, errmsgbuf + len); /* ap no longer valid at this point */
+      fprintf(stderr, "%s", errmsgbuf + len); /* ap no longer valid at this point */
       fputs("\n", stderr);
     }
   }

@@ -392,7 +392,7 @@ main(int argc, char **argv)
                 "turning off auto commit",
                 __FILE__, __LINE__);
 
-  printf("Loading %d records with batch size %lld, commit interval %d\n", records, batchsize, commitsize);
+  printf("Loading %d records with batch size %lud, commit interval %d\n", records, batchsize, commitsize);
 
   indexTime = 0.0;
   if (indexcount && indexbefore) {

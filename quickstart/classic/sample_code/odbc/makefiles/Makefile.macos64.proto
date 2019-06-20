@@ -125,7 +125,7 @@ wiscextra.o:	wiscextra.c
 	$(CC) $(CFLAGS) -o $@ -c wiscextra.c
 
 wiscbmCS.o:	wiscbm.c wiscprotos.h sqlfunc.h
-	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c wiscbm.c
+	$(CC) $(CFLAGS) $(CSDEFS) -Wno-format-security -o $@ -c wiscbm.c
 
 #
 # Target for building TimesTen Driver Manager shared library
