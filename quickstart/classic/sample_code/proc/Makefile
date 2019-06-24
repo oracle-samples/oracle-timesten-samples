@@ -12,6 +12,8 @@
 #
 SHELL=/bin/sh
 
+TT_MVL_LINUX    = 0
+
 INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_11_2
@@ -19,18 +21,21 @@ OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
 CC              = gcc
 
-PLATCFLAGS      = -Os
-#LDFLAGS         = -Wl,-rpath -Wl,$(INSTDIR)/lib -Wl,-rpath -Wl,$(TTORACLE_HOME)
+PLATCFLAGS      = -Os -finline-functions
+LDFLAGS         =
 
-#EXTRALIBS       = -lpthread -lm -lrt
+EXTRALIBS       = -lpthread -lm -lrt
+
+ifeq ($(TT_MVL_LINUX),1)
+EXTRALIBS       += -ldl -lnsl -lnnz11
+endif
 
 INCS 		= -I$(INSTDIR)/include -I$(COMMDIR) -I$(OCIINCS)
 
 CSDEFS          = -DTTCLIENTSERVER
-CFLAGS          = $(PLATDEFS) $(PLATCFLAGS) $(INCS) -Wno-implicit-int
+CFLAGS          = $(PLATDEFS) $(PLATCFLAGS) $(INCS)
 
-TTLINK          = -L$(INSTDIR)/lib -L$(TTORACLE_HOME)
-
+TTLINK           = -L$(INSTDIR)/lib -L$(TTORACLE_HOME) -Wl,-rpath,$(INSTDIR)/lib
 
 ICLIBS          = $(TTLINK) -lclntsh  $(EXTRALIBS)
 
@@ -113,5 +118,9 @@ getempPROC.c: getempPROC.pc
 	@proc include=$(COMMDIR) iname=getempPROC.pc config=pcscfg.cfg 
 
 plsqlPROC.c: plsqlPROC.pc
-	@TWO_TASK=sampledbCS;export TWO_TASK;proc include=$(COMMDIR) USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics
+ifeq ($(TT_MVL_LINUX),1)
+	@TWO_TASK=sampledb;export TWO_TASK;LD_LIBRARY_PATH=$(LD_LIBRARY_PATH) proc include=$(COMMDIR) USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics
+else
+	@TWO_TASK=sampledb;export TWO_TASK;proc include=$(COMMDIR) USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics
+endif
 

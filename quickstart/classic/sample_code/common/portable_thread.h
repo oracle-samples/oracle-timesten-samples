@@ -7,7 +7,7 @@
  */
 
 #ifndef _TT_THREAD_H_
-#define _TT_THREAD_H__
+#define _TT_THREAD_H_
 
 /* OS-specific header files */
 

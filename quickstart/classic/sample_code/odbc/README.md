@@ -42,7 +42,7 @@ Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 
 ## How to compile the sample ODBC programs
 
-To compile the sample programs in the sample_code/odbc directory, you simply run the makefile supplied in the same directory. Note that the appropriate makefile is made available based on the platform of your TimesTen installation.
+To compile the sample programs in the sample_code/odbc directory you use a provided makefile.
 
 Firstly, select the platform specific Makefile and copy from quickstart/classic/sample\_code/odbc/makefiles to the upper level directory.
 
@@ -68,7 +68,9 @@ Linux/Unix
 	
 `make bulkinsert`
 
-There are two versions of each program; one for direct mode and tptbmCS for client-server mode.
+There are two versions of each program; *progname* for direct mode and *progname****CS*** for client-server mode.
+
+**NOTE:**  The XLA sample programs cannot be compiled or run using a client-only instance.
 
 ## How to run the sample ODBC programs
 

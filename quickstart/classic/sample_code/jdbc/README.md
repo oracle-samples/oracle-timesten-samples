@@ -50,15 +50,17 @@ To compile the sample programs all at once:
 
 `javac *.java`
 
+**NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations.
+
 ## How to run the sample JDBC programs
 
-NOTE: On platforms where both the 32-bit and 64-bit JDKs are installed in
+**NOTE:** On platforms where both the 32-bit and 64-bit JDKs are installed in
 the same directory (e.g. Solaris), java must be invoked with the -d64
 option in order to run the 64-bit JVM.
 
-NOTE: Since XLA does not support applications linked with a driver manager
-library or the client/server library, the asyncJMS and syncJMS demos cannot
-be run in client-only installations. 
+**NOTE:** On some platforms, such as macOS, you may need to explicitly pass a setting for java.library path tp the JVM in order to run the samples. For example:
+
+    java -Djava.library.path=${TIMESTEN_HOME}/install/lib <progname>
 
 **asyncJMS**
 

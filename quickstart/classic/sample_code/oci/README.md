@@ -40,7 +40,7 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 ## How to compile the sample OCI programs
 
-To compile the sample programs in the sample_code/oci directory, you simply run the makefile supplied in the same directory. Note that the appropriate makefile is made available based on the platform of your TimesTen installation.
+To compile the sample programs in the sample_code/oci directory you use a provided makefile.
 
 Firstly, select the platform specific Makefile and copy from quickstart/classic/sample\_code/oci/makefiles to the upper level directory.
 

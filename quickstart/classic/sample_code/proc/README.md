@@ -40,15 +40,17 @@ Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 
 ## How to compile the sample Pro*C programs
 
-To compile the sample programs in the sample\_code/proc directory, you simply run the makefile supplied in the same directory. Note that the appropriate makefile is made available based on the platform of your TimesTen installation.
+To compile the sample programs in the sample_code/proc directory you use a provided makefile and configuration file.
 
-Firstly, select the platform specific Makefile and copy from _quickstart/classic/sample\_code/proc/makefiles_ to the upper level directory.
+Firstly, select the platform specific Makefile and configuration file and copy these from quickstart/classic/sample\_code/proc/makefiles to the upper level directory.
 
 For example, if your platform is Linux x86-64bit, execute the following commands:
 
-`cd quickstart/classic/sample_code/proc/makefiles`
+`cd quickstart/classic/sample\_code/proc/makefiles`
 
 `cp Makefile.linux8664.proto ../Makefile`
+
+`cp pcscfg.linux8664.proto ../pcscfg.cfg`
 
 `cd ..`
 

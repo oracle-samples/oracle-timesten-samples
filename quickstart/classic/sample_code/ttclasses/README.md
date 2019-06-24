@@ -40,7 +40,7 @@ Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 
 # How to compile the sample TTClasses (C++) programs
 
-To compile the sample programs in the sample_code/oci directory, you simply run the makefile supplied in the same directory. Note that the appropriate makefile is made available based on the platform of your TimesTen installation.
+To compile the sample programs in the sample_code/ttclasses directory you use a provided makefile.
 
 Firstly, select the platform specific Makefile and copy from quickstart/classic/sample\_code/ttclasses/makefiles to the upper level directory.
 
@@ -65,6 +65,8 @@ For example, to compile the typetest program, you do:
 Linux/Unix:
 
 `make typetest`
+
+**NOTE:**  The XLA sample programs cannot be compiled or run using a client-only instance.
 
 ## How to run the sample TTClasses (C++) programs
 

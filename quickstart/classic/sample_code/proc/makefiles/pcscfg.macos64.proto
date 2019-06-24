@@ -1,0 +1,7 @@
+sys_include=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
+sys_include=$(TIMESTEN_HOME)/install/ttoracle_home/instantclient_11_2/sdk/include
+sys_include=.
+parse=none
+close_on_commit=yes
+code=ansi_c
+ltype=long

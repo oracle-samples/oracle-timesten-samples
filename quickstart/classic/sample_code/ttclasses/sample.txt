@@ -1,0 +1,18 @@
+[3]Error detected:  : ODBC Error 'S0002', TimesTen Error 2206, ODBC rc -1
+ERROR in TTCommand.cpp, line 163: Error in TTCmd::ExecuteImmediate() statement execution
+[TimesTen][TimesTen 18.1.2.1.2 ODBC Driver][TimesTen]TT2206: Table APPUSER.BASICS not found -- file "comp.c", lineno 3526, procedure "sbCompCacheTbl"
+*** ODBC Error/Warning = S0002, TimesTen Error/Warning = 2206
+
+[3]<0x7f92b5800000>Prepare 0x7ffeedaf0118
+create table basics (name char(10) not null primary key,  i tt_integer) unique hash on (name) pages=100
+[3]<0x7f92b5800000>[3]<0x7f92b5800000>Prepare 0x7ffeedaf0168
+insert into basics values(:name, :value)
+[3]<0x7f92b5800000>[3]<0x7f92b5800000>Prepare 0x7ffeedaf01b8
+select i from basics where name = :name
+[3]<0x7f92b5800000>[3]Error detected:  : ODBC Error '23000', TimesTen Error 907, ODBC rc -1
+ERROR in TTCommand.cpp, line 373: Error in TTCmd::Execute() while executing statement
+[TimesTen][TimesTen 18.1.2.1.2 ODBC Driver][TimesTen]TT0907: Unique constraint (BASICS on APPUSER.BASICS) violated at Rowid <AAAFVUAAAB6AgAAGDX> with (NAME) = (Name0     ) -- file "hindex.c", lineno 2869, procedure "sbHixInsert"
+*** ODBC Error/Warning = 23000, TimesTen Error/Warning = 907
+
+[2]Error in TTCmd::setParam :
+Invalid param id=2 nParameters=1 for SQL statement <select i from basics where name = :name>.  Aborting.
