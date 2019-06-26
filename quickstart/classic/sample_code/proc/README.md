@@ -4,6 +4,8 @@ Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 
 ## IMPORTANT PRE-REQUISITES
 
+**NOTE:** Pro*C is not supported by TimesTen on macOS.
+
 1. Manually Configure the Sample DSN for the Sample Programs; refer to _quickstart/classic/html/developer/sample\_dsn\_setup.html_
 
 2. Set up sample database and user accounts
