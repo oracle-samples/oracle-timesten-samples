@@ -139,7 +139,7 @@ createUser()
     echo
     ttIsql "${connstr}" <<EOF
 create user ${username} identified by '${password}';
-grant all to ${username};
+grant create session to ${username};
 quit;
 EOF
     if [ $? -ne 0 ]
