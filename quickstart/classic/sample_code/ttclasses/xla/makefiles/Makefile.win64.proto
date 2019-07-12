@@ -60,7 +60,7 @@ DEBUGFLAG = /MD /Ox
 
 CFLAGS = /nologo /EHsc $(DEBUGFLAG) \
          $(WINDOWS) $(EXCEPTIONS) $(THREAD_SAFE) \
-         /I$(TTC_INCLUDEDIR) /I$(ODBC)\include $(VCPP_INCLUDE_DIRS) \
+         /I.. /I$(TTC_INCLUDEDIR) /I$(ODBC)\include $(VCPP_INCLUDE_DIRS) \
          /I$(COMMON) /I$(SAMPLES)
 
 LDFLAGS	= /nologo /link /STACK:3000000 /FIXED:NO $(DEBUGLINK) $(VCPP_LIB_DIRS)

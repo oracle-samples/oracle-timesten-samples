@@ -19,7 +19,7 @@ POSIX_THREADS = -D_POSIX_PTHREAD_SEMANTICS
 OPTFLAG       = -O3 -qstrict
 DEBUGFLAG     = -g -DTTDEBUG
 
-CFLAGS        = $(OPTFLAG) $(THREAD_SAFE) -I$(TTC_INCLUDEDIR) \
+CFLAGS        = $(OPTFLAG) $(THREAD_SAFE) -I.. -I$(TTC_INCLUDEDIR) \
                 -I$(SAMPLES) -I$(INSTDIR)/include $(CF64) -DAIX \
                 -DUSE_OLD_CPP_STREAMS -I$(COMMON)
 

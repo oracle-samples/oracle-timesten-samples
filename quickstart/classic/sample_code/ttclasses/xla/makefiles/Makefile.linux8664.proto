@@ -29,7 +29,7 @@ OPTFLAG       = -O -Wuninitialized
 DEBUGFLAG     = -g -Wall -W -Wcast-qual -Wshadow -Wpointer-arith \
                 -Wno-return-type -DTTDEBUG
 
-CFLAGS        = $(OPTFLAG) -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) -Ilib \
+CFLAGS        = $(OPTFLAG) -I.. -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) -Ilib \
                 -DGCC $(USING_GCC_32) $(64BIT) $(THREAD_SAFE) -I$(COMMON)
 
 ifeq ($(TT_MVL_LINUX),1)
