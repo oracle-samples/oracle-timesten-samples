@@ -5,6 +5,7 @@ This repository stores a variety of examples demonstrating how to use the Oracle
 | Repo/Folder name            | Description                                     |
 | :-------------------------- | :---------------------------------------------- |
 | [quickstart](./quickstart)  | Classic QuickStart and Scaleout samples. See the README file in that directory for more information. |
+| [cloud](./cloud)  | Scripts to simplify deployment of TimesTen Scaleout in Oracle Cloud. See the README file in that directory for more information. |
 
 
 ## More information
