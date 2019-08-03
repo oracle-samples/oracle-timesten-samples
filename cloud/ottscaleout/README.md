@@ -1,6 +1,6 @@
 ###### Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
 ###### Licensed under the Universal Permissive License v 1.0 as shown at <http://oss.oracle.com/licenses/upl>
-###### Version v3_180412_18.1.2.0.0
+###### Version v4_190716_18.1.0.0.0
     #     ___  ____     _    ____ _     _____
     #    / _ \|  _ \   / \  / ___| |   | ____|
     #   | | | | |_) | / _ \| |   | |   |  _|
@@ -12,16 +12,16 @@ Ansible scripts are provided to rollout a database across the provisioned infras
 This is a bring-your-own-license (BYOL) solution for Oracle TimesTen Scaleout.
 Please see the whitepaper, [Deploying Oracle TimesTen Scaleout Database on OCI](https://www.oracle.com/technetwork/database/database-technologies/timesten/overview/wp-deployingtimestenscaleoutonoci-5069015.pdf "whitepaper")
 
-The example creates a VCN with one or more public subnets running bastion hosts.
-Private subnets are created to run the hosts needed for TimesTen Scaleout.
+The example creates a VCN with one or more regional public subnets running bastion hosts.
+A regional private subnet is created to run the hosts needed for TimesTen Scaleout.
 
 ***
 Deployment diagram.  The dark boxes indicate the default configuration created by the Terraform and Ansible scripts.
-![Deployment diagram](./images/oci-deployment.png "TimesTen Scaleout Deployment Diagram")
+![Deployment diagram](./images/oci-deployment.jpg "TimesTen Scaleout Deployment Diagram")
 
 ***
 
-This distribution provides an utility, _provisionScaleoutOCI_, that automates many provisioning tasks discussed in this README and the associated whitepaper.  If you already have a compute instance provisioned in the OCI cloud, please see the [QUICKSTART.md](./QUICKSTART.md) file.
+This distribution provides an utility, _provisionScaleoutOCI_, that automates many prerequisite tasks discussed in the associated whitepaper.  If you already have an Oracle Linux compute instance provisioned in the OCI cloud, you can use that as a bootstrap instance.  Please see the [QUICKSTART.md](./QUICKSTART.md) file.
 
 ***
 
@@ -39,38 +39,44 @@ This example uses the same set of environment variables as other terraform examp
 To destroy all the resources created
 * terraform destroy -force
 
-The route table used for the private subnets is configured to use a NAT gateway as the default route target.
-Bastion host instances are configured as NAT instances, by enabling forwarding and configuring firewall to do forwarding/masquerading, but routing occurs through the NAT gateway, not through the private IP addresses of the Bastion hosts.
+The route table used for the private subnet is configured to use a NAT gateway as the default route target.
+Bastion host instances are configured as NAT instances, by enabling forwarding and configuring firewall to do forwarding/masquerading.  For high availability purposes routing occurs through the NAT gateway, but can optionally be configured through the private IP addresses of the Bastion hosts.
 See [Using a Private IP as a Route Target](https://docs.us-phoenix-1.oraclecloud.com/Content/Network/Tasks/managingroutetables.htm#privateip) for more details if you wish to use the private IP routing feature.
 
-Once the environment is built, the compute instances on the private network have Internet connectivity.
-A private instance doesn't have a public IP address and it's subnet's route table doesn't contain Internet gateway.  
-You can login into the private instance via ssh from the Bastion host.
-To verify connectivity, you can then run a command like 'ping oracle.com'
+Once the environment is built, the compute instances on the regional private subnets have Internet connectivity.  A private instance doesn't have a public IP address and it's subnet route table doesn't contain Internet gateway.  You can login into the private instance via ssh from the Bastion host.
 
 ### Files in the configuration
 
-#### `env-vars`
+### `provisionScaleoutOCI`
+Utility can be used from an OCI Oracle Linux compute instance to provision TimesTen Scaleout in lieu of manually invoking Terraform and Ansible.  Also aids with meeting prerequisites such as creating ssh credentials and/or using the OCI CLI to create an API Signing key.  See [QUICKSTART.md](./QUICKSTART.md) for more details.  While the utility needs to run on an OCI compute instance, the underlying Terraform and Ansible scripts can be manually invoked from Oracle Linux or macOS systems that can reach the OCI public IP addresses.
+
+### `env-vars`
 Is used to export the environmental variables used in the configuration.
 These variables include references to private key file information for access to the OCI infrastructure.
 
 Before you plan, apply, or destroy the configuration source the file -  
-`$ . env-vars`
+`$ . env-vars`  
 
-#### `variables.tf`
+### `oci.tf`
+Configures terraform provisioner for oci.  
+
+### `variables.tf`
 Defines variables for TimesTen Scaleout configuration.
 Modify this to change the default TimesTen Scaleout 2x2 configuration created.
 
-### `public.tf`
-Creates the VCN, the public subnets, and the compute instances used as bastion hosts.
+### `network.tf`
+Creates the VCN, IG and NAT gateways, route tables, security lists, regional public and private subnets.  
 
-### `private.tf`
-Creates the private subnets, and the compute instances used as zookeeper servers, management instances, or database instances.
+### `compute.tf`
+Creates the compute instances used as bastion hosts, zookeeper servers, management instances, or database instances.  
 
 ### `system-config.tf`
 Contains terraform resources for initial configuration of the compute instances.
-Installs ansible on 1 bastion host.
+Installs ansible on bastion hosts.
 Variables and configuration files for ansible are set up as well.
+
+### `blkvol.tf`
+Optionally creates block volumes.  
 
 ### `service` directory
 * ansible  - Ansible playbooks and task yaml.
@@ -131,8 +137,8 @@ For example, if K==2 and initialAD==2, one data space will be located in AD-2, t
 To use only a single AD for data and management instances
 * Set singleAD == "true" in variables.tf
 
-Bastion hosts are created in AD-1 by default.
-* Set bsInstanceInitialAD=={2|3} to place the bastion host in another AD.  
+Bastion hosts are created starting in AD-1 by default.
+* Set bsInstanceInitialAD=={2|3} to start placing bastion hosts in AD-2 or AD-3.
 This may be useful for trial or pay as you go accounts.  
 For trial or pay-as-you-go accounts set:  
 * initialAD=(bsInitialInstanceAD % 3) + 1
@@ -142,5 +148,37 @@ For trial or pay-as-you-go accounts set:
 To change dbDef (sys.odbc.ini) settings _NOT_ listed in variables.tf, modify the
 service/ansible/roles/mgmtinstances/templates/attributes.dbdef.j2 file.
 
+### Troubleshooting:
 
+Errors encountered during provisioning may be transient ones, such as ssh connectivity or port in use errors.
+Rather than destroying the configuration, Terraform or Ansible can often be rerun to correct such errors.
+Check the output from terraform apply and or ansible for the specific error.
+
+Assuming the (TF_VAR_)service name is 'ttimdb1':  
+
+Setup the environment  
+* `. ./env-vars`  
+If Terraform failed during apply, to rerun Terraform:  
+* `terraform apply --auto-approve`  
+If Terraform succeeds but Ansible failed:  
+Determine the address of the bastion host by running:  
+* `terraform output`  
+Login to the bastion host  
+* `ssh opc@1.2.3.4`  
+Move to ansible directory  
+* `cd service/ansible`  
+Destroy a potentially partially created database, ignoring errors.  
+* `ansible-playbook -i hosts dbdestroy.yaml`  
+Retry Database rollout  
+* `ansible-playbook -i hosts rollout.yaml 2>&1 | tee rollout.out`  
+Check Status  
+* `ansible-playbook -i hosts status.yaml`  
+To view a failed rollout, log into host running mgmt instance.  
+* `ssh -tt [ttimdb1-mg-001|ttimdb1-di-001] sudo su - oracle`  
+* `cat ttimdb1/ttgridrollout.plan`  
+* `cat ttimdb1/ttgridrollout.out`  
+To view database instances
+* `/u10/TimesTen/ttimdb1/iron_mgmt/bin/ttenv ttGridAdmin instancelist`  
+
+Continued failure at this point requires deeper examination of the log files.  
 

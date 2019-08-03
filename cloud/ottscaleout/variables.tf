@@ -106,28 +106,33 @@ variable "network" {
 variable "timesten" {
   type = "map"
   default = {
-    "databasecharacterset" = "AL32UTF8"
-    "durability"           =  0
-    "permsize"             =  4096
-    "tempsize"             =  400
-    "restarttimeout"       =  300
-    "stoptimeout"          =  300
-    "mgmtdaemonport"       =  6624
-    "mgmtcsport"           =  6625
-    "mgmtreplport"         =  3754
+    "databasecharacterset"   = "AL32UTF8"
+    "connectioncharacterset" = "AL32UTF8"
+    "connections"            =  2048
+    "durability"             =  0
+    "permsize"               =  4096
+    "tempsize"               =  400
+    "restarttimeout"         =  300
+    "stoptimeout"            =  300
+    "mgmtdaemonport"         =  6624
+    "mgmtcsport"             =  6625
+    "mgmtreplport"           =  3754
     # entire ephemeral range req'd for channel ports at present
-    "chnlportlo"           =  32768
-    "chnlporthi"           =  61000
+    "chnlportlo"             =  32768
+    "chnlporthi"             =  61000
     # daemon and cs ports must be in range chnlportlo-chnlporthi
-    "dsdaemonport"         =  46464
-    "dscsport"             =  46465
+    "dsdaemonport"           =  46464
+    "dscsport"               =  46465
   }
 }
 
-variable "java" {
+# Zookeeper Configuration
+variable "zookeeper" {
   type = "map"
   default = {
-    "javabase" = "/opt"
+    zkclientport         = "2181"
+    zkserverport         = "2888"
+    zkelectionport       = "3888"
   }
 }
 
@@ -154,6 +159,13 @@ variable "opc" {
     scriptdir = "service/scripts"
     securityupdates = "false"
     tagkey = "TimesTenScaleout"
+  }
+}
+
+variable "java" {
+  type = "map"
+  default = {
+    "javabase" = "/opt"
   }
 }
 

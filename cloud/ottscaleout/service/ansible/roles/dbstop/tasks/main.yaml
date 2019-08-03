@@ -9,14 +9,49 @@
 # ttdaemonadmin stop
 ---
 
-- name: stop datainstances
-  include_tasks:    roles/datainstances/tasks/dbsetpaths.yaml
-
 - name: stop tasks issued from mgmt instance
-  include_tasks:    roles/dbstop/tasks/mgmtops.yaml
+  include_tasks:    roles/mgmtinstances/tasks/mgmt-path.yaml
   when:             inventory_hostname in groups['mgmt-addresses']
+
+- name: attempt close (stoptimeout=={{ stoptimeout }})
+  shell:            "{{ mgmt }} ttgridadmin dbclose {{ dbname }} -wait {{ stoptimeout }}"
+  register:         dbclose
+  become:           true
+  become_user:      oracle
+  #ignore_errors:    true
+  run_once:         true
+  # fail on timeout or internal error
+  failed_when:      dbclose.rc in [253,255]
+  when:             inventory_hostname in groups['mgmt-addresses']
+
+- name: attempt unload (stoptimeout=={{ stoptimeout }})
+  shell:            "{{ mgmt }} ttgridadmin dbunload {{ dbname }} -wait {{ stoptimeout }}"
+  register:         dbload
+  become:           true
+  become_user:      oracle
+  #ignore_errors:    true
+  run_once:         true
+  # fail on timeout or internal error
+  failed_when:      dbload.rc in [253,255]
+  # don't run when dbclose says instance is down
+  when:             dbclose.rc != 252 and inventory_hostname in groups['mgmt-addresses']
 
 - name: stop tasks on data instances
   include_tasks:    roles/dbstop/tasks/dbstop.yaml
   when:             inventory_hostname in groups['db-addresses']
+
+- name: check dbstatus
+  shell:            "{{ mgmt }} ttgridadmin dbstatus {{ dbname }} --replicaset"
+  register:         mgmtstatus
+  ignore_errors:    true
+  become:           true
+  become_user:      oracle
+  run_once:         true
+  when:             inventory_hostname in groups['mgmt-addresses']
+
+- name: display dbstatus
+  debug:
+    msg:            "{{ mgmtstatus.stdout_lines }}"
+  run_once:         true
+  when:             inventory_hostname in groups['mgmt-addresses']
 

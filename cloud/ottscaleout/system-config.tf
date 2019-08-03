@@ -10,11 +10,13 @@
 
 locals {
   type = "string"
-  ansibledir   = "service/ansible"
-  ansiblehosts = "${local.ansibledir}/hosts"
+  ansibledir    = "service/ansible"
+  ansiblehosts  = "${local.ansibledir}/hosts"
   # dns search paths /etc/resolv.conf
-  privsubnets  = "${replace(join(" ",oci_core_subnet.private_subnet.*.subnet_domain_name), ",", " ")}"
-  publsubnets  = "${replace(join(" ",oci_core_subnet.public_subnet.*.subnet_domain_name), ",", " ")}"
+  privsubnetdc  = "${replace(join(" ",oci_core_subnet.private_subnet_dc.*.subnet_domain_name), ",", " ")}"
+  privsubnetcl  = "${replace(join(" ",oci_core_subnet.private_subnet_cl.*.subnet_domain_name), ",", " ")}"
+  privsubnets   = "${local.privsubnetdc} ${local.privsubnetcl}"
+  publsubnets   = "${replace(join(" ",oci_core_subnet.public_subnet.*.subnet_domain_name), ",", " ")}"
 }
 
 # Copy ssh key to bastion host

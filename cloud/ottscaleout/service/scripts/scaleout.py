@@ -12,10 +12,15 @@ import string
 import subprocess
 import sys
 
-hostmap  = {}
-addmap   = {}
-sshopts = '-o StrictHostKeyChecking=no -o ConnectTimeout=3 '
+hostlist = []
+likemap = {}
 
+# 
+# Using dbstatus -dataspacegroup output capture
+# ksafety, list of hosts
+# In each dataspacegroup, get one tuple (dsg, hostAddr, hostName) for 'like' clause
+# "hostcreate -address hostAddr -like hostName cascade -dataspacegroup dsg"
+#
 def parseDbStatus(fdbspg):
   try:
     with open(fdbspg,'r') as inpfile:
@@ -23,19 +28,21 @@ def parseDbStatus(fdbspg):
     ks = obj['k']
     dbs=obj['databases']
     for db in dbs:
+      # assumes 1 db
+      dsglist=[]
       instances=db['instances']
       for ins in instances:
-        elemlist=ins['elements']
-        for elem in elemlist:
-          dsgmap  = {}
-          dsgmap['ds'] = ins['dataSpaceGroup']
-          dsgmap['rs'] = elem['syncReplicaSet']
-          dsgmap['hn'] = ins['hostName']
-          dsgmap['in'] = ins['instanceName']
-          cmd='ssh ' + sshopts + dsgmap['hn'] + ' hostname --domain'
-          dmnm=subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-          dsgmap['dn']=dmnm.strip()
-          hostmap[dsgmap['hn']] = copy.deepcopy(dsgmap)
+        dsg=ins['dataSpaceGroup']
+        hostname=ins['hostName']
+        if hostname not in hostlist:
+          hostlist.append(hostname)
+        if dsg not in dsglist:
+          dsglist.append(dsg)
+          likemap[dsg] = []
+          likemap[dsg].append(dsg)
+          likemap[dsg].append(ins['hostAddr'])
+          likemap[dsg].append(hostname)
+          #print('hostaddress {} hostname {} data space group {}'.format(ins['hostAddr'],ins['hostName'],dsg))
     return ks
   except ValueError as details:
     print 'Error loading JSON from file'.format(
@@ -54,69 +61,35 @@ def parseDbStatus(fdbspg):
     sys.exit(1)
 
 
-def parseHosts(fhosts):
-  try:
-    dbinstances=gethosts.getInstances(fhosts, 'db-addresses')
-    for host in dbinstances:
-      # look up host
-      if host not in hostmap:
-        #print ('*** host={} ***').format(host)
-        # get domainname
-        cmd='ssh ' + host + ' hostname --domain'
-        dnr=subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-        dn=dnr.strip()
-        #print ('dn outer: ' + dn)
-        # find matching host/domain/namespace entry
-        likeHost=findMatchingDomain(dn)
-        if likeHost is not None:
-          # new entry
-          newdsge={}
-          newdsge['hn']=host
-          newdsge['dn']=dn
-          newdsge['ds']=likeHost['ds']
-          newdsge['lk']=likeHost['hn']
-          addmap[host] = copy.deepcopy(newdsge)
-  except IOError as details:
-    print 'IO Error: rc={0}: {1}'.format(
-           details.returncode,
-           str(details.output).replace('\n',''))
-  except subprocess.CalledProcessError as details:
-    print 'Error running ssh: rc={0}: {1}'.format(
-           details.returncode,
-           str(details.output).replace('\n',''))
-
-def findMatchingDomain(dn):
-    for k in hostmap:
-      dsgdict = hostmap[k]
-      if dsgdict['dn'] == dn:
-        return dsgdict
-    return None
-
 def printMap(amap):
   for k in amap:
     print amap[k]
 
 def printScaleoutCommands(opath, ttenv, dbname, singleAD, ksafety):
-  # hostCreate
+
+  # get list of all hosts including ones to add
+  dbinstances=gethosts.getInstances(fhosts, 'db-addresses')
   newdsg = 0
-  for hst in addmap:
-    newdsg = (newdsg + 1) % (ksafety + 1)
-    hstdict = addmap[hst]
-    if singleAD == "true":
-      dsgroup = newdsg
-    else:
-      dsgroup = hstdict['ds']
-    #print hst, hstdict
-    print('{0} ttgridadmin hostcreate {1} -internalAddress {1} -externalAddress {1} -like {2} -cascade -dataspacegroup {3}').format(ttenv, hst, hstdict['lk'], dsgroup)
+  if not likemap:
+    print('oops: no likemap')
+    #else:
+    #print('{}'.format(likemap))
+  for host in dbinstances:
+    if host not in hostlist:
+      # hostCreate
+      newdsg = (newdsg % (int(max(likemap.keys())))) + 1
+      (dsgroup, addr, name) = likemap[str(newdsg)]
+      #print (dsgroup, addr, name)
+      print('{0} ttgridadmin hostcreate {1} -internalAddress {1} -externalAddress {1} -like {2} -cascade -dataspacegroup {3}').format(ttenv, host, name, dsgroup)
   # apply
   print('{} ttgridadmin modelapply').format(ttenv)
   print('{} ttgridadmin instancelist | sort -rk 3').format(ttenv)
   # wait for elements to be loaded
   print('{0}/dbloadready.py {1} {2}'.format(opath, ttenv, dbname))
   # distribute rows
-  for hst in addmap:
-    hstdict = addmap[hst]
-    print('{0} ttgridadmin dbdistribute {1} -add {2}').format(ttenv, dbname, hst)
+  for host in dbinstances:
+    if host not in hostlist:
+      print('{0} ttgridadmin dbdistribute {1} -add {2}').format(ttenv, dbname, host)
   print('{0} ttgridadmin dbdistribute {1} -apply').format(ttenv, dbname)
   print('{0} ttgridadmin dbstatus {1} --replicaset').format(ttenv, dbname)
 
@@ -133,7 +106,6 @@ if __name__ == '__main__':
   singleAD=sys.argv[5]
   ksafeval = parseDbStatus(fdbspg)
   #printMap(hostmap)
-  parseHosts(fhosts)
-  #printMap(addmap)
+  #printMap(likemap)
   printScaleoutCommands(opath, mgpath, dbname, singleAD, ksafeval)
 

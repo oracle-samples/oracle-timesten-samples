@@ -6,8 +6,13 @@
 # run data instances as service under systemd
 ---
 
+- name:
+  include_tasks:    roles/mgmtinstances/tasks/mgmt-path.yaml
+  when:             inventory_hostname in groups['mgmt-addresses']
+
 - name: set db service paths
   include_tasks:    roles/datainstances/tasks/dbsetpaths.yaml
+  when:             inventory_hostname in groups['db-addresses']
 
 - name: check whether db systemd control files already installed
   stat:

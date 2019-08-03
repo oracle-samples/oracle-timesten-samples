@@ -9,7 +9,32 @@
 # ttdaemonadmin stop
 ---
 
-- name: attempt close
+- name: set db service paths
+  include_tasks:    roles/datainstances/tasks/dbsetpaths.yaml
+
+- name: check whether systemd control files installed
+  stat:
+    path:           "{{ systemddir }}/{{ dbservicename }}"
+  register:         systemdsvcfile
+  become:           true
+  become_user:      root
+
+- name: stop db service
+  systemd:
+    name:           "{{ dbservicename }}"
+    enabled:        false
+    state:          stopped
+  register:         sysctl
+  become:           true
+  become_user:      root
+  when:             systemdsvcfile.stat.exists
+
+- name: check db service state (stopped expected)
+  debug:
+    msg: "service: {{ sysctl.name }}, enabled: {{ sysctl.enabled }}, state: {{ sysctl.state }}"
+  when:            systemdsvcfile.stat.exists
+
+- name: attempt daemon stop
   shell:            "{{ ttinstancepath }}/bin/ttdaemonadmin -stop -force"
   register:         ttstop
   become:           true

@@ -13,7 +13,7 @@ syncLimit=12
 dataDir={{ zkdatadir }}
 
 # the port at which the clients will connect
-clientPort={{ zkclientport_a }}
+clientPort={{ zkclientport }}
 
 # the maximum number of client connections.
 # increase this if you need to handle more clients
@@ -40,7 +40,7 @@ maxSessionTimeout=5000
 # servers
 #
 {% for host in groups['zookeeper-addresses'] %}
-server.{{ loop.index }}={{ host }}:{{ zkserverportrange_a| regex_replace('-',':') }}
+server.{{ loop.index }}={{ host }}:{{ zkserverport }}:{{ zkelectionport }}
 {% endfor %}
 
 

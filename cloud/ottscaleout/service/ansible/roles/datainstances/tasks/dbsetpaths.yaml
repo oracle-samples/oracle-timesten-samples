@@ -8,9 +8,6 @@
 # db instance paths
 ---
 
-- name:
-  include_tasks:    roles/mgmtinstances/tasks/mgmt-path.yaml
-
 - name: get path to instance
   shell:            "ls {{ ttinstancedir }} | grep instance"
   register:         instpath

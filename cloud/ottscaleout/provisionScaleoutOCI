@@ -214,7 +214,7 @@ def main():
   ###################################
   # FIND/GET TERRAFORM
   ###################################
-  terraform_bin = find_terraform(oci_config)
+  terraform_version,terraform_bin = find_terraform(oci_config)
 
   ###################################
   # terraform -destroy
@@ -715,7 +715,7 @@ To remove Virtual Networks (VCNs) : Menu->Networking->Virtual Cloud Networks->Te
       ansible_elapsed = datetime.now().replace(microsecond=0).replace(microsecond=0) - ansible_start
       print("\nAnsible runtime was {}".format(ansible_elapsed))
       if os.path.exists(tf_script_home + "/terraform.tfstate"):
-        process_tfstate(tf_script_home + "/terraform.tfstate")
+        process_tfstate(tf_script_home + "/terraform.tfstate", terraform_version)
       break
     else:
       print("\nFAILED :\n\n" + ansible_cmd_full + "\n\nSee log : " + ansible_log)
@@ -938,7 +938,7 @@ NOTE: Please check the OCI console's "Governance->Service Limits" page to ensure
       print("The minimum number of replica sets is " + str(min) + ".\n")
       continue
 
-    if re.match("^([1-9]+)$", str(answer)):
+    if re.match("^([0-9]+)$", str(answer)) or int(str(answer)[0]) == 0:
       answer = int(answer)
       break
     else:
@@ -1015,6 +1015,9 @@ def calculate_db_size(di_shape, permsize_mb, tempsize_mb):
     print("\nERROR: Cannot determine the memory size for OCI VM shape '" + di_shape + "'.\n\n" + \
           "The default database size is " + str(int(permsize_mb / 1024)) + "GB.\n")
     while True:
+      if args["batch"]:
+        # use the default
+        break
       answer = raw_input("Provide the database size in GB ? [" + str(int(permsize_mb / 1024)) + "] ")
       if answer == '':
         return (permsize_mb, tempsize_mb)
@@ -1130,7 +1133,7 @@ def get_data_instance_shape(config,selected_region,compartment_id,image_id):
       if default != None:
         answer = default
 
-    if re.match("^([1-9]+)$", answer):
+    if re.match("^([0-9]+)$", answer) and not int(str(answer)[0]) == 0:
       if order.get(int(answer)):
         return order.get(int(answer))
       if match != None:
@@ -1166,7 +1169,7 @@ def get_compartment(config):
 
   try:
     identity = oci.identity.IdentityClient(config)
-    response = oci.pagination.list_call_get_all_results(identity.list_compartments,config["tenancy"])
+    response = oci.pagination.list_call_get_all_results(identity.list_compartments,config["tenancy"],compartment_id_in_subtree="false")
   except Exception as err:
     print("\nERROR: Failed to request list of compartments from OCI.\n\n\"%s\n\"" % str(err))
     sys.exit(1)
@@ -1176,6 +1179,11 @@ def get_compartment(config):
       if str(compartment.name) == "ManagedCompartmentForPaaS":
         continue
       compartments.append(compartment)
+      # get any child compartments and append
+      sub_compartments = get_sub_compartments(config, compartment.id)
+      for subc in sub_compartments:
+        subc.name = compartment.name + '/' + subc.name
+        compartments.append(subc)
 
   if len(compartments):
     print("\nOf the following " + str(len(compartments)) + " compartments :\n")
@@ -1200,7 +1208,7 @@ def get_compartment(config):
         if answer == '':
           answer = 1
 
-        if not re.match("^([1-9]+)$", str(answer)):
+        if not re.match("^([0-9]+)$", str(answer)) or int(str(answer)[0]) == 0:
           print("\nProvide a compartment from the list provided.")
           continue
 
@@ -1216,6 +1224,33 @@ def get_compartment(config):
 
   return { "name": compartment.name, "id": compartment.id }
 
+
+######################################################################
+# get_sub_compartments
+######################################################################
+def get_sub_compartments(config, compartment_id):
+
+  sub_compartments = []
+  answer = ''
+
+  try:
+    identity = oci.identity.IdentityClient(config)
+    response = oci.pagination.list_call_get_all_results(identity.list_compartments,compartment_id,compartment_id_in_subtree="false")
+  except Exception as err:
+    print("\nERROR: Failed to request list of compartments from OCI.\n\n\"%s\n\"" % str(err))
+    sys.exit(1)
+
+  for compartment in response.data:
+    if str(compartment.lifecycle_state) == "ACTIVE":
+      if str(compartment.name) == "ManagedCompartmentForPaaS":
+        continue
+      sub_compartments.append(compartment)
+
+  if len(sub_compartments):
+    return sub_compartments
+  else:
+    # no sub-compartments
+    return {}
 
 ###############################################
 # get_region
@@ -1266,8 +1301,8 @@ def get_region(config,compartment_id):
         if answer == '':
           answer = default
 
-        if not re.match("^([1-9]+)$", str(answer)):
-          print("\nSorry, please provide a region from the list provided.")
+        if not re.match("^([0-9]+)$", str(answer)) or int(str(answer)[0]) == 0:
+          print("\nPlease provide a region from the list provided.")
           continue
 
         region = regions[int(answer)-1]
@@ -1425,6 +1460,9 @@ def service_name_ok(name,oci_config):
 
   if len(name) > 12:
     return False
+  elif re.search("^[0-9]",name):
+    # service names cannot begin with number
+    return False
   elif re.search("[^a-zA-Z0-9]+",name):
     # cannot contain non-alphanumeric values
     # TT allows - and _, but on OCI we create VCNs with the service name
@@ -1521,7 +1559,6 @@ def find_terraform(oci_config):
   terraform_version,terraform_bin = get_terraform_version()
   if terraform_version != None:
     print("- OK : Terraform version " + terraform_version + " in " + terraform_bin + "\n")
-    return terraform_bin
   else:
     print("\n" + '-' * 80 + "\n")
     print("To install Terraform, run the following command :\n\n" + \
@@ -1529,7 +1566,7 @@ def find_terraform(oci_config):
     print('-' * 80 + "\n")
     sys.exit(1)
 
-  return terraform_bin
+  return terraform_version,terraform_bin
 
 
 ######################################################################
@@ -1825,7 +1862,7 @@ def setup_oci_conf():
 # process_tfstate
 # - process Terraform state file
 ######################################################################
-def process_tfstate(file):
+def process_tfstate(file, terraform_version):
 
   instances = []
   bastion_instances = []
@@ -1836,20 +1873,52 @@ def process_tfstate(file):
   with open(file) as data_file:
     data = json.load(data_file)
 
-  for res in data["modules"][0]["resources"]:
-    # oci_core_instance.di_instance.0
-    if re.search("^oci_core_instance", res):
-      instance_data = data["modules"][0]["resources"][res]["primary"]["attributes"]
-      if re.search("-bs-\d+", instance_data["display_name"]):
-        bastion_instances.append({ "display_name":instance_data["display_name"],
-                           "public_ip" :instance_data["public_ip"],
-                           "private_ip":instance_data["private_ip"],
-                           "shape"     :instance_data["shape"]})
+  if re.search("^0.[0-1][0-1]", terraform_version):
+    # terraform versions < 0.12
+    for res in data["modules"][0]["resources"]:
+      if re.search("^oci_core_instance", res):
+        instance_data = data["modules"][0]["resources"][res]["primary"]["attributes"]
+        if re.search("-bs-\d+", instance_data["display_name"]):
+          bastion_instances.append({ "display_name":instance_data["display_name"],
+                             "public_ip" :instance_data["public_ip"],
+                             "private_ip":instance_data["private_ip"],
+                             "shape"     :instance_data["shape"]})
 
-      instances.append({ "display_name":instance_data["display_name"],
-                           "public_ip" :instance_data["public_ip"],
-                           "private_ip":instance_data["private_ip"],
-                           "shape"     :instance_data["shape"]})
+        instances.append({ "display_name":instance_data["display_name"],
+                             "public_ip" :instance_data["public_ip"],
+                             "private_ip":instance_data["private_ip"],
+                             "shape"     :instance_data["shape"]})
+
+  else:
+    # terrafom versions > 0.11
+    for res in data["resources"]:
+      try:
+        res["type"]
+      except:
+        continue
+
+      # oci_core_instance.di_instance.0
+      if re.search("^oci_core_instance", res["type"]):
+        if len(res["instances"]) == 0:
+          continue
+        else:
+          if not "display_name" in res["instances"][0]["attributes"]:
+            continue
+          if not res["instances"][0]["attributes"]["display_name"]:
+            continue
+
+        instance_data = res["instances"][0]["attributes"]
+
+        if re.search("-bs-\d+", instance_data["display_name"]):
+          bastion_instances.append({ "display_name":instance_data["display_name"],
+                             "public_ip" :instance_data["public_ip"],
+                             "private_ip":instance_data["private_ip"],
+                             "shape"     :instance_data["shape"]})
+
+        instances.append({ "display_name":instance_data["display_name"],
+                             "public_ip" :instance_data["public_ip"],
+                             "private_ip":instance_data["private_ip"],
+                             "shape"     :instance_data["shape"]})
 
   if not bastion_instances:
     print("\n\nERROR: Cannot determine bastion instance(s)!\n")
@@ -1863,7 +1932,6 @@ def process_tfstate(file):
   except:
     m = re.match("(.+)-bs", first_bastion["display_name"])
     if m:
-      #print("parsed service name is " + m.group(1))
       service_name =  m.group(1)
 
   # set tf_script_home if not defined
@@ -1888,7 +1956,7 @@ def process_tfstate(file):
     elif re.search("-zk-\d+", instance2["display_name"]):
       continue
 
-    ls_data =   "ssh -oStrictHostKeyChecking=no -oBatchMode=yes -J opc@" + first_bastion["public_ip"] + \
+    ls_data =   "ssh -oConnectTimeout=10 -oStrictHostKeyChecking=no -oBatchMode=yes -J opc@" + first_bastion["public_ip"] + \
                 " opc@" + instance2["display_name"] + " \"ls /u10/TimesTen/" + service_name + "\" 2>/dev/null"
     try:
       out = subprocess.check_output(ls_data, shell=True).splitlines()
@@ -1896,13 +1964,15 @@ def process_tfstate(file):
         m = re.match("^(instance\d+)$", line)
         if m:
           instance2["path"] = "/u10/TimesTen/" + service_name + "/" +  m.group()
+        else:
+          continue
     except subprocess.CalledProcessError as err:
       print("\nAn error was encountered while generating the summary report. No summary report will be produced.\n\nError was :\n\n" + str(err))
       return
     data_instances.append(instance2)
 
   if not data_instances:
-    print("\n\nERROR: Cannot determine data instance2(s)!\n")
+    print("\n\nERROR: Cannot determine data instances.\n")
     return
   else:
     first_data_instance = data_instances[0]
@@ -1916,14 +1986,14 @@ def process_tfstate(file):
     elif re.search("-zk-\d+", instance3["display_name"]):
       continue
 
-    is_mgmt = "ssh -oStrictHostKeyChecking=no -oBatchMode=yes opc@" + first_bastion["public_ip"] + \
+    is_mgmt = "ssh -oConnectTimeout=10 -oStrictHostKeyChecking=no -oBatchMode=yes opc@" + first_bastion["public_ip"] + \
           " \"nc -zv -w 1 " + instance3["display_name"] + " 6624-6625\" 2>/dev/null"
     sys.stdout.flush()
     process = subprocess.Popen(is_mgmt, stdout=subprocess.PIPE, shell=True)
     stdout, stderr = process.communicate()
     status = process.wait()
     if status == 0:
-      ls_mgmt =   "ssh -oStrictHostKeyChecking=no -oBatchMode=yes -J opc@" + first_bastion["public_ip"] + \
+      ls_mgmt =   "ssh -oConnectTimeout=10 -oStrictHostKeyChecking=no -oBatchMode=yes -J opc@" + first_bastion["public_ip"] + \
                   " opc@" + instance3["display_name"] + " \"ls /u10/TimesTen/" + service_name + "\" 2>/dev/null"
       try:
         out = subprocess.check_output(ls_mgmt, shell=True).splitlines()
@@ -1931,6 +2001,8 @@ def process_tfstate(file):
           m = re.match("^([\w|_]+)$", line)
           if m.group(1):
             instance3["path"] = "/u10/TimesTen/" + service_name + "/" +  m.group(1)
+          else:
+            continue
       except subprocess.CalledProcessError as err:
         return
       mgmt_instances.append(instance3)

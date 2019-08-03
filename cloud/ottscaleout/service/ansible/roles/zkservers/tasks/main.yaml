@@ -96,23 +96,17 @@
   become:       true
   become_user:  oracle
 
-- name: open client firewall ports
+- name: open zk firewall ports
   firewalld:
     permanent:  true
     immediate:  true
-    port:       "{{ zkclientport_a }}/tcp"
+    port:       "{{ item }}/tcp"
     state:      enabled
     source:     "{{ cidr }}"
-  become:       true
-  become_user:  root
-
-- name: open server firewall ports
-  firewalld:
-    permanent:  true
-    immediate:  true
-    port:       "{{ zkserverportrange_a }}/tcp"
-    state:      enabled
-    source:     "{{ cidr }}"
+  with_items:   
+    - "{{ zkclientport }}"
+    - "{{ zkserverport }}"
+    - "{{ zkelectionport }}"
   become:       true
   become_user:  root
 
@@ -121,7 +115,7 @@
 
 - name: print zkhome path
   debug:
-    msg: "Zookeeper is running on {{ inventory_hostname }}:{{ zkclientport_a }}; home directory: {{ zkhome }}"
+    msg: "Zookeeper is running on {{ inventory_hostname }}:{{ zkclientport }}; home directory: {{ zkhome }}"
 
 #- name: zk status
 #  import_tasks: zkstatus.yaml

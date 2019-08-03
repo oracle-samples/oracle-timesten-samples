@@ -8,12 +8,12 @@
   import_tasks:    roles/zkservers/tasks/zksetup.yaml
 
 - name: check zk servers using 4 letter words
-  shell:           "echo stat | nc {{ inventory_hostname }} {{ zkclientport_a }}"
+  shell:           "echo stat | nc {{ inventory_hostname }} {{ zkclientport }}"
   register:        zkstata
 
 - name: display zk server status
   debug:
-    msg: "{{ inventory_hostname }}:{{ zkclientport_a }}: {{ zkstata.stdout_lines }}"
+    msg: "{{ inventory_hostname }}:{{ zkclientport }}: {{ zkstata.stdout_lines }}"
 
 
 

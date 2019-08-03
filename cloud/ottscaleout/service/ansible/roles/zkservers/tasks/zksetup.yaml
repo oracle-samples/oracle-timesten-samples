@@ -4,9 +4,6 @@
 # at http://oss.oracle.com/licenses/upl
 ---
 
-- name: ensure zk parameters set
-  include_vars: roles/zkservers/vars/main.yaml
-
 - name: get installdir, extract zk file name
   shell: ls "{{ ttinstalldir }}/3rdparty/" | grep zookeeper- | sed -e 's/\(.*\)3rdparty\///' -e 's/.tar.gz//' 
   register:    zkdirname
