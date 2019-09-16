@@ -2,7 +2,9 @@ Copyright (c) 1998, 2017, Oracle and/or its affiliates. All rights reserved.
 
 # Java/JDBC sample program for Scaleout
 
-This directory contains the source code for a relatively simple Java/JDBC program (GridSample) that shows how to connect to and execute transactions against a TimesTen Scaleout database. The program is written to illustrate best practice and demonstrates how to make a program resilient by providing a fully functional code example showing how to properly handle events such as client connection failovers and transient errors. 
+This directory contains the source code for a relatively simple Java/JDBC program (GridSample) that shows how to connect to and execute transactions against a TimesTen Scaleout database. The program is written to illustrate best practice and demonstrates how to make a program resilient by providing a fully functional code example showing how to properly handle events such as client connection failovers and transient errors.
+
+(If you want some more basic samples to get you started, the Classic quickstart JDBC sample programs will run without change against Scaleout.) 
 
 The program can also be run against a Classic database; the program determines the database mode at run-time and adapts accordingly.
 
