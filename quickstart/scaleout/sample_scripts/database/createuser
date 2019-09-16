@@ -140,6 +140,7 @@ createUser()
     ttIsql "${connstr}" <<EOF
 create user ${username} identified by '${password}';
 grant create session to ${username};
+grant create table, create view, create materialized view, create sequence, create procedure, create cache group, create synonym to ${username};
 quit;
 EOF
     if [ $? -ne 0 ]
