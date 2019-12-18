@@ -35,7 +35,7 @@ INCS            = /I$(INSTDIR)\include /I$(COMMDIR)
 CSDEFS          = /DTTCLIENTSERVER
 CFLAGS          = $(PLATCFLAGS) $(OPTDEFS) $(CSDEFS) $(INCS)
 
-TTLINK          = /LIBPATH:$(TTDIR)\lib
+TTLINK          = /LIBPATH:$(INSTDIR)\lib
 
 CSLIBS          = $(TTLINK) ttclient$(TTVER).lib
 

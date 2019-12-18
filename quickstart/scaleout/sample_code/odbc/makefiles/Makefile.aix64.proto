@@ -30,7 +30,7 @@ INCS            = -I. -I$(INSTDIR)/include -I$(COMMDIR)
 CSDEFS          = -DTTCLIENTSERVER
 CFLAGS          = $(PLATCFLAGS) $(OPTDEFS) $(CSDEFS) $(INCS)
 
-TTLINK          = -L$(TTDIR)/lib
+TTLINK          = -L$(INSTDIR)/lib
 
 CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS) -lC_r
 
