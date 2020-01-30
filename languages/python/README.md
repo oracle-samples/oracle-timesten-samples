@@ -1,10 +1,10 @@
 Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
 
-#TimesTen Python Samples
+# TimesTen Python Samples
 
 This folder contains Python samples that illustrate database connection and operations using the cx_Oracle driver against the TimesTen database. 
 
-##Software & Platform Support
+## Software & Platform Support
 The following table describes the tested operating systems, cx_Oracle driver and TimesTen software versions.
 
 OS  | Python Version | cx_Oracle Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
@@ -19,7 +19,7 @@ MS Windows 64-bit   | 3.7.5  |7.2.2+    | 18.1.3.1.0+| N/A
 
 
 
-##PRE-REQUISITES
+## PRE-REQUISITES
  
 1. Python language is installed. 
 2. The cx_Oracle driver for Python is installed. 
@@ -48,7 +48,7 @@ Python sample programs to access TimesTen databases can be downloaded from [Orac
 
 Once the samples are downloaded locally, you can change to languages/python subdirectory and run the samples directly from the local machine.  Descriptions of the sample programs and examples of how to run them are below.
 
-###simple.py
+### simple.py
 
 This simple sample program connects to a TimesTen database and performs the following operations:
 
@@ -117,7 +117,7 @@ Performing deletes
 Connection has been released
 ```
 
-###queriesAndPlsql.py
+### queriesAndPlsql.py
 
 This Python sample program connects to a TimesTen Database and performs a number of database operations with PL/SQL: 
 

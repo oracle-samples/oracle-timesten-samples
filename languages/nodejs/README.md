@@ -1,10 +1,10 @@
 Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
 
-#TimesTen Node.js Samples
+# TimesTen Node.js Samples
 
 This folder contains Node.js samples that illustrate database connection and operations using the node-oracledb driver against  TimesTen databases. 
 
-##Software & Platform Support
+## Software & Platform Support
 The following table describes the tested operating systems, node-oracledb driver and TimesTen software versions.
 
 OS  | Node.js Version  | node-oracledb Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
@@ -45,7 +45,7 @@ Node.js sample programs to access TimesTen databases can be downloaded from [Ora
 
 Once the samples are downloaded locally, you can change to languages/nodejs subdirectory and run the samples directly from the local machine.  Descriptions of the sample programs and examples of how to run them are below.
 
-###simple.js
+### simple.js
 
 This simple sample program connects to a TimesTen database and performs the following operations:
 
@@ -112,7 +112,7 @@ Performing deletes
   delete(ed) 20 rows
 Connection has been released
 ```
-###queriesAndPlsql.js
+### queriesAndPlsql.js
 
 The queriesAndPlsql sample program connects to a TimesTen database and performs a number of database operations with PL/SQL: 
 
