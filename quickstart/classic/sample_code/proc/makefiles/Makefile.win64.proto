@@ -6,12 +6,10 @@
 #
 
 INSTDIR         = $(TIMESTEN_HOME)\install
-TTORACLE_HOME   = $(INSTDIR)\ttoracle_home\instantclient_11_2
+TTORACLE_HOME   = $(INSTDIR)\ttoracle_home\instantclient_12_1
 OCIINCS         = $(TTORACLE_HOME)\sdk\include
 OCILIBDIR       = $(TTORACLE_HOME)\sdk\lib\msvc
 COMMDIR         = $(QUICKSTART_HOME)\sample_code\common
-
-TTVER           = 1211
 
 CC              = cl.exe /nologo
 
@@ -26,7 +24,7 @@ CFLAGS          = $(PLATCFLAGS) $(INCS)
 
 TTLINK          = /LIBPATH:$(INSTDIR)\lib /LIBPATH:$(TTORACLE_HOME) /LIBPATH:$(OCILIBDIR)
 
-ICLIBS          = $(TTLINK) orasql11.lib
+ICLIBS          = $(TTLINK) orasql12.lib
 DMLIBS          = odbc32.lib
 
 ANSIDYN1           = ansidyn1.exe
@@ -46,7 +44,7 @@ PROGS              = $(ANSIDYN1) $(ADDEMPPROC) $(BATCHFETCHPROC) $(CURSORPROC) $
 
 C_FILES            = ansidyn1.c addempPROC.c batchfetchPROC.c cursorPROC.c getempPROC.c plsqlPROC.c
 
-
+CONFIGINC  = pcscfg.cfg.inc
 CONFIGFILE = pcscfg.cfg
 
 #
@@ -88,53 +86,33 @@ $(PLSQLPROC): $(PLSQLPROCOBJS)
 
 
 ansidyn1.c: ansidyn1.pc $(CONFIGFILE)
-	@proc iname=ansidyn1.pc config=pcscfg.cfg mode=ansi DEFINE=_WSTDIO_DEFINED
+	@proc iname=ansidyn1.pc config=$(CONFIGFILE) mode=ansi
 
 addempPROC.c: addempPROC.pc $(CONFIGFILE)
-	@proc iname=addempPROC.pc config=pcscfg.cfg DEFINE=_WSTDIO_DEFINED
+	@proc iname=addempPROC.pc config=$(CONFIGFILE)
 
 batchfetchPROC.c: batchfetchPROC.pc $(CONFIGFILE)
-	@proc iname=batchfetchPROC.pc config=pcscfg.cfg DEFINE=_WSTDIO_DEFINED
+	@proc iname=batchfetchPROC.pc config=$(CONFIGFILE)
 
 cursorPROC.c: cursorPROC.pc $(CONFIGFILE)
-	@proc iname=cursorPROC.pc config=pcscfg.cfg DEFINE=_WSTDIO_DEFINED
+	@proc iname=cursorPROC.pc config=$(CONFIGFILE)
 
 getempPROC.c: getempPROC.pc $(CONFIGFILE)
-	@proc iname=getempPROC.pc config=pcscfg.cfg DEFINE=_WSTDIO_DEFINED
+	@proc iname=getempPROC.pc config=$(CONFIGFILE)
 
 plsqlPROC.c: plsqlPROC.pc $(CONFIGFILE)
-	set LOCAL=sampledb
-	@proc USERID=appuser iname=plsqlPROC.pc config=pcscfg.cfg sqlcheck=semantics DEFINE=_WSTDIO_DEFINED
+	set LOCAL=sampledbcs
+	@proc USERID=appuser iname=plsqlPROC.pc config=$(CONFIGFILE) sqlcheck=semantics
 
-$(CONFIGFILE) :
-	@echo ltype=short > $(CONFIGFILE)
-	@echo parse=full >> $(CONFIGFILE)
-!IF DEFINED(MSVCDIR)
-  @echo sys_include=$(MSVCDIR)\include >> $(CONFIGFILE)
-!ENDIF
-!IF DEFINED(VCINSTALLDIR)
-  @echo sys_include=$(VCINSTALLDIR)\include >> $(CONFIGFILE)
-!ENDIF
-!IF DEFINED(MSSDK)
-  @echo sys_include=$(MSSDK)\include >> $(CONFIGFILE)
-  @echo sys_include=$(MSSDK)\include/crt >> $(CONFIGFILE)
-  @echo sys_include=$(MSSDK)\include/crt/sys >> $(CONFIGFILE)
-!ENDIF
-	@echo sys_include=$(TIMESTEN_HOME)\install\ttoracle_home\instantclient_11_2\sdk\include >> $(CONFIGFILE)
-	@echo close_on_commit=yes >> $(CONFIGFILE)
+$(CONFIGFILE) : $(CONFIGINC)
+	@copy $(CONFIGINC) $(CONFIGFILE) > NUL 2>&1
+	@echo sys_include=$(TIMESTEN_HOME)\install\ttoracle_home\instantclient_12_1\sdk\include >> $(CONFIGFILE)
 	@echo include=$(QUICKSTART_HOME)\sample_code\common >> $(CONFIGFILE)
-
+	@type makefiles\pcscfg.win64.proto >> $(CONFIGFILE)
 
 #
 # Targets for building object files
 #
-
-#ansidyn1.obj: ansidyn1.c
-#	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c ansidyn1.c
-
-#psswds.obj: psswds.c
-#	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c psswds.c
-
 
 .c.o:
 	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c $<

@@ -90,17 +90,18 @@
 #define DFLT_INSERT_MOD     1
 #define DFLT_PROCID         0
 
-#define PROC_INITIALIZED 0
-#define PROC_READY       1
-#define PROC_SET         2
-#define PROC_GO          3
-#define PROC_RUNNING     4
-#define PROC_STARTBENCH  5
-#define PROC_MEASURING   6
-#define PROC_STOPBENCH   7
-#define PROC_STOPPING    8
-#define PROC_STOP        9
-#define PROC_END         10
+#define PROC_INITIALIZED 0   // base state (not currently used)
+#define PROC_READY       1   // P -> C: get ready to begin execution
+#define PROC_SET         2   // C -> P: ready for execution
+#define PROC_GO          3   // P -> C: start execution
+#define PROC_RUNNING     4   // C -> P: executing
+#define PROC_STARTBENCH  5   // P -> C: start measuring
+#define PROC_MEASURING   6   // C -> P: measuring
+#define PROC_STOPBENCH   7   // P -> C: stop measuring
+#define PROC_STOPPING    8   // C -> P: stopping
+#define PROC_STOP        9   // P -> C: stop
+#define PROC_END         10  // C -> P: finished, okay
+#define PROC_ERROR       11  // C -> P: finished, ERROR
 
 #define TTCSERVERDSN     "TTC_SERVER_DSN="
 
@@ -113,95 +114,127 @@ static char usageStr[] =
   "direct connection mode.\n\n"
 #endif /* TTCLIENTSERVER */
   "Usage:\n\n"
-  "  %s {-h | -help}\n"
+  "  %s {-h | -help}\n\n"
   "  %s [-proc <nprocs>] [-read <nreads>] [-insert <nins>] [-delete <ndels>]\n"
   "     [-throttle <n>] [{-xact <xacts> | -sec <seconds> [-ramp <rseconds>]}]\n"
   "     [-ops <ops>] [-key <keys>] [-range] [-iso <level>] [-seed <seed>]\n"
   "     [-build] [-nobuild] [-v <level>]"
 #ifdef SCALEOUT
 #if defined(TTCLIENTSERVER) && defined(ROUTINGAPI)
-  " [-scaleout [local | routing]]"
+  " [-scaleout [local | routing[/<srvdsn>]]]"
 #elif defined(ROUTINGAPI)
   " [-scaleout [local]]"
 #else
   " [-scaleout]"
 #endif /* ROUTINGAPI */
 #endif /* SCALEOUT */
-  "\n     [<DSN> | -connstr <connection-string>]\n\n"
-  "  -h                  Prints this message and exits.\n"
-  "  -help               Same as -h.\n"
-  "  -V                  Prints version number and exits.\n"
-  "  -proc    <nprocs>   Specifies that <nprocs> is the number of concurrent\n"
-  "                      processes. The default is " S(DFLT_PROC) ".\n"
-  "  -read    <nreads>   Specifies that <nreads> is the percentage of read-only\n"
-  "                      transactions. The default is " S(DFLT_READS) ".\n"
-  "  -insert  <nins>     Specifies that <nins> is the percentage of insert\n"
-  "                      transactions. The default is " S(DFLT_INSERTS) ".\n"
-  "  -delete  <ndels>    Specifies that <ndels> is the percentage of delete\n"
-  "                      transactions. The default is " S(DFLT_DELETES) ".\n"
-  "  -xact    <xacts>    Specifies that <xacts> is the number of transactions\n"
-  "                      that each process should run. The default is " S(DFLT_XACT) ".\n"
-  "  -sec     <seconds>  Specifies that <seconds> is the test measurement duration.\n"
-  "                      The default is to run in transaction mode (-xact).\n"
-  "  -ramp  <rseconds>   Specifies that <rseconds> is the ramp up & down time in\n"
-  "                      duration mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n"
-  "  -ops     <ops>      Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
-  "                      In the special case where 0 is specified, no commit\n"
-  "                      is done. This may be useful for read-only testing.\n"
-  "  -key     <keys>     Specifies the number of records (squared) to initially\n"
-  "                      populate in the database. The minimum value is " S(MIN_KEY) "\n"
-  "                      and the default is " S(DFLT_KEY) " (" S(DFLT_KEY) "**2 rows). The same\n"
-  "                      value should be specified at both build and run time.\n"
-  "  -range              Use a range index for the primary key instead of a hash\n"
-  "                      index.\n"
-  "  -iso     <level>    Locking isolation level\n"
-  "                         0 = serializable\n"
-  "                         1 = read-committed (default)\n"
-  "  -seed    <seed>     Specifies that <seed> should be the seed for the\n"
-  "                      random number generator. Must be > 0, default is " S(DFLT_SEED) ".\n"
-  "  -throttle <n>       Throttle each process to <n> operations per second.\n"
-  "                      Must be > 0. The default is no throttle.\n"
-  "  -build              Only build the database, do not run the benchmark. Only\n"
+
+  "\n     [<DSN> | -connstr <connection-string>]\n\n";
+
+static char usageStrFull[] =
+  "  -h                     Prints this message and exits.\n\n"
+
+  "  -help                  Same as -h.\n\n"
+
+  "  -V                     Prints version number and exits.\n\n"
+
+  "  -proc    <nprocs>      Specifies that <nprocs> is the number of concurrent\n"
+  "                         processes. The default is " S(DFLT_PROC) ".\n\n"
+
+  "  -read    <nreads>      Specifies that <nreads> is the percentage of read-only\n"
+  "                         transactions. The default is " S(DFLT_READS) ".\n\n"
+
+  "  -insert  <nins>        Specifies that <nins> is the percentage of insert\n"
+  "                         transactions. The default is " S(DFLT_INSERTS) ".\n\n"
+
+  "  -delete  <ndels>       Specifies that <ndels> is the percentage of delete\n"
+  "                         transactions. The default is " S(DFLT_DELETES) ".\n\n"
+
+  "  -xact    <xacts>       Specifies that <xacts> is the number of transactions\n"
+  "                         that each process should run. The default is " S(DFLT_XACT) ".\n\n"
+
+  "  -sec     <seconds>     Specifies that <seconds> is the test measurement duration.\n"
+  "                         The default is to run in transaction mode (-xact).\n\n"
+
+  "  -ramp  <rseconds>      Specifies that <rseconds> is the ramp up & down time in\n"
+  "                         duration mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+
+  "  -ops     <ops>         Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
+  "                         In the special case where 0 is specified, no commit\n"
+  "                         is done. This may be useful for read-only testing.\n\n"
+
+  "  -key     <keys>        Specifies the number of records (squared) to initially\n"
+  "                         populate in the database. The minimum value is " S(MIN_KEY) "\n"
+  "                         and the default is " S(DFLT_KEY) " (" S(DFLT_KEY) "**2 rows). The same\n"
+  "                         value should be specified at both build and run time.\n\n"
+
+  "  -range                 Use a range index for the primary key instead of a hash\n"
+  "                         index.\n\n"
+
+  "  -iso     <level>       Locking isolation level\n"
+  "                            0 = serializable\n"
+  "                            1 = read-committed (default)\n\n"
+
+  "  -seed    <seed>        Specifies that <seed> should be the seed for the\n"
+  "                         random number generator. Must be > 0, default is " S(DFLT_SEED) ".\n\n"
+
+  "  -throttle <n>          Throttle each process to <n> operations per second.\n"
+  "                         Must be > 0. The default is no throttle.\n\n"
+
+  "  -build                 Only build the database, do not run the benchmark. Only\n"
 #if defined(SCALEOUT)
-  "                      the '-key', '-range' and '-scaleout' parameters are\n"
-  "                      relevant.\n"
+  "                         the '-key', '-range' and '-scaleout' parameters are\n"
+  "                         relevant.\n\n"
 #else /* ! SCALEOUT */
-  "                      the '-key' and '-range' parameters are relevant.\n"
+  "                         the '-key' and '-range' parameters are relevant.\n\n"
 #endif /* ! SCALEOUT */
-  "  -nobuild            Only run the benchmark, do not build the database.\n"
-  "                      The '-range' parameter is not relevant.\n"
+
+  "  -nobuild               Only run the benchmark, do not build the database.\n"
+  "                         The '-range' parameter is not relevant.\n\n"
+
 #if 0
-  "  -nodbexec           Don't perform any of the actual database operations in\n"
-  "                      the main benchmark loop. This allows you to get a sense\n"
-  "                      for the cost of the 'application overhead'.\n"
+  "  -nodbexec              Don't perform any of the actual database operations in\n"
+  "                         the main benchmark loop. This allows you to get a sense\n"
+  "                         for the cost of the 'application overhead'.\n\n"
 #endif
+
 #if defined(SCALEOUT)
-  "  -scaleout           Run in Scaleout mode. Craetes the table with a hash\n"
-  "                      distribution and adapts runtime behaviour for Scaleout.\n"
-  "                      You must use the same value at build time and run-time.\n"
+  "  -scaleout              Run in Scaleout mode. Creates the table with a hash\n"
+  "                         distribution and adapts runtime behaviour for Scaleout.\n"
+  "                         You must use the same value at build time and run-time.\n\n"
+
 #if defined(ROUTINGAPI)
-  "      local           Constrain all data access to be to rows in the locally\n"
-  "                      connected database element; each process generates keys\n"
-  "                      that it knows refer to rows in the element that it is\n"
-  "                      connected to. Only relevant at run-time.\n"
+  "      local              Constrain all data access to be to rows in the locally\n"
+  "                         connected database element; each process generates keys\n"
+  "                         that it knows refer to rows in the element that it is\n"
+  "                         connected to. Only relevant at run-time.\n\n"
+
 #if defined(TTCLIENTSERVER)
-  "      routing         Use the routing API to optimize data access. Each\n"
-  "                      process maintains a connection to every database\n"
-  "                      element and uses the routing API to direct operations\n"
-  "                      to an element that it knows contains the target row.\n"
-  "                      Only relevant at run time. Cannot be used with -ops > 1.\n"
+  "      routing[/<srvdsn>] Use the routing API to optimize data access. Each\n"
+  "                         process maintains a connection to every database\n"
+  "                         element and uses the routing API to direct operations\n"
+  "                         to an element that it knows contains the target row.\n"
+  "                         Normally the server DSN is detected automatically but\n"
+  "                         if it is not you can specify it using /<srvdsn>. If\n"
+  "                         you do specify /<srvdsn> the value will be used instead\n"
+  "                         of any automatically determined value. Only relevant\n"
+  "                         at run time. Cannot be used with -ops > 1.\n\n"
+
 #endif /* TTCLIENTSERVER */
 #endif /* ROUTINGAPI */
 #endif /* SCALEOUT */
-  "  -v <level>          Verbosity level\n"
-  "                         0 = errors only\n"
-  "                         1 = results only\n"
-  "                         2 = results and some status messages (default)\n"
-  "                         3 = all messages\n\n"
+  "  -v <level>             Verbosity level\n"
+  "                            0 = errors only\n"
+  "                            1 = results only\n"
+  "                            2 = results and some status messages (default)\n"
+  "                            3 = all messages\n\n"
+
   "If no DSN or connection string is specified, the default is\n"
   "  \"DSN=sampledb;UID=appuser\".\n\n"
+
   "The percentage of update operations is 100 minus the percentages of reads,\n"
   "inserts and deletes.\n\n"
+
   "For the most accurate results, use duration mode (-sec) with a measurement\n"
   "time of at least several minutes and a ramp time of at least 30 seconds.\n\n";
 
@@ -297,9 +330,10 @@ int parseConnectionString(
 
 typedef struct procinfo {
   volatile int       state;
+  volatile int       nproc;
   volatile int       pid;
   volatile UBIGINT   xacts;
-  char      pad[CACHELINE_SIZE - sizeof(int) - sizeof(UBIGINT)];
+  char               pad[CACHELINE_SIZE - (sizeof(int)+sizeof(int)+sizeof(int)+sizeof(UBIGINT))];
 } procinfo_t;
 
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
@@ -315,7 +349,7 @@ int         nElements = 0;
 int         kFactor = 0;
 
 #ifdef TTCLIENTSERVER
-#define MAX_CLIENT_DSN_LEN  128
+#define MAX_CLIENT_DSN_LEN  256
 typedef struct _ttclientdsn {
   int       elementid;
   int       repset;
@@ -364,8 +398,9 @@ int        insert_mod = NO_VALUE;      /* used to prevent multiple inserts clobb
 int        elementid = 0;              /* locally connected element id */
 int        replicasetid = 0;           /* locally connected replicaset id */
 int        dataspaceid = 0;            /* locally connected dataspace id */
-#if defined(TTCLIENTSERVER)
 char *     serverdsn = NULL;           /* server DSN for routing mode */
+#if defined(TTCLIENTSERVER)
+char *     srvdsn = NULL;              /* Server DSN from command line */
 #endif /* TTCLIENTSERVER */
 #endif /* SCALEOUT && ROUTINGAPI */
 
@@ -446,9 +481,11 @@ char * passwordPrompt = "Enter password for ";
  *
  *********************************************************************/
 
-void usage( char * progname )
+void usage( char * progname, int full )
 {
-  fprintf( stderr, usageStr, progname, progname );
+ fprintf( stderr, usageStr, progname, progname );
+  if (  full  )
+      fprintf( stderr, usageStrFull, progname, progname );
   exit( 10 );
 }
 
@@ -589,6 +626,7 @@ int parse_args(int      argc,
 {
   int argno = 1;
   int pos = 0;
+  char * p;
 
   ttc_getcmdname(argv[0], cmdname, sizeof(cmdname));
 
@@ -596,142 +634,142 @@ int parse_args(int      argc,
   {
     if (  (strcmp(argv[argno], "-h") == 0) || 
           (strcmp(argv[argno], "-help") == 0)  )
-        usage( cmdname );
+        usage( cmdname, 1 );
     else
     if (  strcmp(argv[argno], "-proc") == 0  ) {
       if (  (++argno >= argc) || (num_processes != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       num_processes = isnumeric( argv[argno] );
       if (  num_processes <= 0  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-read") == 0  ) {
       if (  (++argno >= argc) || (reads != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       reads = isnumeric( argv[argno] );
       if (  (reads < 0) || (reads > 100)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-insert") == 0  ) {
       if (  (++argno >= argc) || (inserts != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       inserts = isnumeric( argv[argno] );
       if (  (inserts < 0) || (inserts > 100)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-delete") == 0  ) {
       if (  (++argno >= argc) || (deletes != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       deletes = isnumeric( argv[argno] );
       if (  (deletes < 0) || (deletes > 100)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-xact") == 0  ) {
       if (  (++argno >= argc) || ( num_xacts != NO_VALUE) || 
             (duration != NO_VALUE ) || (ramptime != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       num_xacts = isnumeric( argv[argno] );
       if (  num_xacts <= 0  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-sec") == 0  ) {
       if (  (++argno >= argc) || ( duration != NO_VALUE) || 
             (num_xacts != NO_VALUE )  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       duration = isnumeric( argv[argno] );
       if (  duration <= 0  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-ramp") == 0  ) {
       if (  (++argno >= argc) || ( ramptime != NO_VALUE) || 
             (num_xacts != NO_VALUE )  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       ramptime = isnumeric( argv[argno] );
       if (  ramptime < 0  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-ops") == 0  ) {
       if (  (++argno >= argc) || (opsperxact != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       opsperxact = isnumeric( argv[argno] );
       if (  opsperxact < 0  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-key") == 0  ) {
       if (  (++argno >= argc) || (key_cnt != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       key_cnt = isnumeric( argv[argno] );
       if (  key_cnt < MIN_KEY  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-range") == 0  ) {
       if (  rangeFlag != NO_VALUE  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       rangeFlag = 1;
     }
     else
     if (  strcmp(argv[argno], "-nodbexec") == 0  ) {
       if (  nodbexec != NO_VALUE  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       nodbexec = 1;
     }
     else
     if (  strcmp(argv[argno], "-iso") == 0  ) {
       if (  (++argno >= argc) || (isolevel != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       isolevel = isnumeric( argv[argno] );
       if (  (isolevel < 0) || (isolevel > 1)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-seed") == 0  ) {
       if (  (++argno >= argc) || (rand_seed != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       rand_seed = isnumeric( argv[argno] );
       if (  rand_seed <= 0  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-throttle") == 0  ) {
       if (  (++argno >= argc) || (throttle != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       throttle = isnumeric( argv[argno] );
       if (  throttle <= 0  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-v") == 0  ) {
       if (  (++argno >= argc) || (verbose != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       verbose = isnumeric( argv[argno] );
       if (  (verbose < VERBOSE_FIRST) || (verbose > VERBOSE_LAST)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
     }
     else
     if (  strcmp(argv[argno], "-build") == 0  ) {
       if (  (buildOnly != NO_VALUE) || (noBuild != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       buildOnly = 1;
     }
     else
     if (  strcmp(argv[argno], "-nobuild") == 0  ) {
       if (  (buildOnly != NO_VALUE) || (noBuild != NO_VALUE)  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       noBuild = 1;
     }
     else
     if (  strcmp(argv[argno], "-insertmod") == 0  ) {
       if (  (++argno >= argc) || (insert_mod != NO_VALUE)  ) {
-          usage( cmdname );
+          usage( cmdname, 0 );
       }
       insert_mod = isnumeric( argv[argno] );
       if (  insert_mod <= 0  ) {
@@ -743,7 +781,7 @@ int parse_args(int      argc,
     else
     if (  strcmp(argv[argno], "-procid") == 0  ) {
       if (  (++argno >= argc) || (procId != NO_VALUE)  ) {
-          usage( cmdname );
+          usage( cmdname, 0 );
       }
       procId = isnumeric( argv[argno] );
       if (  procId <= 0  ) {
@@ -756,7 +794,7 @@ int parse_args(int      argc,
     else
     if (  strcmp(argv[argno], "-scaleout") == 0  ) {
       if (  mode != M_CLASSIC  )
-          usage( cmdname );
+          usage( cmdname, 0 );
       mode = M_SCALEOUT;
 #if defined(ROUTINGAPI)
       if (  ((argno+1) < argc) && (strcmp(argv[argno+1],"local") == 0)  ) {
@@ -765,8 +803,19 @@ int parse_args(int      argc,
       }
 #if defined(TTCLIENTSERVER)
       else
-      if (  ((argno+1) < argc) && (strcmp(argv[argno+1],"routing") == 0)  ) {
+      if (  ((argno+1) < argc) && (strncmp(argv[argno+1],"routing", 7) == 0)  ) {
           mode = M_SCALEOUT_ROUTING;
+          p = argv[argno+1]+strlen("routing");
+          if (  (*p != '\0') && (*p != '/')  )
+              usage( cmdname, 0 );
+          if (  *p++ == '/'  )
+          {
+              if (  *p == '\0'  )
+                  usage( cmdname, 0 );
+              if (  strlen( p ) >= CONN_STR_LEN  )
+                  usage( cmdname, 0 );
+              srvdsn = p;
+          }
           argno += 1;
       }
 #endif /* TTCLIENTSERVER */
@@ -776,14 +825,14 @@ int parse_args(int      argc,
     else
     if (  strcmp(argv[argno], "-connstr") == 0  ) {
         if (  (++argno >= argc) || (connstr_opt != NULL) || (dsn[0] != '\0')  )
-            usage( cmdname );
+            usage( cmdname, 0 );
         connstr_opt = strdup( argv[argno] );
     }
     else {
         if (  (connstr_opt != NULL) || (dsn[0] != '\0')  )
-            usage( cmdname );
+            usage( cmdname, 0 );
         if (  (strlen(argv[argno])+1) > sizeof(dsn)  )
-            usage( cmdname );
+            usage( cmdname, 0 );
         strcpy( dsn, argv[argno] );
     }
     argno += 1;
@@ -807,7 +856,7 @@ int parse_args(int      argc,
   }
   else {
     if (  ramptime != NO_VALUE  )
-        usage( cmdname );
+        usage( cmdname, 0 );
     if (  num_xacts == NO_VALUE  )
       num_xacts = DFLT_XACT;
     duration = 0;
@@ -907,7 +956,7 @@ int parse_args(int      argc,
                                    dsn, sizeof(dsn),
                                    username, sizeof(username),
                                    password, sizeof(password) )  )
-        usage( cmdname );
+        usage( cmdname, 0 );
     if (  procId == 0  )
     {
         if ( username[0] && !password[0] )
@@ -920,7 +969,6 @@ int parse_args(int      argc,
         }
 #endif
     }
-
     pos = 1 + strlen( "DSN=" ) + strlen(dsn);
     if (  username[0]  )
        pos += strlen( ";UID=" ) + strlen( username );
@@ -1057,40 +1105,74 @@ void freeRouting( void )
         {
             /* commit, just in case */
             rc = SQLTransact(henv, routingDSNs[i].hdbc, SQL_COMMIT);
-            handle_errors(routingDSNs[i].hdbc, NULL, rc, DISCONNECT_EXIT, 
-                           "Unable to commit transaction",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors(routingDSNs[i].hdbc, NULL, rc, DISCONNECT_EXIT, 
+                               "Unable to commit transaction",
+                               __FILE__, __LINE__);
+            }
+
             /* drop and free the statement handles */
             rc = SQLFreeStmt(routingDSNs[i].updstmt, SQL_DROP);
-            handle_errors (routingDSNs[i].hdbc, routingDSNs[i].updstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "freeing statement handle (routing)",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (routingDSNs[i].hdbc, routingDSNs[i].updstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "freeing statement handle (routing)",
+                               __FILE__, __LINE__);
+            }
             routingDSNs[i].updstmt = SQL_NULL_HSTMT;
+
             rc = SQLFreeStmt(routingDSNs[i].selstmt, SQL_DROP);
-            handle_errors (routingDSNs[i].hdbc, routingDSNs[i].selstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "freeing statement handle (routing)",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (routingDSNs[i].hdbc, routingDSNs[i].selstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "freeing statement handle (routing)",
+                               __FILE__, __LINE__);
+            }
             routingDSNs[i].selstmt = SQL_NULL_HSTMT;
+
             rc = SQLFreeStmt(routingDSNs[i].insstmt, SQL_DROP);
-            handle_errors (routingDSNs[i].hdbc, routingDSNs[i].insstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "freeing statement handle (routing)",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (routingDSNs[i].hdbc, routingDSNs[i].insstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "freeing statement handle (routing)",
+                               __FILE__, __LINE__);
+            }
             routingDSNs[i].insstmt = SQL_NULL_HSTMT;
+
             rc = SQLFreeStmt(routingDSNs[i].delstmt, SQL_DROP);
-            handle_errors (routingDSNs[i].hdbc, routingDSNs[i].delstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "freeing statement handle (routing)",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (routingDSNs[i].hdbc, routingDSNs[i].delstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "freeing statement handle (routing)",
+                               __FILE__, __LINE__);
+            }
             routingDSNs[i].delstmt = SQL_NULL_HSTMT;
+
             /* disconnect and free connection handle */
             rc = SQLDisconnect(routingDSNs[i].hdbc);
-            handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                           "disconnecting from database (routing)",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                               "disconnecting from database (routing)",
+                               __FILE__, __LINE__);
+            }
             rc = SQLFreeConnect(routingDSNs[i].hdbc);
-            handle_errors (routingDSNs[i].hdbc, routingDSNs[i].delstmt, rc, 
-                           ABORT_DISCONNECT_EXIT,
-                           "freeing statement handle (routing)",
+
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (routingDSNs[i].hdbc, routingDSNs[i].delstmt, rc, 
+                               ABORT_DISCONNECT_EXIT,
+                               "freeing statement handle (routing)",
                            __FILE__, __LINE__);
+            }
             routingDSNs[i].hdbc = SQL_NULL_HDBC;
         }
         free( (void *)routingDSNs );
@@ -1098,11 +1180,20 @@ void freeRouting( void )
     }
 #endif /* TTCLIENTSERVER */
     rc = ttGridDistFree(rhdbc, routingHDist);
-    handle_errors(rhdbc, NULL, rc, JUST_DISCONNECT_EXIT,
-                  "Error from ttGridDistFree", __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, NULL, rc, JUST_DISCONNECT_EXIT,
+                      "Error from ttGridDistFree", __FILE__, __LINE__);
+    }
+
     rc = ttGridMapFree(rhdbc, routingGridMap);
-    handle_errors(rhdbc, NULL, rc, JUST_DISCONNECT_EXIT,
-                  "Error from ttClientGridMap", __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, NULL, rc, JUST_DISCONNECT_EXIT,
+                      "Error from ttClientGridMap", __FILE__, __LINE__);
+    }
 }
 
 /*********************************************************************
@@ -1112,13 +1203,13 @@ void freeRouting( void )
  *  DESCRIPTION:    Initialise everything needed for -scaleout local
  *                  and/or -scaleout routing.
  *
- *  PARAMETERS:     hdbc - an open database connection
+ *  PARAMETERS:     sdsn - value for TTC_SERVER_DSN
  *
  *  RETURNS:        Nothing.
  *
  *********************************************************************/
 
-void initRouting( void )
+void initRouting( char * sdsn )
 {
     int i, rc;
     SQLHSTMT hstmt;
@@ -1130,72 +1221,140 @@ void initRouting( void )
 
     /* Create a Grid Map object */
     rc = ttGridMapCreate(rhdbc, &routingGridMap);
-    handle_errors(rhdbc, NULL, rc, ABORT_DISCONNECT_EXIT,
-                  "ttGridMapCreate() failed retrieving ttGridMap handle",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, NULL, rc, ABORT_DISCONNECT_EXIT,
+                      "ttGridMapCreate() failed retrieving ttGridMap handle",
+                      __FILE__, __LINE__);
+    }
 
     /* Create a Grid Distribution object from the map */
     rc = ttGridDistCreate(rhdbc, routingGridMap, routingCTypes, routingSQLTypes,
                      NULL, NULL, routingMaxSizes, 2, &routingHDist);
-    handle_errors(rhdbc, NULL, rc, ABORT_DISCONNECT_EXIT,
-                  "ttGridDistCreate() failed retrieving distribution object",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, NULL, rc, ABORT_DISCONNECT_EXIT,
+                      "ttGridDistCreate() failed retrieving distribution object",
+                      __FILE__, __LINE__);
+    }
 
     /* determine how many elements */
     rc = SQLAllocStmt(rhdbc, &hstmt);
-    handle_errors(rhdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                  "Unable to allocate statement handle",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                      "Unable to allocate statement handle",
+                      __FILE__, __LINE__);
+    }
 
     rc = SQLPrepare(hstmt, (SQLCHAR *)
 "select count(distinct(mappedelementid)),count(distinct(dataspace)) from v$distribution_current;", SQL_NTS);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                  "Unable to prepare count elementid statement",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                      "Unable to prepare count elementid statement",
+                      __FILE__, __LINE__);
+    }
     rc = SQLBindCol(hstmt, 1, SQL_C_SLONG, &nElements, sizeof(int), NULL);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
+                      __FILE__, __LINE__);
+    }
     rc = SQLBindCol(hstmt, 2, SQL_C_SLONG, &kFactor, sizeof(int), NULL);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
+                      __FILE__, __LINE__);
+    }
     rc = SQLExecute(hstmt);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                  "Unable to execute count elementid retrieval statement",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                      "Unable to execute count elementid retrieval statement",
+                      __FILE__, __LINE__);
+    }
     rc = SQLFetch(hstmt);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to fetch count elementid",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to fetch count elementid",
+                      __FILE__, __LINE__);
+    }
     rc = SQLFreeStmt(hstmt, SQL_CLOSE);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to close select",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to close select",
+                      __FILE__, __LINE__);
+    }
 
     rc = SQLPrepare(hstmt, (SQLCHAR *)
 "select elementid#, replicasetid#, dataspaceid# from dual;", SQL_NTS);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                  "Unable to prepare elementid, replicasetid, dataspaceid statement",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                      "Unable to prepare elementid, replicasetid, dataspaceid statement",
+                      __FILE__, __LINE__);
+    }
     rc = SQLBindCol(hstmt, 1, SQL_C_SLONG, &elementid, sizeof(int), NULL);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
+                      __FILE__, __LINE__);
+    }
     rc = SQLBindCol(hstmt, 2, SQL_C_SLONG, &replicasetid, sizeof(int), NULL);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
+                      __FILE__, __LINE__);
+    }
     rc = SQLBindCol(hstmt, 3, SQL_C_SLONG, &dataspaceid, sizeof(int), NULL);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column",
+                      __FILE__, __LINE__);
+    }
     rc = SQLExecute(hstmt);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                  "Unable to execute elementid retrieval statement",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                      "Unable to execute elementid retrieval statement",
+                      __FILE__, __LINE__);
+    }
     rc = SQLFetch(hstmt);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to fetch elementid",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to fetch elementid",
+                      __FILE__, __LINE__);
+    }
     rc = SQLFreeStmt(hstmt, SQL_CLOSE);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to close select",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to close select",
+                      __FILE__, __LINE__);
+    }
     rc = SQLFreeStmt(hstmt, SQL_DROP);
-    handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to drop select",
-                  __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to drop select",
+                      __FILE__, __LINE__);
+    }
 
 #if defined(TTCLIENTSERVER)
     if (  mode == M_SCALEOUT_ROUTING  )
@@ -1205,102 +1364,179 @@ void initRouting( void )
         routingDSNs = (cCliDSN_t*)calloc(nElements+1, sizeof (cCliDSN_t));
         if (routingDSNs == (cCliDSN_t*) NULL) {
           status_msg0 ("Unable to allocate memory for client DSNs\n\n");
+          shmhdr[procId].state = PROC_ERROR;
           handle_errors(rhdbc, NULL, SQL_ERROR, JUST_DISCONNECT_EXIT, NULL, __FILE__, __LINE__);
         }
     
         /* create element, repset, dsn map */
         rc = SQLAllocStmt(rhdbc, &hstmt);
-        handle_errors(rhdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                      "Unable to allocate statement handle",
-                      __FILE__, __LINE__);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors(rhdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                          "Unable to allocate statement handle",
+                          __FILE__, __LINE__);
+        }
         rc = SQLPrepare(hstmt, (SQLCHAR *)
          "select 'ttc_redirect=0;ttc_server='||hostexternaladdress||'/'||serverport,mappedelementid,repset,dataspace "
            "from sys.v$distribution_current "
           "order by mappedelementid asc",SQL_NTS);
-        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                      "Unable to prepare count elementid statement",
-                      __FILE__, __LINE__);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                          "Unable to prepare count elementid statement",
+                          __FILE__, __LINE__);
+        }
         rc = SQLExecute(hstmt);
-        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                      "Unable to execute query on v$distribution_current",
-                      __FILE__, __LINE__);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                          "Unable to execute query on v$distribution_current",
+                          __FILE__, __LINE__);
+        }
     
        for (i = 1; i <= nElements; i++) {
           SQLLEN slen = MAX_CLIENT_DSN_LEN;
           rc = SQLBindCol(hstmt, 1, SQL_C_CHAR, &tmpdsn, slen, NULL);
-          handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column 1; clientdsn",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column 1; clientdsn",
+                            __FILE__, __LINE__);
+          }
           rc = SQLBindCol(hstmt, 2, SQL_C_SLONG, &routingDSNs[i].elementid, sizeof(int), NULL);
-          handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column 2; elementid",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column 2; elementid",
+                            __FILE__, __LINE__);
+          }
           rc = SQLBindCol(hstmt, 3, SQL_C_SLONG, &routingDSNs[i].repset, sizeof(int), NULL);
-          handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column 3; repset",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column 3; repset",
+                            __FILE__, __LINE__);
+          }
           rc = SQLBindCol(hstmt, 4, SQL_C_SLONG, &routingDSNs[i].dataspace, sizeof(int), NULL);
-          handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column 4; dataspace",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to bind column 4; dataspace",
+                            __FILE__, __LINE__);
+          }
           rc = SQLFetch(hstmt);
-          handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to fetch elementid",
-                        __FILE__, __LINE__);
-          sprintf(routingDSNs[i].clientdsn, "TTC_SERVER_DSN=%s;UID=%s;PWD=%s;%s", "sampledb", username, password, tmpdsn);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to fetch elementid",
+                            __FILE__, __LINE__);
+          }
+          sprintf( (char *)routingDSNs[i].clientdsn, "TTC_SERVER_DSN=%s;UID=%s;PWD=%s;%s", sdsn, username, password, tmpdsn);
 
           /* Allocate connection handle for this element */
           rc = SQLAllocConnect (henv, &routingDSNs[i].hdbc);
-          handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                         "allocating a connection handle",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                             "allocating a connection handle",
+                             __FILE__, __LINE__);
+          }
 
           /* open the connection */
           rc = SQLDriverConnect (routingDSNs[i].hdbc, NULL,
                                  (SQLCHAR*) routingDSNs[i].clientdsn, SQL_NTS,
                                  (SQLCHAR*) buff1, sizeof (buff1),
                                  NULL, SQL_DRIVER_NOPROMPT);
-          handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                         "connecting to database (routing)",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                             "connecting to database (routing)",
+                             __FILE__, __LINE__);
+          }
           rc = SQLSetConnectOption (routingDSNs[i].hdbc, SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-          handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                         "turning off AUTO_COMMIT option",
-                         __FILE__, __LINE__);
-        if (  isolevel == 0  )
-            tIso = SQL_TXN_SERIALIZABLE;
-        rc = SQLSetConnectOption (routingDSNs[i].hdbc, SQL_TXN_ISOLATION, tIso);
-        handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                       "setting connection option",
-                       __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                             "turning off AUTO_COMMIT option",
+                             __FILE__, __LINE__);
+          }
+          if (  isolevel == 0  )
+              tIso = SQL_TXN_SERIALIZABLE;
+          rc = SQLSetConnectOption (routingDSNs[i].hdbc, SQL_TXN_ISOLATION, tIso);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                             "setting connection option",
+                             __FILE__, __LINE__);
+          }
 
           /* Allocate statement handles */
           rc = SQLAllocStmt(routingDSNs[i].hdbc, &routingDSNs[i].updstmt);
-          handle_errors(routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                        "Unable to allocate statement handle (routing)",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                            "Unable to allocate statement handle (routing)",
+                            __FILE__, __LINE__);
+          }
           rc = SQLAllocStmt(routingDSNs[i].hdbc, &routingDSNs[i].selstmt);
-          handle_errors(routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                        "Unable to allocate statement handle (routing)",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                            "Unable to allocate statement handle (routing)",
+                            __FILE__, __LINE__);
+          }
           rc = SQLAllocStmt(routingDSNs[i].hdbc, &routingDSNs[i].insstmt);
-          handle_errors(routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                        "Unable to allocate statement handle (routing)",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                            "Unable to allocate statement handle (routing)",
+                            __FILE__, __LINE__);
+          }
           rc = SQLAllocStmt(routingDSNs[i].hdbc, &routingDSNs[i].delstmt);
-          handle_errors(routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                        "Unable to allocate statement handle (routing)",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                            "Unable to allocate statement handle (routing)",
+                            __FILE__, __LINE__);
+          }
         }
 
         rc = SQLFreeStmt(hstmt, SQL_CLOSE);
-        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to close select",
-                      __FILE__, __LINE__);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to close select",
+                          __FILE__, __LINE__);
+        }
         rc = SQLFreeStmt(hstmt, SQL_DROP);
-        handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to close select",
-                      __FILE__, __LINE__);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors(rhdbc, hstmt, rc, ABORT_DISCONNECT_EXIT, "Unable to close select",
+                          __FILE__, __LINE__);
+        }
     
         rc = SQLTransact(henv, rhdbc, SQL_COMMIT);
-        handle_errors(rhdbc, NULL, rc, ABORT_DISCONNECT_EXIT, "Unable to commit transaction",
-                      __FILE__, __LINE__);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors(rhdbc, NULL, rc, ABORT_DISCONNECT_EXIT, "Unable to commit transaction",
+                          __FILE__, __LINE__);
+        }
     } /* M_SCALEOUT_ROUTING */
 #endif /* TTCLIENTSERVER */
-}
+} // initRouting
 #endif /* SCALEOUT && ROUTINGAPI */
 
 /*********************************************************************
@@ -1336,9 +1572,10 @@ void populate(void)
   char       buff1       [1024]; /* Connection flags */
   char       buff2       [1024];
 
+  henv = SQL_NULL_HENV;
+  hdbc = SQL_NULL_HDBC;
 
   /* Connect to data store */
-
   rc = SQLAllocEnv (&henv);
   if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO)
   {
@@ -1355,9 +1592,12 @@ void populate(void)
                  __FILE__, __LINE__);
 
   rc = SQLAllocConnect (henv, &hdbc);
-  handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                 "allocating a connection handle",
-                 __FILE__, __LINE__);
+  if (  rc != SQL_SUCCESS  )
+  {
+      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                     "allocating a connection handle",
+                     __FILE__, __LINE__);
+  }
 
   ghdbc = hdbc;
 
@@ -1368,9 +1608,12 @@ void populate(void)
                          (SQLCHAR*) connstr_real, SQL_NTS,
                          (SQLCHAR*) buff1, sizeof (buff1),
                          NULL, SQL_DRIVER_NOPROMPT);
-  handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                 "connecting to database",
-                 __FILE__, __LINE__);
+  if (  rc != SQL_SUCCESS  )
+  {
+      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                     "connecting to database",
+                     __FILE__, __LINE__);
+  }
 
   /* Trying to connect output */
   sprintf (buff2, "Connecting to driver (connect string: %s)\n",
@@ -1378,10 +1621,18 @@ void populate(void)
   handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT, buff2, __FILE__, __LINE__);
 
 #if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
-  if (  ! getServerDSN(buff1, &serverdsn)  )
+  if (  mode == M_SCALEOUT_ROUTING  )
   {
-      err_msg0("Unable to retrieve value for TTC_SERVER_DSN");
-      handle_errors(hdbc, SQL_NULL_HSTMT, SQL_ERROR, JUST_DISCONNECT_EXIT, NULL, __FILE__, __LINE__);
+      if (  !getServerDSN(buff1, &serverdsn)  )
+      {
+          if (  srvdsn == NULL  )
+          {
+              err_msg0("Unable to determine value for TTC_SERVER_DSN and none specified");
+              handle_errors(hdbc, SQL_NULL_HSTMT, SQL_ERROR, JUST_DISCONNECT_EXIT, NULL, __FILE__, __LINE__);
+          }
+      }
+      if (  (serverdsn == NULL) || (srvdsn != NULL)  )
+          serverdsn = srvdsn;
   }
 #endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
 
@@ -1391,85 +1642,128 @@ void populate(void)
   printf("%s\n", buff2);
 
   rc = SQLSetConnectOption (hdbc, SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-  handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                 "turning off AUTO_COMMIT option",
-                 __FILE__, __LINE__);
+  if (  rc != SQL_SUCCESS  )
+  {
+      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                     "turning off AUTO_COMMIT option",
+                     __FILE__, __LINE__);
+  }
+
+  if (StopRequested()) {
+    err_msg1("Signal %d received. Stopping\n", SigReceived());
+    goto leavePopulate;
+  }
 
   if (!noBuild)
   {
     /* allocate a statement */
     rc = SQLAllocStmt (hdbc, &hstmt);
-    handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                   "allocating a statement handle",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                       "allocating a statement handle",
+                       __FILE__, __LINE__);
+    }
 
     /* Drop the VPN_USERS table if it already exists */
     /* Ignore any error as the VPN_USERS table might not exist   */
     rc = SQLExecDirect (hstmt, (SQLCHAR*) drop_stmnt, SQL_NTS);
 
     /* make create statement */
-    pos = sprintf( buff1, "%s", create_stmnt );
+    pos = sprintf( buff2, "%s", create_stmnt );
     if (  ! rangeFlag  )
-        pos += sprintf (buff1+pos, hash_clause, ((key_cnt * key_cnt)/256)+1);
+        pos += sprintf (buff2+pos, hash_clause, ((key_cnt * key_cnt)/256)+1);
 #if defined(SCALEOUT)
     if (  mode != M_CLASSIC )
-        pos += sprintf( buff1+pos, dist_clause );
+        pos += sprintf( buff2+pos, "%s", dist_clause );
 #endif /* SCALEOUT */
 
     /* create the table */
-    rc = SQLExecDirect (hstmt, (SQLCHAR*) buff1, SQL_NTS);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "executing create table",
-                   __FILE__, __LINE__);
+    rc = SQLExecDirect (hstmt, (SQLCHAR*) buff2, SQL_NTS);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "executing create table",
+                       __FILE__, __LINE__);
+    }
 
     /* drop and free the create statement */
     rc = SQLFreeStmt (hstmt, SQL_DROP);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "freeing statement handle",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "freeing statement handle",
+                       __FILE__, __LINE__);
+    }
 
     /* allocate an insert statement */
     rc = SQLAllocStmt (hdbc, &hstmt);
-    handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                   "allocating an insert statement handle",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                       "allocating an insert statement handle",
+                       __FILE__, __LINE__);
+    }
 
     /* prepare the insert */
     rc = SQLPrepare (hstmt, (SQLCHAR*) insert_stmnt, SQL_NTS);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "preparing insert",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "preparing insert",
+                       __FILE__, __LINE__);
+    }
 
     /* bind the input parameters */
     rc = SQLBindParameter (hstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG,
                            SQL_INTEGER, 0, 0, &id, 0, NULL);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "binding parameter",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "binding parameter",
+                       __FILE__, __LINE__);
+    }
 
     rc = SQLBindParameter (hstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG,
                            SQL_INTEGER, 0, 0, &nb, 0, NULL);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "binding parameter",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "binding parameter",
+                       __FILE__, __LINE__);
+    }
 
     rc = SQLBindParameter (hstmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR,
                            SQL_CHAR, 11, 0, directory, 0, NULL);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "binding parameter",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "binding parameter",
+                       __FILE__, __LINE__);
+    }
 
     rc = SQLBindParameter (hstmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR,
                            SQL_CHAR, 11, 0, last_calling_party, 0, NULL);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "binding parameter",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "binding parameter",
+                       __FILE__, __LINE__);
+    }
 
     rc = SQLBindParameter (hstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR,
                            SQL_CHAR, 101, 0, descr, 0, NULL);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "binding parameter",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "binding parameter",
+                       __FILE__, __LINE__);
+    }
+
+    if (StopRequested()) {
+      err_msg1("Signal %d received. Stopping\n", SigReceived());
+      goto leavePopulate;
+    }
 
     /* Store the database mode  and key value */
     id = DBMODE_ID;
@@ -1487,15 +1781,21 @@ void populate(void)
 #endif /* SCALEOUT */
     sprintf((char *)descr, "%s/%d", dbmode, dbkey);
     rc = SQLExecute (hstmt);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "executing insert",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "executing insert",
+                       __FILE__, __LINE__);
+    }
 
     /* commit the transaction */
     rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-    handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "committing transaction",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                       "committing transaction",
+                       __FILE__, __LINE__);
+    }
 
     tptbm_msg0("Populating benchmark database\n");
 
@@ -1513,29 +1813,47 @@ void populate(void)
 
         /* execute insert statement */
         rc = SQLExecute (hstmt);
-        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                       "executing insert",
-                       __FILE__, __LINE__);
+        if (  rc != SQL_SUCCESS  )
+        {
+            handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                           "executing insert",
+                           __FILE__, __LINE__);
+        }
       }
 
       /* commit the transaction */
       rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-      handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "committing transaction",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                         "committing transaction",
+                         __FILE__, __LINE__);
+      }
+
+      if (StopRequested()) {
+        err_msg1("Signal %d received. Stopping\n", SigReceived());
+        goto leavePopulate;
+      }
+
     }
 
     /* commit the transaction */
     rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-    handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "committing transaction",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                       "committing transaction",
+                       __FILE__, __LINE__);
+    }
 
     /* drop and free the insert statement */
     rc = SQLFreeStmt (hstmt, SQL_DROP);
-    handle_errors (hdbc, hstmt, rc, DISCONNECT_EXIT,
-                   "freeing statement handle",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, DISCONNECT_EXIT,
+                       "freeing statement handle",
+                       __FILE__, __LINE__);
+    }
 
     tptbm_msg0("Population complete\n\n");
   } /* ! noBuild */
@@ -1543,19 +1861,28 @@ void populate(void)
   { /* retrieve the database mode and key and check it against the run-time values */
     /* allocate a statement */
     rc = SQLAllocStmt(hdbc, &hstmt);
-    handle_errors(hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                   "allocating a statement handle",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors(hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                       "allocating a statement handle",
+                       __FILE__, __LINE__);
+    }
 
     rc = SQLBindCol(hstmt, 1, SQL_C_CHAR, &descr, sizeof(descr), NULL);
-    handle_errors(hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "binding column",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors(hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "binding column",
+                       __FILE__, __LINE__);
+    }
         
     rc = SQLExecDirect(hstmt, (SQLCHAR*)SEL_DBMODE, SQL_NTS);
-    handle_errors(hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "retrieving database mode",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors(hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "retrieving database mode",
+                       __FILE__, __LINE__);
+    }
 
     rc = SQLFetch (hstmt);
     if ( rc == SQL_NO_DATA_FOUND  )
@@ -1581,21 +1908,34 @@ void populate(void)
         }
     }
     else
+    {
         handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
                        "fetching select",
                        __FILE__, __LINE__);
-    
+    }
+
+    if (StopRequested()) {
+      err_msg1("Signal %d received. Stopping\n", SigReceived());
+      goto leavePopulate;
+    }
+
     /* close the statement */
     rc = SQLFreeStmt (hstmt,SQL_CLOSE);
-    handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
-                   "closing select",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors (hdbc, hstmt, rc, ABORT_DISCONNECT_EXIT,
+                       "closing select",
+                       __FILE__, __LINE__);
+    }
 
     /* drop and free the statement */
     rc = SQLFreeStmt(hstmt, SQL_DROP);
-    handle_errors(hdbc, hstmt, rc, DISCONNECT_EXIT,
-                   "freeing statement handle",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        handle_errors(hdbc, hstmt, rc, DISCONNECT_EXIT,
+                       "freeing statement handle",
+                       __FILE__, __LINE__);
+    }
 
     if (  ! dbmode[0] || (dbkey == 0)  )
     {
@@ -1622,6 +1962,18 @@ void populate(void)
         }
     }
   } /* noBuild */
+
+  return;
+
+leavePopulate:
+    if (  hstmt != SQL_NULL_HSTMT  )
+        SQLFreeStmt(hstmt, SQL_DROP);
+    if (  hdbc != SQL_NULL_HDBC  )
+    {
+        SQLDisconnect(hdbc);
+        SQLFreeConnect(hdbc);
+    }
+    exit( 10 );
 }
 
 /*********************************************************************
@@ -1739,7 +2091,7 @@ void OpenShmSeg(int  shmSize)
         memset( (void *)shmhdr, 0, shmSize );
     
         /* Set the number of processes for the children to get the correct offsets */
-        shmhdr[0].state = num_processes;
+        shmhdr[0].nproc = num_processes;
     
         /* remove shared memory segment so it disappears after detach */
         shmctl (shmid, IPC_RMID, NULL);
@@ -1905,22 +2257,37 @@ int main(int argc, char** argv)
     if (buildOnly)
     {
       rc = SQLDisconnect (ghdbc);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "disconnecting from database",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                         "disconnecting from database",
+                         __FILE__, __LINE__);
+      }
     
       rc = SQLFreeConnect (ghdbc);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "freeing connection handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                         "freeing connection handle",
+                         __FILE__, __LINE__);
+      }
 
       rc = SQLFreeEnv (henv);
-      handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "freeing environment handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                         "freeing environment handle",
+                         __FILE__, __LINE__);
+      }
+
       retval = 0;
       goto leaveMain;
     } /* buildOnly */
+  }
+
+  if (StopRequested()) {
+    err_msg1("Signal %d received. Stopping\n", SigReceived());
+    goto leaveMain;
   }
 
   if (  procId == 0  )
@@ -1975,6 +2342,7 @@ void ExecuteTptBm(int          seed,
   time_t    duration_start, duration_cur, duration_diff;
   int       duration_target = 0;
   UBIGINT   duration_est = 10000;    /* duration estimate; initial guess = 10000 xacts / sec */
+  UBIGINT   nxact = 0;        /* used in TPS calculation */
   int       rampingup = 0;    /* currently in ramp-up */
   int       rampingdown = 0;  /* currently in ramp-down */
   int       rand_int;         /* rand integer */
@@ -1988,6 +2356,7 @@ void ExecuteTptBm(int          seed,
   double    tps;              /* compute transactions per second */
   SQLULEN   tIso = SQL_TXN_READ_COMMITTED;
   int       i;
+  int       fatalerror = 0;
   int       op_count=0;
   char      errstr [4096];
 
@@ -2028,7 +2397,7 @@ void ExecuteTptBm(int          seed,
   } else {
     ghdbc = SQL_NULL_HDBC;
     /* Get the num_processes from SHM */
-    the_num_processes = shmhdr[0].state;
+    the_num_processes = shmhdr[0].nproc;
 
   /* Connect to data store */
 #ifdef WIN32  /* Only needed on Windoze */
@@ -2041,6 +2410,7 @@ void ExecuteTptBm(int          seed,
     rc = SQLAllocEnv (&henv);
     if (rc != SQL_SUCCESS && rc != SQL_SUCCESS_WITH_INFO)
     {
+      shmhdr[procId].state = PROC_ERROR;
       /* error occurred -- don't bother calling handle_errors, since handle
        * is not valid so SQLError won't work */
       err_msg3("ERROR in %s, line %d: %s\n",
@@ -2053,17 +2423,25 @@ void ExecuteTptBm(int          seed,
                    __FILE__, __LINE__);
     
     rc = SQLAllocConnect (henv, &ghdbc);
-    handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "allocating a connection handle",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors (SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                       "allocating a connection handle",
+                       __FILE__, __LINE__);
+    }
     
     sprintf (errstr, "Connecting to database (connect string %s)\n",
              connstr_no_password);
     rc = SQLDriverConnect (ghdbc, NULL, (SQLCHAR*) connstr_real, SQL_NTS,
                            NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
-    handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                   "connecting to the database",
-                   __FILE__, __LINE__);
+    if (  rc != SQL_SUCCESS  )
+    {
+        shmhdr[procId].state = PROC_ERROR;
+        handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                       "connecting to the database",
+                       __FILE__, __LINE__);
+    }
 
 #if defined(SCALEOUT) && defined (ROUTINGAPI)
     if (  mode > M_SCALEOUT  )
@@ -2075,9 +2453,14 @@ void ExecuteTptBm(int          seed,
     erasePassword(connstr, strlen(connstr));
   }
 
+  if (StopRequested()) {
+    err_msg1("Signal %d received. Stopping\n", SigReceived());
+    goto cleanup;
+  }
+
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
   if (  mode > M_SCALEOUT  )
-      initRouting();
+      initRouting( serverdsn );
 #endif /* SCALEOUT && ROUTING */
   erasePassword(password, strlen(password));
 #if defined(SCALEOUT) && defined (ROUTINGAPI) && defined(TTCLIENTSERVER)
@@ -2086,9 +2469,13 @@ void ExecuteTptBm(int          seed,
 #endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
       /* turn off autocommit */
       rc = SQLSetConnectOption (ghdbc, SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                     "turning AUTO_COMMIT option OFF",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                         "turning AUTO_COMMIT option OFF",
+                         __FILE__, __LINE__);
+      }
     
       /* explicitly set the locking isolation level */
       if (isolevel != -1)
@@ -2104,34 +2491,54 @@ void ExecuteTptBm(int          seed,
         }
 
         rc = SQLSetConnectOption (ghdbc, SQL_TXN_ISOLATION, tIso);
-        handle_errors (ghdbc, SQL_NULL_HSTMT, rc, DISCONNECT_EXIT,
-                       "setting connection option",
-                       __FILE__, __LINE__);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors (ghdbc, SQL_NULL_HSTMT, rc, DISCONNECT_EXIT,
+                           "setting connection option",
+                           __FILE__, __LINE__);
+        }
       }
 
       /* allocate an update statement */
       rc = SQLAllocStmt (ghdbc, &updstmt);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                     "allocating an update statement handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                         "allocating an update statement handle",
+                         __FILE__, __LINE__);
+      }
 
       /* allocate a select statement */
       rc = SQLAllocStmt (ghdbc, &selstmt);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                     "allocating a select statement handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                         "allocating a select statement handle",
+                         __FILE__, __LINE__);
+      }
     
       /* allocate an insert statement */
       rc = SQLAllocStmt (ghdbc, &insstmt);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                     "allocating an insert statement handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                         "allocating an insert statement handle",
+                         __FILE__, __LINE__);
+      }
     
       /* allocate a  delete statement */
       rc = SQLAllocStmt (ghdbc, &delstmt);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
-                     "allocating a delete statement handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                         "allocating a delete statement handle",
+                         __FILE__, __LINE__);
+      }
 #if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
   }
 
@@ -2145,166 +2552,280 @@ void ExecuteTptBm(int          seed,
           delstmt = routingDSNs[i].delstmt;
           insstmt = routingDSNs[i].insstmt;
     
+          if (StopRequested()) {
+            err_msg1("Signal %d received. Stopping\n", SigReceived());
+            goto cleanup;
+          }
+
           /* prepare the select statement */
           rc = SQLPrepare (selstmt, (SQLCHAR*) select_stmnt, SQL_NTS);
-          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "preparing select",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "preparing select",
+                             __FILE__, __LINE__);
+          }
 
           /* Bind the selected columns  */
           rc = SQLBindCol (selstmt, 1, SQL_C_CHAR, &directory, 11, NULL);
-          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding column",
-                     __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding column",
+                         __FILE__, __LINE__);
+          }
         
           rc = SQLBindCol (selstmt, 2, SQL_C_CHAR, &last, 11, NULL);
-          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding column",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding column",
+                             __FILE__, __LINE__);
+          }
         
           rc = SQLBindCol (selstmt, 3, SQL_C_CHAR, &descr, 101, NULL);
-          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding column",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding column",
+                             __FILE__, __LINE__);
+          }
         
           /* bind the input parameters */
           rc = SQLBindParameter (selstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, 
                                  SQL_INTEGER, 0, 0, &id, 0, NULL);
-          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           rc = SQLBindParameter (selstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, 
                                  SQL_INTEGER, 0, 0, &nb, 0, NULL);
-          handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           /* prepare the update statement */
           rc = SQLPrepare (updstmt, (SQLCHAR*) update_stmnt, SQL_NTS);
-          handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "preparing update",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "preparing update",
+                             __FILE__, __LINE__);
+          }
         
           /* bind the input parameters */
           rc = SQLBindParameter (updstmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                                  11, 0, last, 0, NULL);
-          handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           rc = SQLBindParameter (updstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                                  0, 0, &id, 0, NULL);
-          handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           rc = SQLBindParameter (updstmt, 3, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                                  0, 0, &nb, 0, NULL);
-          handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           /* prepare the delete statement */
         
           rc = SQLPrepare(delstmt,(SQLCHAR *) delete_stmnt, SQL_NTS);
-          handle_errors(thdbc, delstmt, rc, 1,
-                        "Unable to prepare delete",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(thdbc, delstmt, rc, 1,
+                            "Unable to prepare delete",
+                            __FILE__, __LINE__);
+          }
         
           /* bind the input parameters */
         
           rc = SQLBindParameter(delstmt,1,SQL_PARAM_INPUT,SQL_C_SLONG,SQL_INTEGER,
                                 0,0,&id,0,NULL);
-          handle_errors(thdbc, delstmt, rc, 1, "Unable to bind parameter",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(thdbc, delstmt, rc, 1, "Unable to bind parameter",
+                            __FILE__, __LINE__);
+          }
         
           rc = SQLBindParameter(delstmt,2,SQL_PARAM_INPUT,SQL_C_SLONG,SQL_INTEGER,
                                 0,0,&nb,0,NULL);
-          handle_errors(thdbc, delstmt, rc, 1, "Unable to bind parameter",
-                        __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors(thdbc, delstmt, rc, 1, "Unable to bind parameter",
+                            __FILE__, __LINE__);
+          }
         
         
           /* prepare the insert */
           rc = SQLPrepare (insstmt, (SQLCHAR*) insert_stmnt, SQL_NTS);
-          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "preparing insert",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "preparing insert",
+                             __FILE__, __LINE__);
+          }
         
           /* bind the input parameters */
           rc = SQLBindParameter (insstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                                  0, 0, &id, 0, NULL);
-          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           rc = SQLBindParameter (insstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                                  0, 0, &nb, 0, NULL);
-          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           rc = SQLBindParameter (insstmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                                  11, 0, directory, 0, NULL);
-          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           rc = SQLBindParameter (insstmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR,
                                  SQL_CHAR, 11, 0, last_calling_party, 0, NULL);
-          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           rc = SQLBindParameter (insstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                                  101, 0, descr, 0, NULL);
-          handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+          }
         
           /* commit the transaction */
           rc = SQLTransact (henv, thdbc, SQL_COMMIT);
-          handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                         "committing transaction",
-                         __FILE__, __LINE__);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                             "committing transaction",
+                             __FILE__, __LINE__);
+          }
       } 
   }
   else {
 #endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
+      if (StopRequested()) {
+        err_msg1("Signal %d received. Stopping\n", SigReceived());
+        goto cleanup;
+      }
+
       /* prepare the select statement */
       rc = SQLPrepare (selstmt, (SQLCHAR*) select_stmnt, SQL_NTS);
-      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "preparing select",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "preparing select",
+                         __FILE__, __LINE__);
+      }
 
       /* Bind the selected columns  */
       rc = SQLBindCol (selstmt, 1, SQL_C_CHAR, &directory, 11, NULL);
-      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                 "binding column",
-                 __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                     "binding column",
+                     __FILE__, __LINE__);
+      }
         
       rc = SQLBindCol (selstmt, 2, SQL_C_CHAR, &last, 11, NULL);
-      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding column",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding column",
+                         __FILE__, __LINE__);
+      }
         
       rc = SQLBindCol (selstmt, 3, SQL_C_CHAR, &descr, 101, NULL);
-      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding column",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding column",
+                         __FILE__, __LINE__);
+      }
         
       /* bind the input parameters */
       rc = SQLBindParameter (selstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, 
                              SQL_INTEGER, 0, 0, &id, 0, NULL);
-      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       rc = SQLBindParameter (selstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, 
                              SQL_INTEGER, 0, 0, &nb, 0, NULL);
-      handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       /* prepare the update statement */
       rc = SQLPrepare (updstmt, (SQLCHAR*) update_stmnt, SQL_NTS);
@@ -2315,89 +2836,155 @@ void ExecuteTptBm(int          seed,
       /* bind the input parameters */
       rc = SQLBindParameter (updstmt, 1, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                              11, 0, last, 0, NULL);
-      handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       rc = SQLBindParameter (updstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                              0, 0, &id, 0, NULL);
-      handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       rc = SQLBindParameter (updstmt, 3, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                              0, 0, &nb, 0, NULL);
-      handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       /* prepare the delete statement */
       rc = SQLPrepare(delstmt,(SQLCHAR *) delete_stmnt, SQL_NTS);
-      handle_errors(ghdbc, delstmt, rc, 1,
-                    "Unable to prepare delete",
-                    __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors(ghdbc, delstmt, rc, 1,
+                        "Unable to prepare delete",
+                        __FILE__, __LINE__);
+      }
         
       /* bind the input parameters */
       rc = SQLBindParameter(delstmt,1,SQL_PARAM_INPUT,SQL_C_SLONG,SQL_INTEGER,
                             0,0,&id,0,NULL);
-      handle_errors(ghdbc, delstmt, rc, 1, "Unable to bind parameter",
-                    __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors(ghdbc, delstmt, rc, 1, "Unable to bind parameter",
+                        __FILE__, __LINE__);
+      }
         
       rc = SQLBindParameter(delstmt,2,SQL_PARAM_INPUT,SQL_C_SLONG,SQL_INTEGER,
                             0,0,&nb,0,NULL);
-      handle_errors(ghdbc, delstmt, rc, 1, "Unable to bind parameter",
-                    __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors(ghdbc, delstmt, rc, 1, "Unable to bind parameter",
+                        __FILE__, __LINE__);
+      }
         
       /* prepare the insert */
       rc = SQLPrepare (insstmt, (SQLCHAR*) insert_stmnt, SQL_NTS);
-      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "preparing insert",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "preparing insert",
+                         __FILE__, __LINE__);
+      }
         
       /* bind the input parameters */
       rc = SQLBindParameter (insstmt, 1, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                              0, 0, &id, 0, NULL);
-      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       rc = SQLBindParameter (insstmt, 2, SQL_PARAM_INPUT, SQL_C_SLONG, SQL_INTEGER,
                              0, 0, &nb, 0, NULL);
-      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       rc = SQLBindParameter (insstmt, 3, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                              11, 0, directory, 0, NULL);
-      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       rc = SQLBindParameter (insstmt, 4, SQL_PARAM_INPUT, SQL_C_CHAR,
                              SQL_CHAR, 11, 0, last_calling_party, 0, NULL);
-      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                     "binding parameter",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                         "binding parameter",
+                         __FILE__, __LINE__);
+      }
         
       rc = SQLBindParameter (insstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR, SQL_CHAR,
                              101, 0, descr, 0, NULL);
-      handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                         "binding parameter",
-                         __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                             "binding parameter",
+                             __FILE__, __LINE__);
+      }
         
       /* commit the transaction */
       rc = SQLTransact (henv, ghdbc, SQL_COMMIT);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "committing transaction",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                         "committing transaction",
+                         __FILE__, __LINE__);
+      }
 #if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
   }
 #endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
 
   /* print this starting message only in the main/parent process */
-  if (procId == 0)
+  if (procId == 0) // Parent
   {
     if (the_num_processes > 1) {
+      for ( i = 1; i < the_num_processes; i++ )
+      {
+          if (  shmhdr[i].state == PROC_ERROR  )
+          {
+              fatalerror = 1;
+              goto finish_loop;
+          }
+      }
+
+      if (StopRequested()) {
+        err_msg1("Signal %d received. Stopping\n", SigReceived());
+        goto cleanup;
+      }
+
       /* wait for the children to finish initialization */
       tptbm_msg1("Waiting for %d processes to initialize\n", the_num_processes);
       // ready all the children
@@ -2408,14 +2995,28 @@ void ExecuteTptBm(int          seed,
             goto cleanup;
           j = 1; k= 0;
           for ( i = 1; i < the_num_processes; i++ ) {
+              if ( shmhdr[i].state == PROC_ERROR  )
+              {
+                  fatalerror = 1;
+                  goto finish_loop;
+              }
               if ( shmhdr[i].state != PROC_SET  )
                   j = 0, k++;
+          }
+          if (StopRequested()) {
+            err_msg1("Signal %d received. Stopping\n", SigReceived());
+            goto cleanup;
           }
           tt_sleep (1);
       } while ( ! j );
       // start all the children
       for ( i = 1; i < the_num_processes; i++ )
-          shmhdr[i].state = PROC_GO;
+      {
+          if (  ramptime  )
+              shmhdr[i].state = PROC_GO;
+          else
+              shmhdr[i].state = PROC_STARTBENCH;
+      }
     }
 
     out_msg6("Beginning execution with %d process%s: "
@@ -2424,7 +3025,8 @@ void ExecuteTptBm(int          seed,
                  reads,
                  100 - (reads + inserts + deletes),
                  inserts, deletes);
-  } else {
+
+  } else { // Child
       // wait to be readied
       while (shmhdr[procId].state < PROC_READY)
       {
@@ -2440,7 +3042,8 @@ void ExecuteTptBm(int          seed,
             goto cleanup;
         tt_yield();
       }
-      shmhdr[procId].state = PROC_RUNNING; // indicate running
+      if (  shmhdr[procId].state == PROC_GO  )
+          shmhdr[procId].state = PROC_RUNNING; // indicate running
   }
 
   insert_start = key_cnt + procId;   /* start mark for this process */
@@ -2460,6 +3063,7 @@ void ExecuteTptBm(int          seed,
     } else {
       duration_target = duration;
       rampingup = 0;
+//fprintf(stderr, "DEBUG: %d - measurement start I\n", procId );
     }
   }
 
@@ -2468,13 +3072,18 @@ void ExecuteTptBm(int          seed,
       if (duration) {
         /* no more rows to delete */
         if ( deletes && (deleted >= delete_max) ) {
+#if 0
           if (the_num_processes > 1) {
-            shmhdr[procId].xacts = i; /* store the number of xacts */
+            shmhdr[procId].xacts = (UBIGINT)i; /* store the number of xacts */
             shmhdr[procId].state = PROC_STOP;
           } else {
             /* i am the only process */
             num_xacts = i;
           }
+#else
+          shmhdr[procId].xacts = (UBIGINT)i; /* store the number of xacts */
+          shmhdr[procId].state = PROC_STOP;
+#endif
           if (verbose >= VERBOSE_ALL)
             status_msg2("Process %d deleted %.0f rows\n",
                         procId, (double)deleted);
@@ -2488,13 +3097,15 @@ void ExecuteTptBm(int          seed,
             if (shmhdr[procId].state == PROC_STARTBENCH) {
               i = 0; /* reset the counter */
               shmhdr[procId].state = PROC_MEASURING;
+//fprintf(stderr, "DEBUG: %d - measurement start\n", procId );
             }
             else if (shmhdr[procId].state == PROC_STOPBENCH) {
               if (verbose >= VERBOSE_ALL)
                 status_msg2("Process %d finished %.0f xacts\n",
                             procId, (double)i);
-              shmhdr[procId].xacts = i; /* store the number of xacts */
+              shmhdr[procId].xacts = (UBIGINT)i; /* store the number of xacts */
               shmhdr[procId].state = PROC_STOPPING;
+//fprintf(stderr, "DEBUG: %d - measurement stop: %lu\n", procId, shmhdr[procId].xacts );
             }
             else if (shmhdr[procId].state == PROC_STOP) {
               shmhdr[procId].state = PROC_STOPPING;
@@ -2502,6 +3113,7 @@ void ExecuteTptBm(int          seed,
             }
           }
         }
+
         /* parent */
         else {
           /* check if duration exceeded */
@@ -2509,10 +3121,21 @@ void ExecuteTptBm(int          seed,
           duration_diff = (duration_cur - duration_start);
           if (  duration_diff >= (time_t)duration_target  )
           {
+              for ( child = 1; child < the_num_processes; child++ ) 
+              {
+                  if ( shmhdr[child].state == PROC_ERROR  )
+                  {
+                      fatalerror = 1;
+                      goto finish_loop;
+                  }
+              }
               if (  rampingup  ) {
                 /* RAMP-UP done */
                 status_msg0("Ramp-up done...measuring begins\n");
                 ttGetTime(&main_start); /* reset the start time */
+                i = 0; /* reset the counter */
+                shmhdr[procId].state = PROC_MEASURING;
+//fprintf(stderr, "DEBUG: %d - measurement start\n", procId );
                 if (the_num_processes > 1) {
                   for (child = 1; child < the_num_processes; child++) {
                     /* tell children to start timing */
@@ -2522,7 +3145,6 @@ void ExecuteTptBm(int          seed,
                 duration_start = duration_cur;
                 duration_target = duration;
                 rampingup = 0;
-                i = 0;
               } else {
                 /* Benchmark finished */
                 if (  rampingdown  ) {
@@ -2539,22 +3161,30 @@ void ExecuteTptBm(int          seed,
                 } else {
                     /* record time at the end of the measured part of the run */
                     ttGetTime (&main_end);
-                    shmhdr[procId].xacts = i; /* store the number of xacts */
+                    shmhdr[procId].xacts = (UBIGINT)i; /* store the number of xacts */
+//fprintf(stderr, "DEBUG: %d - measurement stop: %lu\n", procId, shmhdr[procId].xacts );
 
                     if (the_num_processes > 1) {
                       for (child = 1; child < the_num_processes; child++) {
                         /* tell children to stop measuring */
                         shmhdr[child].state = PROC_STOPBENCH;
                       }
-                        /* and wait for them to acknowledge */
+#if 0
+                      /* and wait for them to acknowledge */
                       do {
                           tt_yield();
                           j = 1;
                           for ( child = 1; child < the_num_processes; child++ ) {
+                              if ( shmhdr[child].state == PROC_ERROR  )
+                              {
+                                  fatalerror = 1;
+                                  goto finish_loop;
+                              }
                               if ( shmhdr[child].state != PROC_STOPPING  )
                                   j = 0;
                           }
                       } while ( j == 0 );
+#endif
                     }
                     if (verbose >= VERBOSE_ALL)
                       status_msg2("Process %d finished %.0f xacts\n",
@@ -2579,7 +3209,7 @@ void ExecuteTptBm(int          seed,
         } /* end of parent */
       } /* end of duration */
     else
-        shmhdr[procId].xacts = i;
+        shmhdr[procId].xacts = (UBIGINT)i;
 
     throttle:      
       if (throttle && ((i % throttle) == (throttle-1))) {
@@ -2589,6 +3219,8 @@ void ExecuteTptBm(int          seed,
           interval_start = interval_cur;
         }
         else {
+            if (StopRequested())
+                goto cleanup;
           tt_yield();
           goto throttle;
         }
@@ -2618,6 +3250,9 @@ void ExecuteTptBm(int          seed,
       else
         path = 1;          /* read */
 
+      if (StopRequested())
+          goto cleanup;
+
       if (path == 1)                                /* select xact */
       {
         /* randomly pick argument values */
@@ -2642,26 +3277,42 @@ void ExecuteTptBm(int          seed,
         {
             /* execute, fetch, free and commit */
             rc = SQLExecute (selstmt);
-            handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "executing select",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "executing select",
+                               __FILE__, __LINE__);
+           }
     
             rc = SQLFetch (selstmt);
-            handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "fetching select",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "fetching select",
+                               __FILE__, __LINE__);
+            }
     
             rc = SQLFreeStmt (selstmt,SQL_CLOSE);
-            handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "closing select",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (thdbc, selstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "closing select",
+                               __FILE__, __LINE__);
+            }
     
             if (op_count == opsperxact) {
               /* TimesTen doesn't require reads to be committed          */
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
-              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                             "committing transaction",
-                             __FILE__, __LINE__);
+              if (  rc != SQL_SUCCESS  )
+              {
+                  shmhdr[procId].state = PROC_ERROR;
+                  handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                                 "committing transaction",
+                                 __FILE__, __LINE__);
+              }
               op_count = 0;
             }
         }
@@ -2693,15 +3344,23 @@ void ExecuteTptBm(int          seed,
         {
             /* execute and commit */
             rc = SQLExecute (updstmt);
-            handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "executing update",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (thdbc, updstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "executing update",
+                               __FILE__, __LINE__);
+            }
     
             if (op_count == opsperxact) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
-              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                             "committing transaction",
-                             __FILE__, __LINE__);
+              if (  rc != SQL_SUCCESS  )
+              {
+                  shmhdr[procId].state = PROC_ERROR;
+                  handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                                 "committing transaction",
+                                 __FILE__, __LINE__);
+              }
               op_count = 0;
             }
         }
@@ -2736,15 +3395,23 @@ void ExecuteTptBm(int          seed,
         if ( ! nodbexec )
         {
             rc = SQLExecute (delstmt);
-            handle_errors (thdbc, delstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "executing delete",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (thdbc, delstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "executing delete",
+                               __FILE__, __LINE__);
+            }
 
             if (op_count == opsperxact) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
-              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                             "committing delete transaction",
-                             __FILE__, __LINE__);
+              if (  rc != SQL_SUCCESS  )
+              {
+                  shmhdr[procId].state = PROC_ERROR;
+                  handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                                 "committing delete transaction",
+                                 __FILE__, __LINE__);
+              }
               op_count = 0;
             }
         }
@@ -2786,26 +3453,36 @@ void ExecuteTptBm(int          seed,
         {
             /* execute and commit */
             rc = SQLExecute (insstmt);
-            handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
-                           "executing insert",
-                           __FILE__, __LINE__);
+            if (  rc != SQL_SUCCESS  )
+            {
+                shmhdr[procId].state = PROC_ERROR;
+                handle_errors (thdbc, insstmt, rc, ABORT_DISCONNECT_EXIT,
+                               "executing insert",
+                               __FILE__, __LINE__);
+            }
     
             if (op_count == opsperxact) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
-              handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                             "committing transaction",
-                             __FILE__, __LINE__);
+              if (  rc != SQL_SUCCESS  )
+              {
+                  shmhdr[procId].state = PROC_ERROR;
+                  handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                                 "committing transaction",
+                                  __FILE__, __LINE__);
+              }
               op_count = 0;
             }
         }
       }
     }
+
 finish_loop:
   /* the following is only for multi-process */
   if ((the_num_processes > 1) || (procId > 0))
   {
     /* each process indicates completion of run */
-    shmhdr[procId].state = PROC_END;
+    if (  shmhdr[procId].state != PROC_ERROR  )
+        shmhdr[procId].state = PROC_END;
 
     if (procId == 0)   /* parent process */
     {
@@ -2836,37 +3513,46 @@ finish_loop:
   }
 
   /* Only calculate stats in main process */
-  if ( (procId == 0) && verbose)
+  if ( (procId == 0) && verbose && ! fatalerror)
   {
   /* compute transactions per second, handling zero time difference case */
 
       time_diff = diff_time (&main_start, &main_end);
-      if (time_diff == 0)
-        time_diff = 1000; /* 1 second minimum difference */
+      if (time_diff <= 0)
+      {
+          err_msg0("Run time too short for reliable reporting\n");
+      }
+      else
+      {
+//fprintf(stderr, "DEBUG: time_diff = %ld\n", (long)time_diff);
+          nxact = shmhdr[0].xacts;
+//fprintf(stderr, "DEBUG: xacts[0] = %lu\n", (unsigned long)shmhdr[0].xacts);
+          if ( the_num_processes > 1 )
+              for (i = 1; i < the_num_processes; i++)
+              {
+//fprintf(stderr, "DEBUG: xacts[%d] = %lu\n", i, (unsigned long)shmhdr[i].xacts);
+                   nxact += shmhdr[i].xacts;
+              }
+          tps = (((double) nxact * 1000.0) / time_diff);
+          if (opsperxact > 1)
+            tps /= (double)opsperxact;
 
-      num_xacts = shmhdr[0].xacts;
-      if ( the_num_processes > 1 )
-          for (i = 1; i < the_num_processes; i++)
-               num_xacts += shmhdr[i].xacts;
-      tps = ((double) num_xacts / time_diff) * 1000;
-      if (opsperxact > 1)
-        tps /= (double)opsperxact;
-
-      if (time_diff >= 1000) {
-        out_msg1("\nElapsed time:     %10.1f seconds \n", (double)time_diff/1000.0);
-      }
-      else {
-        out_msg1("\nElapsed time:     %10.1f msec \n", (double)time_diff);
-      }
-      if (opsperxact == 0) {
-        out_msg1("Operation rate:   %10.1f operations/second\n", tps);
-      }
-      else {
-        out_msg1("Transaction rate: %10.1f transactions/second\n", tps);
-      }
-      if (opsperxact > 1) {
-        out_msg2("Operation rate:   %10.1f operations/second (%d ops/transaction)\n",
-                 tps * opsperxact, opsperxact);
+          if (time_diff >= 1000) {
+            out_msg1("\nElapsed time:     %10.1f seconds \n", (double)time_diff/1000.0);
+          }
+          else {
+            out_msg1("\nElapsed time:     %10.1f msec \n", (double)time_diff);
+          }
+          if (opsperxact == 0) {
+            out_msg1("Operation rate:   %10.1f operations/second\n", tps);
+          }
+          else {
+            out_msg1("Transaction rate: %10.1f transactions/second\n", tps);
+          }
+          if (opsperxact > 1) {
+            out_msg2("Operation rate:   %10.1f operations/second (%d ops/transaction)\n",
+                     tps * opsperxact, opsperxact);
+          }
       }
   }
 
@@ -2880,50 +3566,82 @@ cleanup:
 #endif /* TTCLIENTSERVER */
 #endif /* SCALEOUT && ROUTING */
       rc = SQLTransact (henv, ghdbc, SQL_COMMIT);
-      handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                     "committing transaction",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                         "committing transaction",
+                         __FILE__, __LINE__);
+      }
 
       /* drop and free the update statement */
       rc = SQLFreeStmt (updstmt, SQL_DROP);
-      handle_errors (ghdbc, updstmt, rc, DISCONNECT_EXIT,
-                     "freeing statement handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, updstmt, rc, DISCONNECT_EXIT,
+                         "freeing statement handle",
+                         __FILE__, __LINE__);
+      }
 
       /* drop and free the select statement */
       rc = SQLFreeStmt (selstmt, SQL_DROP);
-      handle_errors (ghdbc, selstmt, rc, DISCONNECT_EXIT,
-                     "freeing statement handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, selstmt, rc, DISCONNECT_EXIT,
+                         "freeing statement handle",
+                         __FILE__, __LINE__);
+      }
 
       /* drop and free the insert statement */
       rc = SQLFreeStmt (insstmt, SQL_DROP);
-      handle_errors (ghdbc, insstmt, rc, DISCONNECT_EXIT,
-                     "freeing statement handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, insstmt, rc, DISCONNECT_EXIT,
+                         "freeing statement handle",
+                         __FILE__, __LINE__);
+      }
 
       /* drop and free the delete statement */
       rc = SQLFreeStmt (delstmt, SQL_DROP);
-      handle_errors (ghdbc, delstmt, rc, DISCONNECT_EXIT,
-                     "freeing delete statement handle",
-                     __FILE__, __LINE__);
+      if (  rc != SQL_SUCCESS  )
+      {
+          shmhdr[procId].state = PROC_ERROR;
+          handle_errors (ghdbc, delstmt, rc, DISCONNECT_EXIT,
+                         "freeing delete statement handle",
+                         __FILE__, __LINE__);
+      }
 #if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
   }
 #endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
 
   rc = SQLDisconnect(ghdbc);
-  handle_errors(ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                      "disconnecting from database",
-                         __FILE__, __LINE__);
+  if (  rc != SQL_SUCCESS  )
+  {
+      shmhdr[procId].state = PROC_ERROR;
+      handle_errors(ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                          "disconnecting from database",
+                             __FILE__, __LINE__);
+  }
   rc = SQLFreeConnect(ghdbc);
-  handle_errors(ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                       "freeing connection handle",
-                         __FILE__, __LINE__);
+  if (  rc != SQL_SUCCESS  )
+  {
+      shmhdr[procId].state = PROC_ERROR;
+      handle_errors(ghdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                           "freeing connection handle",
+                             __FILE__, __LINE__);
+  }
 
   rc = SQLFreeEnv(henv);
-  handle_errors(SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                 "freeing environment handle",
-                 __FILE__, __LINE__);
+  if (  rc != SQL_SUCCESS  )
+  {
+      shmhdr[procId].state = PROC_ERROR;
+      handle_errors(SQL_NULL_HDBC, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                     "freeing environment handle",
+                     __FILE__, __LINE__);
+  }
 
 #if defined(WIN32)
     UnmapViewOfFile((LPVOID)shmhdr);

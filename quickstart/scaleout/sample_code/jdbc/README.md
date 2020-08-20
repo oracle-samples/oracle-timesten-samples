@@ -2,13 +2,17 @@ Copyright (c) 1998, 2017, Oracle and/or its affiliates. All rights reserved.
 
 # Java/JDBC sample program for Scaleout
 
-This directory contains the source code for a relatively simple Java/JDBC program (GridSample) that shows how to connect to and execute transactions against a TimesTen Scaleout database. The program is written to illustrate best practice and demonstrates how to make a program resilient by providing a fully functional code example showing how to properly handle events such as client connection failovers and transient errors.
+This directory contains the source code for a relatively simple Java/JDBC program (GridSample) that shows how to connect to and execute transactions against a TimesTen Scaleout database.
+
+**NOTE:**  For platforms where only a TimesTen client is supported, such as Windows and macOS, these samples must connect to a remote TimesTen Scaleout database.
+
+The program is written to illustrate best practice and demonstrates how to make a program resilient by providing a fully functional code example showing how to properly handle events such as client connection failovers and transient errors.
 
 (If you want some more basic samples to get you started, the Classic quickstart JDBC sample programs will run without change against Scaleout.) 
 
 The program can also be run against a Classic database; the program determines the database mode at run-time and adapts accordingly.
 
-GridSample uses the Mobile Payments sample database which must be created and populated before running the program.
+GridSample uses the Mobile Payments sample database which must be created and populated before running the program. See [sample_config](../../sample_config) and [sample_scripts](../../sample_scripts) for instructions.
 
 The program implements a configurable workload consisting of 5 different business transactions:
 

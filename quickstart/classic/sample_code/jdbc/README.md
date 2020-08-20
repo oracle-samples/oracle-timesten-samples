@@ -281,13 +281,13 @@ Run the program using default workload mix of 80% reads, 20% updates, dsn=sample
   
   `java Tptbm`
 
-80% reads, 20% updates, 4 threads, populate the table with 400,000 rows, and run 100,000 transactions
+80% reads, 20% updates, 4 threads, populate the table with 400,000 rows, and run for 60 seconds with a 10 second ramp-upand ramp-down time.
   
-  `java Tptbm -threads 4 -key 200 -xacts 100000`
+  `java Tptbm -threads 4 -key 200 -sec 60`
 
-85% reads, 10% inserts, 5% updates, 4 threads, 10,000 transactions
+85% reads, 10% inserts, 5% updates, 4 threads, 3 minutes timing, 30 seconds ramp up and down.
   
-  `java Tptbm -threads 4 -reads 85 -inserts 10 -xacts 10000`
+  `java Tptbm -threads 4 -read 85 -insert 10 -sec 180 -ramp 30`
 
 For the full syntax of the program, use "java Tptbm -h".
 

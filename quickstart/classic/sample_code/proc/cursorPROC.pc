@@ -50,6 +50,7 @@ extern char  service[ ];
  */
 typedef char asciiz[MAX_USERNAME]; 
 
+EXEC SQL BEGIN DECLARE SECTION;
 EXEC SQL TYPE asciiz IS CHARZ(MAX_USERNAME) REFERENCE; 
 asciiz     user; 
 asciiz     pass; 
@@ -61,6 +62,7 @@ struct emp_info
     float      salary; 
     float      commission; 
 }; 
+EXEC SQL END DECLARE SECTION;
 
 void sql_error(msg) 
     char *msg;
@@ -85,7 +87,9 @@ void sql_error(msg)
 
 int main(int argc, char** argv)
 { 
+EXEC SQL BEGIN DECLARE SECTION;
     struct emp_info *emp_rec_ptr; 
+EXEC SQL END DECLARE SECTION;
 
 /* Allocate memory for emp_info struct. */ 
     if ((emp_rec_ptr = 

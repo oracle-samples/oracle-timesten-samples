@@ -42,8 +42,8 @@ extern char  password[];
 extern char  service[ ];
 
 
-/* Declare variables.  No declare section is
-   needed if MODE=ORACLE. */
+EXEC SQL BEGIN DECLARE SECTION;
+/* Declare variables. */
 VARCHAR     user[ MAX_USERNAME ];    /* VARCHAR is an Oracle-supplied struct */
 varchar     pass[ MAX_USERNAME ];      /* varchar can be in lower case also. */
 VARCHAR     svc[  MAX_SERVICENAME ];
@@ -69,6 +69,7 @@ struct
 
 /*  Input host variable. */
 int         emp_number;
+EXEC SQL END DECLARE SECTION;
 
 int         total_queried;
 

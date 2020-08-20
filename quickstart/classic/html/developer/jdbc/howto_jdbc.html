@@ -83,7 +83,8 @@ e.g. If your TimesTen instance location is under <span class="codetext">/home/ti
 <table width="800" border="1">
   <tr>
     <td width="121" height="174" valign="top" class="normal">&nbsp; <strong>asyncJMS</strong></td>
-    <td width="608" valign="top" class="normal">This program uses the TimesTen JMS/XLA implementation to process   messages:<br />
+    <td width="608" valign="top" class="normal">This sample can be found in the <strong>jms</strong> sub-directory. It is not supported on client only platforms such as Windows and macOS.<br><br>
+This program uses the TimesTen JMS/XLA implementation to process   messages:<br />
         <br />
       a) Connect to the database as an XLA user<br />
       b) Listen to committed   changes to the CUSTOMER table<br />
@@ -207,7 +208,8 @@ c) Disconnect from the database. </td>
 <table width="800" border="1">
   <tr>
     <td width="121" valign="top" class="normal">&nbsp; <strong>syncJMS</strong></td>
-    <td width="608" valign="top" class="normal">This program uses the TimesTen JMS/XLA implementation to process   messages:<br />
+    <td width="608" valign="top" class="normal">This sample can be found in the <strong>jms</strong> sub-directory. It is not supported on client only platforms such as Windows and macOS.<br><br>
+This program uses the TimesTen JMS/XLA implementation to process   messages:<br />
         <br />
       a) Connects to the database as an XLA user<br />
       b) Listen to   committed changes for ANY table (defaults to the appuser.customer table).<br />
@@ -242,10 +244,10 @@ c) Disconnect from the database. </td>
 <p class="normal">Examples:</p>
 <p class="normal">&nbsp;&nbsp;(Run the program using default workload mix of 80% reads, 20% updates, dsn=sampledb, uid=appuser)<br />
     <strong><em>&nbsp;<span class="codetext">&nbsp;java Tptbm </span></em></strong></p>
-<p class="normal">&nbsp;&nbsp;(80% reads, 20% updates, 4 process, populate the table with 400,000 rows, and run 100,000 transactions<br />
-    <strong><em>&nbsp;<span class="codetext">&nbsp;java Tptbm -threads 4 -key 200 -xacts 100000 </span></em></strong></p>
-<p class="normal">&nbsp;&nbsp;(85% reads, 10% inserts, 5% updates, 4 processes, 10,000 transactions)<br />
-    <strong><em>&nbsp;&nbsp;<span class="codetext">java Tptbm -threads 4 -reads 85 -inserts 10 -xacts 10000</span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(80% reads, 20% updates, 4 threads, populate the table with 40,000 rows, and run 100,000 transactions<br />
+    <strong><em>&nbsp;<span class="codetext">&nbsp;java Tptbm -threads 4 -key 200 -xact 100000 </span></em></strong></p>
+<p class="normal">&nbsp;&nbsp;(85% reads, 10% inserts, 5% updates, 4 threads, 10,000 transactions)<br />
+    <strong><em>&nbsp;&nbsp;<span class="codetext">java Tptbm -threads 4 -read 85 -insert 10 -xact 10000</span></em></strong></p>
 <p class="normal">&nbsp;&nbsp;For full syntax of the program, try &quot;<span class="codetext"><em>java Tptbm -h</em></span>&quot;.
 </p>
 <p>&nbsp;</p>

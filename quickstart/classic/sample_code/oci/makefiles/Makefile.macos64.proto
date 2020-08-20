@@ -7,13 +7,13 @@
 
 INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
-TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_11_2
+TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_12_1
 OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
-CC              = gcc
+CC              = cc
 
 PLATCFLAGS      = -m64 -O2 
-LDFLAGS         = -lpthread -lm -lc -ldl
+LDFLAGS         = 
 
 INCS            = -I$(OCIINCS) -I$(INSTDIR)/include -I$(COMMDIR)
 
@@ -21,7 +21,7 @@ CFLAGS          = $(PLATCFLAGS) $(INCS)
 
 TTLINK          = -L$(INSTDIR)/lib -L$(TTORACLE_HOME) 
 
-ICLIBS          = $(TTLINK) -Wl,-rpath -Wl,$(INSTDIR)/lib -Wl,-rpath -Wl,$(TTORACLE_HOME) -lc -lclntsh -lpthread -lm $(EXTRALIBS)
+ICLIBS          = $(TTLINK) -lclntsh 
 
 ADDEMP          = addemp
 ADDEMPOBJS      = addemp.o psswds.o

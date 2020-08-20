@@ -55,8 +55,7 @@ GRIDSAMPLECS    = $(BINDIR)\GridSampleCS.exe
 TPTBMCSOBJS     = $(OBJDIR)\tptbmCS.obj $(OBJDIR)\utils.obj $(OBJDIR)\ttgetopt.obj
 TPTBMCS         = $(BINDIR)\tptbmCS.exe
 
-#all:            $(GRIDSAMPLECS) $(TPTBMCS)
-all:            $(TPTBMCS)
+all:            $(GRIDSAMPLECS) $(TPTBMCS)
 
 clean:
 	-erase /Q $(BINDIR)\*.exe $(OBJDIR)\*.obj $(OBJDIR)\*.pdb $(OBJDIR)\*.sbr *.pdb

@@ -20,12 +20,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <sys/time.h>
 #include <sys/types.h>
-#include <termios.h>
 #include <signal.h>
-#include <unistd.h>
 #include <math.h>
+#if ! defined(WIN32)
+#include <sys/time.h>
+#include <termios.h>
+#include <unistd.h>
+#endif
 
 /* Set ODBC API version before including timesten.h */
 /* Default is ODBC 3.5 */
@@ -307,7 +309,9 @@
 /*
  * Typedefs
  */
+#if ! defined(WIN32)
 typedef int                        boolean;
+#endif
 typedef struct s_odbcerr           odbcerr_t;     // an ODBC error/warning
 typedef struct s_odbcerrlist       odbcerrlist_t; // list of ODBC errors
 typedef struct s_parambinding      parambinding_t; // ODBC parameter
@@ -710,6 +714,18 @@ struct s_context
 /*************************************************************************
  * Utility Functions
  */
+
+#if defined(WIN32)
+/*
+ * The 'strsep' function for platforms that don't have it.
+ */
+
+char *
+strsep(
+       char **stringp,
+       const char *delim
+      );
+#endif /* WIN32 */
 
 /*
  * Sleep for a specified number of milliseconds.

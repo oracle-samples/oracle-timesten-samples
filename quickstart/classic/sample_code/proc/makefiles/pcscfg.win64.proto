@@ -1,0 +1,10 @@
+define=WIN32
+define=WIN32COMMON
+define=WIN64
+define=_WIN64
+define=_X64_=1
+define=SS_64BIT_SERVER
+DEFINE=_WSTDIO_DEFINED
+ltype=short 
+parse=partial 
+close_on_commit=yes

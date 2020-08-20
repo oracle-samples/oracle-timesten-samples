@@ -13,7 +13,8 @@ The files and directories contained here are as follows:
 | File/Directory                               | Description                              |
 | :------------------------------------------- | :----------                           |
 | [ttquickstartenv.csh](./ttquickstartenv.csh) | Script to configure the required environment variables for the C shell and compatible shells (csh, tcsh). |
-| [ttquickstartenv.sh](./ttquickstartenv.sh)   | Script to configure the required environment variables for the Bourne shell and compatible shells (sh, ksh, zsh, bash, ...). |
+| [ttquickstartenv.zsh](./ttquickstartenv.zsh)  | Script to configure the required environment variables for the Z shell. |
+| [ttquickstartenv.sh](./ttquickstartenv.sh)   | Script to configure the required environment variables for the Bourne shell and compatible shells (sh, ksh, bash, ...). |
 | [index.html](./index.html)   | The main entry point to the QuickStart; open this file in your browser to get started. |
 | [html](./html)   | The HTML content for the QuickStart. |
 | [lib](./lib)   | Directory where the TimesTen Driver Manager library will be placed when TTDM is built. |

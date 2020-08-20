@@ -1,4 +1,4 @@
-Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
 
 # TimesTen Node.js Samples
 
@@ -9,11 +9,12 @@ The following table describes the tested operating systems, node-oracledb driver
 
 OS  | Node.js Version  | node-oracledb Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
 ------------- | ------- | -------------	| ------------ | ------
-Linux 64-bit  | 12.7.0  |4.0.1    | 18.1.3.1.0+	| 18.1.3.1.0+
-macOS      |  12.7.0  |4.0.1   | 18.1.3.1.0+	| N/A
-MS Windows 64-bit    | 12.7.0  | 4.0.1    | 18.1.3.1.0+ | N/A
+Linux 64-bit  | 12.7.0  |4.0.1+    | 18.1.4.1.0+	| 18.1.4.1.0+
+macOS      |  12.7.0  |4.0.1+  | 18.1.4.1.0+	| N/A
+MS Windows 64-bit    | 12.7.0  | 4.0.1+    | 18.1.4.1.0+ | N/A
 
-**NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/database/timesten-18.1/TTREL/toc.htm).
+**NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://www.oracle.com/a/tech/docs/readme.html
+).
 
 
 ## PRE-REQUISITES
@@ -26,9 +27,9 @@ MS Windows 64-bit    | 12.7.0  | 4.0.1    | 18.1.3.1.0+ | N/A
 For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/database/timesten-18.1/TTOSL/toc.htm).
 
 ## Known Problems and Limitations
-* REF CURSORs are currently not supported.
-* Using the NVARCHAR/NCHAR data types for input parameters in a PL/SQL procedure is currently not supported.
-* Large objects (LOBs) are currently not supported.
+
+* NVARCHAR/NCHAR data types in a Node.js application are encoded as UTF-16, the [same difference between Oracle and TimesTen](https://docs.oracle.com/database/timesten-18.1/TTCAC/oracle_tt.htm#TTCAC353) as noted in the TimesTen Documentation.
+* Fetching a clob inside a stored procedure through a Node.js application can result in error ORA-00600.
 * DML statements with RETURN INTO are currently not supported.
 * The value returned for the sub-second field of a PL/SQL output parameter of type Timestamp may be incorrect. 
 
@@ -142,8 +143,41 @@ Delete a row using an anonymous block ...
 Connection has been released
 
 ```
+### lobs.js
+
+The lobs sample program connects to a TimesTen database and performs a number of database operations against a CLOB data type table:
+
+
+* Creates a table named "CLOB"
+* Populates the table
+* Performs Select/fetching row
+* Disconnects from the database
+
+Example:
+
+```
+% node lobs.js -u username -p password
+> Connecting
+> Creating table with CLOB column
+> Reading file
+> Populating CLOB from file
+> Querying CLOB column
+> Reading CLOB
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce facilisis lacinia mauris et sodales. Ut non ligula eget lorem elementum maximus. Fusce pretium, felis a ultrices sodales, ligula augue ullamcorper eros, nec accumsan risus diam id justo. Mauris sed dictum nunc, vitae vehicula felis. Praesent et sodales odio. Nunc pulvinar ipsum ac erat iaculis efficitur. Nunc in aliquet est. Donec porta est est, nec iaculis leo lacinia at.
+
+Nunc quis sodales sem. Nam felis dolor, cursus volutpat cursus vel, tempus nec mauris. Morbi bibendum urna nec leo commodo, id pellentesque nisi dictum. Vivamus venenatis velit nec orci imperdiet sagittis. Praesent fermentum, tortor sed tempus condimentum, lectus ipsum condimentum diam, at facilisis ligula purus vitae neque. Quisque erat quam, tristique at nisl sed, mattis feugiat diam. Curabitur ipsum nibh, mollis at venenatis nec, rutrum eu quam. Fusce augue tellus, porta ut dapibus at, ornare ut nisi. In imperdiet elit non dolor pharetra, quis bibendum odio aliquam. Quisque porttitor tempus augue eu consequat. Cras ac metus malesuada, pellentesque tortor in, porta leo.
+
+Aliquam erat volutpat. Duis vitae quam id est maximus commodo. Morbi dolor lacus, bibendum ac nisl nec, fringilla eleifend nibh. Proin a tellus rhoncus, fermentum magna sed, imperdiet nibh. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nullam sed consequat nisi. Morbi tortor ipsum, consequat a suscipit sed, ullamcorper ut massa.
+
+Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim luctus lectus at cursus. Sed condimentum at massa in egestas. In sed dui eget augue posuere finibus. Etiam pulvinar libero sit amet magna efficitur scelerisque. Sed pretium, turpis in condimentum blandit, risus tortor venenatis nisl, facilisis luctus mauris metus ut sem. Proin dapibus sit amet nunc a ultricies. Phasellus interdum lobortis leo sed fermentum. Phasellus ac aliquam erat. Duis at ultricies urna. Nulla at pharetra dolor, id sodales sapien. Ut auctor mi cras amet.
+
+> Finished reading CLOB
+> Connection released
+
+
+```
 
 
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/).  Online documenation for the node-oracledb driver can be found [here](https://oracle.github.io/node-oracledb/doc/api.html).
+You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/).  Online documentation for the node-oracledb driver can be found [here](https://oracle.github.io/node-oracledb/doc/api.html).

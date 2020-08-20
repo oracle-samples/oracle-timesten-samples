@@ -2,7 +2,9 @@ Copyright (c) 1998, 2019, Oracle and/or its affiliates. All rights reserved.
 
 # C/ODBC sample programs for Scaleout
 
-This directory contains the source code for some relatively simple C/ODBC programs hat shows how to connect to and execute transactions against a TimesTen Scaleout database.
+This directory contains the source code for some C/ODBC programs that show how to connect to and execute transactions against a TimesTen Scaleout database.
+
+**NOTE:**  For platforms where only a TimesTen client is supported, such as Windows and macOS, these samples must connect to a remote TimesTen Scaleout database.
 
 **TptBm**
 
@@ -100,7 +102,7 @@ The program is written to illustrate best practice and demonstrates how to make 
 
 The program can also be run against a Classic database; the program determines the database mode at run-time and adapts accordingly. There are two versions of the program; GridSample for direct mode and GridSampleCS for client-server mode.
 
-GridSample uses the Mobile Payments sample database which must be created and populated before running the program.
+GridSample uses the Mobile Payments sample database which must be created and populated before running the program.  See [sample_config](../../sample_config) and [sample_scripts](../../sample_scripts) for instructions.
 
 The GridSample program implements a configurable workload consisting of 5 different business transactions:
 

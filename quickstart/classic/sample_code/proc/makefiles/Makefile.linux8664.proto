@@ -16,7 +16,7 @@ TT_MVL_LINUX    = 0
 
 INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
-TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_11_2
+TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_12_1
 OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
 CC              = gcc
@@ -35,7 +35,7 @@ INCS 		= -I$(INSTDIR)/include -I$(COMMDIR) -I$(OCIINCS)
 CSDEFS          = -DTTCLIENTSERVER
 CFLAGS          = $(PLATDEFS) $(PLATCFLAGS) $(INCS)
 
-TTLINK           = -L$(INSTDIR)/lib -L$(TTORACLE_HOME) -Wl,-rpath,$(INSTDIR)/lib
+TTLINK           = -L$(INSTDIR)/lib -L$(TTORACLE_HOME)
 
 ICLIBS          = $(TTLINK) -lclntsh  $(EXTRALIBS)
 

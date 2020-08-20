@@ -568,7 +568,7 @@ int IsGridEnable(SQLHDBC hdbc)
   handle_errors (hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
                  "allocating statement handle", __FILE__, __LINE__);
 
-  rc = SQLExecDirect(hstmt, "call ttconfiguration ('TTGridEnable')", SQL_NTS);
+  rc = SQLExecDirect(hstmt, (SQLCHAR *)"call ttconfiguration ('TTGridEnable')", SQL_NTS);
   if (rc != SQL_SUCCESS) 
     printf("Error call ttconfiguration");
 

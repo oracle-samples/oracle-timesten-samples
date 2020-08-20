@@ -37,7 +37,7 @@ setEcho(
         boolean echo_on
        )
 {
-#if defined(WINDOWS)
+#if defined(WIN32)
     HANDLE h;
     DWORD mode;
 

@@ -30,44 +30,26 @@ DMDEFS          = /DTT_DRIVER_MANAGER
 CSDEFS          = /DTTCLIENTSERVER
 CFLAGS          = $(PLATCFLAGS) $(INCS)
 
-TTLINK          = /LIBPATH:$(QUICKSTART_HOME)\lib
+TTLINK          = /LIBPATH:$(QUICKSTART_HOME)\lib /LIBPATH:$(INSTDIR)\lib
 
 CSLIBS          = $(TTLINK) ttclient$(TTVER).lib
-DMLIBS          = odbc32.lib
-TTDMLIBS        = $(TTLINK) ttdrvmgr$(TTVER).lib
-
-# For TTDM Dependencies
-TTDMLIB     = $(INSTDIR)\lib\ttdrvmgr$(TTVER).lib
-TTDMDLL     = $(INSTDIR)\bin\ttdrvmgr$(TTVER).dll
-TTDMDEPS    = $(TTDMLIB) $(TTDMDLL)
 
 BLKINSCS        = bulkinsertCS.exe
 BLKINSCSOBJS    = bulkinsertCS.obj ttTime.obj utils.obj ttgetopt.obj
-BLKINSDM        = bulkinsertDM.exe
-BLKINSTTDM      = bulkinsertTTDM.exe
 
 PLSQLODBCCS     = plsqlODBCCS.exe
 PLSQLODBCCSOBJS = plsqlODBCCS.obj ttTime.obj utils.obj ttgetopt.obj
-PLSQLODBCTTDM   = plsqlODBCTTDM.exe
 
 TPCBCS          = tpcbCS.exe
 TPCBCSOBJS      = tpcbCS.obj ttRand.obj ttTime.obj utils.obj ttgetopt.obj
-TPCBDM          = tpcbDM.exe
-TPCBTTDM        = tpcbTTDM.exe
 
 TPTBMCS         = tptbmCS.exe
 TPTBMCSOBJS     = tptbmCS.obj utils.obj ttgetopt.obj
-TPTBMDM         = tptbmDM.exe
-TPTBMTTDM       = tptbmTTDM.exe
 
 WISCBMCS        = wiscbmCS.exe
 WISCBMCSOBJS    = wiscbmCS.obj wiscextra.obj ttRand.obj ttTime.obj utils.obj ttgetopt.obj
-WISCBMDM        = wiscbmDM.exe
-WISCBMTTDM      = wiscbmTTDM.exe
 
-PROGS           = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) \
-                  $(BLKINSDM) $(TPCBDM) $(TPTBMDM) $(WISCBMDM) \
-                  $(BLKINSTTDM) $(PLSQLODBCTTDM) $(TPCBTTDM) $(TPTBMTTDM) $(WISCBMTTDM)
+PROGS           = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS)
 
 #
 # Top level targets
@@ -100,40 +82,6 @@ $(TPTBMCS):	$(TPTBMCSOBJS)
 
 $(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
 	$(CC) /Fe$@ $(WISCBMCSOBJS) $(LDFLAGS) $(CSLIBS)
-
-#
-# MS Driver Manager Targets
-#
-
-$(BLKINSDM):	$(BLKINSDCOBJS)
-	$(CC) /Fe$@ $(BLKINSDCOBJS) $(LDFLAGS) $(DMLIBS)
-
-$(TPCBDM):	$(TPCBDCOBJS)
-	$(CC) /Fe$@ $(TPCBDCOBJS) $(LDFLAGS) $(DMLIBS)
-
-$(TPTBMDM):	$(TPTBMDCOBJS)
-	$(CC) /Fe$@ $(TPTBMDCOBJS) $(LDFLAGS) $(DMLIBS)
-
-$(WISCBMDM):	$(WISCBMDCOBJS) wiscprotos.h sqlfunc.h
-	$(CC) /Fe$@ $(WISCBMDCOBJS) $(LDFLAGS) $(DMLIBS)
-
-#
-# TimesTen Driver Manager Targets
-#
-$(BLKINSTTDM):	$(BLKINSDCOBJS) $(TTDMDEPS)
-	$(CC) /Fe$@ $(BLKINSDCOBJS) $(LDFLAGS) $(TTDMLIBS)
-
-$(PLSQLODBCTTDM):	$(PLSQLODBCDCOBJS)
-	$(CC) /Fe$@ $(PLSQLODBCDCOBJS) $(LDFLAGS) $(TTDMLIBS)
-
-$(TPCBTTDM):	$(TPCBDCOBJS) $(TTDMDEPS)
-	$(CC) /Fe$@ $(TPCBDCOBJS) $(LDFLAGS) $(TTDMLIBS)
-
-$(TPTBMTTDM):	$(TPTBMDCOBJS) $(TTDMDEPS)
-	$(CC) /Fe$@ $(TPTBMDCOBJS) $(LDFLAGS) $(TTDMLIBS)
-
-$(WISCBMTTDM):	$(WISCBMDCOBJS) wiscprotos.h sqlfunc.h $(TTDMDEPS)
-	$(CC) /Fe$@ $(WISCBMDCOBJS) $(LDFLAGS) $(TTDMLIBS)
 
 #
 # Targets for building object files
@@ -169,12 +117,3 @@ wiscextra.obj:	wiscextra.c
 wiscbmCS.obj:	wiscbm.c wiscprotos.h sqlfunc.h
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c wiscbm.c
 
-#
-# Targets for building TimesTen Driver Manager shared library
-#
-
-$(TTDMLIB):
-	cd $(TTDMDIR) && nmake
-
-$(TTDMDLL):
-	cd $(TTDMDIR) && nmake

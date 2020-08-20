@@ -40,7 +40,7 @@ extern char  username[];
 extern char  password[];
 extern char  service[ ];
 
-
+EXEC SQL BEGIN DECLARE SECTION;
 /* Declare a host structure tag. */
 struct
 {
@@ -48,6 +48,7 @@ struct
     char   emp_name[ARRAY_LENGTH][NAME_LENGTH];
     float  salary[ARRAY_LENGTH];
 } emp_rec;
+EXEC SQL END DECLARE SECTION;
 
 void print_rows(n)
     int n;
@@ -78,10 +79,11 @@ void sql_error(msg)
 int main(int argc, char** argv)
 {
     int  num_ret;               /* number of rows returned */
-
+EXEC SQL BEGIN DECLARE SECTION;
    VARCHAR     user[ MAX_USERNAME ];      /* VARCHAR is an Oracle-supplied struct */
    varchar     pass[ MAX_USERNAME ];      /* varchar can be in lower case also. */
    VARCHAR     svc[  MAX_SERVICENAME];
+EXEC SQL END DECLARE SECTION;
   
 /* Connect to ORACLE. */
     EXEC SQL WHENEVER SQLERROR DO sql_error("Connect error:");

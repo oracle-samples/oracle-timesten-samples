@@ -64,6 +64,7 @@ e.g. If your TimesTen instance location is under <span class="codetext">/home/ti
   </li>
 </blockquote>
 <p class="normal"><span class="section1">How to compile the sample Pro*C programs</span></p>
+<p class="normal"><strong>Note for Windows users:</strong> Before attempting to build the samples, you must customise the file <strong>pcscfg.cfg.inc</strong> in the sample source directory. This file must contain a set of sys_include directives that specify all of the locations of system header files for the version of Microsoft Visual C++ that you are using. This list can be determined by examining the value of the <strong>INCLUDE</strong> environment variable after running the Visual C++ environment setup script <strong>VCVARS32.bat</strong>. The provided file is an example only and may not be correct for your installation of Visual C++.</p>
 <p class="normal">To compile the sample programs in the sample_code/proc directory, you simply run the makefile supplied in the same directory. Note that the appropriate makefile is made available based on the platform of your TimesTen installation. </p>
 <p class="normal">Firstly, select the platform specific Makefile and copy from <span class="codetext">quickstart/classic/sample_code/proc/makefiles</span> to the upper level directory.
 

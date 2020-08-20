@@ -51,7 +51,6 @@ or a <span class="codetext">user DSN</span>. </p>
           LogBufMB=256<br />
           LogFileSize=256<br />
           DatabaseCharacterSet=AL32UTF8<br />
-          PLSQL=1<br />
           OracleNetServiceName=ttorcl 
   	</p><br/>
     <p>The relevant attributes' values are: 
@@ -64,7 +63,6 @@ or a <span class="codetext">user DSN</span>. </p>
     <span class="codetext"><span class="codetext">LogBufMB</span> </span> = the size of the transaction log buffer. In the above example, this is configured for 256MB<br />
     <span class="codetext"><span class="codetext">LogFileSize</span> </span> = the size of the transaction log file. In the above example, this is configured for 256MB<br />
 	<span class="codetext"><span class="codetext">DatabaseCharacterSet</span> </span> = the character set used by the database<br />
-    	<span class="codetext"><span class="codetext">PLSQL</span> </span> = enables PL/SQL use in the database. Specifying PLSQL=0 disables PL/SQL use in the database.<br />
     <span class="codetext"><span class="codetext">OracleNetServiceName</span>  </span> = the TNS service name to the Oracle database. This attribute is required only for  <a href="timesten_cache.html" class="compilerun">TimesTen Cache</a>  or the built-in procedures <a href="../tools/howto_util_ttloadfromoracle.html" class="compilerun">ttLoadFromOracle</a> 
 		</p>
     <p><b>Note:</b> If you are using TimesTen Cache to cache  Oracle database tables, 

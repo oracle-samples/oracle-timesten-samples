@@ -8,6 +8,8 @@ This repository stores a variety of examples demonstrating how to use the Oracle
 | [cloud](./cloud)  | Scripts to simplify deployment of TimesTen Scaleout in Oracle Cloud. See the README file in that directory for more information. |
 | [languages](./languages) | Open Source language support samples (Python and Node.js) | 
 
+## Supported TimesTen Releases
+These samples require a _minimum_ of **TimesTen 18.1.4.1.0** but our recommendation is to always use the most recent release available for your platform.
 
 ## More information
 You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)

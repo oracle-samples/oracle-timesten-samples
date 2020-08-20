@@ -1,1 +1,1 @@
-Oracle TimesTen Samples Python 1.0.0.0.0
+Oracle TimesTen Python Samples version 1.1

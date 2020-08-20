@@ -392,7 +392,11 @@ main(int argc, char **argv)
                 "turning off auto commit",
                 __FILE__, __LINE__);
 
+#ifdef WIN32
+  printf("Loading %d records with batch size %llu, commit interval %d\n", records, batchsize, commitsize);
+#else /* ! WIN32 */
   printf("Loading %d records with batch size %lu, commit interval %d\n", records, batchsize, commitsize);
+#endif /* ! WIN32 */
 
   indexTime = 0.0;
   if (indexcount && indexbefore) {

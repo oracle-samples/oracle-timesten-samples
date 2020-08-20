@@ -15,6 +15,12 @@
 
 #include "GridSample.h"
 
+#if defined(WIN32)
+#include <stdint.h>
+#define srandom(x) srand(x)
+#define random() rand()
+#endif /* WIN32 */
+
 /*
  * Array of transaction names indexed by transaction type.
  *
@@ -69,6 +75,25 @@ sigReceived = 0;
  *
  * RETURNS: Nothing
  */
+
+#if defined(WIN32)
+static BOOL WINAPI
+ConCtrlHandler(DWORD ctrlType)
+{
+  switch(ctrlType) {
+  case CTRL_C_EVENT :
+  case CTRL_BREAK_EVENT :
+  case CTRL_CLOSE_EVENT :
+  case CTRL_LOGOFF_EVENT :
+  case CTRL_SHUTDOWN_EVENT :
+    sigReceived = SIGINT;
+    break;
+  default:
+    return FALSE; /* Let someone else handle this */
+  }
+  return TRUE; /* We've handled these */
+}
+#else /* ! WIN32 */
 static void
 sigHandler(
            int sig
@@ -76,12 +101,72 @@ sigHandler(
 {
     sigReceived = sig;
 } // sigHandler
+#endif /* ! WIN32 */
 
 /****************************************************************************
  *
  * Public functions
  *
  ****************************************************************************/
+
+#if defined(WIN32)
+/*
+ *  The 'gettimeofday' function.
+ */
+
+int gettimeofday( struct timeval * tp, struct timezone * tzp )
+{
+    static const uint64_t EPOCH = ((uint64_t)116444736000000000ULL);
+
+    SYSTEMTIME system_time;
+    FILETIME   file_time;
+    uint64_t   time;
+
+    GetSystemTime( &system_time );
+    SystemTimeToFileTime( &system_time, &file_time );
+    time = (uint64_t)file_time.dwLowDateTime;
+    time += ((uint64_t)file_time.dwHighDateTime << 32);
+
+    tp->tv_sec = (long)((time - EPOCH) / 10000000L);
+    tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+
+    return 0;
+} /* gettimeofday */
+
+/*
+ * The 'strsep' function.
+ */
+
+char *
+strsep(
+       char **stringp,
+       const char *delim
+      )
+{
+    char * str, * p, * d;
+
+    if (  (stringp == NULL) || (*stringp == NULL) ||
+          (delim == NULL) || (*delim == '\0')  )
+        return NULL;
+
+    p = str = *stringp;
+    while (  *p  )
+    {
+        if (  strchr(delim, (int)*p) != NULL  )
+            break;
+        p++;
+    }
+    if (  *p  )
+    {
+        *p++ = '\0';
+        *stringp = p;
+    }
+    else
+        *stringp = NULL;
+
+    return str;
+} /* strsep */
+#endif /* WIN32 */
 
 /*
  * Sleep for a specified number of milliseconds.
@@ -93,6 +178,15 @@ sigHandler(
  *
  * RETURNS: Nothing
  */
+#if defined(WIN32)
+void
+sleepMs(
+        unsigned int ms
+       )
+{
+    Sleep( ms );
+} // sleepMs
+#else /* ! WIN32 */
 void
 sleepMs(
         unsigned int ms
@@ -106,6 +200,7 @@ sleepMs(
     while (  nanosleep( &rqtm, &rmtm )  )
         rqtm = rmtm;
 } // sleepMs
+#endif /* ! WIN32 */
 
 /*
  * Have we received a signal?
@@ -135,6 +230,22 @@ signalReceived(
  * RETURNS:
  *     Success or error code.
  */
+#if defined(WIN32)
+int
+installSignalHandlers(
+                      void
+                     )
+{
+  int rc;
+
+  rc = SetConsoleCtrlHandler(ConCtrlHandler, TRUE);
+  /* Our rc and their's is inverted */
+  if ( rc )
+    return 0;
+
+  return 1;
+} // installSignalHandlers
+#else /* ! WIN32 */
 int
 installSignalHandlers(
                       void
@@ -155,6 +266,7 @@ installSignalHandlers(
 
     return SUCCESS;
 } // installSignalHandlers
+#endif /* ! WIN32 */
 
 /*
  * Global cleanup and termination function.
@@ -436,11 +548,13 @@ getTS(
 static char tsstring[32];
     struct timeval tv;
     struct tm * tval;
+    time_t sec;
 
     if (  gettimeofday( &tv, NULL )  )
         return NULL;
+    sec = tv.tv_sec;
 
-    tval = localtime( &(tv.tv_sec) );
+    tval = localtime( &sec );
     if (  tval == NULL  )
         return NULL;
 
