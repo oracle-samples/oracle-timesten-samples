@@ -22,7 +22,7 @@ import com.timesten.jdbc.*;
 class Tptbm
 {
     // Compilation control
-    static public final boolean enableScaleout = false;
+    static public final boolean enableScaleout = true;
 
     // class constants
     static public final int TPTBM_NONE = -1;

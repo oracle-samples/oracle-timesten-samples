@@ -1,10 +1,12 @@
 Copyright (c) 1998, 2017, Oracle and/or its affiliates. All rights reserved.
 
-# Java/JDBC sample program for Scaleout
+# Java/JDBC sample programs for Scaleout
 
-This directory contains the source code for a relatively simple Java/JDBC program (GridSample) that shows how to connect to and execute transactions against a TimesTen Scaleout database.
+This directory contains the source code for a relatively simple Java/JDBC program (GridSample) that shows how to connect to and execute transactions against a TimesTen Scaleout database. It also contains a version of the TptBm benchmark program modified to support Scaleout and demonstrate the Scaleout routing API.
 
 **NOTE:**  For platforms where only a TimesTen client is supported, such as Windows and macOS, these samples must connect to a remote TimesTen Scaleout database.
+
+## GridSample
 
 The program is written to illustrate best practice and demonstrates how to make a program resilient by providing a fully functional code example showing how to properly handle events such as client connection failovers and transient errors.
 
@@ -130,3 +132,17 @@ gridsample.sh -dsn demodb -uid griddemo -pwd griddemo -txnmix 50,25,5,10,10 \
 ````
 
 You can observe the program's resilience to failures by using ttGridAdmin to stop and start grid data instances or server processes while the program is running.
+
+## TptBm
+
+This version of TptBM can be run against either a Classic or Scaleout database. When running against a Scaleout database you can optionally request that the program uses the TimesTen Scaleout Routing API to optimize access to increase performance.
+
+See the online help (java Tptbm -help) for full details.
+
+To build TptBm, set your environment for a TimesTen 18.1 instance and then type
+
+ make
+
+or on Windows
+
+nmake -f makefile.windows

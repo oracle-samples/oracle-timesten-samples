@@ -30,6 +30,7 @@ CLASSFILES =  GridSample.class GSConstants.class GSGridRetryException.class \
               GSPasswordReader.class GSUtil.class GSErrors.class GSGlobal.class
 
 JARS	   =  GridSample.jar
+TPTBM      =  Tptbm.class PasswordField.class tt_version.class
 
 .SUFFIXES:
 .SUFFIXES: .java .class
@@ -37,9 +38,11 @@ JARS	   =  GridSample.jar
 .java.class:
 	javac $(JAVACOPTS) -cp .;$(TTJDBCCP) $<
 
-all:	jars 
+all:	jars tptbm
 
 jars:	$(JARS)
+
+tptbm:	$(TPTBM)
 
 pclean:
 	-del *.class
