@@ -54,7 +54,7 @@
 #define S(str)  XS(str)
 
 #define NO_VALUE           -1
-#define MIN_KEY             10
+#define MIN_KEY             2
 #define DBMODE_ID          -1
 #define DBMODE_NB          -1
 #define DBMODE_FILLER       " "
@@ -116,8 +116,8 @@ static char usageStr[] =
   "Usage:\n\n"
   "  %s {-h | -help}\n\n"
   "  %s [-proc <nprocs>] [-read <nreads>] [-insert <nins>] [-delete <ndels>]\n"
-  "     [-throttle <n>] [{-xact <xacts> | -sec <seconds> [-ramp <rseconds>]}]\n"
-  "     [-ops <ops>] [-key <keys>] [-range] [-iso <level>] [-seed <seed>]\n"
+  "     [{-xact <xacts> | -sec <secs> [-ramp <rsecs> | [-rampu <rusecs>] [-rampd <rdsecs>]]}]\n"
+  "     [-throttle <n>] [-ops <ops>] [-key <keys>] [-range] [-iso <level>] [-seed <seed>]\n"
   "     [-build] [-nobuild] [-v <level>]"
 #ifdef SCALEOUT
 #if defined(TTCLIENTSERVER) && defined(ROUTINGAPI)
@@ -153,11 +153,20 @@ static char usageStrFull[] =
   "  -xact    <xacts>       Specifies that <xacts> is the number of transactions\n"
   "                         that each process should run. The default is " S(DFLT_XACT) ".\n\n"
 
-  "  -sec     <seconds>     Specifies that <seconds> is the test measurement duration.\n"
+  "  -sec     <secs>        Specifies that <secs> is the test measurement duration.\n"
   "                         The default is to run in transaction mode (-xact).\n\n"
 
-  "  -ramp  <rseconds>      Specifies that <rseconds> is the ramp up & down time in\n"
+  "  -ramp    <rsecs>       Specifies that <rsecs> is the ramp up & down time in\n"
   "                         duration mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+
+  "  -rampu   <rusecs>      Specifies that <rusecs> is the ramp up time in duration\n"
+  "                         mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+
+  "  -rampd   <rdsecs>      Specifies that <rdsecs> is the ramp down time in duration\n"
+  "                         mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+
+  "  -throttle <n>          Throttle each process to <n> operations per second.\n"
+  "                         Must be > 0. The default is no throttle.\n\n"
 
   "  -ops     <ops>         Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
   "                         In the special case where 0 is specified, no commit\n"
@@ -177,9 +186,6 @@ static char usageStrFull[] =
 
   "  -seed    <seed>        Specifies that <seed> should be the seed for the\n"
   "                         random number generator. Must be > 0, default is " S(DFLT_SEED) ".\n\n"
-
-  "  -throttle <n>          Throttle each process to <n> operations per second.\n"
-  "                         Must be > 0. The default is no throttle.\n\n"
 
   "  -build                 Only build the database, do not run the benchmark. Only\n"
 #if defined(SCALEOUT)
@@ -373,7 +379,8 @@ cCliDSN_t*  routingDSNs = NULL;
 int        rand_seed = NO_VALUE;       /* seed for the random numbers */
 int        num_processes = NO_VALUE;   /* # of concurrent processes for the test */
 int        duration = NO_VALUE;        /* test duration */
-int        ramptime = NO_VALUE;        /* ramp time in the duration mode */
+int        ramputime = NO_VALUE;       /* ramp up time in the duration mode */
+int        rampdtime = NO_VALUE;       /* ramp up time in the duration mode */
 int        reads = NO_VALUE;           /* read percentage */
 int        inserts = NO_VALUE;         /* insert percentage */
 int        deletes = NO_VALUE;         /* delete percentage */
@@ -700,7 +707,8 @@ int parse_args(int      argc,
     else
     if (  strcmp(argv[argno], "-xact") == 0  ) {
       if (  (++argno >= argc) || ( num_xacts != NO_VALUE) || 
-            (duration != NO_VALUE ) || (ramptime != NO_VALUE)  )
+            (rampdtime != NO_VALUE ) || (ramputime != NO_VALUE) ||
+            (duration != NO_VALUE )  )
           usage( cmdname, 0 );
       num_xacts = isnumericL( argv[argno] );
       if (  num_xacts <= 0  )
@@ -717,11 +725,30 @@ int parse_args(int      argc,
     }
     else
     if (  strcmp(argv[argno], "-ramp") == 0  ) {
-      if (  (++argno >= argc) || ( ramptime != NO_VALUE) || 
+      if (  (++argno >= argc) || ( ramputime != NO_VALUE) || 
+            ( rampdtime != NO_VALUE) || (num_xacts != NO_VALUE )  )
+          usage( cmdname, 0 );
+      ramputime = isnumeric( argv[argno] );
+      if (  ramputime < 0  )
+          usage( cmdname, 0 );
+      rampdtime = ramputime;
+    }
+    else
+    if (  strcmp(argv[argno], "-rampu") == 0  ) {
+      if (  (++argno >= argc) || ( ramputime != NO_VALUE) || 
             (num_xacts != NO_VALUE )  )
           usage( cmdname, 0 );
-      ramptime = isnumeric( argv[argno] );
-      if (  ramptime < 0  )
+      ramputime = isnumeric( argv[argno] );
+      if (  ramputime < 0  )
+          usage( cmdname, 0 );
+    }
+    else
+    if (  strcmp(argv[argno], "-rampd") == 0  ) {
+      if (  (++argno >= argc) || ( rampdtime != NO_VALUE) || 
+            (num_xacts != NO_VALUE )  )
+          usage( cmdname, 0 );
+      rampdtime = isnumeric( argv[argno] );
+      if (  rampdtime < 0  )
           usage( cmdname, 0 );
     }
     else
@@ -880,13 +907,18 @@ int parse_args(int      argc,
 
   /* Assign defaults and computed values as required */
   if (  duration != NO_VALUE  ) {
-      if (  ramptime == NO_VALUE  )
-          ramptime = DFLT_RAMPTIME;
+      if (  ramputime == NO_VALUE  )
+          ramputime = DFLT_RAMPTIME;
+      if (  rampdtime == NO_VALUE  )
+          rampdtime = DFLT_RAMPTIME;
       num_xacts = 0;
   }
   else {
-    if (  ramptime != NO_VALUE  )
+    if (  ramputime != NO_VALUE  )
         usage( cmdname, 0 );
+    if (  rampdtime != NO_VALUE  )
+        usage( cmdname, 0 );
+    ramputime = rampdtime = 0;
     if (  num_xacts == NO_VALUE  )
       num_xacts = DFLT_XACT;
     duration = 0;
@@ -2209,7 +2241,7 @@ void CreateChildProcs(char*    progName)
       if (  num_xacts > 0  )
           pos += sprintf( cmdLine+pos, "-xact %ld ", num_xacts );
       else
-          pos += sprintf( cmdLine+pos, "-sec %d -ramp %d ", duration, ramptime );
+          pos += sprintf( cmdLine+pos, "-sec %d -rampu %d -rampd %d ", duration, ramputime, rampdtime );
 
       if (CreateProcess (NULL, cmdLine, NULL, NULL, FALSE,
                          CREATE_DEFAULT_ERROR_MODE, NULL,
@@ -3042,7 +3074,7 @@ void ExecuteTptBm(int          seed,
       // start all the children
       for ( i = 1; i < the_num_processes; i++ )
       {
-          if (  ramptime  )
+          if (  ramputime  )
               shmhdr[i].state = PROC_GO;
           else
               shmhdr[i].state = PROC_STARTBENCH;
@@ -3087,8 +3119,8 @@ void ExecuteTptBm(int          seed,
   time(&interval_start);
   if ( (procId == 0) && duration) {
     duration_start = interval_start;
-    if (ramptime > 0) {
-      duration_target = ramptime;
+    if (ramputime > 0) {
+      duration_target = ramputime;
       rampingup = 1;
     } else {
       duration_target = duration;
@@ -3193,9 +3225,9 @@ void ExecuteTptBm(int          seed,
                     if (verbose >= VERBOSE_ALL)
                       status_msg2("Process %d finished %.0f xacts\n",
                                   procId, (double)i);
-                    if (  ramptime  ) {
+                    if (  rampdtime  ) {
                         duration_start = duration_cur;
-                        duration_target = ramptime;
+                        duration_target = rampdtime;
                         rampingdown = 1;
                         status_msg0("Measuring finished...ramping down\n");
                     } else {
@@ -3307,8 +3339,8 @@ void ExecuteTptBm(int          seed,
                                __FILE__, __LINE__);
             }
     
-            if (op_count == opsperxact) {
-              /* TimesTen doesn't require reads to be committed          */
+            /* TimesTen doesn't require reads to be committed          */
+            if (  (opsperxact != 1) && (op_count == opsperxact)  ) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
               if (  rc != SQL_SUCCESS  )
               {

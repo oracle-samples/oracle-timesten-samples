@@ -54,7 +54,7 @@
 #define S(str)  XS(str)
 
 #define NO_VALUE           -1
-#define MIN_KEY             10
+#define MIN_KEY             2
 #define DBMODE_ID          -1
 #define DBMODE_NB          -1
 #define DBMODE_FILLER       " "
@@ -116,8 +116,8 @@ static char usageStr[] =
   "Usage:\n\n"
   "  %s {-h | -help}\n\n"
   "  %s [-proc <nprocs>] [-read <nreads>] [-insert <nins>] [-delete <ndels>]\n"
-  "     [-throttle <n>] [{-xact <xacts> | -sec <seconds> [-ramp <rseconds>]}]\n"
-  "     [-ops <ops>] [-key <keys>] [-range] [-iso <level>] [-seed <seed>]\n"
+  "     [{-xact <xacts> | -sec <secs> [-ramp <rsecs> | [-rampu <rusecs>] [-rampd <rdsecs>]]}]\n"
+  "     [-throttle <n>] [-ops <ops>] [-key <keys>] [-range] [-iso <level>] [-seed <seed>]\n"
   "     [-build] [-nobuild] [-v <level>]"
 #ifdef SCALEOUT
 #if defined(TTCLIENTSERVER) && defined(ROUTINGAPI)
@@ -153,11 +153,20 @@ static char usageStrFull[] =
   "  -xact    <xacts>       Specifies that <xacts> is the number of transactions\n"
   "                         that each process should run. The default is " S(DFLT_XACT) ".\n\n"
 
-  "  -sec     <seconds>     Specifies that <seconds> is the test measurement duration.\n"
+  "  -sec     <secs>        Specifies that <secs> is the test measurement duration.\n"
   "                         The default is to run in transaction mode (-xact).\n\n"
 
-  "  -ramp  <rseconds>      Specifies that <rseconds> is the ramp up & down time in\n"
+  "  -ramp    <rsecs>       Specifies that <rsecs> is the ramp up & down time in\n"
   "                         duration mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+
+  "  -rampu   <rusecs>      Specifies that <rusecs> is the ramp up time in duration\n"
+  "                         mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+
+  "  -rampd   <rdsecs>      Specifies that <rdsecs> is the ramp down time in duration\n"
+  "                         mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+
+  "  -throttle <n>          Throttle each process to <n> operations per second.\n"
+  "                         Must be > 0. The default is no throttle.\n\n"
 
   "  -ops     <ops>         Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
   "                         In the special case where 0 is specified, no commit\n"
@@ -177,9 +186,6 @@ static char usageStrFull[] =
 
   "  -seed    <seed>        Specifies that <seed> should be the seed for the\n"
   "                         random number generator. Must be > 0, default is " S(DFLT_SEED) ".\n\n"
-
-  "  -throttle <n>          Throttle each process to <n> operations per second.\n"
-  "                         Must be > 0. The default is no throttle.\n\n"
 
   "  -build                 Only build the database, do not run the benchmark. Only\n"
 #if defined(SCALEOUT)
@@ -332,8 +338,8 @@ typedef struct procinfo {
   volatile int       state;
   volatile int       nproc;
   volatile int       pid;
-  volatile UBIGINT   xacts;
-  char               pad[CACHELINE_SIZE - (sizeof(int)+sizeof(int)+sizeof(int)+sizeof(UBIGINT))];
+  volatile unsigned long   xacts;
+  char               pad[CACHELINE_SIZE - (sizeof(int)+sizeof(int)+sizeof(int)+sizeof(unsigned long))];
 } procinfo_t;
 
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
@@ -373,11 +379,12 @@ cCliDSN_t*  routingDSNs = NULL;
 int        rand_seed = NO_VALUE;       /* seed for the random numbers */
 int        num_processes = NO_VALUE;   /* # of concurrent processes for the test */
 int        duration = NO_VALUE;        /* test duration */
-int        ramptime = NO_VALUE;        /* ramp time in the duration mode */
+int        ramputime = NO_VALUE;       /* ramp up time in the duration mode */
+int        rampdtime = NO_VALUE;       /* ramp up time in the duration mode */
 int        reads = NO_VALUE;           /* read percentage */
 int        inserts = NO_VALUE;         /* insert percentage */
 int        deletes = NO_VALUE;         /* delete percentage */
-int        num_xacts = NO_VALUE;       /* # of transactions per process */
+long       num_xacts = NO_VALUE;       /* # of transactions per process */
 int        opsperxact = NO_VALUE;      /* operations per transaction or 0 for no commit */
 int        nodbexec = NO_VALUE;        /* don't do actual db work in main benchmark loop */
 int        key_cnt = NO_VALUE;         /* number of keys (squared) populated in the datastore */
@@ -570,6 +577,36 @@ int isnumeric( char * str )
 
 /*********************************************************************
  *
+ *  FUNCTION:       isnumericL
+ *
+ *  DESCRIPTION:    Checks if a string represents a valid unsigned
+ *                  integer value in the range 0 to 999999999999999999
+ *
+ *  PARAMETERS:     char * str
+ *
+ *  RETURNS:        -1 = invalid value otherwise the value of the integer
+ *
+ *********************************************************************/
+
+long isnumericL( char * str )
+{
+    long val = 0;
+
+    if (  (str == NULL) || (*str == '\0')  )
+        return -1;
+    if (  strlen( str ) > 18  )
+        return -1;
+    while (  *str  ) {
+        if (  (*str < '0') || (*str > '9')  )
+            return -1;
+        val = (val * 10) + (*str++ - '0');
+    }
+
+    return val;
+}
+
+/*********************************************************************
+ *
  *  FUNCTION:       getServerDSN
  *
  *  DESCRIPTION:    Extracts the value of TTC_SERVER_DSN from a
@@ -670,9 +707,10 @@ int parse_args(int      argc,
     else
     if (  strcmp(argv[argno], "-xact") == 0  ) {
       if (  (++argno >= argc) || ( num_xacts != NO_VALUE) || 
-            (duration != NO_VALUE ) || (ramptime != NO_VALUE)  )
+            (rampdtime != NO_VALUE ) || (ramputime != NO_VALUE) ||
+            (duration != NO_VALUE )  )
           usage( cmdname, 0 );
-      num_xacts = isnumeric( argv[argno] );
+      num_xacts = isnumericL( argv[argno] );
       if (  num_xacts <= 0  )
           usage( cmdname, 0 );
     }
@@ -687,11 +725,30 @@ int parse_args(int      argc,
     }
     else
     if (  strcmp(argv[argno], "-ramp") == 0  ) {
-      if (  (++argno >= argc) || ( ramptime != NO_VALUE) || 
+      if (  (++argno >= argc) || ( ramputime != NO_VALUE) || 
+            ( rampdtime != NO_VALUE) || (num_xacts != NO_VALUE )  )
+          usage( cmdname, 0 );
+      ramputime = isnumeric( argv[argno] );
+      if (  ramputime < 0  )
+          usage( cmdname, 0 );
+      rampdtime = ramputime;
+    }
+    else
+    if (  strcmp(argv[argno], "-rampu") == 0  ) {
+      if (  (++argno >= argc) || ( ramputime != NO_VALUE) || 
             (num_xacts != NO_VALUE )  )
           usage( cmdname, 0 );
-      ramptime = isnumeric( argv[argno] );
-      if (  ramptime < 0  )
+      ramputime = isnumeric( argv[argno] );
+      if (  ramputime < 0  )
+          usage( cmdname, 0 );
+    }
+    else
+    if (  strcmp(argv[argno], "-rampd") == 0  ) {
+      if (  (++argno >= argc) || ( rampdtime != NO_VALUE) || 
+            (num_xacts != NO_VALUE )  )
+          usage( cmdname, 0 );
+      rampdtime = isnumeric( argv[argno] );
+      if (  rampdtime < 0  )
           usage( cmdname, 0 );
     }
     else
@@ -850,13 +907,18 @@ int parse_args(int      argc,
 
   /* Assign defaults and computed values as required */
   if (  duration != NO_VALUE  ) {
-      if (  ramptime == NO_VALUE  )
-          ramptime = DFLT_RAMPTIME;
+      if (  ramputime == NO_VALUE  )
+          ramputime = DFLT_RAMPTIME;
+      if (  rampdtime == NO_VALUE  )
+          rampdtime = DFLT_RAMPTIME;
       num_xacts = 0;
   }
   else {
-    if (  ramptime != NO_VALUE  )
+    if (  ramputime != NO_VALUE  )
         usage( cmdname, 0 );
+    if (  rampdtime != NO_VALUE  )
+        usage( cmdname, 0 );
+    ramputime = rampdtime = 0;
     if (  num_xacts == NO_VALUE  )
       num_xacts = DFLT_XACT;
     duration = 0;
@@ -1602,7 +1664,7 @@ void populate(void)
   ghdbc = hdbc;
 
   /* connect */
-  printf("\nConnecting to the database as %s\n", connstr_no_password);
+//  printf("\nConnecting to the database as %s\n", connstr_no_password);
 
   rc = SQLDriverConnect (hdbc, NULL,
                          (SQLCHAR*) connstr_real, SQL_NTS,
@@ -1639,7 +1701,7 @@ void populate(void)
   /* Connected output */
   sprintf (buff2, "Connected using %s\n",
            connstr_no_password);
-  printf("%s\n", buff2);
+// printf("%s\n", buff2);
 
   rc = SQLSetConnectOption (hdbc, SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
   if (  rc != SQL_SUCCESS  )
@@ -2177,9 +2239,9 @@ void CreateChildProcs(char*    progName)
 #endif /* ROUTINGAPI */
 #endif /* SCALEOUT */
       if (  num_xacts > 0  )
-          pos += sprintf( cmdLine+pos, "-xact %d ", num_xacts );
+          pos += sprintf( cmdLine+pos, "-xact %ld ", num_xacts );
       else
-          pos += sprintf( cmdLine+pos, "-sec %d -ramp %d ", duration, ramptime );
+          pos += sprintf( cmdLine+pos, "-sec %d -rampu %d -rampd %d ", duration, ramputime, rampdtime );
 
       if (CreateProcess (NULL, cmdLine, NULL, NULL, FALSE,
                          CREATE_DEFAULT_ERROR_MODE, NULL,
@@ -2341,8 +2403,8 @@ void ExecuteTptBm(int          seed,
   time_t    interval_diff;    /* variable to measure interval time */
   time_t    duration_start, duration_cur, duration_diff;
   int       duration_target = 0;
-  UBIGINT   duration_est = 10000;    /* duration estimate; initial guess = 10000 xacts / sec */
-  UBIGINT   nxact = 0;        /* used in TPS calculation */
+  unsigned long   duration_est = 10000;    /* duration estimate; initial guess = 10000 xacts / sec */
+  unsigned long   nxact = 0;        /* used in TPS calculation */
   int       rampingup = 0;    /* currently in ramp-up */
   int       rampingdown = 0;  /* currently in ramp-down */
   int       rand_int;         /* rand integer */
@@ -2355,7 +2417,7 @@ void ExecuteTptBm(int          seed,
                                * start and finish */
   double    tps;              /* compute transactions per second */
   SQLULEN   tIso = SQL_TXN_READ_COMMITTED;
-  int       i;
+  unsigned long i;
   int       fatalerror = 0;
   int       op_count=0;
   char      errstr [4096];
@@ -3012,7 +3074,7 @@ void ExecuteTptBm(int          seed,
       // start all the children
       for ( i = 1; i < the_num_processes; i++ )
       {
-          if (  ramptime  )
+          if (  ramputime  )
               shmhdr[i].state = PROC_GO;
           else
               shmhdr[i].state = PROC_STARTBENCH;
@@ -3057,8 +3119,8 @@ void ExecuteTptBm(int          seed,
   time(&interval_start);
   if ( (procId == 0) && duration) {
     duration_start = interval_start;
-    if (ramptime > 0) {
-      duration_target = ramptime;
+    if (ramputime > 0) {
+      duration_target = ramputime;
       rampingup = 1;
     } else {
       duration_target = duration;
@@ -3067,23 +3129,13 @@ void ExecuteTptBm(int          seed,
     }
   }
 
-    for (i = 0; duration || (i < num_xacts); i++)
+    for (i = 0; duration || (i < (unsigned long)num_xacts); i++)
     {
       if (duration) {
         /* no more rows to delete */
         if ( deletes && (deleted >= delete_max) ) {
-#if 0
-          if (the_num_processes > 1) {
-            shmhdr[procId].xacts = (UBIGINT)i; /* store the number of xacts */
-            shmhdr[procId].state = PROC_STOP;
-          } else {
-            /* i am the only process */
-            num_xacts = i;
-          }
-#else
-          shmhdr[procId].xacts = (UBIGINT)i; /* store the number of xacts */
+          shmhdr[procId].xacts = i; /* store the number of xacts */
           shmhdr[procId].state = PROC_STOP;
-#endif
           if (verbose >= VERBOSE_ALL)
             status_msg2("Process %d deleted %.0f rows\n",
                         procId, (double)deleted);
@@ -3103,7 +3155,7 @@ void ExecuteTptBm(int          seed,
               if (verbose >= VERBOSE_ALL)
                 status_msg2("Process %d finished %.0f xacts\n",
                             procId, (double)i);
-              shmhdr[procId].xacts = (UBIGINT)i; /* store the number of xacts */
+              shmhdr[procId].xacts = i; /* store the number of xacts */
               shmhdr[procId].state = PROC_STOPPING;
 //fprintf(stderr, "DEBUG: %d - measurement stop: %lu\n", procId, shmhdr[procId].xacts );
             }
@@ -3161,7 +3213,7 @@ void ExecuteTptBm(int          seed,
                 } else {
                     /* record time at the end of the measured part of the run */
                     ttGetTime (&main_end);
-                    shmhdr[procId].xacts = (UBIGINT)i; /* store the number of xacts */
+                    shmhdr[procId].xacts = i; /* store the number of xacts */
 //fprintf(stderr, "DEBUG: %d - measurement stop: %lu\n", procId, shmhdr[procId].xacts );
 
                     if (the_num_processes > 1) {
@@ -3169,29 +3221,13 @@ void ExecuteTptBm(int          seed,
                         /* tell children to stop measuring */
                         shmhdr[child].state = PROC_STOPBENCH;
                       }
-#if 0
-                      /* and wait for them to acknowledge */
-                      do {
-                          tt_yield();
-                          j = 1;
-                          for ( child = 1; child < the_num_processes; child++ ) {
-                              if ( shmhdr[child].state == PROC_ERROR  )
-                              {
-                                  fatalerror = 1;
-                                  goto finish_loop;
-                              }
-                              if ( shmhdr[child].state != PROC_STOPPING  )
-                                  j = 0;
-                          }
-                      } while ( j == 0 );
-#endif
                     }
                     if (verbose >= VERBOSE_ALL)
                       status_msg2("Process %d finished %.0f xacts\n",
                                   procId, (double)i);
-                    if (  ramptime  ) {
+                    if (  rampdtime  ) {
                         duration_start = duration_cur;
-                        duration_target = ramptime;
+                        duration_target = rampdtime;
                         rampingdown = 1;
                         status_msg0("Measuring finished...ramping down\n");
                     } else {
@@ -3209,7 +3245,7 @@ void ExecuteTptBm(int          seed,
         } /* end of parent */
       } /* end of duration */
     else
-        shmhdr[procId].xacts = (UBIGINT)i;
+        shmhdr[procId].xacts = i;
 
     throttle:      
       if (throttle && ((i % throttle) == (throttle-1))) {
@@ -3303,8 +3339,8 @@ void ExecuteTptBm(int          seed,
                                __FILE__, __LINE__);
             }
     
-            if (op_count == opsperxact) {
-              /* TimesTen doesn't require reads to be committed          */
+            /* TimesTen doesn't require reads to be committed          */
+            if (  (opsperxact != 1) && (op_count == opsperxact)  ) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
               if (  rc != SQL_SUCCESS  )
               {
@@ -3520,7 +3556,7 @@ finish_loop:
       time_diff = diff_time (&main_start, &main_end);
       if (time_diff <= 0)
       {
-          err_msg0("Run time too short for reliable reporting\n");
+          err_msg0("Run time too short for reliable reporting\n\n");
       }
       else
       {
@@ -3553,6 +3589,7 @@ finish_loop:
             out_msg2("Operation rate:   %10.1f operations/second (%d ops/transaction)\n",
                      tps * opsperxact, opsperxact);
           }
+          out_msg0("\n");
       }
   }
 
