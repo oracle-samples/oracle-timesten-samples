@@ -1,1 +1,1 @@
-Oracle TimesTen QuickStart version 1.4
+Oracle TimesTen QuickStart version 1.5

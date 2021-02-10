@@ -3340,7 +3340,7 @@ void ExecuteTptBm(int          seed,
             }
     
             /* TimesTen doesn't require reads to be committed          */
-            if (  (opsperxact != 1) && (op_count == opsperxact)  ) {
+            if (  (opsperxact != 1) && (op_count >= opsperxact)  ) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
               if (  rc != SQL_SUCCESS  )
               {
@@ -3388,7 +3388,7 @@ void ExecuteTptBm(int          seed,
                                __FILE__, __LINE__);
             }
     
-            if (op_count == opsperxact) {
+            if (op_count >= opsperxact) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
               if (  rc != SQL_SUCCESS  )
               {
@@ -3439,7 +3439,7 @@ void ExecuteTptBm(int          seed,
                                __FILE__, __LINE__);
             }
 
-            if (op_count == opsperxact) {
+            if (op_count >= opsperxact) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
               if (  rc != SQL_SUCCESS  )
               {
@@ -3497,7 +3497,7 @@ void ExecuteTptBm(int          seed,
                                __FILE__, __LINE__);
             }
     
-            if (op_count == opsperxact) {
+            if (op_count >= opsperxact) {
               rc = SQLTransact (henv, thdbc, SQL_COMMIT);
               if (  rc != SQL_SUCCESS  )
               {
