@@ -5,8 +5,8 @@
  * at http://oss.oracle.com/licenses/upl
  *
  * Project:    TimesTen Driver Manager
- * Version:    2.2
- * Date:       11th April 2019
+ * Version:    18.1.1
+ * Date:       19th February 2021
  * Author:     chris.jenkins@oracle.com
  *
  * This is the header file for the TimesTen Driver Manager (ttdrvmgr).
@@ -28,10 +28,24 @@
 #define    tt_ErrDMInvalidArg      90003
 
 /*
- * TTDM specific option and return values for SQLGetConnectOption
+ * TTDM specific option and values for SQLGetEnvAttr
  */
 
-#define    TTDM_CONNECTION_TYPE    (SQL_CONNECT_OPT_DRVR_START+1000)
+#define    SQL_ATTR_TTDM_VERSION       20000
+#define    SQL_ATTR_TTDM_CAPABILITIES  20001
+
+#define    SQL_ATTR_TTDM_CLIENT        0x01 // Client driver functions are available
+#define    SQL_ATTR_TTDM_DIRECT        0x02 // Direct driver functions are available
+#define    SQL_ATTR_TTDM_XLA           0x04 // XLA functions are available
+#define    SQL_ATTR_TTDM_ROUTING       0x08 // Routing API functions are available
+#define    SQL_ATTR_TTDM_UTILITY       0x10 // Utility API functions are available
+
+/*
+ * TTDM specific option and return values for SQLGetConnectOption
+ * and SQLGetConnectAttr
+ */
+
+#define    TTDM_CONNECTION_TYPE    (SQL_CONNECT_OPT_DRVR_START+3000)
 
 #define    TTDM_CONN_NONE          0
 #define    TTDM_CONN_DIRECT        1

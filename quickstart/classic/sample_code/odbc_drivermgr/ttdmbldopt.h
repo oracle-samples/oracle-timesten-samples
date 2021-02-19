@@ -5,9 +5,8 @@
  * at http://oss.oracle.com/licenses/upl
  *
  * Project:    TimesTen Driver Manager
- * Version:    2.2
- * Date:       11th April 2019
- * 
+ * Version:    18.1.1
+ * Date:       19th February 2021
  * Author:     chris.jenkins@oracle.com
  *
  * This is the header file that controls build options for the 
@@ -25,26 +24,8 @@
  * Some of the macros set things like default values.
  *
  * This first section describes all the options. Place the actual #defines 
- * that you wish to use at the end of the file.
- *
- * -------------------------------------------------------------------------
- *
- * ENABLE_THREAD_SAFETY
- *
- * Makes the library thread safe. It is strongly recommended that this
- * feature be enabled unless (a) your application code is not multi-threaded or
- * (b) you are very sure that your application code will never modify any
- * dependant ODBC objects concurrently from multiple threads. Note that
- * such modifications are not always obvious...
- *
- * For example, SQLAllocEnv() modifies global shared data and may modify other
- * already allocated Environments. SQLAllocStmt() modifies the parent HDBC.
- * SQLFreeConnect() not only modifies the HDBC but also the parent HENV. And
- * so on.
- *
- * Example:
- *
- * #define    ENABLE_THREAD_SAFETY   1
+ * that you wish to use at the end of the file. Alternatively you can
+ * define these using compiler command line directives (-D).
  *
  * -------------------------------------------------------------------------
  *
@@ -58,7 +39,7 @@
  *
  * Example:
  *
- * #define  ENABLE_XLA_DIRECT       1
+ * #define  ENABLE_XLA_DIRECT
  *
  * -------------------------------------------------------------------------
  *
@@ -75,30 +56,18 @@
  *
  * -------------------------------------------------------------------------
  *
- * TT_LIB_VERSION
+ * EXPORT_SQLCONNECTW
  *
- * Defines the version of TimesTen supported by this build.
- * This consists of an integer made up from the full version 
- * number of the relevant TimesTen version. In general this
- * should reflect the base release x.y.z.0.0 => xyz00 unless
- * specific features are relevant for a patch release.
+ * The TimesTen drivers do not export SQLConnectW() because...
+ * Instead they have a driver specific function, ttSQLConnectW()
+ * with identical functionality.
  *
- * Example:
- *
- * #define  TT_LIB_VERSION      112200
- *
- * -------------------------------------------------------------------------
- *
- * TT_LIB_ID
- *
- * Defines the version information component of the TimesTen
- * library names. This is only relevant for Windows builds.
- * This consists of an integer made up from the major release
- * identification. For example, 11.2.1.x.y would be 1121.
+ * If you set this define then TTDM will export SQLConnectW and 
+ * will map it to ttSQLConnectW.
  *
  * Example:
  *
- * #define  TT_LIB_ID          1122
+ * #define  ENABLE_UTIL_LIB
  *
  * -------------------------------------------------------------------------
  *
@@ -108,7 +77,7 @@
  *
  * Example:
  *
- * #define  FUNC_TRACING            1
+ * #define  FUNC_TRACING
  *
  * -------------------------------------------------------------------------
  *
@@ -119,7 +88,7 @@
  *
  * Example:
  *
- * #define  HVAL_TRACING            1
+ * #define  HVAL_TRACING
  *
  * -------------------------------------------------------------------------
  *
@@ -130,7 +99,7 @@
  *
  * Example:
  *
- * #define  ENABLE_DEBUG_FUNCTIONS  1
+ * #define  ENABLE_DEBUG_FUNCTIONS
  *
  * -------------------------------------------------------------------------
  *
@@ -142,34 +111,20 @@
  *     Linux      .so
  *     macOS      .dylib
  *     Solaris    .so
- *     HP/UX      .sl
- *     Windows    .dll
+ *
+ * If not defined then defaults to ".so"
  *
  * Example:
  *
  * #define  SHLIB_SUFFIX     ".so"
  *
  * -------------------------------------------------------------------------
- *
- * MUTEX_SPINCOUNT
- *
- * WINDOWS ONLY:
- * Defines the spincount value to be used whe trying to enter a critical
- * section. If not defined then the default value of 15000 will be used.
- *
- * Example:
- *
- * #define  MUTEX_SPINCOUNT   20000
  */
 
 /****************** ACTUAL BUILD OPTION DEFINES ****************/
 
-#define    ENABLE_THREAD_SAFETY   1
-#define    ENABLE_XLA_DIRECT      1
-#define    ENABLE_UTIL_LIB        1
-#define    SHLIB_SUFFIX           ".so"
-#if !defined(TT_LIB_VERSION)
-#define    TT_LIB_VERSION         181210
-#endif
+#define    ENABLE_XLA_DIRECT
+#define    ENABLE_UTIL_LIB
+#define    EXPORT_SQLCONNECTW
 
 #endif
