@@ -1,12 +1,13 @@
-Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
 
 # Compile and Run ODBC Sample Programs
 
 ## IMPORTANT PRE-REQUISITES
 
- 1. Manually Configure the Sample DSN for the Sample Programs; refer to _quickstart/classic/html/developer/sample\_dsn\_setup.html_
+1. Manually Configure the Sample DSN for the Sample Programs; refer to _quickstart/classic/html/developer/sample\_dsn\_setup.html_
 
- 2. Set up sample database and user accounts
+ 
+2. Set up sample database and user accounts
 
     The following build_sampledb script should be run once to set up the sample database and user accounts. First set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
 
@@ -44,6 +45,8 @@ Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
 
 To compile the sample programs in the sample_code/odbc directory you use a provided makefile.
 
+**NOTE:** By default the makefiles for platforms where TTDM is supported build versions of the samples that link directly with the TimesTen driver libraries (direct and client-server) and also with the TimesTen Driver Manager (TTDM). The TTDM binaries can only be built (and executed) against **TimesTen 18.1.4.9.0** or later, as this is the first release that includes TTDM. To build without the TTDM versions (for example if you are using an older version of TimesTen 18.1), use the make target 'nodm'. For more information on TTDM, see the [TimesTen Driver Manager User Guide](./TTDMUserGuide.md).
+
 Firstly, select the platform specific Makefile and copy from quickstart/classic/sample\_code/odbc/makefiles to the upper level directory.
 
 For example, if your platform is Linux x86-64bit, execute the following commands:
@@ -54,21 +57,17 @@ For example, if your platform is Linux x86-64bit, execute the following commands
 
 `cd ..`
 
-To build a sample program in the sample_code/odbc directory, use the following command:
+To build the sample programs in the sample_code/odbc directory, use the following command:
 
 Linux/Unix
 	
-`make <program-name>`
+`make`
+
+Windows
+
+`nmake`
 	
-where \<program-name\> is the program you want to compile.
-
-For example, to compile the bulkinsert program, you do:
-
-Linux/Unix
-	
-`make bulkinsert`
-
-There are two versions of each program; *progname* for direct mode and *progname****CS*** for client-server mode.
+There are three versions of each program; *progname* for direct mode, *progname****CS*** for client-server mode and *progname****DM*** for the driver manager linked binary..
 
 **NOTE:**  The XLA sample programs cannot be compiled or run using a client-only instance.
 
@@ -84,13 +83,13 @@ This program measures the time needed for insertion of many rows into a table. P
   
   `bulkinsert`
 
-  Default connection string, 100,000 rows, batchsize 256, no indexes
+  Default connection string, 100,000 rows, batchsize 256, no indexes, driver manager version
   
-  `bulkinsert -r 100000`
+  `bulkinsertDM -r 100000`
 
-  Default connection string, 2,000,000 rows, batchsize 512, 3 indexes
+  Default connection string, 2,000,000 rows, batchsize 512, 3 indexes, client-server version
   
-  `bulkinsert -r 2000000 -s 512 -i 3`
+  `bulkinsertCS -r 2000000 -s 512 -i 3`
 
   For the full syntax of the program, use "bulkinsert -help".
 
@@ -161,9 +160,9 @@ Examples:
   
   `tptbm -proc 2 -xact 10000000 -seed 3`
 
-  Default connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 600 seconds with a 30 second ramp time
+  Default connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 600 seconds with a 30 second ramp time, driver manager version
   
-  `tptbm -read 85 -insert 10 -sec 600 -ramp 30`
+  `tptbmDM -read 85 -insert 10 -sec 600 -ramp 30`
 
   For the full syntax of the program, use "tptbm -help".
 
@@ -191,7 +190,7 @@ For the full syntax, use "wiscbm -help".
 
 **xlaSimple**
 
-This sample program is available in the _quickstart/classic/sample\_code/odbc/xla_ directory.
+This sample program is available in the _quickstart/classic/sample\_code/odbc/xla_ directory. Two versionbs of the binary will be built; **xlaSimple** linked directly against the **direct mode** library and **xlaSimpleDM** linked against **TTDM**.
 
 This program demonstrates the usage of the TimesTen Transaction Log API (XLA) for C developers using ODBC. This program requires a user with XLA privilege to subscribe to changes in the database.
 

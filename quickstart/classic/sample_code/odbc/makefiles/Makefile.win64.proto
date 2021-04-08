@@ -14,7 +14,6 @@ INSTDIR         = $(TIMESTEN_HOME)\install
 
 QUICKCODEDIR    = $(QUICKSTART_HOME)\sample_code
 COMMDIR         = $(QUICKCODEDIR)\common
-TTDMDIR         = $(QUICKCODEDIR)\odbc_drivermgr
 
 CC              = cl.exe /nologo
 
@@ -26,7 +25,6 @@ LDFLAGS         = /link /STACK:3000000 /FIXED:NO bufferoverflowu.lib
 
 INCS            = /I$(INSTDIR)\include /I$(COMMDIR)
 
-DMDEFS          = /DTT_DRIVER_MANAGER
 CSDEFS          = /DTTCLIENTSERVER
 CFLAGS          = $(PLATCFLAGS) $(INCS)
 

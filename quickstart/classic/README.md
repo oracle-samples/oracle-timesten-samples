@@ -1,4 +1,4 @@
-Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 1998, 2021, Oracle and/or its affiliates. All rights reserved.
 
 # QuickStart for TimesTen Classic
 
@@ -17,7 +17,6 @@ The files and directories contained here are as follows:
 | [ttquickstartenv.sh](./ttquickstartenv.sh)   | Script to configure the required environment variables for the Bourne shell and compatible shells (sh, ksh, bash, ...). |
 | [index.html](./index.html)   | The main entry point to the QuickStart; open this file in your browser to get started. |
 | [html](./html)   | The HTML content for the QuickStart. |
-| [lib](./lib)   | Directory where the TimesTen Driver Manager library will be placed when TTDM is built. |
 | [sample_config](./sample_config)           | Example configuration files for the QuickStart examples. |
 | [sample_scripts](./sample_scripts)           | Scripts used in the QuickStart examples. |
-| [sample_code](./sample_code)                 | The various sample programs used in the QuickStart. |
+| [sample_code](./sample_code)                 | The various sample programs making up the QuickStart examples. These programs illustrate how to use TimesTen via many of the APIs that are provided as standard as part of the product. |

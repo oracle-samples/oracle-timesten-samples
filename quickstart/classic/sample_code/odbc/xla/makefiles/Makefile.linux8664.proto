@@ -1,6 +1,6 @@
 #
 # Build TimesTen Sample Programs (Unix)
-# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 # $Revision: /main/1 $
 #
@@ -13,44 +13,37 @@ TTDMDIR         = $(QUICKSTART_HOME)/sample_code/odbc_drivermgr
 
 CC              = gcc
 
-PLATCFLAGS      = -Os -finline-functions
+PLATCFLAGS      = -O3 -finline-functions
 LDFLAGS         =
 SHLIB_SUFFIX    = so
-
-ifeq ($(TT_MVL_LINUX),1)
-EXTRALIBS	= -lpthread -lm -ldl -lnsl -lrt -lstdc++
-endif
-
+EXTRALIBS	=
 
 INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
 
-CSDEFS          = -DTTCLIENTSERVER
+DEFS		=
 CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
 
-TTLINK           = -L$(INSTDIR)/lib -Wl,-rpath,$(INSTDIR)/lib
-TTDMLINK        = -L$(QUICKSTART_HOME)/lib -Wl,-rpath,$(QUICKSTART_HOME)/lib 
+TTLINK          = -L$(INSTDIR)/lib -Wl,-rpath,$(INSTDIR)/lib
 
 DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
-CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS)
-TTDMLIBS        = $(TTDMLINK) -lttdrvmgr $(EXTRALIBS)
-
-#
-# TimesTen Driver Manager Shared Library
-#
-TTDMSHLIB       = $(QUICKSTART_HOME)/lib/libttdrvmgr.$(SHLIB_SUFFIX)
-
+DMLIBS          = $(TTLINK) -lttdrvmgr $(EXTRALIBS)
 
 XLASIMPLEDC     = xlaSimple
 XLASIMPLEDCOBJS = xlaSimple.o ttgetopt.o
-XLASIMPLETTDM   = xlaSimpleTTDM
+XLASIMPLEDM     = xlaSimpleDM
 
-PROGS           = $(XLASIMPLEDC) $(XLASIMPLETTDM)
+DCPROGS		= $(XLASIMPLEDC)
+DMPROGS		= $(XLASIMPLEDM)
+
+PROGS           = $(DCPROGS) $(DMPROGS)
 
 #
 # Top level targets
 #
 
 all:		$(PROGS)
+
+nodm:		$(DCPROGS)
 
 clean:
 	rm -f $(PROGS) *.o
@@ -62,8 +55,8 @@ clean:
 $(XLASIMPLEDC):	$(XLASIMPLEDCOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(XLASIMPLEDCOBJS) $(DCLIBS)
 
-$(XLASIMPLETTDM):  $(XLASIMPLEDCOBJS) $(TTDMSHLIB)
-	$(CC) -o $@ $(LDFLAGS) $(XLASIMPLEDCOBJS) $(TTDMLIBS)
+$(XLASIMPLEDM):  $(XLASIMPLEDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(XLASIMPLEDCOBJS) $(DMLIBS)
 
 #
 # Targets for building object files
@@ -78,9 +71,3 @@ ttgetopt.o:	$(COMMDIR)/ttgetopt.c $(COMMDIR)/ttgetopt.h
 xlaSimple.o:	xlaSimple.c
 	$(CC) $(CFLAGS) -o $@ -c xlaSimple.c
 
-#
-# Target for building TimesTen Driver Manager shared library
-#
-
-$(TTDMSHLIB):
-	cd $(TTDMDIR); make

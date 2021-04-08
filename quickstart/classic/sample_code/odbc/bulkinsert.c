@@ -141,11 +141,6 @@ main(int argc, char **argv)
   int             ac;
   int             inserts_per_xact;
 
-#if defined(TTCLIENTSERVER) && defined(__hppa) && !defined(__LP64__)
-  /* HP requires this for C main programs that call aC++ shared libs */
-  _main();
-#endif /* hpux32 */
-
 
   /* Set up default signal handlers */
   StopRequestClear();

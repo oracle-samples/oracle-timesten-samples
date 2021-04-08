@@ -3,7 +3,7 @@
 # macOS x86_64 (64-bit) Makefile for the 
 # TimesTen TTCLASSES sample programs.
 #
-# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 #######################################################################
 
@@ -12,22 +12,18 @@ COMMON          = $(QUICKSTART_HOME)/sample_code/common
 SAMPLES         = $(QUICKSTART_HOME)/sample_code/ttclasses
 TTC_INCLUDEDIR  =  $(INSTDIR)/include/ttclasses
 
-USING_GCC_64    = -m64
-USING_GCC_64_LD = -m64
-
 THREAD_SAFE     = -D_THREAD_SAFE -D_REENTRANT
 POSIX_THREADS   = -D_POSIX_PTHREAD_SEMANTICS -D_POSIX_THREADS_CALLS
 CSDEFS          = -DTTCLIENTSERVER
-64BIT           = -DTT_64BIT
 OPTFLAG         = -O -Wuninitialized
 DEBUGFLAG       = -g -Wall -W -Wcast-qual -Wshadow -Wpointer-arith \
                   -Wno-return-type -DTTDEBUG
 
 CFLAGS          = -fPIC $(OPTFLAG) -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) \
-                  -Ilib $(64BIT) -DGCC $(USING_GCC_64) $(THREAD_SAFE) \
+                  -Ilib -DTT_64BIT -DGCC $(THREAD_SAFE) \
                   -I$(COMMON)
 
-LDFLAGS         = $(USING_GCC_64_LD) -Wl,-rpath -Wl,$(INSTDIR)/lib
+LDFLAGS         = -Wl,-rpath -Wl,$(INSTDIR)/lib
 CSLIBS          = -lpthread -L$(INSTDIR)/lib -lttclient -lttclassesCS
 
 CPLUSPLUS       = g++

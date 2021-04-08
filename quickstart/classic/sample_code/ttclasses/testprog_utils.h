@@ -32,13 +32,8 @@
 #define TTC_INT8_CONST(_x) _x ## i64
 #define TTC_UINT8_CONST(_x) _x ## Ui64
 #else
-#ifdef TT_64BIT
 #define TTC_INT8_CONST(_x) _x ## L
 #define TTC_UINT8_CONST(_x) _x ## UL
-#else
-#define TTC_INT8_CONST(_x) _x ## LL
-#define TTC_UINT8_CONST(_x) _x ## ULL
-#endif /* TT_64BIT */
 #endif /* _WIN32 */
 
 #ifdef  __cplusplus

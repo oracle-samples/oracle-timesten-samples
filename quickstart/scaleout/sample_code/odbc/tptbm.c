@@ -40,8 +40,16 @@
 #if defined(SCALEOUT)
 #if ! defined(ROUTINGAPI)
 #define ROUTINGAPI
+#else
+#undef ROUTINGAPI
 #endif /* ! ROUTINGAPI */
 #endif /* SCALEOUT */
+#if defined(TTCLIENTSERVER) || defined(TTDM)
+#define ROUTINGAPI_ALL
+#else
+#undef ROUTINGAPI_ALL
+#endif /* TTCLIENTSERVER || TTDM */
+
 
 #define VERBOSE_NOMSGS   0
 #define VERBOSE_RESULTS  1    /* for results (and err msgs) only */
@@ -67,13 +75,13 @@
 #define DBMODE_SCALEOUT     "SCALEOUT"
 #if defined(ROUTINGAPI)
 #define M_SCALEOUT_LOCAL    2
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
 #define M_SCALEOUT_ROUTING  3
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* ROUTINGAPI */
 #endif /* SCALEOUT */
 #define DFLT_XACT           100000
-#define DFLT_SEED           1
+#define DFLT_SEED           2021
 #define DFLT_PROC           1
 #define DFLT_RAMPTIME       10
 #define DFLT_READS          80
@@ -108,11 +116,15 @@
 static char usageStr[] =
   "\n"
   "This program implements a multi-user throughput benchmark using\n"
-#ifdef TTCLIENTSERVER
+#if defined(TTDM)
+  "both direct connection and client-server connection modes.\n\n"
+#else
+#if defined(TTCLIENTSERVER)
   "client-server connection mode.\n\n"
 #else
   "direct connection mode.\n\n"
 #endif /* TTCLIENTSERVER */
+#endif /* TTDM */
   "Usage:\n\n"
   "  %s {-h | -help}\n\n"
   "  %s [-proc <nprocs>] [-read <nreads>] [-insert <nins>] [-delete <ndels>]\n"
@@ -120,7 +132,7 @@ static char usageStr[] =
   "     [-throttle <n>] [-ops <ops>] [-key <keys>] [-range] [-iso <level>] [-seed <seed>]\n"
   "     [-build] [-nobuild] [-v <level>]"
 #ifdef SCALEOUT
-#if defined(TTCLIENTSERVER) && defined(ROUTINGAPI)
+#if defined(ROUTINGAPI_ALL)
   " [-scaleout [local | routing[/<srvdsn>]]]"
 #elif defined(ROUTINGAPI)
   " [-scaleout [local]]"
@@ -145,32 +157,39 @@ static char usageStrFull[] =
   "                         transactions. The default is " S(DFLT_READS) ".\n\n"
 
   "  -insert  <nins>        Specifies that <nins> is the percentage of insert\n"
-  "                         transactions. The default is " S(DFLT_INSERTS) ".\n\n"
+  "                         transactions. The default is " S(DFLT_INSERTS) ".\n"
+  "                         Cannot be used with '-nobuild' or '-sec'\n\n"
 
   "  -delete  <ndels>       Specifies that <ndels> is the percentage of delete\n"
-  "                         transactions. The default is " S(DFLT_DELETES) ".\n\n"
+  "                         transactions. The default is " S(DFLT_DELETES) ".\n"
+  "                         Cannot be used with '-nobuild' or '-sec'\n\n"
 
   "  -xact    <xacts>       Specifies that <xacts> is the number of transactions\n"
-  "                         that each process should run. The default is " S(DFLT_XACT) ".\n\n"
+  "                         that each process should run. The default is " S(DFLT_XACT) ".\n"
+  "                         Cannot be used with '-sec'\n\n"
 
   "  -sec     <secs>        Specifies that <secs> is the test measurement duration.\n"
-  "                         The default is to run in transaction mode (-xact).\n\n"
+  "                         The default is to run in transaction mode (-xact).\n"
+  "                         Cannot be used with '-xact'\n\n"
 
   "  -ramp    <rsecs>       Specifies that <rsecs> is the ramp up & down time in\n"
-  "                         duration mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+  "                         duration mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n"
+  "                         Cannot be used with '-xact'\n\n"
 
   "  -rampu   <rusecs>      Specifies that <rusecs> is the ramp up time in duration\n"
-  "                         mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+  "                         mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n"
+  "                         Cannot be used with '-xact'\n\n"
 
   "  -rampd   <rdsecs>      Specifies that <rdsecs> is the ramp down time in duration\n"
-  "                         mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n\n"
+  "                         mode (-sec). Default is " S(DFLT_RAMPTIME) ".\n"
+  "                         Cannot be used with '-xact'\n\n"
 
   "  -throttle <n>          Throttle each process to <n> operations per second.\n"
   "                         Must be > 0. The default is no throttle.\n\n"
 
   "  -ops     <ops>         Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
-  "                         In the special case where 0 is specified, no commit\n"
-  "                         is done. This may be useful for read-only testing.\n\n"
+  "                         In the special case where 0 is specified, no commits\n"
+  "                         are done. This may be useful for read-only testing.\n\n"
 
   "  -key     <keys>        Specifies the number of records (squared) to initially\n"
   "                         populate in the database. The minimum value is " S(MIN_KEY) "\n"
@@ -178,7 +197,7 @@ static char usageStrFull[] =
   "                         value should be specified at both build and run time.\n\n"
 
   "  -range                 Use a range index for the primary key instead of a hash\n"
-  "                         index.\n\n"
+  "                         index. Not relevant with '-nobuild'.\n\n"
 
   "  -iso     <level>       Locking isolation level\n"
   "                            0 = serializable\n"
@@ -196,7 +215,8 @@ static char usageStrFull[] =
 #endif /* ! SCALEOUT */
 
   "  -nobuild               Only run the benchmark, do not build the database.\n"
-  "                         The '-range' parameter is not relevant.\n\n"
+  "                         The '-range' parameter is not relevant.\n"
+  "                         Cannot be used with '-insert' or '-delete'.\n\n"
 
 #if 0
   "  -nodbexec              Don't perform any of the actual database operations in\n"
@@ -215,7 +235,7 @@ static char usageStrFull[] =
   "                         that it knows refer to rows in the element that it is\n"
   "                         connected to. Only relevant at run-time.\n\n"
 
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
   "      routing[/<srvdsn>] Use the routing API to optimize data access. Each\n"
   "                         process maintains a connection to every database\n"
   "                         element and uses the routing API to direct operations\n"
@@ -226,7 +246,7 @@ static char usageStrFull[] =
   "                         of any automatically determined value. Only relevant\n"
   "                         at run time. Cannot be used with -ops > 1.\n\n"
 
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* ROUTINGAPI */
 #endif /* SCALEOUT */
   "  -v <level>             Verbosity level\n"
@@ -286,7 +306,8 @@ static char usageStrFull[] =
 }
 
 /* Forward declarations */
-void ExecuteTptBm (int seed, int procId);
+//void ExecuteTptBm (int seed, int procId);
+void ExecuteTptBm (unsigned int seed, int procId);
 
 void erasePassword(volatile char *buf, size_t len);
 
@@ -354,7 +375,7 @@ SQLLEN      routingMaxSizes[] = { sizeof(int), sizeof(int) };
 int         nElements = 0;
 int         kFactor = 0;
 
-#ifdef TTCLIENTSERVER
+#if defined(ROUTINGAPI_ALL)
 #define MAX_CLIENT_DSN_LEN  256
 typedef struct _ttclientdsn {
   int       elementid;
@@ -369,14 +390,14 @@ typedef struct _ttclientdsn {
 } cCliDSN_t;
 
 cCliDSN_t*  routingDSNs = NULL;
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 
 /* End of ODBC routing API */
 #endif /* SCALEOUT && ROUTINGAPI*/
 
 /* Global variable declarations */
 
-int        rand_seed = NO_VALUE;       /* seed for the random numbers */
+unsigned int rand_seed = 0;              /* seed for the random numbers */
 int        num_processes = NO_VALUE;   /* # of concurrent processes for the test */
 int        duration = NO_VALUE;        /* test duration */
 int        ramputime = NO_VALUE;       /* ramp up time in the duration mode */
@@ -406,9 +427,9 @@ int        elementid = 0;              /* locally connected element id */
 int        replicasetid = 0;           /* locally connected replicaset id */
 int        dataspaceid = 0;            /* locally connected dataspace id */
 char *     serverdsn = NULL;           /* server DSN for routing mode */
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
 char *     srvdsn = NULL;              /* Server DSN from command line */
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* SCALEOUT && ROUTINGAPI */
 
 SQLHENV    henv = SQL_NULL_HENV;  /* ODBC environment handle */
@@ -456,7 +477,7 @@ char* create_stmnt = "CREATE TABLE vpn_users("
                      "descr              CHAR(100) NOT NULL,"
                      "PRIMARY KEY (vpn_id,vpn_nb))";
 
-char * hash_clause = " unique hash on (vpn_id,vpn_nb) pages = %d";
+char * hash_clause = " unique hash on (vpn_id,vpn_nb) pages = %ld";
 
 char * dist_clause = " distribute by hash(vpn_id, vpn_nb)";
 
@@ -528,12 +549,12 @@ char * nameOfMode( int mode, char ** subname )
             tname = "SCALEOUT";
             tsubname = "LOCAL";
             break;
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
         case M_SCALEOUT_ROUTING:
             tname = "SCALEOUT";
             tsubname = "ROUTING";
             break;
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* ROUTINGAPI */
 #endif /* SCALEOUT */
         default:
@@ -789,10 +810,10 @@ int parse_args(int      argc,
     }
     else
     if (  strcmp(argv[argno], "-seed") == 0  ) {
-      if (  (++argno >= argc) || (rand_seed != NO_VALUE)  )
+      if (  (++argno >= argc) || rand_seed )
           usage( cmdname, 0 );
-      rand_seed = isnumeric( argv[argno] );
-      if (  rand_seed <= 0  )
+      rand_seed = (unsigned int)isnumeric( argv[argno] );
+      if (  rand_seed == 0  )
           usage( cmdname, 0 );
     }
     else
@@ -831,7 +852,7 @@ int parse_args(int      argc,
       insert_mod = isnumeric( argv[argno] );
       if (  insert_mod <= 0  ) {
           fprintf( stderr, "Value for '-insertmod' must be > 0.\n");
-          exit(1);
+          return 0;
       }
     }
 #ifdef WIN32
@@ -843,7 +864,7 @@ int parse_args(int      argc,
       procId = isnumeric( argv[argno] );
       if (  procId <= 0  ) {
           fprintf( stderr, "Value for '-procid' must be > 0.\n");
-          exit(1);
+          return 0;
       }
     }
 #endif /* WIN32 */
@@ -858,7 +879,7 @@ int parse_args(int      argc,
           mode = M_SCALEOUT_LOCAL;
           argno += 1;
       }
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
       else
       if (  ((argno+1) < argc) && (strncmp(argv[argno+1],"routing", 7) == 0)  ) {
           mode = M_SCALEOUT_ROUTING;
@@ -875,7 +896,7 @@ int parse_args(int      argc,
           }
           argno += 1;
       }
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* ROUTINGAPI */
     }
 #endif /* SCALEOUT */
@@ -923,7 +944,7 @@ int parse_args(int      argc,
       num_xacts = DFLT_XACT;
     duration = 0;
   }
-  if (  rand_seed == NO_VALUE  )
+  if (  rand_seed == 0  )
     rand_seed = DFLT_SEED;
   if (  num_processes == NO_VALUE  )
      num_processes = DFLT_PROC;
@@ -960,7 +981,7 @@ int parse_args(int      argc,
     insert_mod = num_processes;
 
   /* Various checks on inputs */
-#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
+#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(ROUTINGAPI_ALL)
   if (  mode == M_SCALEOUT_ROUTING  )
   {
       if (  opsperxact > 1  )
@@ -974,7 +995,7 @@ int parse_args(int      argc,
         return 0;
       }
   }
-#endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
+#endif /* SCALEOUT && ROUTINGAPI && ROUTINGAPI_ALL */
 
   if ((reads + inserts + deletes) > 100)
   {
@@ -982,20 +1003,41 @@ int parse_args(int      argc,
     return 0;
   }
 
-  if ((insert_mod * (num_xacts / 100 * (float)inserts)) >
-      (key_cnt * key_cnt))
-  {
-    err_msg0("Inserts as part of transaction mix exceed number\n"
-             "of rows initially populated into database.\n");
-    return 0;
-  }
-
-  if ((insert_mod * (num_xacts / 100 * (float)deletes)) >
-      (key_cnt * key_cnt))
-  {
-    err_msg0("Deletes as part of transaction mix exceed number\n"
-             "of rows initially populated into database.\n");
-    return 0;
+  if (  duration > 0 ) {
+      if (  inserts > 0  ) {
+          err_msg0("'-insert' cannot be used with '-sec'\n");
+          return 0;
+      }
+      if (  deletes > 0  ) {
+          err_msg0("'-delete' cannot be used with '-sec'\n");
+          return 0;
+      }
+  } else {
+      if (  noBuild  ) {
+          if (  inserts > 0  ) {
+              err_msg0("'-insert' cannot be used with '-nobuild'\n");
+              return 0;
+          }
+          if (  deletes > 0  ) {
+              err_msg0("'-delete' cannot be used with '-nobuild'\n");
+              return 0;
+          }
+      }
+      if ((insert_mod * (num_xacts / 100 * (float)inserts)) >
+          (key_cnt * key_cnt))
+      {
+        err_msg0("Inserts as part of transaction mix exceed number\n"
+                 "of rows initially populated into database.\n");
+        return 0;
+      }
+    
+      if ((insert_mod * (num_xacts / 100 * (float)deletes)) >
+          (key_cnt * key_cnt))
+      {
+        err_msg0("Deletes as part of transaction mix exceed number\n"
+                 "of rows initially populated into database.\n");
+        return 0;
+      }
   }
 
   if ( !dsn[0] && (connstr_opt == NULL)  ) { // apply defaults
@@ -1008,7 +1050,7 @@ int parse_args(int      argc,
     /* Got a DSN, turn it into a connection string. */
     if (strlen(dsn)+5 >= sizeof(connstr)) {
       err_msg1("DSN '%s' too long.\n", dsn);
-      exit(-1);
+      return 0;
     }
     sprintf(connstr, "DSN=%s", dsn);
     strcpy(connstr_no_password, connstr);
@@ -1023,10 +1065,10 @@ int parse_args(int      argc,
     {
         if ( username[0] && !password[0] )
           getPassword(passwordPrompt, username, (char *) password, sizeof(password) );
-#ifdef TTCLIENTSERVER
+#if defined(TTCLIENTSERVER) || defined(TTDM)
         if (  !username[0] || !password[0]  )
         {
-            err_msg0("Client/server mode requires both a username and a password.\n");
+            err_msg0("Both a username and a password are required.\n");
             return 0;
         }
 #endif
@@ -1038,7 +1080,7 @@ int parse_args(int      argc,
        pos += strlen( ";PWD=" ) + strlen( password );
     if (  pos > sizeof(connstr)  ) {
       err_msg0("Connection string is too long.\n");
-      exit(-1);
+      return 0;
     }
 
     pos = 0;
@@ -1094,7 +1136,7 @@ int routingAPI_isLocal(int* k1, int* k2)
   return 0;
 }
 
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
 /*********************************************************************
  *
  *  FUNCTION:       routingAPI_getConn
@@ -1113,7 +1155,8 @@ SQLHDBC routingAPI_getConn(int* k1, int* k2,
                            SQLHSTMT *sel, SQLHSTMT* upd,
                            SQLHSTMT *ins, SQLHSTMT* del )
 {
-  int         i;
+  //int         i;
+  long        i;
   double      dElements = (double)nElements;
   SQLSMALLINT elems[MAX_KVALUE];
   cCliDSN_t*  dsn;
@@ -1131,18 +1174,19 @@ SQLHDBC routingAPI_getConn(int* k1, int* k2,
    */
   if (  mode == M_SCALEOUT_ROUTING  )
   {
-      i = (int)((kFactor * rand()) / ((unsigned int)RAND_MAX + 1));
+      // i = (int)((kFactor * rand()) / ((unsigned int)RAND_MAX + 1));
+      i = (int)((kFactor * random()) / ((unsigned int)RAND_MAX + 1));
       dsn = &(routingDSNs[elems[i]]);
       *sel = dsn->selstmt;
       *upd = dsn->updstmt;
       *ins = dsn->insstmt;
       *del = dsn->delstmt;
-//fprintf(stderr,"DEBUG: %d,%d: %d=%d\n", *k1, *k2, i, elems[i]);
+//fprintf(stderr,"DEBUG: %d,%d: %ld=%d\n", *k1, *k2, i, elems[i]);
       return dsn->hdbc;
   }
   return SQL_NULL_HDBC;
 }
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 
 /*********************************************************************
  *
@@ -1160,7 +1204,7 @@ void freeRouting( void )
 {
     int i, rc;
 
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
     if (  routingDSNs != NULL  )
     {
         for (i = 1; i <= nElements; i++)
@@ -1240,7 +1284,7 @@ void freeRouting( void )
         free( (void *)routingDSNs );
         routingDSNs = NULL;
     }
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
     rc = ttGridDistFree(rhdbc, routingHDist);
     if (  rc != SQL_SUCCESS  )
     {
@@ -1275,11 +1319,11 @@ void initRouting( char * sdsn )
 {
     int i, rc;
     SQLHSTMT hstmt;
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
     SQLULEN tIso = SQL_TXN_READ_COMMITTED;
     char tmpdsn[MAX_CLIENT_DSN_LEN+1];
     char buff1[1024];
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 
     /* Create a Grid Map object */
     rc = ttGridMapCreate(rhdbc, &routingGridMap);
@@ -1418,7 +1462,7 @@ void initRouting( char * sdsn )
                       __FILE__, __LINE__);
     }
 
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
     if (  mode == M_SCALEOUT_ROUTING  )
     {
         /* create DSNs for connection mapping element ids to dsns */
@@ -1597,7 +1641,7 @@ void initRouting( char * sdsn )
                           __FILE__, __LINE__);
         }
     } /* M_SCALEOUT_ROUTING */
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 } // initRouting
 #endif /* SCALEOUT && ROUTINGAPI */
 
@@ -1625,6 +1669,7 @@ void populate(void)
   int        id;
   int        nb;
   int        dbkey = 0;
+  long       rowcount = 0;
   char *     p;
   char *     q;
   SQLCHAR    directory   [11];
@@ -1682,7 +1727,7 @@ void populate(void)
            connstr_no_password);
   handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT, buff2, __FILE__, __LINE__);
 
-#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
+#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(ROUTINGAPI_ALL)
   if (  mode == M_SCALEOUT_ROUTING  )
   {
       if (  !getServerDSN(buff1, &serverdsn)  )
@@ -1696,7 +1741,7 @@ void populate(void)
       if (  (serverdsn == NULL) || (srvdsn != NULL)  )
           serverdsn = srvdsn;
   }
-#endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
+#endif /* SCALEOUT && ROUTINGAPI && ROUTINGAPI_ALL */
 
   /* Connected output */
   sprintf (buff2, "Connected using %s\n",
@@ -1734,7 +1779,12 @@ void populate(void)
     /* make create statement */
     pos = sprintf( buff2, "%s", create_stmnt );
     if (  ! rangeFlag  )
-        pos += sprintf (buff2+pos, hash_clause, ((key_cnt * key_cnt)/256)+1);
+    {
+        rowcount = ((key_cnt * key_cnt)/256)+1;
+        if (  inserts > 0  )
+            rowcount += (((long)insert_mod * (long)num_xacts * (long)inserts) * (opsperxact?opsperxact:1) / (256 * 100)) + 1;
+        pos += sprintf (buff2+pos, hash_clause, rowcount);
+    }
 #if defined(SCALEOUT)
     if (  mode != M_CLASSIC )
         pos += sprintf( buff2+pos, "%s", dist_clause );
@@ -2186,14 +2236,14 @@ void CreateChildProcs(char*    progName)
 
   for (i = 1; i < num_processes; i++)
   {
-    rand_seed += 5;
+    rand_seed += 17;
 
 #if !defined(WIN32) /* UNIX */
 
     pid = fork();
     if (pid == 0)
     {
-      rand_seed += 2;
+      // rand_seed += 2;
       procId = i;
       break;
     }
@@ -2219,7 +2269,7 @@ void CreateChildProcs(char*    progName)
       pos = sprintf( cmdLine+pos, 
                  "%s -connstr \"%s\" -proc 1 -seed %d -procid %d -key %d -iso %d "
                  "-read %d -insert %d -delete %d -insertmod %d -ops %d ",
-                 progName, connstr_no_password, rand_seed + 1, i, key_cnt, isolevel,
+                 progName, connstr_no_password, rand_seed, i, key_cnt, isolevel,
                  reads, inserts, deletes, insert_mod, opsperxact);
       if (  rangeFlag  )
           pos += sprintf( cmdLine+pos, "-range " );
@@ -2231,11 +2281,11 @@ void CreateChildProcs(char*    progName)
 #if defined(ROUTINGAPI)
       if (  mode == M_SCALEOUT_LOCAL  )
           pos += sprintf( cmdLine+pos, "local " );
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
       else
       if (  mode == M_SCALEOUT_ROUTING  )
           pos += sprintf( cmdLine+pos, "routing " );
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* ROUTINGAPI */
 #endif /* SCALEOUT */
       if (  num_xacts > 0  )
@@ -2285,10 +2335,6 @@ int main(int argc, char** argv)
   SQLRETURN   rc;
 
   retval = 1; /* Assume failure */
-#if defined(TTCLIENTSERVER) && defined(__hppa) && !defined(__LP64__)
-  /* HP/UX requires this for C main programs that call aC++ shared libs */
-  _main();
-#endif
 
   /* Set up default signal handlers */
   if (HandleSignals() != 0) {
@@ -2376,7 +2422,7 @@ leaveMain:
  *  DESCRIPTION:    The main benachmark logic. Executed by each
  *                  process.
  *
- *  PARAMETERS:     int seed - random number seed
+ *  PARAMETERS:     unsigned int seed - random number seed
  *                  int procId - process inde into shared memory array
  *                               0 is parent
  *
@@ -2386,7 +2432,7 @@ leaveMain:
  *
  *********************************************************************/
 
-void ExecuteTptBm(int          seed,
+void ExecuteTptBm(unsigned int seed,
                   int          procId)
 {
   SQLHSTMT    updstmt = SQL_NULL_HSTMT;
@@ -2407,7 +2453,8 @@ void ExecuteTptBm(int          seed,
   unsigned long   nxact = 0;        /* used in TPS calculation */
   int       rampingup = 0;    /* currently in ramp-up */
   int       rampingdown = 0;  /* currently in ramp-down */
-  int       rand_int;         /* rand integer */
+  //int       rand_int;         /* rand integer */
+  long      rand_int;         /* rand integer */
   int       insert_start;     /* start mark for inserts */
   int       insert_present;   /* present mark for inserts */
   int       delete_start = 0; /* start mark for deletes */
@@ -2443,7 +2490,8 @@ void ExecuteTptBm(int          seed,
   SQLCHAR   descr [101];
   SQLCHAR   last_calling_party[11] = "0000000000";
 
-  srand(seed);
+  // srand(seed);
+  srandom(seed);
 
   /* initialize the select statement buffers */
   directory [10]  = '\0';
@@ -2525,10 +2573,10 @@ void ExecuteTptBm(int          seed,
       initRouting( serverdsn );
 #endif /* SCALEOUT && ROUTING */
   erasePassword(password, strlen(password));
-#if defined(SCALEOUT) && defined (ROUTINGAPI) && defined(TTCLIENTSERVER)
+#if defined(SCALEOUT) && defined (ROUTINGAPI) && defined(ROUTINGAPI_ALL)
   if (  mode != M_SCALEOUT_ROUTING  )
   {
-#endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
+#endif /* SCALEOUT && ROUTINGAPI && ROUTINGAPI_ALL */
       /* turn off autocommit */
       rc = SQLSetConnectOption (ghdbc, SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
       if (  rc != SQL_SUCCESS  )
@@ -2601,7 +2649,7 @@ void ExecuteTptBm(int          seed,
                          "allocating a delete statement handle",
                          __FILE__, __LINE__);
       }
-#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
+#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(ROUTINGAPI_ALL)
   }
 
   if (  mode == M_SCALEOUT_ROUTING  )
@@ -2824,7 +2872,7 @@ void ExecuteTptBm(int          seed,
       } 
   }
   else {
-#endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
+#endif /* SCALEOUT && ROUTINGAPI && ROUTINGAPI_ALL */
       if (StopRequested()) {
         err_msg1("Signal %d received. Stopping\n", SigReceived());
         goto cleanup;
@@ -3025,9 +3073,9 @@ void ExecuteTptBm(int          seed,
                          "committing transaction",
                          __FILE__, __LINE__);
       }
-#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
+#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(ROUTINGAPI_ALL)
   }
-#endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
+#endif /* SCALEOUT && ROUTINGAPI && ROUTINGAPI_ALL */
 
   /* print this starting message only in the main/parent process */
   if (procId == 0) // Parent
@@ -3265,7 +3313,8 @@ void ExecuteTptBm(int          seed,
       op_count++;
       if (reads != 100)
       {
-        rand_int = rand();
+        // rand_int = rand();
+        rand_int = random();
 
         if (rand_int < ((float)(reads + inserts + deletes) / 100) * ((unsigned int)RAND_MAX + 1)) {
           if (rand_int < ((float)(reads + inserts)/ 100) * ((unsigned int)RAND_MAX + 1)) {
@@ -3292,20 +3341,24 @@ void ExecuteTptBm(int          seed,
       if (path == 1)                                /* select xact */
       {
         /* randomly pick argument values */
-        id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-        nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+        // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+        // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+        id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
+        nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
         if (  mode == M_SCALEOUT_LOCAL  )
             while (  !  routingAPI_isLocal(&id,&nb)  )
             {
-                id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-                nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+                // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+                // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+                id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
+                nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
             }
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
         if (  mode == M_SCALEOUT_ROUTING  )
             thdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
         else
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* SCALEOUT && ROUTINGAPI */
             thdbc = ghdbc;
 
@@ -3356,20 +3409,24 @@ void ExecuteTptBm(int          seed,
       else if (path == 0)                           /* update xact */
       {
         /* randomly pick argument values */
-        id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-        nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+        // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+        // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+        id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
+        nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
         if (  mode == M_SCALEOUT_LOCAL  )
             while (  !  routingAPI_isLocal(&id,&nb)  )
             {
-                id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-                nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+                // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+                // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+                id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
+                nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
             }
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
         if (  mode == M_SCALEOUT_ROUTING  )
             thdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
         else
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* SCALEOUT && ROUTINGAPI */
             thdbc = ghdbc;
 
@@ -3420,11 +3477,11 @@ void ExecuteTptBm(int          seed,
                   delete_start += insert_mod;
                 }
             }
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
         if (  mode == M_SCALEOUT_ROUTING  )
             thdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
         else
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* SCALEOUT && ROUTINGAPI */
             thdbc = ghdbc;
 
@@ -3473,11 +3530,11 @@ void ExecuteTptBm(int          seed,
                   insert_start += insert_mod;
                 }
             }
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
         if (  mode == M_SCALEOUT_ROUTING  )
             thdbc = routingAPI_getConn(&id,&nb,&selstmt,&updstmt,&insstmt,&delstmt);
         else
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* SCALEOUT && ROUTINGAPI */
             thdbc = ghdbc;
 
@@ -3597,10 +3654,10 @@ cleanup:
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
   if (  mode > M_SCALEOUT  )
       freeRouting();
-#if defined(TTCLIENTSERVER)
+#if defined(ROUTINGAPI_ALL)
   if (  mode != M_SCALEOUT_ROUTING  )
   {
-#endif /* TTCLIENTSERVER */
+#endif /* ROUTINGAPI_ALL */
 #endif /* SCALEOUT && ROUTING */
       rc = SQLTransact (henv, ghdbc, SQL_COMMIT);
       if (  rc != SQL_SUCCESS  )
@@ -3650,9 +3707,9 @@ cleanup:
                          "freeing delete statement handle",
                          __FILE__, __LINE__);
       }
-#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(TTCLIENTSERVER)
+#if defined(SCALEOUT) && defined(ROUTINGAPI) && defined(ROUTINGAPI_ALL)
   }
-#endif /* SCALEOUT && ROUTINGAPI && TTCLIENTSERVER */
+#endif /* SCALEOUT && ROUTINGAPI && ROUTINGAPI_ALL */
 
   rc = SQLDisconnect(ghdbc);
   if (  rc != SQL_SUCCESS  )
@@ -3771,7 +3828,7 @@ void getPassword(const char * prompt, const char * uid, char * pswd, size_t len)
  *  RETURNS:        Nothing
  *
  *  NOTES:          memset of the buffer is not enough as optimizing compilers
- *                  a may think they know better and not erase the buffer
+ *                  may think they know better and not erase the buffer
  *
  *********************************************************************/
 

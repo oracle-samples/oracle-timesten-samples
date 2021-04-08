@@ -3,11 +3,9 @@
 # Linux (gcc/g++) x86-64 (64-bit) Makefile for the TimesTen TTCLASSES 
 # sample programs.
 #
-# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 ###############################################################################
-
-TT_MVL_LINUX  = 0
 
 INSTDIR         = $(TIMESTEN_HOME)/install
 COMMON          = $(QUICKSTART_HOME)/sample_code/common
@@ -15,38 +13,25 @@ SAMPLES         = $(QUICKSTART_HOME)/sample_code/ttclasses
 TTC_INCLUDEDIR  =  $(INSTDIR)/include/ttclasses
 
 
-GCC32 = $(shell sh -c "gcc -dumpversion" 2>/dev/null | grep '^3\.[2-9]')
-ifneq (,$(GCC32))
-  USING_GCC_32    = -m64
-  USING_GCC_32_LD = -m64
-endif
-
-64BIT         = -DTT_64BIT
 THREAD_SAFE   = -D_THREAD_SAFE -D_REENTRANT
 POSIX_THREADS = -D_POSIX_PTHREAD_SEMANTICS -D_POSIX_THREADS_CALLS
-CSDEFS        = -DTTCLIENTSERVER
 
 OPTFLAG       = -O -Wuninitialized
 DEBUGFLAG     = -g -Wall -W -Wcast-qual -Wshadow -Wpointer-arith \
                 -Wno-return-type -DTTDEBUG
 
-CFLAGS        = $(OPTFLAG) -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) -Ilib \
-                -DGCC $(USING_GCC_32) $(64BIT) $(THREAD_SAFE) -I$(COMMON)
+CFLAGS        = $(OPTFLAG) -DTT_64BIT -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) -Ilib \
+                -DGCC $(THREAD_SAFE) -I$(COMMON)
 
-ifeq ($(TT_MVL_LINUX),1)
-EXTRALIBS       = -ldl -lrt -lstdc++ -lttco
-endif
-
-LDFLAGS       = $(USING_GCC_32_LD)
-DIRLIBS       = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -ltten -lttclasses
-CSLIBS        = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -Wl,-rpath \
-                -Wl,$(INSTDIR)/lib -lttclient -lttclassesCS
+LDFLAGS       = 
+DCLIBS        = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -ltten -lttclasses
+CSLIBS        = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -lttclient -lttclassesCS
 
 CPLUSPLUS     = g++
 CC            = gcc
 
 # default LINK line (both opt/debug)
-LINK          =  $(CC) -shared $(USING_GCC_32_LD) -o
+LINK          =  $(CC) -shared -o
 
 ARFLAGS       =
 
@@ -143,80 +128,58 @@ $(OBJ_DIR)/%_client.o:%.cpp
 #
 
 basics: $(UTILS) $(OBJ_DIR)/basics.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/basics.o $(UTILS) \
-	$(LDFLAGS) $(DIRLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/basics.o $(UTILS) $(LDFLAGS) $(DCLIBS)
 
 bulkcp: $(UTILS) $(OBJ_DIR)/bulkcp.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulkcp.o $(UTILS) \
-	$(LDFLAGS) $(DIRLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulkcp.o $(UTILS) $(LDFLAGS) $(DCLIBS)
 
 bulktest: $(UTILS) $(OBJ_DIR)/bulktest.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulktest.o $(UTILS) \
-	$(LDFLAGS) $(DIRLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulktest.o $(UTILS) $(LDFLAGS) $(DCLIBS)
 
 catalog: $(UTILS) $(OBJ_DIR)/catalog.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/catalog.o $(UTILS) \
-	$(LDFLAGS) $(DIRLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/catalog.o $(UTILS) $(LDFLAGS) $(DCLIBS)
 
 plsqlTTCLASSES: $(UTILS) $(OBJ_DIR)/plsqlTTCLASSES.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/plsqlTTCLASSES.o $(UTILS) \
-	$(LDFLAGS) $(DIRLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/plsqlTTCLASSES.o $(UTILS) $(LDFLAGS) $(DCLIBS)
 
 pooltest: $(UTILS) $(OBJ_DIR)/pooltest.o $(TTC_DEMO_C_OBJS)
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/pooltest.o \
-        $(TTC_DEMO_C_OBJS) \
-        $(UTILS) \
-        $(LDFLAGS) $(DIRLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/pooltest.o $(TTC_DEMO_C_OBJS) $(UTILS) $(LDFLAGS) $(DCLIBS)
 
 typetest: $(UTILS) $(OBJ_DIR)/typetest.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/typetest.o $(UTILS) \
-	$(LDFLAGS) $(DIRLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/typetest.o $(UTILS) $(LDFLAGS) $(DCLIBS)
 
 ttSizeAll: $(UTILS) $(OBJ_DIR)/ttSizeAll.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll.o $(UTILS) \
-	$(LDFLAGS) $(DIRLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll.o $(UTILS) $(LDFLAGS) $(DCLIBS)
 
 #
 # TTClasses client-linked sample programs
 #
 
 basicsCS: $(OBJ_DIR)/basics_client.o $(OBJ_DIR)/testprog_utils_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/basics_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/basics_client.o $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 
 bulkcpCS: $(OBJ_DIR)/bulkcp_client.o $(OBJ_DIR)/testprog_utils_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulkcp_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulkcp_client.o $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 
 bulktestCS: $(OBJ_DIR)/bulktest_client.o $(OBJ_DIR)/testprog_utils_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulktest_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/bulktest_client.o $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 
 catalogCS: $(OBJ_DIR)/catalog_client.o $(OBJ_DIR)/testprog_utils_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/catalog_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/catalog_client.o $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 
-plsqlTTCLASSESCS: $(OBJ_DIR)/plsqlTTCLASSES_client.o \
-                  $(OBJ_DIR)/testprog_utils_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/plsqlTTCLASSES_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
+plsqlTTCLASSESCS: $(OBJ_DIR)/plsqlTTCLASSES_client.o $(OBJ_DIR)/testprog_utils_client.o
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/plsqlTTCLASSES_client.o $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 
-pooltestCS: $(OBJ_DIR)/pooltest_client.o $(OBJ_DIR)/testprog_utils_client.o \
-            $(OBJ_DIR)/portable_thread_unix_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/pooltest_client.o \
-        $(OBJ_DIR)/portable_thread_unix_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o \
-        $(LDFLAGS) $(CSLIBS)
+pooltestCS: $(OBJ_DIR)/pooltest_client.o $(OBJ_DIR)/testprog_utils_client.o $(OBJ_DIR)/portable_thread_unix_client.o
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/pooltest_client.o $(OBJ_DIR)/portable_thread_unix_client.o $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 
 typetestCS: $(OBJ_DIR)/typetest_client.o  $(OBJ_DIR)/testprog_utils_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/typetest_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/typetest_client.o $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 
 ###
 ### "useful" sample programs
 ###
 
 ttSizeAllCS: $(OBJ_DIR)/ttSizeAll_client.o $(OBJ_DIR)/testprog_utils_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
+	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll_client.o $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 

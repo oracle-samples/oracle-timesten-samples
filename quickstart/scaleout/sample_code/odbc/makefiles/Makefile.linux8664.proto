@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -16,8 +16,9 @@ COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 
 CC		= gcc
 
-PLATCFLAGS	= -m64 -O3
+PLATCFLAGS	= -O3 -finline-functions -Wno-stringop-overflow
 LDFLAGS		= -O3 -Wl,-rpath -Wl,$(INSTDIR)/lib
+EXTRALIBS	=
 
 INCS		= -I. -I$(INSTDIR)/include -I$(COMMDIR)
 
@@ -26,12 +27,15 @@ INCS		= -I. -I$(INSTDIR)/include -I$(COMMDIR)
 #
 #OPTDEFS		= -DDEBUG -DSPECIAL_FEATURES
 
+DEFS		=
 CSDEFS		= -DTTCLIENTSERVER
-CFLAGS		= $(PLATCFLAGS) $(OPTDEFS) $(INCS)
+DMDEFS		= -DTTDM
+CFLAGS		= $(PLATCFLAGS) $(DEFS) $(OPTDEFS) $(INCS)
 
 TTLINK		= -L$(INSTDIR)/lib
-DCLIBS		= $(TTLINK) -ltten
-CSLIBS		= $(TTLINK) -lttclient
+DCLIBS		= $(TTLINK) -ltten $(EXTRALIBS)
+CSLIBS		= $(TTLINK) -lttclient $(EXTRALIBS)
+DMLIBS		= $(TTLINK) -lttdrvmgr $(EXTRALIBS)
 
 GSOBJS		= $(OBJDIR)/GridSample.o $(OBJDIR)/GSOdbc.o $(OBJDIR)/GSArgs.o \
 		  $(OBJDIR)/GSUtil.o $(OBJDIR)/GSUsage.o $(OBJDIR)/GSErrors.o \
@@ -54,22 +58,40 @@ GSOBJSCS	= $(OBJDIR)/GridSampleCS.o $(OBJDIR)/GSOdbcCS.o \
 		  $(OBJDIR)/GSTxnAuthorizeCS.o \
 		  $(OBJDIR)/GSTxnChargeCS.o \
 		  $(OBJDIR)/GSTxnTopupCS.o
+GSOBJSDM	= $(OBJDIR)/GridSampleDM.o $(OBJDIR)/GSOdbcDM.o \
+		  $(OBJDIR)/GSArgsDM.o $(OBJDIR)/GSUtilDM.o \
+		  $(OBJDIR)/GSUsageDM.o $(OBJDIR)/GSErrorsDM.o \
+                  $(OBJDIR)/GSTxnUpdateGridInfoDM.o \
+		  $(OBJDIR)/GSTxnGetCountsDM.o \
+		  $(OBJDIR)/GSTxnClearHistoryDM.o \
+		  $(OBJDIR)/GSTxnPurgeDM.o \
+		  $(OBJDIR)/GSTxnQueryDM.o \
+		  $(OBJDIR)/GSTxnAuthorizeDM.o \
+		  $(OBJDIR)/GSTxnChargeDM.o \
+		  $(OBJDIR)/GSTxnTopupDM.o
 GRIDSAMPLE	= $(BINDIR)/GridSample
 GRIDSAMPLECS	= $(BINDIR)/GridSampleCS
+GRIDSAMPLEDM	= $(BINDIR)/GridSampleDM
 
 TPTBMDCOBJS     = $(OBJDIR)/tptbm.o $(OBJDIR)/utils.o $(OBJDIR)/ttgetopt.o
 TPTBMDC         = $(BINDIR)/tptbm
 TPTBMCSOBJS     = $(OBJDIR)/tptbmCS.o $(OBJDIR)/utils.o $(OBJDIR)/ttgetopt.o
 TPTBMCS         = $(BINDIR)/tptbmCS
+TPTBMDMOBJS     = $(OBJDIR)/tptbmDM.o $(OBJDIR)/utils.o $(OBJDIR)/ttgetopt.o
+TPTBMDM         = $(BINDIR)/tptbmDM
 
-all:		csonly direct
+all:		csonly direct dmonly
+
+nodm:		csonly direct
 
 direct:		$(GRIDSAMPLE) $(TPTBMDC)
 
 csonly:		$(GRIDSAMPLECS) $(TPTBMCS)
 
+dmonly:		$(GRIDSAMPLEDM) $(TPTBMDM)
+
 clean:
-	rm -f $(GRIDSAMPLECS) $(GRIDSAMPLE) $(TPTBMDC) $(TPTBMCS) $(OBJDIR)/*.o
+	rm -f $(GRIDSAMPLEDM) $(GRIDSAMPLECS) $(GRIDSAMPLE) $(TPTBMDM) $(TPTBMDC) $(TPTBMCS) $(OBJDIR)/*.o
 
 #
 # Targets for binaries
@@ -81,11 +103,17 @@ $(GRIDSAMPLE):	$(GSOBJS)
 $(GRIDSAMPLECS):	$(GSOBJSCS)
 	$(CC) -o $@ $(LDFLAGS) $(GSOBJSCS) $(CSLIBS)
 
+$(GRIDSAMPLEDM):	$(GSOBJSDM)
+	$(CC) -o $@ $(LDFLAGS) $(GSOBJSDM) $(DMLIBS)
+
 $(TPTBMDC):	$(TPTBMDCOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(TPTBMDCOBJS) $(DCLIBS)
 
 $(TPTBMCS):	$(TPTBMCSOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS)
+
+$(TPTBMDM):	$(TPTBMDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMDMOBJS) $(DMLIBS)
 
 #
 # Targets for object files
@@ -103,11 +131,17 @@ $(OBJDIR)/tptbm.o:	tptbm.c $(COMMDIR)/tt_version.h $(COMMDIR)/ttgetopt.h $(COMMD
 $(OBJDIR)/tptbmCS.o:	tptbm.c $(COMMDIR)/tt_version.h $(COMMDIR)/ttgetopt.h $(COMMDIR)/utils.h
 	$(CC) -o $@ -c $(CFLAGS) $(CSDEFS) -DSCALEOUT tptbm.c
 
+$(OBJDIR)/tptbmDM.o:	tptbm.c $(COMMDIR)/tt_version.h $(COMMDIR)/ttgetopt.h $(COMMDIR)/utils.h
+	$(CC) -o $@ -c $(CFLAGS) $(DMDEFS) -DSCALEOUT tptbm.c
+
 $(OBJDIR)/GridSample.o:	GridSample.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GridSample.c
 
 $(OBJDIR)/GridSampleCS.o:	GridSample.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GridSample.c
+
+$(OBJDIR)/GridSampleDM.o:	GridSample.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GridSample.c
 
 $(OBJDIR)/GSUtil.o:	GSUtil.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSUtil.c
@@ -115,11 +149,17 @@ $(OBJDIR)/GSUtil.o:	GSUtil.c GridSample.h
 $(OBJDIR)/GSUtilCS.o:	GSUtil.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSUtil.c
 
+$(OBJDIR)/GSUtilDM.o:	GSUtil.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSUtil.c
+
 $(OBJDIR)/GSUsage.o:	GSUsage.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSUsage.c
 
 $(OBJDIR)/GSUsageCS.o:	GSUsage.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSUsage.c
+
+$(OBJDIR)/GSUsageDM.o:	GSUsage.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSUsage.c
 
 $(OBJDIR)/GSArgs.o:	GSArgs.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSArgs.c
@@ -127,11 +167,17 @@ $(OBJDIR)/GSArgs.o:	GSArgs.c GridSample.h
 $(OBJDIR)/GSArgsCS.o:	GSArgs.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSArgs.c
 
+$(OBJDIR)/GSArgsDM.o:	GSArgs.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSArgs.c
+
 $(OBJDIR)/GSOdbc.o:	GSOdbc.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSOdbc.c
 
 $(OBJDIR)/GSOdbcCS.o:	GSOdbc.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSOdbc.c
+
+$(OBJDIR)/GSOdbcDM.o:	GSOdbc.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSOdbc.c
 
 $(OBJDIR)/GSErrors.o:	GSErrors.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSErrors.c
@@ -139,8 +185,14 @@ $(OBJDIR)/GSErrors.o:	GSErrors.c GridSample.h
 $(OBJDIR)/GSErrorsCS.o:	GSErrors.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSErrors.c
 
+$(OBJDIR)/GSErrorsDM.o:	GSErrors.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSErrors.c
+
 $(OBJDIR)/GSTxnUpdateGridInfoCS.o:	GSTxnUpdateGridInfo.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSTxnUpdateGridInfo.c
+
+$(OBJDIR)/GSTxnUpdateGridInfoDM.o:	GSTxnUpdateGridInfo.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSTxnUpdateGridInfo.c
 
 $(OBJDIR)/GSTxnUpdateGridInfo.o:	GSTxnUpdateGridInfo.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSTxnUpdateGridInfo.c
@@ -148,11 +200,17 @@ $(OBJDIR)/GSTxnUpdateGridInfo.o:	GSTxnUpdateGridInfo.c GridSample.h
 $(OBJDIR)/GSTxnGetCountsCS.o:	GSTxnGetCounts.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSTxnGetCounts.c
 
+$(OBJDIR)/GSTxnGetCountsDM.o:	GSTxnGetCounts.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSTxnGetCounts.c
+
 $(OBJDIR)/GSTxnGetCounts.o:	GSTxnGetCounts.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSTxnGetCounts.c
 
 $(OBJDIR)/GSTxnClearHistoryCS.o:	GSTxnClearHistory.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSTxnClearHistory.c
+
+$(OBJDIR)/GSTxnClearHistoryDM.o:	GSTxnClearHistory.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSTxnClearHistory.c
 
 $(OBJDIR)/GSTxnClearHistory.o:	GSTxnClearHistory.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSTxnClearHistory.c
@@ -160,11 +218,17 @@ $(OBJDIR)/GSTxnClearHistory.o:	GSTxnClearHistory.c GridSample.h
 $(OBJDIR)/GSTxnPurgeCS.o:	GSTxnPurge.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSTxnPurge.c
 
+$(OBJDIR)/GSTxnPurgeDM.o:	GSTxnPurge.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSTxnPurge.c
+
 $(OBJDIR)/GSTxnPurge.o:	GSTxnPurge.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSTxnPurge.c
 
 $(OBJDIR)/GSTxnQueryCS.o:	GSTxnQuery.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSTxnQuery.c
+
+$(OBJDIR)/GSTxnQueryDM.o:	GSTxnQuery.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSTxnQuery.c
 
 $(OBJDIR)/GSTxnQuery.o:	GSTxnQuery.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSTxnQuery.c
@@ -172,17 +236,26 @@ $(OBJDIR)/GSTxnQuery.o:	GSTxnQuery.c GridSample.h
 $(OBJDIR)/GSTxnAuthorizeCS.o:	GSTxnAuthorize.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSTxnAuthorize.c
 
+$(OBJDIR)/GSTxnAuthorizeDM.o:	GSTxnAuthorize.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSTxnAuthorize.c
+
 $(OBJDIR)/GSTxnAuthorize.o:	GSTxnAuthorize.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSTxnAuthorize.c
 
 $(OBJDIR)/GSTxnChargeCS.o:	GSTxnCharge.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSTxnCharge.c
 
+$(OBJDIR)/GSTxnChargeDM.o:	GSTxnCharge.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSTxnCharge.c
+
 $(OBJDIR)/GSTxnCharge.o:	GSTxnCharge.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSTxnCharge.c
 
 $(OBJDIR)/GSTxnTopupCS.o:	GSTxnTopup.c GridSample.h
 	$(CC) -o $@ -c $(CSDEFS) $(CFLAGS) GSTxnTopup.c
+
+$(OBJDIR)/GSTxnTopupDM.o:	GSTxnTopup.c GridSample.h
+	$(CC) -o $@ -c $(DMDEFS) $(CFLAGS) GSTxnTopup.c
 
 $(OBJDIR)/GSTxnTopup.o:	GSTxnTopup.c GridSample.h
 	$(CC) -o $@ -c $(CFLAGS) GSTxnTopup.c

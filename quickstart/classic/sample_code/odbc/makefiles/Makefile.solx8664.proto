@@ -11,25 +11,24 @@
 INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 
-CC              = xlc_r
+CC              = cc
 
-PLATCFLAGS      = -O -qmaxmem=32768 -q64
-LDFLAGS         = -q64
+PLATCFLAGS      = -xO4 -mt -m64
+LDFLAGS         = -mt -m64
 SHLIB_SUFFIX    = so
-AR_SUFFIX       = a
-EXTRALIBS       = -lm
+EXTRALIBS	= -lposix4 -lpthread -lthread -lsocket -lnsl -lm -lc -ldl
 
 INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
 
-DEFS		=
+DEFS		= 
 CSDEFS          = -DTTCLIENTSERVER
 DMDEFS          = -DTTDM
 CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
 
-TTLINK          = -L$(INSTDIR)/lib
+TTLINK           = -L$(INSTDIR)/lib -Wl,-rpath,$(INSTDIR)/lib
 
 DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
-CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS) -lC_r
+CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS)
 DMLIBS          = $(TTLINK) -lttdrvmgr $(EXTRALIBS)
 
 BLKINSDC        = bulkinsert
@@ -95,13 +94,13 @@ $(PLSQLODBCDC): $(PLSQLODBCDCOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCDCOBJS) $(DCLIBS)
 
 $(TPCBDC):	$(TPCBDCOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPCBDCOBJS) $(DCLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(TPCBDCOBJS) $(DCLIBS)
 
 $(TPTBMDC):	$(TPTBMDCOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPTBMDCOBJS) $(DCLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMDCOBJS) $(DCLIBS)
 
 $(WISCBMDC):	$(WISCBMDCOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(WISCBMDCOBJS) $(DCLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMDCOBJS) $(DCLIBS)
 
 #
 # Targets for building Client Server executables
@@ -114,32 +113,32 @@ $(PLSQLODBCCS): $(PLSQLODBCCSOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCCSOBJS) $(CSLIBS)
 
 $(TPCBCS):	$(TPCBCSOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPCBCSOBJS) $(CSLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(TPCBCSOBJS) $(CSLIBS)
 
 $(TPTBMCS):	$(TPTBMCSOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS) 
 
 $(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
-	$(CC) -o $@ $(LDFLAGS) $(WISCBMCSOBJS) $(CSLIBS) -lm
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMCSOBJS) $(CSLIBS)
 
 #
 # Targets for building TTDM executables
 #
 
-$(BLKINSDM):	$(BLKINSDMOBJS)
+$(BLKINSDM):    $(BLKINSDMOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(BLKINSDMOBJS) $(DMLIBS)
 
 $(PLSQLODBCDM): $(PLSQLODBCDMOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCDMOBJS) $(DMLIBS)
 
-$(TPCBDM):	$(TPCBDMOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPCBDMOBJS) $(DMLIBS) -lm
+$(TPCBDM):      $(TPCBDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPCBDMOBJS) $(DMLIBS)
 
-$(TPTBMDM):	$(TPTBMDMOBJS)
-	$(CC) -o $@ $(LDFLAGS) $(TPTBMDMOBJS) $(DMLIBS) -lm
+$(TPTBMDM):     $(TPTBMDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMDMOBJS) $(DMLIBS)
 
-$(WISCBMDM):	$(WISCBMDMOBJS) wiscprotos.h sqlfunc.h
-	$(CC) -o $@ $(LDFLAGS) $(WISCBMDMOBJS) $(DMLIBS) -lm
+$(WISCBMDM):    $(WISCBMDMOBJS) wiscprotos.h sqlfunc.h
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMDMOBJS) $(DMLIBS)
 
 #
 # Targets for building object files

@@ -1,6 +1,6 @@
 #
 # Build TimesTen Sample Programs (Unix)
-# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 # $Revision
 #
@@ -12,8 +12,9 @@ OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
 CC              = cc
 
-PLATCFLAGS      = -m64 -O2 
+PLATCFLAGS      = -O3
 LDFLAGS         = 
+EXTRALIBS	=
 
 INCS            = -I$(OCIINCS) -I$(INSTDIR)/include -I$(COMMDIR)
 
@@ -21,7 +22,7 @@ CFLAGS          = $(PLATCFLAGS) $(INCS)
 
 TTLINK          = -L$(INSTDIR)/lib -L$(TTORACLE_HOME) 
 
-ICLIBS          = $(TTLINK) -lclntsh 
+ICLIBS          = $(TTLINK) -lclntsh $(EXTRALIBS)
 
 ADDEMP          = addemp
 ADDEMPOBJS      = addemp.o psswds.o

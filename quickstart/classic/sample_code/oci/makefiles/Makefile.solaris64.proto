@@ -10,19 +10,19 @@ COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_12_1
 OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
-CC              = xlc_r
+CC              = cc
 
-PLATCFLAGS      = -O -qmaxmem=49152 -q64
-LDFLAGS         = -q64
-EXTRALIBS	=
+PLATCFLAGS      = -xO4 -mt -m64
+LDFLAGS         = -mt -m64
+EXTRALIBS	= -lposix4 -lpthread -lthread -lsocket -lnsl -lm -lc -ldl
 
 INCS            = -I$(OCIINCS) -I$(INSTDIR)/include -I$(COMMDIR)
 
 CFLAGS          = $(PLATCFLAGS) $(INCS)
 
-TTLINK          = -L$(INSTDIR)/lib -L$(TTORACLE_HOME) 
+TTLINK          = -L$(INSTDIR)/lib -L$(TTORACLE_HOME)
 
-ICLIBS          = $(TTLINK) -lc -lclntsh -lpthread -lm -lrt $(EXTRALIBS)
+ICLIBS          = $(TTLINK) -lclntsh -lpthread -lm $(EXTRALIBS)
 
 ADDEMP          = addemp
 ADDEMPOBJS      = addemp.o psswds.o
@@ -30,8 +30,8 @@ TPTBM           = tptbmOCI
 TPTBMOBJS       = tptbmOCI.o psswds.o
 PLSQLOCI        = plsqlOCI
 PLSQLOCIOBJS    = plsqlOCI.o psswds.o
-MTQUERY         = ocimtquery
-MTQUERYOBJS     = ocimtquery.o
+MTQUERY		= ocimtquery
+MTQUERYOBJS	= ocimtquery.o
 
 PROGS           = $(ADDEMP) $(TPTBM) $(PLSQLOCI) $(MTQUERY)
 
@@ -66,3 +66,4 @@ $(MTQUERY): $(MTQUERYOBJS)
 #
 .c.o:
 	$(CC) $(CFLAGS) -o $@ -c $<
+

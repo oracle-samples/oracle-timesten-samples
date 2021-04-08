@@ -9,7 +9,7 @@ This repository stores a variety of examples demonstrating how to use the Oracle
 | [languages](./languages) | Open Source language support samples (Python and Node.js) | 
 
 ## Supported TimesTen Releases
-These samples require a _minimum_ of **TimesTen 18.1.4.1.0** but our recommendation is to always use the most recent release available for your platform.
+In general these samples require a _minimum_ of **TimesTen 18.1.4.1.0** but our recommendation is to always use the most recent release available for your platform. Some specific samples may require a more recent timesTen release; any such requirement will be detailed in the sample's README file.
 
 ## More information
 You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)

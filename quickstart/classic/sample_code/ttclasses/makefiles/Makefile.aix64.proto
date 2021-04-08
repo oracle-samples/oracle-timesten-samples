@@ -2,7 +2,7 @@
 #
 # 64-bit AIX Makefile (cc_r) for the TimesTen TTCLASSES sample programs
 #
-# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 ##############################################################################
 
@@ -17,8 +17,6 @@ TTC_INCLUDEDIR  =  $(INSTDIR)/include/ttclasses
 ### finally, set ODBC to point to /64, not /32 directory.
 ###
 
-CF32 = -qro -qroconst
-LD32 =
 CF64 = -qro -qroconst -q64 -qlanglvl=ansi -qlonglong -qchars=signed -DTT_64BIT
 LD64 = -q64
 

@@ -3143,12 +3143,6 @@ int main (int argc, char *argv[])
   SQLHSTMT  hstmt1;
   SQLRETURN rc;
 
-
-#if defined(TTCLIENTSERVER) && defined(__hppa) && !defined(__LP64__)
-  /* hp requires this for c main programs that call c++ shared libs */
-  _main();
-#endif
-
   /* Set up default signal handlers */
   if (HandleSignals() != 0) {
     err_msg0("Unable to set signal handlers\n");

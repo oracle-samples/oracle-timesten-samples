@@ -1,11 +1,9 @@
 #
 # Build TimesTen Sample Programs (Unix)
-# Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
 #
 # $Revision
 #
-
-TT_MVL_LINUX    = 0
 
 INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
@@ -14,17 +12,15 @@ OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
 CC              = gcc
 
-PLATCFLAGS      = -O2 -finline-functions
+PLATCFLAGS      = -O3 -finline-functions
 LDFLAGS         = 
+EXTRALIBS	=
 
 INCS            = -I$(OCIINCS) -I$(INSTDIR)/include -I$(COMMDIR)
 
 CFLAGS          = $(PLATCFLAGS) $(INCS)
 
 TTLINK          = -L$(INSTDIR)/lib -L$(TTORACLE_HOME)
-ifeq ($(TT_MVL_LINUX),1)
-EXTRALIBS       = -ldl -lnsl -lstdc++
-endif
 
 ICLIBS          = $(TTLINK) -lclntsh -lpthread -lm $(EXTRALIBS)
 

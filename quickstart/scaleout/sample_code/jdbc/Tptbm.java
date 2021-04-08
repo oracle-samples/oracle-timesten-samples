@@ -22,13 +22,15 @@ import com.timesten.jdbc.*;
 class Tptbm
 {
     // Compilation control
-    static public final boolean enableScaleout = true;
+    static public final boolean enableScaleout = false;
 
     // class constants
     static public final int TPTBM_NONE = -1;
     static public final int TPTBM_ORACLE = 0;
     static public final int TPTBM_TIMESTEN = 1;
     static public final String dfltUsername = "appuser";
+    static public final int assumedTPS = 100000;
+    static public final int minHashPages = 40;
     static public final int dfltXacts = 10000;
     static public final int dfltRamptime = 10;
     static public final int dbModeId = -1;
@@ -495,7 +497,8 @@ class Tptbm
 	     "        [-multiop | [-read <read%>] [-insert <insert%>] [-delete <delete%>]]\n" +
 	     "        [{-xact <xacts> | -sec <seconds> [-ramp <rseconds>]}]\n" +
 	     "        [-min <min_xacts>] [-max <max_xacts>] [-seed <seed>]\n" +
-             "        [-csCommit] [-commitReads] [-range] [-key <keys>] [-plsql]\n" +
+             //"        [-csCommit] [-commitReads] [-range] [-key <keys>] [-plsql]\n" +
+             "        [-commitReads] [-range] [-key <keys>] [-plsql]\n" +
 	     "        [-trace] [-nobuild | -build]" );
         if ( enableScaleout )
 	    System.err.println(
@@ -520,27 +523,31 @@ class Tptbm
 
 	     "  -multiop               1 insert, 3 selects, 1 update / transaction.\n\n" +
 
-	     "  -read <read%>          Specifies the percentage of read\n" +
-	     "                         operations. The default is 80.\n\n" +
+	     "  -read <read%>          Specifies the percentage of read operations.\n" +
+	     "                         The default is 80.\n\n" +
 
-	     "  -insert <insert%>      Specifies the percentage of insert\n" +
-	     "                         operations. The default is 0.\n\n" +
+	     "  -insert <insert%>      Specifies the percentage of insert operations.\n" +
+	     "                         The default is 0. Can't be used with '-sec' or\n" +
+	     "                         '-nobuild'.\n\n" +
 
-	     "  -delete <delete%>      Specifies the percentage of delete\n" +
-	     "                         operations. The default is 0.\n\n" +
+	     "  -delete <delete%>      Specifies the percentage of delete operations.\n" +
+	     "                         The default is 0. Can't be used with '-sec' or\n" +
+	     "                         '-nobuild'.\n\n" +
 
              "                         The percentage of updates is 100 minus the read,\n" +
              "                         insert and delete percentages.\n\n" +
 
 	     "  -xact <xacts>          Specifies the number of transactions that each\n" +
-	     "                         thread should execute. The default is 10000.\n\n" +
+	     "                         thread should execute. The default is " + dfltXacts + ".\n" +
+	     "                         Mutually exclusive with '-sec'.\n\n" +
 
              "  -sec <seconds>         Specifies that <seconds> is the test measurement\n" +
              "                         duration. The default is to run in transaction\n" +
-             "                         mode (-xact).\n\n" +
+             "                         mode (-xact). Mutually exclusive with '-xact'.\n\n" +
 
              "  -ramp <rseconds>       Specifies that <rseconds> is the ramp up & down\n" +
-             "                         time in duration mode (-sec). Default is 10.\n\n" +
+             "                         time in duration mode (-sec). Default is 10.\n" +
+	     "                         Mutually exclusive with '-xact'.\n\n" +
 
              "  -min <min_xacts>       Minimum operations per transaction. Default is 1.\n\n" +
 
@@ -552,9 +559,9 @@ class Tptbm
              "  -seed <seed>           Specifies the seed for the random \n" +
              "                         number generator.\n\n" +
 
-	     "  -csCommit              Turn on prefetchClose for client/server. Not\n" +
-	     "                         allowed for direct mode connections or when\n" +
-	     "                         usign an Oracle database.\n\n" +
+	     //"  -csCommit              Turn on prefetchClose for client/server. Not\n" +
+	     //"                         allowed for direct mode connections or when\n" +
+	     //"                         usign an Oracle database.\n\n" +
 
 	     "  -commitReads           By default readonly transactions are not committed,\n" +
 	     "                         use this option to force them to be committed.\n\n" +
@@ -572,7 +579,8 @@ class Tptbm
 	     "  -trace                 Turns JDBC tracing on.\n\n" +
 
 	     "  -nobuild               Do not build the table; assumes table exists and is\n" +
-	     "                         already populated.\n" );
+	     "                         already populated. Cannot be used with '-insert' or\n" +
+             "                         '-delete'.\n" );
 
          if ( ! enableScaleout  )
              System.err.println(
@@ -687,7 +695,7 @@ class Tptbm
 	int outerIndex, innerIndex;
 	int cc = 0;
 	Timer clock = new Timer();
-	int pages = (key*key)/256;
+	int pages = ((key*key)/256)+1;
         String createStmt = null;
         String dist = "";
         String dbm = null;
@@ -696,17 +704,17 @@ class Tptbm
 	System.out.println("Populating benchmark database ...");
 	try {
 
-	    if (pages < 40) pages = 40;
+	    if (pages < minHashPages) pages = minHashPages;
 
-	    if (multiop == 1) {
-	        /* size for expected number of inserts, 20% of total transactions */
-		int moppgs;
-                if (  numXacts > 0  )
-		   moppgs = (numXacts * numThreads * 2)/(256*10);
-                else
-		   moppgs = ((testDuration * 100000) * numThreads * 2)/(256*10);
-		if (moppgs > pages)
-		    pages = moppgs;
+	    // if (multiop == 1) {
+	    if (inserts > 0) {
+		long addpgs;
+		int avgops = min_xact + ((max_xact - min_xact + 1)/2);
+                long nx = numXacts;
+                if (  numXacts <= 0  )
+                    nx = testDuration * assumedTPS;
+	        addpgs = ((numThreads * nx * inserts * avgops) / (256 * 100)) + 1;
+		pages += addpgs;
 	    }
 
 	    // Create a Statement object
@@ -752,7 +760,7 @@ class Tptbm
 		{
 		    pstmt.setInt(1, outerIndex);
 		    pstmt.setInt(2, innerIndex);
-		    pstmt.setString(3, "55"+innerIndex+outerIndex);
+		    pstmt.setString(3, "55"+(innerIndex%10000)+(outerIndex%10000));
 		    pstmt.setString(4, "<place holder for description of VPN " +
 				    outerIndex + " extension " + innerIndex);
 
@@ -904,6 +912,11 @@ class Tptbm
                     usage(false);
                 fseed = true;
                 seed = Integer.parseInt(args[i++]);
+		if( seed <= 0 ) {
+		    System.err.println(
+                          "'-seed' requires a positive, non-zero, integer argument");
+                    System.exit(1);
+                }
             }
 
 	    // Percentage of read transactions
@@ -1053,7 +1066,7 @@ class Tptbm
 		i += 1;
 	    }
 
-	    // prefetchClose ON
+	    // prefetchClose ON (undocumented)
 	    else if(args[i].equalsIgnoreCase("-csCommit")) {
                 if ( prefetchClose )
                     usage(false);
@@ -1161,9 +1174,18 @@ class Tptbm
         if (  numXacts == 0  ) {
             if (  testDuration <= 0  )
 	        numXacts = dfltXacts;
-            else
-            if (  rampTime < 0  )
-                rampTime = dfltRamptime;
+            else {
+                if (  rampTime < 0  )
+                    rampTime = dfltRamptime;
+                if (  inserts > 0  ) {
+	            System.err.println("'-insert' cannot be used in duration mode");
+	            System.exit(1);
+                }
+                if (  deletes > 0  ) {
+	            System.err.println("'-delete' cannot be used in duration mode");
+	            System.exit(1);
+                }
+            }
         } else {
             rampTime = 0;
             testDuration = 0;
@@ -1256,13 +1278,12 @@ class Tptbm
         if (multiop == 0) {
             int nx = numXacts;
             if (  nx <= 0  )
-                nx = 100000 * testDuration;
+                nx = assumedTPS * testDuration;
 
             if(numThreads * ( nx/100 * (float)inserts) > (key * key)) {
               System.err.println("Inserts as part of transaction mix exceed number initially populated." );
               System.exit(1);
             }
-  
             if(numThreads * ( nx/100 * (float)deletes) > (key * key)) {
               System.err.println("Deletes as part of transaction mix exceed number initially populated." );
               System.exit(1);
@@ -1952,7 +1973,7 @@ class TptbmThread extends Thread
                         }
 		        prepInsStmt.setInt(1, id_int);
 		        prepInsStmt.setInt(2, nb_int);
-		        prepInsStmt.setString(3, "55"+id_int+nb_int);
+		        prepInsStmt.setString(3, "55"+(id_int%10000)+(nb_int%10000));
 		        prepInsStmt.setString(4, 
                                            "<place holder for description " +
 					   "of VPN " + id_int + " extension " + 
