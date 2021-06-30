@@ -10,9 +10,15 @@
 # The TimesTen daemon must be started before running this script
 #  
 echo 
-echo Setting up the quickstart environment 
+echo Checking the quickstart environment 
 echo
-. ../../ttquickstartenv.sh
+if [[ "${QUICKSTART_HOME}" == "" ]]
+then
+    echo "*** QuickStart environment is not setup."
+    echo "*** Please 'source' ../../ttquickstartenv.sh"
+    echo
+    exit 1
+fi
 echo 
 echo Removing existing sample database
 echo
@@ -22,3 +28,4 @@ echo Building new sample database
 echo
 ttisql -f build_db.sql -connstr "dsn=sampledb" 
 ttbulkcp -i -connstr "dsn=sampledb" appuser.print_media populate_lob_data.dump
+exit 0
