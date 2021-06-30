@@ -21,7 +21,7 @@ INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
 DEFS            = 
 CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
 
-TTLINK          = -L$(INSTDIR)/lib -R$(INSTDIR)/lib
+TTLINK          = -L$(INSTDIR)/lib
 
 DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
 DMLIBS          = $(TTLINK) -lttdrvmgr $(EXTRALIBS)

@@ -25,7 +25,7 @@ CSDEFS          = -DTTCLIENTSERVER
 DMDEFS          = -DTTDM
 CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
 
-TTLINK           = -L$(INSTDIR)/lib -Wl,-rpath,$(INSTDIR)/lib
+TTLINK          = -L$(INSTDIR)/lib
 
 DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
 CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS)
