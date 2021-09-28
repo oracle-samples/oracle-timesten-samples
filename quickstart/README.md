@@ -1,6 +1,6 @@
 # TimesTen QuickStart and Scaleout Samples
 
-The Oracle TimesTen In-memory Database can be deployed in two distinct modes; Classic and Scaleout.
+The Oracle TimesTen In-Memory Database can be deployed in two distinct modes; Classic and Scaleout.
 
 Classic mode is equivalent to the original TimesTen In-Memory Database and TimesTen Application-Tier Database Cache products from releases prior to 18.1. It includes all of the functionality of those products plus additional enhancements. The focus is on delivering low, consistent latency for SQL operations and transactions, high throughput (within the constraints of a single computer system) and high performance high availability.
 
@@ -17,4 +17,4 @@ This folder contains the original TimesTen Classic QuickStart (which also covers
 You can find more information on the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/)
+You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/)

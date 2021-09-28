@@ -180,4 +180,4 @@ Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim 
 
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/).  Online documentation for the node-oracledb driver can be found [here](https://oracle.github.io/node-oracledb/doc/api.html).
+You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/).  Online documentation for the node-oracledb driver can be found [here](https://oracle.github.io/node-oracledb/doc/api.html).

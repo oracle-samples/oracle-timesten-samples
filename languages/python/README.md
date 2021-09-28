@@ -182,4 +182,4 @@ Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim 
 
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/). Online documenation for the cx_Oracle driver can be found [here](https://cx-oracle.readthedocs.io/en/latest/).
+You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/). Online documenation for the cx_Oracle driver can be found [here](https://cx-oracle.readthedocs.io/en/latest/).

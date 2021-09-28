@@ -28,4 +28,4 @@ In order to use the sample programs you must perform the following steps:
 
 **IMPORTANT**
 
-Although you can build and run the sample programs on a variety of platforms using a suitabvle TimesTen Client instance, TimesTen Scaleout itself is only supported on the Linux x86-64 platform.
+Although you can build and run the sample programs on a variety of platforms using a suitable TimesTen Client instance, TimesTen Scaleout itself is only supported on the Linux x86-64 platform.
