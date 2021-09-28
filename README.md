@@ -5,7 +5,6 @@ This repository stores a variety of examples demonstrating how to use the Oracle
 | Repo/Folder name            | Description                                     |
 | :-------------------------- | :---------------------------------------------- |
 | [quickstart](./quickstart)  | Classic QuickStart and Scaleout samples. See the README file in that directory for more information. |
-| [cloud](./cloud)  | Scripts to simplify deployment of TimesTen Scaleout in Oracle Cloud. See the README file in that directory for more information. |
 | [languages](./languages) | Open Source language support samples (Python and Node.js) | 
 
 ## Supported TimesTen Releases
@@ -15,7 +14,7 @@ In general these samples require a _minimum_ of **TimesTen 18.1.4.1.0** but our 
 You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/database/timesten-18.1/)
+You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/)
 
 ## License
 

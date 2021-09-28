@@ -1,2 +1,0 @@
-Servers {% for host in groups['zookeeper-addresses'] -%}
-  {{ host }}!{{ zkclientport }}{%- if not loop.last %},{% endif -%}{%- endfor %}

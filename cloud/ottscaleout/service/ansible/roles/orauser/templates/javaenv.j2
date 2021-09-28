@@ -1,7 +1,0 @@
-
-{% if openjdk %}
-export JAVA_HOME=/usr/lib/jvm/{{ openjdkrt }}
-{% else %}
-export JAVA_HOME={{ javabase }}/{{ javaver.stdout }}
-{% endif %}
-export PATH=${JAVA_HOME}/bin:${PATH}

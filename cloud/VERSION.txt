@@ -1,1 +1,0 @@
-Oracle TimesTen Scaleout Cloud Scripts 1.1

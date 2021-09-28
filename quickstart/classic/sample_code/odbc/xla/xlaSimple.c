@@ -454,7 +454,7 @@ void TerminateGracefully(int status)
 
 
 /*---------------------------------------------------------------------*/
-void CreateTable ()
+void ConnectAndCheckTable ()
 /*---------------------------------------------------------------------*/
 {
   SQLRETURN rc = SQL_SUCCESS;
@@ -967,11 +967,11 @@ main(int argc, char* argv[])
   printf(howto);
 
   /*---------------------------------------------------------------  
-   * First, create the table that will be monitored, if it's not already
-   * in the database.
+   * First, connect to the database and check that the table that will
+   * be monitored exists.
    *--------------------------------------------------------------*/
   
-  CreateTable();
+  ConnectAndCheckTable();
 
   /*--------------------------------------------------------------- 
    * Now connect via XLA.  This may require two connection attempts, since
