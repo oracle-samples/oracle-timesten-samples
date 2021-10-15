@@ -52,9 +52,9 @@ To compile the sample program on the Windows machine:
 
 ## How to run the sample ODP.NET program
 
-Run the program specifying the default client DSN (sampledbCS), the database username and password:
+Run the program specifying an 'easy connect' specifier that references the client DSN (sampledbCS), the database username and password:
 
-  `DemoODP -db sampledbCS -user appuser -passwd <password>`
+  `DemoODP -db localhost/sampledbCS:timesten_client -user appuser -passwd <password>`
 
 For all available program options, use:
  
