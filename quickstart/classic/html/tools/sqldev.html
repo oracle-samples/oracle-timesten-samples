@@ -19,8 +19,6 @@
 
 <p>Using SQL Developer with TimesTen is similar to using SQL Developer with Oracle Database. Users navigate the database connections and objects in the tree-based object browser. TimesTen database users can browse, create and edit database objects, such as tables, views, indexes and PL/SQL subprograms, the same way as they do with Oracle Database.
 
-Refer to the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_5.html">Connections demo</a> and the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_1.html">Basic Operations demo</a> for more details.</p>
-
 <center>
   <p>  
   <p><img src="../images/SQLDEV4.0/SQLDEV_01.png" width="600" alt="SQL Developer Overview"/> </p>
@@ -30,27 +28,25 @@ Refer to the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demo
 <p>TimesTen  SQL Developer works seamlessly with TimesTen product functionality to simplify the use of many TimesTen utilities and built-in procedures for administrative tasks and performance tuning.
 <p><br />
 <p><strong>Loading  Data into a TimesTen Table</strong>
-<p>To quickly copy a table definition and data from the Oracle Database to TimesTen is easy to do. TimesTen SQL Developer supports loading  tables, views or the result set of a SQL query from the Oracle Database using the underlying TimesTen built-in procedure <a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF785" target="_blank" class="doclink">ttLoadFromOracle</a>.
+<p>To quickly copy a table definition and data from the Oracle Database to TimesTen is easy to do. TimesTen SQL Developer supports loading  tables, views or the result set of a SQL query from the Oracle Database using the underlying TimesTen built-in procedure <a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/built-procedures.html#GUID-A9E4BC16-5D44-4B75-A190-66F868179BA3" target="_blank" class="doclink">ttLoadFromOracle</a>.
 <table cellspacing="0" cellpadding="0">
   <tr>
     <td width="300"><img src="../images/SQLDEV4.0/SQLDEV_LOAD_02_2.png" width="500"/></td>
   </tr>
 </table>
-<p>Refer to the  <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_8.html">Data Loading demo  </a>for more details. <br />
-</p>
 <p>
 <p><strong>Performance Metrics and Reporting</strong>
-<p>TimesTen collects a rich set of database performance metrics and statistics. Such information are maintained in the TimesTen System Tables. SQL Developer simplifies the tasks of retrieving performance metrics for a given workload. Follow the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_7.html"> ttStats demo </a>on how to generate TTSTATS report.
+<p>TimesTen collects a rich set of database performance metrics and statistics. Such information are maintained in the TimesTen System Tables. SQL Developer simplifies the tasks of retrieving performance metrics for a given workload.
 <p align="left"> <img src="../images/SQLDEV4.0/SQLDEV_TTSTATS_02.png" width="600"/><br />
 </p>
 <p align="left">&nbsp;</p>
 <p><strong>TimesTen Index Advisor</strong></p>
-<p>The TimesTen database engine  was developed with a cost-based SQL optimizer for query performance. Thus, optimal query performance relies on having proper indexes. The TimesTen <a href="http://docs.oracle.com/database/timesten-18.1/e61195/comp.htm#TTOPR740">Index Advisor</a> analyses and recommends indexes for a specific workload. SQL Developer simplifies the tasks of running the Index Advisor. See the<a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_6.html"> Index Advisor demo </a> for more details.</p>
+<p>The TimesTen database engine  was developed with a cost-based SQL optimizer for query performance. Thus, optimal query performance relies on having proper indexes. The TimesTen <a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/operations/working-data-timesten-database.html#GUID-F38C14B3-80C3-497A-8D29-8ADA70995033" target="_blank" class="doclink">Index Advisor</a> analyses and recommends indexes for a specific workload.</p>
   <p align="left"><img src="../images/SQLDEV4.0/SQLDEV_IA_02.png" width="600"/></p>
   <p align="left"><br />
   </p>
-  <p><strong>In-Memory Database Cache</strong>  
-  <p>For  users who are using the In-Memery Database Cache product option to cache Oracle Database tables in a TimesTen database, SQL Developer simplifies the tasks of creating TimesTen cache groups by browsing the table schema in the Oracle Database to select the desired tables, columns, and rows. Administrative tasks such as populating cache group with initial dataset, attribute settings for data refresh intervals, data aging policies, etc. 
+  <p><strong>Application-Tier Database Cache</strong>  
+  <p>For users who are using the Application-Tier Database Cache product option to cache Oracle Database tables in a TimesTen database, SQL Developer simplifies the tasks of creating TimesTen cache groups by browsing the table schema in the Oracle Database to select the desired tables, columns, and rows. Administrative tasks such as populating cache group with initial dataset, attribute settings for data refresh intervals, data aging policies, etc. 
   are intuitive and customizable using SQL Developer.
  
   <table cellspacing="0" cellpadding="0">
@@ -66,9 +62,7 @@ Refer to the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demo
         </tr>
           </tr>
   </table>
-  <p>Refer to the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_2.html">Create and Load Cache Group demo</a> on how to set up a cache group. <br>
-  </p>
-  <p>With concurrent connections to both the TimesTen database and the Oracle Database, users can visually see  cache data synchronization within SQL Developer. For read-write cache groups, updates to the cache tables in TimesTen are propagated to the Oracle Database; for Read-Only cache groups, updates to the Oracle Database tables are refreshed to the TimesTen cache tables. Refer to the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_3.html">Browse and Edit Cache Data</a> demo for more details. </p>
+  <p>With concurrent connections to both the TimesTen database and the Oracle Database, users can visually see  cache data synchronization within SQL Developer. For read-write cache groups, updates to the cache tables in TimesTen are propagated to the Oracle Database; for Read-Only cache groups, updates to the Oracle Database tables are refreshed to the TimesTen cache tables.</p>
   <p>&nbsp;</p>
   <p><strong>Summary</strong></p>
 <p>
@@ -84,49 +78,9 @@ Refer to the <a href="http://www.oracle.com/webfolder/technetwork/tutorials/demo
   <li>View and create reports</li>
 </ul>
 
-<p class="section1">&nbsp;</p>
-<p class="section1">TimesTen and SQL Developer Demos </p>
-<table width="708" border="1">
-  <tr>
-    <td width="200" bgcolor="#FFFFFF" class="normal"><a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_5.html" target="_blank" class="doclink" class="normal">Establishing Connections To a TimesTen database</a></td>
-    <td width="650" class="normal">This demo shows how to establish connections to theTimesTen database.</td>
-  </tr>
-  <tr>
-    <td class="normal"><a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_1.html" target="_blank" class="doclink">Basic Operations with TimesTen</a></td>
-    <td class="normal">This demo shows how to create a connection to a TimesTen database, how to execute SQL statements using the SQL worksheet; calling TimesTen built-in procedures and ttIsql commands;  how to createtables and indexes; how to insert, edit and browse records using the Data Editor within SQL Developer</td>
-  </tr>
-  <tr>
-    <td class="normal"><a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_8.html" target="_blank" class="doclink">Loading Data From Oracle Database</a></td>
-    <td class="normal">This demo shows how to load data from the Oracle Database tables to TimesTen    using the <i>ttLoadFromOracle</i> built-in procedure</td>
-  </tr>
-  <tr>
-    <td class="normal"><a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_6.html" target="_blank" class="doclink">TimesTen Index Advisor</a></td>
-    <td class="normal">This demo shows how to run the Index Advisor to analyses and recommends optimal indexes for a given workload</td>
-  </tr>
-  <tr>
-    <td class="normal"><a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_7.html" target="_blank" class="doclink">TimesTen Performance Metrics and Reporting</a></td>
-    <td class="normal">This demo shows how to capture performance  snapshots and generate <i>ttStats</i> performance report for a given workload</td>
-  </tr>
-  <tr>
-    <td class="normal"><a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_2.html" target="_blank" class="doclink">Create and Load Cache Group</a></td>
-    <td class="normal">This demo shows how to create cache groups to cache Oracle database tables into a TimesTen cache database</td>
-  </tr>
-  <tr>
-    <td class="normal"><a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_3.html" target="_blank" class="doclink">Browse and Edit Cache Data</a></td>
-    <td class="normal">This demo shows how to view and edit data in a cache group and visually see the effect of automatic cache data synchronization; also how to use the PassThrough feature to enable modifications to  the Oracle Database base table and the TimesTen-cached table.</td>
-  </tr>
-  <tr>
-    <td class="normal"><a href="http://www.oracle.com/webfolder/technetwork/tutorials/demos/db/timesten/quickstart/tt1122_sqldev_demo_4.html" target="_blank" class="doclink">Create and Run PL/SQL</a></td>
-    <td class="normal">This demo shows how to copy PL/SQL subprograms from an Oracle Database into a TimesTen cache database</td>
-  </tr>
-</table>
-<p class="section1"><br>
+<p class="section1">
   </p>
-<p>For the latest update of TimesTen SQL Developer release and functionality, 
-  please visit the 
-  <a href="http://www.oracle.com/technetwork/database/timesten/timesten-sqldeveloper-overview-158942.html" target="_blank" class="doclink">
-  TimesTen SQL Developer website</a>.</p>
-<p>You can download the latest SQL Developer <a href="http://www.oracle.com/technetwork/developer-tools/sql-developer/overview/index.html" target="_blank" class="doclink">here</a>. 
+<p>You can download the latest SQL Developer <a href="https://www.oracle.com/tools/downloads/sqldev-downloads.html" target="_blank" class="doclink">here</a>. 
 <!--
 For information on how to configure SQL Developer 3.x on Windows for TimesTen and TimesTen for Exalytics, please refer to this <a href="../resources/Configure_SQLDeveloper.pdf" target="_blank" class="doclink">document</a>. <br>
 -->

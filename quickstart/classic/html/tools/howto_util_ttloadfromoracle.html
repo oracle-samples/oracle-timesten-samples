@@ -17,11 +17,11 @@
 </p>
 <p> TimesTen Database provides two methods that will execute a user-provided query on an Oracle database and load the result set into a TimesTen database table; via a <span class="codetext">ttIsql</span> command or two TimesTen built-in procedures. 
 </p>
-<ol type=a>The <span class="codetext">ttIsql</span> command <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61195/ttisql.htm#TTOPR751"> createandloadfromoraquery</a></span> automatically creates the table in TimesTen, executes the query on the Oracle database, and loads the result set into the table.
+<ol type=a>The <span class="codetext">ttIsql</span> command <span class="doclink"><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/utilities.html#GUID-8498B1B3-AB63-451B-80CD-BA0CA120BE26">createandloadfromoraquery</a></span> automatically creates the table in TimesTen, executes the query on the Oracle database, and loads the result set into the table.
 </p>
-<p>The <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF786">ttTableSchemaFromOraQueryGet</a></span> built-in procedure evaluates the user-provided query and generates a <span class="codetext">CREATE TABLE</span> statement that matches the column definitions returned by the result set. </p>
-<p>The <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF785">ttLoadFromOracle</a></span> built-in procedure is designed to achieve faster and parallel loading with error handling capability.
-It is used to executes the <span class="codetext">SELECT</span> statement on the Oracle database and loads the result set into the TimesTen existing tables. It can also be invoked by <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61195/ttisql.htm#TTOPR751">createandloadfromoraquery</a></span> command and <span class="doclink"><a href="howto_util_ttimportfromoracle.html">ttImportFromOracle</a></span> utility in their data loading stage.</ol></p> 
+<p>The <span class="doclink"><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/built-procedures.html#GUID-BABE7955-AB12-4814-A680-38F8142BF57E">ttTableSchemaFromOraQueryGet</a></span> built-in procedure evaluates the user-provided query and generates a <span class="codetext">CREATE TABLE</span> statement that matches the column definitions returned by the result set. </p>
+<p>The <span class="doclink"><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/built-procedures.html#GUID-A9E4BC16-5D44-4B75-A190-66F868179BA3">ttLoadFromOracle</a></span> built-in procedure is designed to achieve faster and parallel loading with error handling capability.
+It is used to execute the <span class="codetext">SELECT</span> statement on the Oracle database and load the result set into an existing TimesTen table. It can also be invoked by the ttIsql<span class="doclink"><a href=https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/utilities.html#GUID-8498B1B3-AB63-451B-80CD-BA0CA120BE26">createandloadfromoraquery</a></span> command and <span class="doclink"><a href="howto_util_ttimportfromoracle.html">ttImportFromOracle</a></span> utility in its data loading stage.</ol></p> 
   
 <p><b>Note:</b> In order for the TimesTen database to connect and fetch the data from the Oracle database, you must also supply the Oracle user password and the Oracle net service name as part of the TimesTen connection string. <br />
 </p>
@@ -98,7 +98,7 @@ The output indicates there is no table created after executed the <span class="c
   <br /></ol>
   <strong>Use ttLoadFromOracle Built-In Procedure</strong><br />
  <ol type=a> <br />
-  The <span class="codetext">ttLoadFromOracle</span> built-in procedure executes the <span class="codetext">SELECT</span> statement on Oracle database and loads the result set into the TimesTen table in parallel. In 18.1 release, a new parameter, <span class="codetext">Options</span>, is added to allow users to specify several new options controlling the load mode and error handling.<br />  <br /> 
+  The <span class="codetext">ttLoadFromOracle</span> built-in procedure executes the <span class="codetext">SELECT</span> statement on Oracle database and loads the result set into the TimesTen table in parallel.<br />  <br /> 
 The Syntax is as follows:
     <br />
     <br />  
@@ -114,7 +114,7 @@ In this example, the entire <span class="codetext">ttuser.employees</span> table
 <br />
 Here is the sample output from running the above command:  
 <p><img src="../images/howto_util_ttLoadFromOracle_builtin2.GIF" width="562"  class="cmdscnshot"/></p></ol>
-<p><strong>For more details and usage information, see <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61195/ttisql.htm#TTOPR750">"Loading data from an Oracle database into a TimesTen table"</a></span> in the Oracle TimesTen In-Memory Database Operations Guide.
+<p><strong>For more details and usage information, see <span class="doclink"><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/operations/using-ttisql-utility.html#GUID-40E9301A-3E9C-45DE-9F9F-A88BFF9A8392">"Loading data from an Oracle database into a TimesTen table"</a></span> in the Oracle TimesTen In-Memory Database Operations Guide.
 </strong> 
 </p>
 <p><strong><br /></strong>

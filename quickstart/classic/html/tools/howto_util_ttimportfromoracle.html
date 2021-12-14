@@ -15,7 +15,7 @@
 <p>This tutorial provides a step-by-step example on how to use the TimesTen command line utility <span class="doclink"><a href="http://www.oracle.com/technetwork/indexes/samplecode/utilities-2180928.html">ttImportFromOracle</a></span> to efficiently import tables from an Oracle Database to a TimesTen database. In particular, this utility is recommended when there is a need to load detail tables from an Oracle data warehouse to the TimesTen database running in the Oracle Exalytics In-Memory machine. </p>
 <p> <span class="codetext">ttImportFromOracle</span> analyzes a given table in the Oracle Database, recommends space-efficient data types, identifies columns for columnar compression and generates DDL for the table and indexes  in TimesTen for optimal memory footprint  in the TimesTen database.  <span class="codetext">ttImportFromOracle</span> should be run at least once per source table. <span class="codetext">ttImportFromOracle</span> also generates optimized  scripts to load the source data in parallel, using multiple instances of the TimesTen <span class="codetext">ttLoadFromOracle</span> builtin procedure. </p>
 <p>The example on this page references a sample Oracle database called <span class="codetext"><em>ttorcl</em></span>. The Oracle database schema belongs to a user called <span class="codetext">ttuser </span>and this user has 5 tables which need to be imported into a TimesTen database called <span class="codetext"><em>ttdb</em></span>. </p>
-<p>Note. The utility <span class="codetext">ttImportFromOracle</span> should be downloaded from <a href="http://www.oracle.com/technetwork/indexes/samplecode/utilities-2180928.html"> OTN </a>. <br />
+<p>Note. The utility <span class="codetext">ttImportFromOracle</span> should be downloaded from <a href="https://www.oracle.com/downloads/samplecode/otsu-samplecode-downloads.html"> here </a>. <br />
   <br/>
   <span class="section1"><strong>Prerequisites</strong></span></p>
 <p><span class="codetext">ttImportFromOracle</span> should be run from the server where the TimesTen database resides. Ensure the following perequisites are met:</p>
@@ -28,7 +28,7 @@
 <p><span class="section1"><strong><em>1. Running ttImportFromOracle</em></strong></span><strong><em><span class="section1"> to analyze the source tables</span></em></strong> <br/>
     <br />
     <span class="codetext">ttImportFromOracle</span> analyzes the specified tables in the Oracle Database and generates   scripts to support the importing of the tables into the specified TimesTen database.  
-  There are various options that the users can specify. The examples below demonstrate the most common  scenarios. Please refer to the <span class="codetext">ttImportFromOracle</span> <a href="http://www.oracle.com/technetwork/database/database-technologies/timesten/downloads/index.html"><span class="doclink"> readme</span></a> for more details on the available options and parameter settings. <br />
+  There are various options that the users can specify. The examples below demonstrate the most common  scenarios. Please refer to the <span class="codetext">ttImportFromOracle</span> <a href="https://www.oracle.com/a/tech/docs/ttimportfromoracle-readme.pdf"><span class="doclink"> readme</span></a> for more details on the available options and parameter settings. <br />
   <br />
   <strong>Examples:</strong><br />
   <br />
@@ -112,13 +112,12 @@ where<br />
     <strong>5.Update Statistics on the TimesTen tables </strong></p>
   <p><img src="../images/howto_util_ttimport_updatestats.gif" width="563" height="400" class="cmdscnshot"/></p>
   <p><br />
-  </p>
-  <p><strong>For more details and usage information, refer to <span class="doclink"><a href="http://www.oracle.com/technetwork/indexes/samplecode/utilities-2180928.html">ttImportFromOracle</a></span> online document.
 </strong> 
 </p>
 </blockquote>
 </div>
 
 <div id="footer"/>
+
 </body>
 </html>

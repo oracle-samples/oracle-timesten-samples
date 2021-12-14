@@ -1,1 +1,1 @@
-oracle-timesten-samples version 16
+oracle-timesten-samples version 18

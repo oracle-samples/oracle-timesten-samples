@@ -4,7 +4,7 @@
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
 #
-# Oracle TimesTen 18.1.1 Quick Start Sample Program Environment setup script.
+# Oracle TimesTen 22.1 Quick Start Sample Program Environment setup script.
 #
 
 if [[ ! ${ZSH_EVAL_CONTEXT} =~ :file$ ]]

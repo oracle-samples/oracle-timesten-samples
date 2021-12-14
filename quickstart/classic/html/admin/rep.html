@@ -16,7 +16,7 @@
 <p >Availability is an essential requirement for most real-time applications. 
 Industries that operate 24x7 such as telecommunications, and global systems that are Web-accessible such as travel and reservations sites, 
 cannot tolerate service downtime. 
-<a href="http://docs.oracle.com/database/timesten-18.1/e61197/overview.htm#TTREP115" target="_blank" class="doclink">TimesTen replication</a> 
+<a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/replication/index.html" target="_blank" class="doclink">TimesTen replication</a> 
 enables real-time data replication between in-memory databases  for high availability and load   sharing. 
 Replication  can also be used to facilitate online database upgrades and maintenance.</p>
 <p>TimesTen replication is supported over LAN and WAN connections. Both asynchronous and synchronous data replications are available. 
@@ -28,11 +28,10 @@ options such as synchronous replication with the return receipt or return twosaf
 The replication agent on the master database reads the records from its transaction log and forwards any relevant changes to the 
 replication agent on the subscriber machine, which then applies the updates to its local database. 
 A  range of replication configuration options are supported, 
-including an <a href="http://docs.oracle.com/database/timesten-18.1/e61192/availability.htm#TTCIN206" target="_blank" class="doclink">active standby pair</a> 
-configuration with optional read-only subscribers. An active standby pair can be configured for both TimesTen In-Memory Database and 
-TimesTen Application-Tier Database Cache (TimesTen Cache).<br />
+including an <a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/replication/overview-timesten-replication.html#GUID-506A43FA-CE65-41DC-B0BC-67547038354B" target="_blank" class="doclink">active standby pair</a> 
+configuration with optional read-only subscribers.<br />
 <br />
-<span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61197/attrib.htm#TTREP423">Automatic Parallel Replication </a></span> (APR) is enabled by default to provide a significant boost for replication throughput – the rate of transactions replicated from the source database to another TimesTen database on a remote host. Transaction dependencies are tracked automatically and the commit ordering is honored when applying the transactions on the remote standby database. Users may enable  Parallel Replication feature with Commit Optimization by relax enforcing commit ordering on the receiving hosts to further improve the replication throughput.</p>
+<span class="doclink"><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/replication/defining-attributes-and-options-replication-scheme.html#GUID-5D35F2C2-8A73-4E25-9A18-CC9F59D8EE2D">Automatic Parallel Replication </a></span> (APR) can provide a significant boost for replication throughput – the rate of transactions replicated from the source database to another TimesTen database on a remote host. Transaction dependencies are tracked automatically and the commit ordering is honored when applying the transactions on the remote standby database. Users may enable the Parallel Replication feature with Disabled Commit Dependencies, which relaxes the enforcement of commit ordering on the receiving hosts, to further improve the replication throughput.</p>
 <p>Oracle Clusterware is a cluster manager that monitors and controls applications to provide high availability. 
 Clusterware can be used to manage availability for an active standby database. Clusterware enables the protection of TimesTen databases 
 and applications within a cluster.</p>

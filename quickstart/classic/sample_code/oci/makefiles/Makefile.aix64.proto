@@ -7,7 +7,7 @@
 
 INSTDIR         = $(TIMESTEN_HOME)/install
 COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
-TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient_12_1
+TTORACLE_HOME   = $(INSTDIR)/ttoracle_home/instantclient
 OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
 CC              = xlc_r

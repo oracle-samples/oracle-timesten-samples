@@ -1,0 +1,1 @@
+Oracle TimesTen Kubernetes Samples version 1.0

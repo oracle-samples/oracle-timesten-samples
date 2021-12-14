@@ -23,19 +23,7 @@
 <p> The second type of connection is <b>client/server</b>. A client/server connection allows an application to connect remotely to the host on which the TimesTen database exists. While connecting over the network is less performant than using a Direct connection, client/server enables connections to be made between TimesTen Clients and Servers which are at different release versions, or running on different platforms, or at different bitlevels.
  </p> 
  
-<p>There are three forms of client/server connection you can use:
- </p> 
- 
-  <ol type=a>
-     <p>1. TCP/IP connection
-    </p> 
-   <p> This is the only mode of connection you can use if you are connecting from a remote machine to the host on which the TimesTen database exists. We will be using a TCP/IP connection in the client/server examples which follow.</p> 
-   <p>The other two types of client/server communication are:</p>
-  
-   <p>2. Shared memory connection
-    </p> 
-   <p>3. Unix Domain Sockets connection</p> 
-   <p>These are used if the client runs on the same host as the TimesTen database but cannot use a Direct connection. For example, either could be used if a 32bit application process needs to connect to a 64bit TimesTen database. Refer to the documentation <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61195/client_server.htm#TTOPR178">here</a></span> for more information on these types of connection.</p>
+<p>A client/server connection uses a TCP/IP connection between the client and the TimesTen Server component. This is the only mode of connection you can use if you are connecting from a remote machine to the host on which the TimesTen database exists. We will be using a TCP/IP connection in the client/server examples which follow. Refer to the documentation <span class="doclink"><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/operations/working-timesten-client-and-server.html#GUID-5C263E88-4757-471B-8036-7709E50373C7">here</a></span> for more information on client/serverconnections.</p>
   </ol>
   <p><br /> 
    </p>

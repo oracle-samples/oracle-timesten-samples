@@ -6,7 +6,7 @@
 #
 
 INSTDIR         = $(TIMESTEN_HOME)\install
-TTORACLE_HOME   = $(INSTDIR)\ttoracle_home\instantclient_12_1
+TTORACLE_HOME   = $(INSTDIR)\ttoracle_home\instantclient
 OCIINCS         = $(TTORACLE_HOME)\sdk\include
 OCILIBDIR       = $(TTORACLE_HOME)\sdk\lib\msvc
 COMMDIR         = $(QUICKSTART_HOME)\sample_code\common
@@ -106,7 +106,7 @@ plsqlPROC.c: plsqlPROC.pc $(CONFIGFILE)
 
 $(CONFIGFILE) : $(CONFIGINC)
 	@copy $(CONFIGINC) $(CONFIGFILE) > NUL 2>&1
-	@echo sys_include=$(TIMESTEN_HOME)\install\ttoracle_home\instantclient_12_1\sdk\include >> $(CONFIGFILE)
+	@echo sys_include=$(TIMESTEN_HOME)\install\ttoracle_home\instantclient\sdk\include >> $(CONFIGFILE)
 	@echo include=$(QUICKSTART_HOME)\sample_code\common >> $(CONFIGFILE)
 	@type makefiles\pcscfg.win64.proto >> $(CONFIGFILE)
 

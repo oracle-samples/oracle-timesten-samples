@@ -20,7 +20,7 @@ The standby cache database receives the updates from the active cache database,
 and forwards the changes to optional read-only subscriber databases. All updates go directly to the active  cache database. 
 The standby cache database is also available for read-only applications, for example a  reporting server. </p>
 <p >This section describes how you can set up and administer an active standby pair where cache tables are replicated 
-in real-time for high availability. Before you can set up an active standby pair,  the TimesTen Cache 18.1 software 
+in real-time for high availability. Before you can set up an active standby pair,  the TimesTen Cache 22.1 software 
 needs to be installed on both the active and standby servers, the connections to the Oracle database need to be configured, 
 and the instance administrator user name must be the same on   both installations. </p>
 
@@ -58,7 +58,7 @@ and the instance administrator user name must be the same on   both installation
 	<td class="c1" >Set <span class="codetext">autorefresh state </span> to <span class="codetext">paused</span></td>
 	<td class="c2" >If there are any autorefresh  cache groups their state  must be temporarily set to paused before 
 	an active standby pair can be defined. Use the 
-	  <span class="doclink">ALTER CACHE GROUP</span><a href="http://docs.oracle.com/database/timesten-18.1/e61203/state.htm#TTSQL280" target="_blank" class="doclink"></font></a> 
+	  <span class="doclink">ALTER CACHE GROUP</span><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/sql-reference/sql-statements1.html#GUID-97E4AF5D-515C-4C0E-8C87-F566D4B143BD" target="_blank" class="doclink"></font></a> 
 	SQL statement to  change the <span class="codetext">autorefresh state </span> </td>
 </tr>
 <tr class="r0">
@@ -94,7 +94,7 @@ and the instance administrator user name must be the same on   both installation
 	<td class="c0" >9.</td>
 	<td class="c1" >Duplicate the active database to the standby server </td>
 	<td class="c2" >The standby database is created by cloning the active database to the standby server. 
-	Use the <span class="doclink">ttRepAdmin</span><a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF353" target="_blank" class="doclink" ></font></a> utility 
+	Use the <span class="doclink">ttRepAdmin</span><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/utilities.html#GUID-4668C027-CD78-4FCD-9625-F1686205C005" target="_blank" class="doclink" ></font></a> utility 
 	to duplicate  the active   database to the standby server. </td>
 </tr>
 
@@ -167,7 +167,7 @@ The steps below are appropriate for both asynchronous and return receipt replica
 	<td class="c0" >5.</td>
 	<td class="c1" >Destroy the failed database </td>
 	<td class="c2" >Use the 
-	  <span class="doclink">ttDestroy</span><a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF341" target="_blank" class="doclink" ></font></a> command 
+	  <span class="doclink">ttDestroy</span><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/utilities.html#GUID-A81572C5-EA27-4448-88F1-35EACE10015C" target="_blank" class="doclink" ></font></a> command 
 	to remove the failed cache database. </td>
 </tr>
 <tr class="r1">
@@ -205,7 +205,7 @@ This will remove the standby cache database, and revert the configuration back t
 <tr class="r0">
 	<td class="c0" >1. </td>
 	<td class="c1" >Stop the replication agents </td>
-	<td class="c2" >Use the built-in procedure <span class="doclink">ttRepStop</span><a href="http://docs.oracle.com/database/timesten-18.1/e61204/proced.htm#TTREF293" target="_blank" class="doclink"  ></font></a> to stop the replication agents on each database.</td>
+	<td class="c2" >Use the built-in procedure <span class="doclink">ttRepStop</span><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/built-procedures.html#GUID-63CD2C6A-C509-4241-B692-15CC95A2530B" target="_blank" class="doclink"  ></font></a> to stop the replication agents on each database.</td>
 </tr>
 <tr class="r1">
 	<td class="c0" >2.</td>

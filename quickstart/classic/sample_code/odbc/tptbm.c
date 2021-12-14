@@ -13,6 +13,8 @@
   #include <time.h>
   #include <process.h>
   #include <winbase.h>
+  #define srandom srand
+  #define random  rand
 #else
   #include <sys/types.h>
   #include <sys/ipc.h>
@@ -358,7 +360,7 @@ int parseConnectionString(
 typedef struct procinfo {
   volatile int       state;
   volatile int       nproc;
-  volatile int       pid;
+  volatile long      pid;
   volatile unsigned long   xacts;
   char               pad[CACHELINE_SIZE - (sizeof(int)+sizeof(int)+sizeof(int)+sizeof(unsigned long))];
 } procinfo_t;

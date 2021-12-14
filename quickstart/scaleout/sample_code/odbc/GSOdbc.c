@@ -11,7 +11,7 @@
  *
  * GSOdbc.c - ODBC functionality
  *
- * TimesTen 18.1 introduces support for ODBC 3.5 but the default is still
+ * TimesTen 18.1 introduced support for ODBC 3.5 but the default is still
  * the older ODBC 2.5 supported by previous versions of TimesTen. This
  * module illustrates how an application can support both API versions
  * based on the ODBCVER macro. It also shows a comparison of various ODBC

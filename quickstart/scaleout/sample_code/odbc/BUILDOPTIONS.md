@@ -16,7 +16,7 @@ When running the program you can activate debug mode using the '-debug' command 
 
 **USEODBC25**
 
-TimesTen 18.1 introduces support fo the ODBC 3.5 API compared to previous versions of TimesTen which only supported the older ODBC 2.5 API. By default this sample program uses the newer ODBC 3.5 API but it can also be built to use ODBC 2.5 by specifying -DUSEODBC25 in the makefile's OPTDEFS variable.
+TimesTen 18.1 introduced support fo the ODBC 3.5 API compared to previous versions of TimesTen which only supported the older ODBC 2.5 API. By default this sample program uses the newer ODBC 3.5 API but it can also be built to use ODBC 2.5 by specifying -DUSEODBC25 in the makefile's OPTDEFS variable.
 
 The main reasons for including this capability are:
 

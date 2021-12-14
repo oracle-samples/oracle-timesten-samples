@@ -12,7 +12,7 @@
 <div id="content">
 
 <span class="PageTitle-navy">How to  use ttBulkCp </span>
-<p>The tutorial shows how to use the <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF324">ttBulkCp</a></span>  utility to export data from a TimesTen database and also how to import data from an external ASCII file into a TimesTen database table.</p>
+<p>This tutorial shows how to use the <span class="doclink"><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/utilities.html#GUID-5A02938E-740E-45C4-BDBF-3D247EE36EC3">ttBulkCp</a></span>  utility to export data from a TimesTen database and also how to import data from an external ASCII file into a TimesTen database table.</p>
 <p> <span class="codetext">ttBulkCp</span> is a TimesTen utility that can export from and import into TimesTen tables using ASCII files. It can be used to copy data between TimesTen databases.
 There are three majoe modes: <b>output</b>(-o) mode, <b>input</b>(-i) mode and the <b> direct load input</b>(-directLoad) mode. </p>
 <p>The example on this page references a sample TimesTen database called <span class="codetext"><em>sampledb</em></span>. The database schema belongs to a user called <span class="codetext">ttuser </span> with a sample table called <span class="codetext"><em>EMPLOYEES</em></span>. </p>
@@ -60,8 +60,6 @@ Here is the sample output from running the above command:</p>
 
   <span class="section1"><strong><em>3. Import data via  </em></strong></span><strong><em><span class="section1">direct load input(-directLoad) mode</span></em></strong> <br/>
     <br />
-    In 18.1 release, there is a new major mode  - <b>direct load input</b>(-directLoad) mode which is designed to load large amounts of data as fast as possible with the benefit of better performance and scalability.
-    <br />
     Note: The direct load input mode of <span class="codetext">ttBulkCp</span> utility is only available in Direct Connection Mode (<span class="codetext">ttBulkCp</span> ), not Client/Server mode (<span class="codetext">ttBulkCpCS</span> ). <br />
  <br />
  In this section, we will use <span class="codetext">ttBulkCp</span>  with <span class="codetext">-directLoad</span>  option to load a large data file into TimesTen <span class="codetext">ttuser.employees</span> table.
@@ -81,7 +79,7 @@ Here is the sample output from running the above command:</p>
 </ol>
  
 
-<p><strong>For more details and usage information, see <span class="doclink"><a href="http://docs.oracle.com/database/timesten-18.1/e61204/util.htm#TTREF324">ttBulkCp</a></span> in the Oracle TimesTen In-Memory Database Reference.
+<p><strong>For more details and usage information, see <span class="doclink"><a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/database-reference/utilities.html#GUID-5A02938E-740E-45C4-BDBF-3D247EE36EC3">ttBulkCp</a></span> in the Oracle TimesTen In-Memory Database Reference.
 </strong> 
 </p>
 <p><strong><br /></strong>

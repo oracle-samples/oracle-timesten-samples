@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client
+  labels:
+    name: client
+spec:
+  imagePullSecrets:
+  - name: ocirsecret
+  initContainers:
+  - name: init
+    image: phx.ocir.io/<youraccount>/tt1814180:1
+    imagePullPolicy: Always
+    volumeMounts:
+    - name: tt
+      mountPath: /tt
+    command:
+    - sh
+    - "-c"
+    - |
+      /bin/bash <<'EOF'
+      yum -y install unzip
+      mkdir -p /tt/home/oracle/instances
+      mkdir -p /tt/home/oracle/installation
+      unzip /home/oracle/*.zip -d /tt/home/oracle/installation
+      chown -R oracle:oracle /tt
+      exit 0
+  containers:
+  - name: client
+    image: phx.ocir.io/<youraccount>/tt1814180:1
+    imagePullPolicy: Always
+    volumeMounts:
+    - name: tt
+      mountPath: /tt
+    command:
+    - sh
+    - "-c"
+    - |
+      /bin/bash <<'EOF'
+      while [ 1 ]
+      do
+        sleep 100
+      done
+      EOF
+  volumes:
+  - name: tt
+    emptyDir: {}

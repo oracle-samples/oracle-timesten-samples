@@ -8,25 +8,25 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
 
 2. Set up the sample database and user accounts. The following build_sampledb script should be run once to set up the sample database and user accounts.
   
-     Set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
+     Set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt221 directory, execute the command
 
-     `source /home/timesten/instance/tt181/bin/ttenv.sh`
+     `source /home/timesten/instance/tt221/bin/ttenv.sh`
 
      Run the _quickstart/classic/sample\_scripts/createdb/build\_sampledb_ script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
 
       Unix/Linux:
       
-      `cd  quickstart/classic/sample\_scripts/createdb`
+      `cd  quickstart/classic/sample_scripts/createdb`
       
-      `./build\_sampledb.sh`
+      `./build_sampledb.sh`
 
 3. Set up environment to compile and run the sample application
 
      The following scripts must be run for each of your terminal sessions...
 
-    Set up the Instance environment variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
+    Set up the Instance environment variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt221 directory, execute the command
 
-    `source /home/timesten/instance/tt181/bin/ttenv.sh`
+    `source /home/timesten/instance/tt221/bin/ttenv.sh`
 
     Set up quickstart environment variables:
     
@@ -58,7 +58,7 @@ To compile the sample programs all at once:
 the same directory (e.g. Solaris), java must be invoked with the -d64
 option in order to run the 64-bit JVM.
 
-**NOTE:** On some platforms, such as macOS, you may need to explicitly pass a setting for java.library path tp the JVM in order to run the samples. For example:
+**NOTE:** On some platforms, such as macOS, you may need to explicitly pass a setting for java.library path to the JVM in order to run the samples. For example:
 
     java -Djava.library.path=${TIMESTEN_HOME}/install/lib <progname>
 
@@ -321,4 +321,4 @@ Examples:
   For the full syntax of the program, use "java TTJdbcExamples -h".
 
 
-For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/database/timesten-18.1/TTJDV/toc.htm).
+For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/java-developer/index.html).

@@ -29,7 +29,7 @@ privilege, and an application user with some tables to demonstrate data replicat
     
     <p>In your <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini </span>file, add a  new data source name in the section labeled 
 	<span class="codetext">[ODBC Data Sources]</span> :</p>
-	<p class="codetext">repdb1_1211=TimesTen 18.1 Driver</p>
+	<p class="codetext">repdb1_1211=TimesTen 22.1 Driver</p>
     </p>
     
     For each DSN entry specified, there is a corresponding set of database properties and attributes you need to specify. 
@@ -38,8 +38,8 @@ privilege, and an application user with some tables to demonstrate data replicat
 	<p><b>Note:</b> The DSN name appears inside square brackets at the top of the DSN definition on a line by itself</p>
     <p class="codetext">
           [repdb1_1211]<br />
-          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
-          DataStore=/home/timesten/instance/tt181/sample_db/repdb1_1211<br />
+          Driver=/home/timesten/instance/tt221/install/lib/libtten.so<br />
+          DataStore=/home/timesten/instance/tt221/sample_db/repdb1_1211<br />
           PermSize=512<br />
           TempSize=128<br />
           LogBufMB=256<br />

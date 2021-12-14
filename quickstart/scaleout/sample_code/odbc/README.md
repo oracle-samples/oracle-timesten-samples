@@ -201,7 +201,7 @@ You can observe the program's resilience to failures by using ttGridAdmin to sto
 
 **Building and running the sample programs**
 
-**NOTE:** By default the makefiles for platforms where TTDM is supported build versions of the samples that link directly with the TimesTen driver libraries (direct and client-server) and also with the TimesTen Driver Manager (TTDM). The TTDM binaries can only be built (and executed) against **TimesTen 18.1.4.9.0** or later, as this is the first release that includes TTDM. To build without the TTDM versions (for example if you are using an older versionb of TimesTen 18.1), use the make target 'nodm'. For more information on TTDM, see the [TimesTen Driver Manager User Guide](TTDMUserGuide.md).
+**NOTE:** By default the makefiles for platforms where TTDM is supported build versions of the samples that link directly with the TimesTen driver libraries (direct and client-server) and also with the TimesTen Driver Manager (TTDM). The TTDM binaries can only be built (and executed) against **TimesTen 18.1.4.9.0** or later, as this is the first release that includes TTDM. To build without the TTDM versions (for example if you are using an older version of TimesTen 18.1), use the make target 'nodm'. For more information on TTDM, see the [TimesTen Driver Manager User Guide](TTDMUserGuide.md).
 
 To build and run the sample programs:
 

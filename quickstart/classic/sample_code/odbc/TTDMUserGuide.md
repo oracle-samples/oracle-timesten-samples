@@ -1,18 +1,12 @@
 Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
 
-# TimesTen Driver Manager
+# TimesTen Driver Manager User Guide
 
-# User Guide
-
-# Version: 18.1.4.9.0
-
-# Date: 7th April 2021
-
-# Introduction to the TimesTen Driver Manager
+## Introduction to the TimesTen Driver Manager
 
 This is the User Guide for the TimesTen Driver Manager (TTDM). TTDM is a lightweight ODBC Driver Manager analogue specifically developed and optimized for use with the Oracle TimesTen In-Memory Database.
 
-## What is an ODBC Driver Manager and why might I need one?
+### What is an ODBC Driver Manager and why might I need one?
 
 When an ODBC based application connects to a datasource (typically a database) it connects to a logical name, the Data Source Name (DSN), which identifies the datasource to which it wants to connect. It does this by calling various ODBC functions provided by an ODBC driver. Some external repository of configuration information holds the various DSN values that are available, together with the necessary configuration and control information needed by the ODBC driver to establish a connection and manage usage of the datasource.
 
@@ -23,7 +17,7 @@ versions of the application must be built for each type of datasource. If the ap
 
 A solution to this issue is to use a Driver Manager (DM). A DM itself implements and exposes the ODBC API , thus the application can link directly to the DM library instead of the individual ODBC driver libraries. Based on configuration data or some other mechanism, the DM will dynamically load the relevant ODBC driver libraries at runtime as the application requires them. The DM sits between the application and the individual ODBC drivers and passes application ODBC calls to the correct underlying ODBC driver. The application can now connect to multiple datasources, using different ODBC drivers, concurrently.
 
-## Advantages and disadvantages of using a Driver Manager?
+### Advantages and disadvantages of using a Driver Manager?
 
 The advantages of a DM are:
 
@@ -39,23 +33,23 @@ The disadvantages of a DM are:
 
 3.  Generic DMs often do not provide access to special capabilities or optimisations offered by the underlying ODBC drivers.
 
-## Why is this relevant to Oracle TimesTen?
+### Why is this relevant to Oracle TimesTen?
 
-Oracle TimesTen is a high performance, relational, In-Memory Database (IMDB). Its native API is ODBC and its access language is SQL. TimesTen provides two connection mechanisms for applications; direct mode and client/server. Here is a brief summary of the similarities and differences between them.
+Oracle TimesTen is a high performance, relational, In-Memory Database (IMDB) and Cache. Its native API is ODBC and its access language is SQL. TimesTen provides two connection mechanisms for applications; direct mode and client/server. Here is a brief summary of the similarities and differences between them.
 
 **Direct mode**
 
--   The application and the TimesTen database are tightly coupled. They must both reside on the same physical computer system.
+-   The application and the TimesTen database are tightly coupled. They must both reside on the same physical computer system (or be running in conatiners within the same pod).
 
--   There is no IPC involved in application \<-\> database communication resulting in reduced response times and increased throughput for database (SQL) operations.
+-   There is no IPC involved in application \<-\> database communication, resulting in reduced response times and increased throughput for database (SQL) operations.
 
 -   The API used is ODBC.
 
--   There is a proprietary event notification and change tracking API called XLA. This API is part of the direct mode ODBC driver library.
+-   There is a proprietary event notification and change tracking API called XLA. This API is part of the TimesTen direct mode ODBC driver library.
 
 -   There is a proprietary API called the Routing API that can be used with TimesTen Scaleout.
 
--   There is a proprietary API (the utility API) to various administrative and utility functions. This is provided by a separate utility library.
+-   There is a proprietary API (the utility API) to various administrative and utility functions. This is provided as a separate utility library.
 
 **Client/server**
 
@@ -63,7 +57,7 @@ Oracle TimesTen is a high performance, relational, In-Memory Database (IMDB). It
 
 -   Database access is performed by a server proxy process on behalf of the client application. The server proxy always executes on the computer system where the TimesTen database is located.
 
--   The communication between the application and the server proxy is via a TCP/IP connection. The server proxy itself is a direct mode application. The performance of client/server access is significantly less than that of direct mode access.
+-   The communication between the application and the server proxy is via a TCP/IP connection. The server proxy itself is a direct mode application. The performance of client/server access is significantly lower than that of direct mode access.
 
 -   The API used is ODBC.
 
@@ -73,7 +67,7 @@ Oracle TimesTen is a high performance, relational, In-Memory Database (IMDB). It
 
 -   The Utility API is **not** available.
 
-Although both connection mechanisms use the ODBC API, they are implemented as separate driver libraries. Thus, without a Driver Manager, a TimesTen application can use one or the other, but not both concurrently.
+Although both connection mechanisms use the ODBC API, they are implemented as separate driver libraries. At link time, an application bnary must be linked with one or other of the ODBC libraries; it cannot link with both simultaneously. Thus, without a Driver Manager, a TimesTen application can use one or the other, but not both concurrently.
 
 If one uses a commercial, or Open Source, DM with TimesTen in order to allow use of both direct mode and client/server connections concurrently from the same process, what problems or issues might be encountered?
 
@@ -111,9 +105,9 @@ Things that TTDM does **not** do are:
 
 -   Support the use of non-TimesTen ODBC drivers.
 
--   Provide driver manager specific functions not provided by the TimesTen drivers.
+-   Provide ODBC driver manager specific functions not provided by the underlying TimesTen drivers.
 
-# TTDM Performance Overhead
+## TTDM Performance Overhead
 
 The performance overhead of using TTDM has been measured in various configurations on a number of platforms. For the platforms evaluated, the results were as follows.
 
@@ -123,7 +117,7 @@ For remote client/server connections the overhead of TTDM typically ranges from 
 
 For most real world applications, the difference in performance between using TTDM and linking directly with a specific TimesTen driver is negligible.
 
-# TimesTen Version and O/S Support
+## TimesTen Version and O/S Support
 
 This version of TTDM currently supports the following TimesTen versions:
 
@@ -139,9 +133,9 @@ O/S platforms currently supported are:
 
 - Solaris x86-64
 
-# Building and Running TTDM Based Applications
+## Building and Running TTDM Based Applications
 
-## Source code
+### Source code
 
 No source code changes are needed in order to use TTDM. TTDM based applications should include **timesten.h**, just like regular TimesTen applications.
 
@@ -149,19 +143,19 @@ If your application uses XLA then you should continue to also include **tt\_xla.
 
 If your application uses the TimesTen Utility Library then you should continue to also include **ttutillib.h** and **ttutil.h** as appropriate.
 
-## Linking changes
+### Linking changes
 
 Currently you will be linking with one of the TimesTen ODBC libraries and maybe also with the TimesTen Utility Library, or possibly with some other driver manager library.
 
 You should change the linker & library options in your Makefile(s) to instead link **only** with the TTDM library (**libttdrvmgr.so**). For example, on Unix/Linux platforms the linker option required will be **-lttdrvmgr**. Do **not** include **any** of the other TimesTen libraries, or any third party driver manager libraries, when linking.
 
-## Runtime changes
+### Runtime changes
 
-At run time the TTDM shared library, plus all the other TimesTen shared libraries, must be located in directories defined in LD\_LIBRARY\_PATH (or its equivalent for your platform). This is most easily accomplished by using the script that TimesTen provides to set the environment (**\<instance_home\>/bin/ttenv.[c]sh**).
+At run time the TTDM shared library, plus all the other TimesTen shared libraries, must be located in directories defined in LD\_LIBRARY\_PATH (or its equivalent for your platform). This is most easily accomplished by using the script that TimesTen provides to set the process' environment (**\<instance_home\>/bin/ttenv.[c]sh**).
 
-# TTDM ODBC Extensions
+## TTDM ODBC Extensions
 
-## SQLGetConnectionOption[W] and SQLGetConnectAttr[W]
+### SQLGetConnectionOption[W] and SQLGetConnectAttr[W]
 
 TTDM provides an extension to the ODBC **SQLGetConnectOption\[W\]()** and **SQLGetConnectAttr\[W\]()** functions. If you pass the value **TT_TTDM\_CONNECTION\_TYPE** for the **fOption/Attribute** parameter and a pointer to a SQLINTEGER for the **pvParam/ValuePtr** parameter, as follows:
 
@@ -179,7 +173,7 @@ then on successful return (rc == SQL\_SUCCESS), **connType** will contain a valu
 
 **TT\_TTDM\_CONN\_CLIENT** - the hdbc is connected in client/server mode
 
-## SQLGetEnvAttr
+### SQLGetEnvAttr
 
 TTDM also provides some extensions to the ODBC **SQLGetEnvAttr()** function.
 
@@ -217,11 +211,11 @@ Then the value returned in **ttdmcap** indicates what capabilities are currently
 
 The available capabilities depend both on how TTDM was built (some capabilities can be disabled at build time), and what is actually currently available based on the TimesTen environment under which the TTDM based application is being executed.
 
-These extensions can also be used by an application to programatically determine if it is using TTDM or if it is linked directly with one of the TimesTen driver libraries. When using any of these extensions, a return of SQL\_ERROR means that the program is not using TTDM.
+These extensions can also be used by an application to programatically determine if it is using TTDM or if it is linked directly with one of the TimesTen driver libraries. When calling any of these extensions, a return of SQL\_ERROR means that the program is not using TTDM.
 
-## API function versioning
+### API function versioning
 
-Very occasionally, usually in a new TimesTen major release, new API functions may be added to, or removed from, one of the APIs that are mediated by TTDM (ODBC, XLA, Routing, Utility). Although this is not a common occurrence, it does have some implications for applications in terms of cross release comptibility. 
+Very occasionally, usually in a new TimesTen major release, new API functions may be added to, or removed from, one of the TimesTen APIs that are mediated by TTDM (ODBC, XLA, Routing, Utility). Although this is not a common occurrence, it does have some implications for applications in terms of cross release comptibility. 
 
 For example:
 
@@ -229,13 +223,13 @@ For example:
 
 - If an API function is added in TimesTen release Y, an application that calls that function and which was linked against TimesTen release Y will not be able to run against TimesTen release X or earlier; the binary will not even be able to start as it will incur a dynamic linking error on startup.
 
-TTDM provides some mitigation to reduce this impact. API functions for all TimesTen releases from the first release that includes TTDM onwards will be present in, and exported by, TTDM. If an application calls an API function that is not supported by the specific TimesTen release that it is running against then a meaningful and specific error code and message isreturned by TTDM. This feature may help to insulate applications from API changes over time.
+TTDM provides some mitigation to reduce this impact. API functions for all TimesTen releases from the first release that includes TTDM onwards will be present in, and exported by, TTDM. If an application calls an API function that is not supported by the specific TimesTen release that it is running against, then a meaningful and specific error code and message isreturned by TTDM. This feature may help to insulate applications from API changes over time.
 
-# TTDM Specific Errors & Warnings
+## TTDM Specific Errors & Warnings
 
 TTDM can return any of the standard TimesTen errors and warnings. In some cases TTDM may return the following additional native errors and warnings, in conjunction with the appropriate SQLSTATE.
 
-## Errors
+### Errors
 
   **tt\_ErrDMNoMemory** - TTDM was unable to allocate some required memory.
   
@@ -247,10 +241,10 @@ TTDM can return any of the standard TimesTen errors and warnings. In some cases 
   
   **tt\_ErrDMApiVersion** - The application called an API versioned function that does not exist in the version of the underlying TimesTen driver that is currently in use.
 
-## Warnings
+### Warnings
 
 No additional warnings are currently defined.
 
-# Limitations and Restrictions
+## Limitations and Restrictions
 
 TTDM does not support, and hence does not export, the driver manager functions **SQLDrivers[W]** and **SQLDataSources[W]**.

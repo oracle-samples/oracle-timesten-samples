@@ -13,7 +13,7 @@ Linux 64-bit  |  3.7.5   | 7.2.2+    | 18.1.4.1.0+	| 18.1.4.1.0+
 macOS  	    |  3.7.5   |7.2.2+    | 18.1.4.1.0+	| N/A
 MS Windows 64-bit   | 3.7.5  |7.2.2+    | 18.1.4.1.0+| N/A
 
-**NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/database/timesten-18.1/TTREL/toc.htm).
+**NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/en/database/other-databases/timesten/22.1/release-notes/toc.htm).
 
 **NOTE2**: Python version 2.7 also works against TimesTen databases even though it's not listed in the chart above.
 
@@ -26,11 +26,11 @@ MS Windows 64-bit   | 3.7.5  |7.2.2+    | 18.1.4.1.0+| N/A
 3. A TimesTen database is created and data source is setup to access that database. 
 4. Environment to access Python, cx_Oracle driver and TimesTen data source are set up (i.e. the TimesTen environment script ttenv.sh/ttenv.csh has been executed)
 
-For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/database/timesten-18.1/TTOSL/toc.htm).
+For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/open-source-languages/index.html).
 
 ## Known Problems and Limitations
 
-* NVARCHAR/NCHAR data types in a Python application are encoded as UTF-16, the [same difference between Oracle and TimesTen](https://docs.oracle.com/database/timesten-18.1/TTCAC/oracle_tt.htm#TTCAC353) as noted in the TimesTen Documentation.
+* NVARCHAR/NCHAR data types in a Python application are encoded as UTF-16, the [same difference between Oracle and TimesTen](https://docs.oracle.com/en/database/other-databases/timesten/22.1/cache/compatibility-timesten-and-oracle-databases.html#GUID-13FF0E9B-9250-49DB-810A-89EE48605E5E) as noted in the TimesTen Documentation.
 * DML statements with RETURN INTO are currently not supported.
 * The value returned for the sub-second field of a PL/SQL output parameter of type Timestamp may incorrect. 
 * When using the built-in procedures ttRepStateSave() & ttRepSubscriberWait() to set the replication state from a Python applications, the operation may take some time to take effect. Your application should wait much longer than the set waitTime specified in the call to ttRepSubscriberWait() to avoid timeouts.

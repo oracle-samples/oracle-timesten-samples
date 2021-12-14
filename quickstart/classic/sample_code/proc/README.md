@@ -10,25 +10,25 @@ Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 
 2. Set up sample database and user accounts
 
-    The following build\_sampledb script should be run once to set up the sample database and user accounts. First set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
+    The following build\_sampledb script should be run once to set up the sample database and user accounts. First set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt221 directory, execute the command
 
-    `source /home/timesten/instance/tt181/bin/ttenv.sh`
+    `source /home/timesten/instance/tt221/bin/ttenv.sh`
 
     Run the quickstart/classic/sample_scripts/createdb/build\_sampledb script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
 
     Unix/Linux:
     
-    `cd quickstart/classic/sample\_scripts/createdb`
+    `cd quickstart/classic/sample_scripts/createdb`
     
-    `./build\_sampledb.sh`
+    `./build_sampledb.sh`
 
 3. Set up environment to compile and run the sample application
 
     The following scripts must be run in every terminal session.
 
-    Set up the Instance environment variables: e.g. If your TimesTen instance location is under /home/timesten/instance/tt181 directory, execute the command
+    Set up the Instance environment variables: e.g. If your TimesTen instance location is under /home/timesten/instance/tt221 directory, execute the command
 
-    `source /home/timesten/instance/tt181/bin/ttenv.sh`
+    `source /home/timesten/instance/tt221/bin/ttenv.sh`
 
     Set up quickstart environment variables:
     
@@ -48,7 +48,7 @@ Firstly, select the platform specific Makefile and configuration file and copy t
 
 For example, if your platform is Linux x86-64bit, execute the following commands:
 
-`cd quickstart/classic/sample\_code/proc/makefiles`
+`cd quickstart/classic/sample_code/proc/makefiles`
 
 `cp Makefile.linux8664.proto ../Makefile`
 
@@ -198,4 +198,4 @@ Run the program specifying the username, password and service name
 
 For the full syntax of the program, use "plsqlPROC -help".
 
-For more information on Pro\*C/C++ support in TimesTen, refer to the Pro\*C/C++ chapter in the [Oracle TimesTen In-Memory Database C Developer's Guide](https://docs.oracle.com/database/timesten-18.1/TTCDV/toc.htm).
+For more information on Pro\*C/C++ support in TimesTen, refer to the Pro\*C/C++ chapter in the [Oracle TimesTen In-Memory Database C Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/c-developer/timesten-support-c-c1.html#GUID-2EA56D04-F95C-49C3-8626-FAF629D8C4A3).

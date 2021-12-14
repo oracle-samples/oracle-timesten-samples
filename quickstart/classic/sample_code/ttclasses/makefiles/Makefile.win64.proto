@@ -10,7 +10,7 @@ ODBC            =  $(TIMESTEN_HOME)\install
 COMMON          =  $(QUICKSTART_HOME)\sample_code\common
 TTC_INCLUDEDIR	= $(ODBC)\include\ttclasses
 
-TTVER   =  181
+TTVER   =  221
 WINMT	= mt.exe
 
 ### It is vital that you have your INCLUDE and LIB environment variables

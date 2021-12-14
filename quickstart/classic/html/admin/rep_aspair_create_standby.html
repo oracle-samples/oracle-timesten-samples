@@ -32,7 +32,7 @@ on <span class="codetext">tthost2</span> is the standby database. </p>
     
     <p>In your <span class="codetext">&lt;instance_dir&gt;/conf/sys.odbc.ini </span>file, add a  new data source name in the section labeled 
 	<span class="codetext">[ODBC Data Sources]</span> :</p>
-	<p class="codetext">repdb2_1211=TimesTen 18.1 Driver</p>
+	<p class="codetext">repdb2_1211=TimesTen 22.1 Driver</p>
     </p>
     
     For each DSN entry specified, there is a corresponding set of database properties and attributes you need to specify. 
@@ -41,8 +41,8 @@ on <span class="codetext">tthost2</span> is the standby database. </p>
 	<p><b>Note:</b> The DSN name appears inside square brackets at the top of the DSN definition on a line by itself</p>
     <p class="codetext">
           [repdb2_1211]<br />
-          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
-          DataStore=/home/timesten/instance/tt181/sample_db/repdb2_1211<br />
+          Driver=/home/timesten/instance/tt221/install/lib/libtten.so<br />
+          DataStore=/home/timesten/instance/tt221/sample_db/repdb2_1211<br />
           PermSize=512<br />
           TempSize=128<br />
           LogBufMB=256<br />
@@ -107,7 +107,7 @@ on <span class="codetext">tthost2</span> is the standby database. </p>
 </li><br/>
 </ol></blockquote >
 
-<p>&nbsp;For more information about how to set up and manage an Active Standby Pair on a TimesTen database refer to the documentation <a href="http://docs.oracle.com/database/timesten-18.1/e61197/standby.htm#TTREP210" target="_blank" class="doclink">here</a></p>
+<p>&nbsp;For more information about how to set up and manage an Active Standby Pair on a TimesTen database refer to the documentation <a href="https://docs.oracle.com/en/database/other-databases/timesten/22.1/replication/getting-started.html#GUID-F7CB9577-4DE0-49F7-8DC2-6E99A201BBD9" target="_blank" class="doclink">here</a></p>
 <p>&nbsp; </p>
 <table align="right" border="0">
 <tr>

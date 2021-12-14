@@ -8,7 +8,7 @@
 # Makefile for C/ODBC sample programs - Client/Server ONLY
 #
 
-TTVER		= 181
+TTVER		= 221
 
 INSTDIR         = $(TIMESTEN_HOME)\install
 

@@ -139,7 +139,7 @@ This version of TptBM can be run against either a Classic or Scaleout database. 
 
 See the online help (java Tptbm -help) for full details.
 
-To build TptBm, set your environment for a TimesTen 18.1 instance and then type
+To build TptBm, set your environment for a TimesTen 22.1 instance and then type
 
  make
 

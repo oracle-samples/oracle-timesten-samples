@@ -25,7 +25,7 @@ or a <span class="codetext">user DSN</span>. </p>
 <p>The following section goes through an example of how to set up a system DSN. Suppose that you want to:</p>
 <ul>
 	<li>name your TimesTen database <span class="codetext">sampledb</span></li>
-    	<li>have your TimesTen instance known as <span class="codetext">$TIMESTEN_HOME</span>  location be <span class="codetext">/home/timesten/instance/tt181</span></span></li>
+    	<li>have your TimesTen instance known as <span class="codetext">$TIMESTEN_HOME</span>  location be <span class="codetext">/home/timesten/instance/tt221</span></span></li>
 	<li>have your TimesTen database's disk location be <span class="codetext">/disk1/ttdata/database</span></li>
 	<li>have your TimesTen database's transaction logs to be in the <span class="codetext">/disk2/ttdata/logs</span> directory</li>
 </ul>
@@ -34,7 +34,7 @@ or a <span class="codetext">user DSN</span>. </p>
 <li>
 	<p>In your <span class="codetext">sys.odbc.ini </span>file, add a  new data source name in the section labeled 
 	<span class="codetext">[ODBC Data Sources]</span> :</p>
-	<p class="codetext">sampledb=TimesTen 18.1 Driver</p>
+	<p class="codetext">sampledb=TimesTen 22.1 Driver</p>
 </li><br/>
 <li>
 	<p>For each DSN entry specified, there is a corresponding set of database properties and attributes you need to specify. 
@@ -43,7 +43,7 @@ or a <span class="codetext">user DSN</span>. </p>
 	<p><b>Note:</b> The DSN name appears inside square brackets at the top of the DSN definition on a line by itself</p>
     <p class="codetext">
           [sampledb]<br />
-          Driver=/home/timesten/instance/tt181/install/lib/libtten.so<br />
+          Driver=/home/timesten/instance/tt221/install/lib/libtten.so<br />
           DataStore=/disk1/ttdata/database/sampledb<br />
           LogDir=/disk2/ttdata/logs<br />
           PermSize=512<br />

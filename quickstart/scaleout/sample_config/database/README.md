@@ -16,7 +16,7 @@ If you plan to build and execute the sample programs on one of the data hosts wi
 
 If you plan to use client/server connectivity to access the grid database, for example if you plan to build and execute the sample programs on a  computer system that is not hosting one of your grid's data instances, then you will need to perform some additional steps to configure client connectivity.
 
-The steps to install, configure and deploy a grid are not covered in this README; consult the [TimesTen In-Memory Database documentation](https://docs.oracle.com/database/timesten-18.1) for the necessary steps.
+The steps to install, configure and deploy a grid are not covered in this README; consult the [TimesTen In-Memory Database documentation](https://docs.oracle.com/en/database/other-databases/timesten/) for the necessary steps.
 
 ## Creating the physical sample database
 
