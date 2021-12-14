@@ -310,7 +310,7 @@ fetchTestThread(void* parmP)
 #if defined(LINUX86)
       idval = idval % 32768;
 #endif
-      idval = (int) (((float)idval / RAND_MAX) * max_idval) ;
+      idval = (int) (((float)idval / (float)RAND_MAX) * (float)max_idval) ;
       // end of randomization
       // -------------------------------------------------------
       try {
@@ -553,9 +553,9 @@ main(int argc, char** argv)
   ttWallClockTime     seed_time ;
   ttGetWallClockTime (&seed_time) ;
 #ifdef _WIN32
-  int seed = seed_time.notSoLargeTime.time % 1003 ;
+  int seed = (int)(seed_time.notSoLargeTime.time % 1003);
 #else
-  int seed = seed_time.tv_sec % 1003 ;
+  int seed = (int)(seed_time.tv_sec % 1003);
 #endif /* _WIN32 */
   srand(seed) ;
   int i, rc;
@@ -761,7 +761,7 @@ void getPassword(const char * prompt, char * pswd, size_t len)
   retCode = chg_echo(0);
 
   /* get the password */
-  fgets(pswd, len, stdin);
+  fgets(pswd, (int)len, stdin);
   
   /* Turn back on console output */
   retCode = chg_echo(1);

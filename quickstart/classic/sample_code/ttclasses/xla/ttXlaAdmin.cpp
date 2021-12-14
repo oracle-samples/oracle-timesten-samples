@@ -238,7 +238,7 @@ GetXLABookmarks (TTConnection & connection,
     *bookmarks = new xla_bookmark_info [num_bookmarks];
     char * inuse;
     char * bufP;
-    int len;
+    long len;
 
     // now read all of the bookmark information
     bookmark_query.Execute();
@@ -291,10 +291,10 @@ DeleteSingleXLABookmark (const char * conn_str,
                          int num_bookmarks)
 {
   int bookmarkIdx = -1 ;
-  u_int bookmarkLen = strlen(bookmark_name);
+  u_int bookmarkLen = (u_int)strlen(bookmark_name);
   for (int i = 0 ; i < num_bookmarks ; i++ )
   {
-    if (strlen(bookmarks[i].id) == bookmarkLen &&
+    if ((u_int)strlen(bookmarks[i].id) == bookmarkLen &&
         !strcmp(bookmarks[i].id, bookmark_name)) {
       bookmarkIdx = i ;
       break ;
@@ -625,7 +625,7 @@ void getPassword(const char * prompt, char * pswd, size_t len)
   retCode = chg_echo(0);
 
   /* get the password */
-  fgets(pswd, len, stdin);
+  fgets(pswd, (int)len, stdin);
   
   /* Turn back on console output */
   retCode = chg_echo(1);

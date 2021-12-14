@@ -36,7 +36,7 @@
 const int NROWS = 10000;
 const int MAXLOOPS = 10;
 const int MAX_BATCH_SIZE = 512;
-int BATCH_SIZE = 256;
+u_short BATCH_SIZE = 256;
 int BATCH_ITERS = NROWS / BATCH_SIZE;
 
 //----------------------------------------------------------------------
@@ -404,9 +404,9 @@ BulkConnection::insertRow(int i, char* nameP, TIMESTAMP_STRUCT & tss,
   sprintf(number1, "%d", i);
   sprintf(number2, "%f", i*1.11);
 
-  tss.year=(i%25)+1981;
-  ds.year=(i%25)+1981;
-  ts.hour=(i%24);
+  tss.year=(SQLSMALLINT)((i%25)+1981);
+  ds.year=(SQLSMALLINT)((i%25)+1981);
+  ts.hour=(SQLSMALLINT)((i%24));
 
   try {
     insertData.setParam(1, (i % 250) ); // ti
@@ -417,8 +417,8 @@ BulkConnection::insertRow(int i, char* nameP, TIMESTAMP_STRUCT & tss,
     insertData.setParam(6, i*6.0); // d
     insertData.setParam(7, nameP); // c
     insertData.setParam(8, nameP); // vc
-    insertData.setParam(9, nameP, strlen(nameP)); // b
-    insertData.setParam(10, nameP, strlen(nameP)); // vb
+    insertData.setParam(9, nameP, (int)strlen(nameP)); // b
+    insertData.setParam(10, nameP, (int)strlen(nameP)); // vb
     insertData.setParam(11, tss); // tss
     insertData.setParam(12, ds); // ds
     insertData.setParam(13, ts); // ts
@@ -445,9 +445,9 @@ BulkConnection::insertNonPrepRow(int i, char* nameP, TIMESTAMP_STRUCT & tss,
   sprintf(number1, "%d", i);
   sprintf(number2, "%f", i*1.11);
 
-  tss.year=(i%25)+1981;
-  ds.year=(i%25)+1981;
-  ts.hour=(i%24);
+  tss.year=(SQLSMALLINT)((i%25)+1981);
+  ds.year=(SQLSMALLINT)((i%25)+1981);
+  ts.hour=(SQLSMALLINT)((i%24));
 
   TTCmd insertNonPrepData;
 
@@ -462,8 +462,8 @@ BulkConnection::insertNonPrepRow(int i, char* nameP, TIMESTAMP_STRUCT & tss,
     insertNonPrepData.setParam(6, i*6.0); // d
     insertNonPrepData.setParam(7, nameP); // c
     insertNonPrepData.setParam(8, nameP); // vc
-    insertNonPrepData.setParam(9, nameP, strlen(nameP)); // b
-    insertNonPrepData.setParam(10, nameP, strlen(nameP)); // vb
+    insertNonPrepData.setParam(9, nameP, (int)strlen(nameP)); // b
+    insertNonPrepData.setParam(10, nameP, (int)strlen(nameP)); // vb
     insertNonPrepData.setParam(11, tss); // tss
     insertNonPrepData.setParam(12, ds); // ds
     insertNonPrepData.setParam(13, ts); // ts
@@ -494,8 +494,8 @@ BulkConnection::insertBatch(int i, char * nameP)
   for (int rowno = 0; rowno < BATCH_SIZE; rowno++, val++)
   {
     sprintf(insName, "%s%d", nameP, val);
-    insArray1_ti[rowno] = (val % 250);
-    insArray2_si[rowno] = val*2;
+    insArray1_ti[rowno] = (SQLTINYINT)(val % 250);
+    insArray2_si[rowno] = (short)(val*2);
     insArray3_i[rowno]  = val;
     insArray4_bi[rowno] = val*4;
     insArray5_f[rowno]  = (float)val*(float)5.0;
@@ -506,9 +506,9 @@ BulkConnection::insertBatch(int i, char * nameP)
     insArray9_blen[rowno] = strlen(insName); // the length array
     memcpy(insArrayA_vb[rowno], insName, strlen(insName));
     insArrayA_vblen[rowno] = strlen(insName); // the length array
-    insArrayB_tss[rowno].year = (val%25)+1981;
-    insArrayC_ds[rowno].year  = (val%25)+1981;
-    insArrayD_ts[rowno].hour  = (val%24);
+    insArrayB_tss[rowno].year = (SQLSMALLINT)((val%25)+1981);
+    insArrayC_ds[rowno].year  = (SQLSMALLINT)((val%25)+1981);
+    insArrayD_ts[rowno].hour  = (SQLSMALLINT)((val%24));
     sprintf(insArrayE_num9[rowno], "%d", i);
     sprintf(insArrayF_num17_2[rowno], "%f", i*1.11);
 
@@ -612,8 +612,8 @@ BulkConnection::updateBatch(int i, char* nameP)
   for (int rowno = 0; rowno < BATCH_SIZE; rowno++, val++)
   {
     sprintf(updName, "%s%d", nameP, val);
-    updArray1_ti[rowno] = ((val%4)+250);
-    updArray2_si[rowno] = val*3;
+    updArray1_ti[rowno] = (SQLTINYINT)((val%4)+250);
+    updArray2_si[rowno] = (short)(val*3);
     updArray3_i[rowno]  = val; // keyval
     updArray4_bi[rowno] = val*44;
     updArray5_f[rowno]  = (float)val*(float)5.5;
@@ -756,15 +756,16 @@ main(int argc, char** argv)
 
   parser.processArgs(argc, argv, connStr);
   if (parser.argUsed("-batchsize")) {
-    BATCH_SIZE = atoi(parser.getArgValue("-batchsize"));
-    if (BATCH_SIZE > MAX_BATCH_SIZE) {
+    int bs = atoi(parser.getArgValue("-batchsize"));
+    if (bs > MAX_BATCH_SIZE) {
       cerr << "Sorry, maximum batchsize=" << MAX_BATCH_SIZE << endl;
       exit(1);
     }
-    else if (BATCH_SIZE < 1) {
+    else if (bs < 1) {
       cerr << "Sorry, minimum batchsize=1." << endl;
       exit(1);
     }
+    BATCH_SIZE = (u_short)bs;
   }
   BATCH_ITERS = NROWS / BATCH_SIZE ;
   cerr << endl << "Connecting to TimesTen <" << connStr << ">" << endl ;

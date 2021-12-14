@@ -445,9 +445,9 @@ void ABCHandler::HandleInsert(ttXlaUpdateDesc_t* )
   DATE_STRUCT date_ ;
   TIMESTAMP_STRUCT timestamp_;
   void* binaryP ; // this column is binary, so we fetch via
-  int binaryLen ; // a void* with a length
+  SQLULEN binaryLen ; // a void* with a length
   void* varbinaryP ; // ditto
-  int varbinaryLen ;
+  SQLULEN varbinaryLen ;
   char * varcharP ;  // ditto
   char * numericP ;
   char * decimalP ;
@@ -533,13 +533,13 @@ void ABCHandler::HandleUpdate(ttXlaUpdateDesc_t* )
   DATE_STRUCT date_ ;
   TIMESTAMP_STRUCT timestamp_;
   void* binaryP ; // this column is binary, so we fetch via
-  int binaryLen ; // a void* with a length
+  SQLULEN binaryLen ; // a void* with a length
   void* varbinaryP ; // ditto
-  int varbinaryLen ;
+  SQLULEN varbinaryLen ;
   char * varcharP ;  // ditto
-  int ncharLen ;
+  SQLULEN ncharLen ;
   SQLWCHAR * ncharP; // ditto
-  int nvarcharLen ;
+  SQLULEN nvarcharLen ;
   SQLWCHAR * nvarcharP; // ditto
   char * numericP ;
   char * decimalP ;

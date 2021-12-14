@@ -300,8 +300,8 @@ TypetestConnection::insert(char* nameP)
     insertData.setParam(15, (void*) &bufb, 8);
 
     insertData.setParam(16, ts);
-    insertData.setParam(17, (float) i*i*i/-15.35);
-    insertData.setParam(18, (double) i*i*i/-15.35);
+    insertData.setParam(17, (float)((float)(i*i*i)/-15.35));
+    insertData.setParam(18, (double)((double)(i*i*i)/-15.35));
     insertData.setParam(19, dt);
     insertData.setParam(20, tim);
     insertData.setParam(21, 123456.789);
@@ -358,7 +358,7 @@ void loadUnicodeColumn (int i, SQLWCHAR * wchar_buf, int * size)
   int len;
 
   sprintf((char*) &buf, "UU%d", (int)i);
-  len = strlen(buf);
+  len = (int)strlen(buf);
 
   for (int j = 0 ; j < len ; j++ )
   {
@@ -373,7 +373,7 @@ void loadBinaryColumn (void * binary, int size)
 {
   for (int j = 0 ; j < size ; j++ )
     {
-      u_char booga = 1 << j ;
+      u_char booga = (u_char)(1 << j);
       memset(&((char*)binary)[j], booga, sizeof(u_char)) ;
     }
 }
@@ -402,7 +402,7 @@ TypetestConnection::query(const char* nameP)
 
   // for binary data retrieval
   u_char binary_array[10] ;
-  int len ;
+  long len ;
 
   queryData.setParam(1, nameP);
 
@@ -480,19 +480,19 @@ TypetestConnection::query(const char* nameP)
     if (queryData.getColumnNullable(13, binary_array, &len))
       cout << "<null binary>";
     else
-      printBinaryColumn ((void*)binary_array, len) ;
+      printBinaryColumn ((void*)binary_array, (int)len) ;
     cout << ", ";
 
     if (queryData.getColumnNullable(14, binary_array, &len))
       cout << "<null varbinary il>";
     else
-      printBinaryColumn ((void*)binary_array, len) ;
+      printBinaryColumn ((void*)binary_array, (int)len) ;
     cout << ", ";
 
     if (queryData.getColumnNullable(15, binary_array, &len))
       cout << "<null varbinary ool>";
     else
-      printBinaryColumn ((void*)binary_array, len) ;
+      printBinaryColumn ((void*)binary_array, (int)len) ;
     cout << ", ";
 
     queryData.printColumn(16, cout, "<null timestamp>") ;
