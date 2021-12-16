@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -2065,9 +2065,13 @@ skipSpaceForward(char *start)
  * a NUL, and returns pointer to the NUL.
  */
 static char*
-trimSpaceBackward(char *start, char *stop)
+trimSpaceBackward(char *start, char *stop, char *bufbegin)
 {
   char *p = start - 1;
+  if (p < bufbegin) {
+    // can't happen if there's a newline, only with empty line
+    p = bufbegin;
+  }
   while (isspace(*p) && p >= stop) {
     --p;
   }
@@ -2228,7 +2232,7 @@ getArgsFromFile(const char *fileName, int *pargc, char ***pargv,
   while (fgets(buf, BUFLEN, fp) != NULL) {
     char *p, *q, *name, *val;
     p = skipSpaceForward(buf);
-    q = trimSpaceBackward(skipToEnd(buf), p);
+    q = trimSpaceBackward(skipToEnd(buf), p, buf);
 
     /* skip comments and blank lines */
     if (p == q || *p == '#') {
