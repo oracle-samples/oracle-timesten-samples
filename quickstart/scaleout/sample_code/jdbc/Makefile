@@ -9,7 +9,7 @@
 #
 
 TTHOME     = $(TIMESTEN_HOME)
-TTJDBCCP   = $(TTHOME)/install/lib/ttjdbc8.jar
+TTJDBCCP   = $(TTHOME)/install/lib/ttjdbc11.jar
 
 JAVACOPTS  = -Xlint:unchecked
 

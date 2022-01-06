@@ -211,10 +211,8 @@ COUNT askn(text,variable)
        -1 if -eof- was encountered
 -------------------------------------------------------------------------- */
 
-int askn(text,variable)
-   char text[];
-   int  *variable;
-   {
+int askn(char text[], int * variable)
+{
    char s[20];
 
    printf(text);
@@ -224,7 +222,7 @@ int askn(text,variable)
 
    *variable = atoi(s);
    return(1);
-   }
+}
 
 /* --------------------------------------------------------------------------
 COUNT asks(text,variable)
