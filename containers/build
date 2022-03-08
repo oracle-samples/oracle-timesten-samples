@@ -1,0 +1,148 @@
+#!/bin/bash
+# 
+# Author: chris.jenkins@oracle.com
+# 
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+# 
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+# 
+# Script to build the image.
+# 
+
+declare -r cfgfilename="container.cfg"
+declare -r dflt_registry="container-registry.oracle.com"
+declare -r dflt_baseimage="container-registry.oracle.com/timesten/timesten:22.1.1.1.0"
+declare -r dflt_imagename="ttimage"
+declare -r dflt_containername="ttcontainer"
+
+declare basedir
+declare cfgfile
+declare -i login=1
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    build [--login]"
+    echo
+    echo "Builds the TimesTen container image. Parameters are:"
+    echo
+    echo "  --login"
+    echo "      Logs in to the container registry."
+    echo
+    exit 100
+}
+
+loadConfig()
+{
+    local cfile
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    cfile="$1"
+
+    if ! source "${cfile}" >& /dev/null
+    then
+        echo
+        echo "error: unable to load configuration from '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_REGISTRY}" == "" ]]
+    then
+        export DOCKER_REGISTRY="${dflt_registry}"
+    fi
+    if [[ "${DOCKER_BASEIMAGE}" == "" ]]
+    then
+        export DOCKER_BASEIMAGE="${dflt_baseimage}"
+    fi
+    if [[ "${DOCKER_TTIMAGE}" == "" ]]
+    then
+        export DOCKER_TTIMAGE="${dflt_imagename}"
+    fi
+    if [[ "${DOCKER_TTCONTAINER}" == "" ]]
+    then
+        export DOCKER_TTCONTAINER="${dflt_containername}"
+    fi
+
+    return 0
+}
+
+basedir=$(dirname "$0")
+cfgfile="${basedir}/${cfgfilename}"
+if ! loadConfig "${cfgfile}"
+then
+    echo "error: ***** build failed *****"
+    echo
+    exit 1
+fi
+
+while [[ $# -gt 0 ]]
+do
+    case "$1" in
+        "--login")
+            if [[ ${login} -eq 0 ]]
+            then
+                usage
+            fi
+            login=0
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
+
+if ! cd "${basedir}" >& /dev/null
+then
+    echo
+    echo "error: unable to access '${basedir}'"
+    echo
+    echo "error: ***** build failed *****"
+    echo
+    exit 2
+fi
+
+# login to container registry if requested
+if [[ ${login} -eq 0 ]]
+then
+    echo
+    echo "info: Logging in to container registry '${DOCKER_REGISTRY}'"
+    echo "info: Please enter your Oracle credentials when prompted"
+    if ! docker login "${DOCKER_REGISTRY}"
+    then
+        echo
+        echo "error: ***** build failed *****"
+        echo
+        exit 3
+    fi
+fi
+
+# cleanup before we start
+echo
+echo "info: cleaning up ready for build"
+docker container rm "${DOCKER_TTCONTAINER}"
+docker image rm "${DOCKER_TTIMAGE}"
+docker image prune --force
+
+echo
+echo "info: building image '${DOCKER_TTIMAGE}'"
+if ! docker build --build-arg BASEIMAGE="${DOCKER_BASEIMAGE}" --tag "${DOCKER_TTIMAGE}" .
+then
+    echo
+    echo "error: ***** build failed *****"
+    echo
+    exit 4
+fi
+
+echo
+echo "info: build successful"
+echo
+
+exit 0

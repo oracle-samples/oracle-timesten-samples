@@ -1,0 +1,73 @@
+#!/bin/bash
+# 
+# Author: chris.jenkins@oracle.com
+# 
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+# 
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+# 
+# Script to remove an existing TimesTen container.
+
+declare -r cfgfilename="container.cfg"
+declare -r dflt_containername="ttcontainer"
+
+declare basedir
+declare cfgfile
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    rmcontainer"
+    echo
+    echo "Removes the TimesTen container."
+    echo
+    exit 100
+}
+
+loadConfig()
+{
+    local cfile
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    cfile="$1"
+
+    if ! source "${cfile}" >& /dev/null
+    then
+        echo
+        echo "error: unable to load configuration from '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_TTCONTAINER}" == "" ]]
+    then
+        export DOCKER_TTCONTAINER="${dflt_containername}"
+    fi
+
+    return 0
+}
+
+if [[ $# -gt 0 ]]
+then
+    usage
+fi
+
+basedir=$(dirname "$0")
+cfgfile="${basedir}/${cfgfilename}"
+if ! loadConfig "${cfgfile}"
+then
+    exit 1
+fi
+
+if ! docker container rm "${DOCKER_TTCONTAINER}"
+then
+    exit 2
+fi
+
+exit 0

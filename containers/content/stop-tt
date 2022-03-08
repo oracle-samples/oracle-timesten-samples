@@ -1,0 +1,145 @@
+#!/usr/bin/bash
+#
+# Author: chris.jenkins@oracle.com
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+#
+# Container shutdown script for Oracle TimesTen In-Memory Database.
+# 
+# Shutsdown any automanaged database and then stops the
+# TimesTen instance.
+#
+
+declare -r ttfs=/ttdb
+declare -r dbdir="db"
+declare -r ttinst="ttinst"
+
+declare ttdbname
+declare ttdsn
+
+export PATH=/usr/bin:/usr/sbin
+
+# Check the contents of /timesten and /ttdb to figure out the current
+# state of the world.
+getTimesTenState()
+{
+    local tmp
+    local -i itmp=0
+
+    if ! cd "${ttfs}" >& /dev/null
+    then
+        echo
+        echo "error: unable to access '${ttfs}'"
+        return 1
+    fi
+
+    if [[ -d "${dbdir}" ]]
+    then
+        if tmp=$(ls "${dbdir}"/*.ds0 2>/dev/null)
+        then
+            itmp=$(echo "${tmp}" | wc -l)
+            if [[ ${itmp} -ne 1 ]]
+            then
+                echo
+                echo "error: multiple TimesTen databases found"
+                return 1
+            fi
+            ttdbname=$(echo "${tmp}" | sed -e "s?^${dbdir}/??" -e 's?.ds0$??')
+        fi
+    fi
+
+    if [[ ! -f "${ttinst}/conf/sys.odbc.ini" ]]
+    then
+        echo
+        echo "error: no instance sys.odbc.ini file found"
+        return 1
+    fi
+    if [[ "${ttdbname}" != "" ]]
+    then
+        if ! tmp=$(grep -e '\[.*\]' "${ttinst}/conf/sys.odbc.ini" | grep -v -e '#' -e '\[ODBC Data Sources\]' | grep -q -e "\[${ttdbname}\]")
+        then
+            echo
+            echo "error: no entry for database '${ttdbname}' in '${ttinst}/conf/sys.odbc.ini'"
+            return 1
+        fi
+        ttdsn="${ttdbname}"
+    else
+        ttdsn=$(grep -e '\[.*\]' "${ttinst}/conf/sys.odbc.ini" | grep -v -e '#' -e '\[ODBC Data Sources\]' | head -n 1 | sed -e 's/\[//' -e 's/\]//')
+    fi
+
+    return 0
+}
+
+# Shutdown the TimesTen database and then
+# stop the TimesTen instance
+
+stopTimesTen()
+{
+    if ! cd "${ttfs}" >& /dev/null
+    then
+        echo
+        echo "error: unable to access '${ttfs}'"
+        return 1
+    fi
+
+    if [[ -d "${ttinst}" ]] && [[ -f "${ttinst}/bin/ttenv" ]]
+    then
+        if ! "${ttinst}/bin/ttenv" ttStatus
+        then
+            echo
+            echo "info: TimesTen instance is not running"
+            return 0
+        fi
+    else
+        echo
+        echo "error: no TimesTen instance found"
+        return 1
+    fi
+
+    if [[ "${ttdbname}" != "" ]] && [[ "${ttdsn}" != "" ]]
+    then
+        echo
+        echo "info: shutting down '${ttdsn}'"
+        "${ttinst}/bin/ttenv" ttAdmin -close "${ttdsn}"
+        "${ttinst}/bin/ttenv" ttAdmin -disconnect -immediate "${ttdsn}"
+        "${ttinst}/bin/ttenv" ttAdmin -ramUnload "${ttdsn}"
+    fi
+
+    echo
+    echo "info: stopping TimesTen instance '${ttinst}'"
+    "${ttinst}/bin/ttenv" ttDaemonAdmin -stop
+    if "${ttinst}/bin/ttenv" ttStatus
+    then
+        echo
+        echo "error: TimesTen instance did not shut down"
+        return 1
+    fi
+
+    return 0
+}
+
+echo
+echo "info: TTSTOP start"
+
+if ! getTimesTenState
+then
+    echo
+    echo "info: TTSTOP exit 1"
+    exit 1
+fi
+
+if ! stopTimesTen
+then
+    echo
+    echo "info: TTSTOP exit 2"
+    exit 2
+fi
+
+echo
+echo "info: TTSTOP complete"
+
+exit 0

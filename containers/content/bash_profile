@@ -1,0 +1,14 @@
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+export PATH="${PATH}:/usr/local/bin"
+
+# If the local TimesTen instance exists, source the environment.
+if [[ -f /ttdb/ttinst/bin/ttenv.sh ]]
+then
+    source /ttdb/ttinst/bin/ttenv.sh
+fi

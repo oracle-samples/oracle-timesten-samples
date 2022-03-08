@@ -1,0 +1,58 @@
+#!/bin/bash
+# 
+# Author: chris.jenkins@oracle.com
+# 
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+# 
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+# 
+# Script to clean the TimesTen persistent filesystem
+# and set it back to its initial state.
+# 
+
+declare -r cfgfilename="container.cfg"
+
+declare basedir
+declare cfgfile
+
+loadConfig()
+{
+    local cfile
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    cfile="$1"
+
+    if ! source "${cfile}" >& /dev/null
+    then
+        echo
+        echo "error: unable to load configuration from '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_VOLUME}" == "" ]]
+    then
+        echo >&2 "error: mandatory parameter DOCKER_VOLUME not defined"
+        return 2
+    fi
+
+    return 0
+}
+
+basedir=$(dirname "$0")
+cfgfile="${basedir}/${cfgfilename}"
+if ! loadConfig "${cfgfile}"
+then
+    exit 1
+fi
+
+if ! docker volume rm "${DOCKER_VOLUME}"
+then
+    exit 2
+fi
+
+exit 0

@@ -1,0 +1,107 @@
+#!/bin/bash
+# 
+# Author: chris.jenkins@oracle.com
+# 
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+# 
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+# 
+# Script to create the custom docker network.
+# 
+
+declare -r cfgfilename="container.cfg"
+declare -r dflt_nwname="ttnw"
+declare -r dflt_v4subnet="10.150.0.0/24"
+declare -r dflt_v4gateway="10.150.0.1"
+declare -r dflt_v4address="10.150.0.10"
+declare -r dflt_v6subnet="2022:1:1:150::/64"
+declare -r dflt_v6gateway="2022:1:1:150::1"
+declare -r dflt_v6address="2022:1:1:150::10"
+
+declare basedir
+declare cfgfile
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    crnetwork"
+    echo
+    echo "Creates the custom docker network."
+    echo
+    exit 100
+}
+
+loadConfig()
+{
+    local cfile
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    cfile="$1"
+
+    if ! source "${cfile}" >& /dev/null
+    then
+        echo
+        echo "error: unable to load configuration from '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_NETWORK}" == "" ]]
+    then
+        export DOCKER_NETWORK="${dflt_nwname}"
+    fi
+    if [[ "${DOCKER_V4SUBNET}" == "" ]]
+    then
+        export DOCKER_V4SUBNET="${dflt_v4subnet}"
+    fi
+    if [[ "${DOCKER_V4GATEWAY}" == "" ]]
+    then
+        export DOCKER_V4GATEWAY="${dflt_v4gateway}"
+    fi
+    if [[ "${DOCKER_V4ADDRESS}" == "" ]]
+    then
+        export DOCKER_V4ADDRESS="${dflt_v4address}"
+    fi
+    if [[ "${DOCKER_V6SUBNET}" == "" ]]
+    then
+        export DOCKER_V6SUBNET="${dflt_v6subnet}"
+    fi
+    if [[ "${DOCKER_V6GATEWAY}" == "" ]]
+    then
+        export DOCKER_V6GATEWAY="${dflt_v6gateway}"
+    fi
+    if [[ "${DOCKER_V6ADDRESS}" == "" ]]
+    then
+        export DOCKER_V6ADDRESS="${dflt_v6address}"
+    fi
+
+    return 0
+}
+
+if [[ $# -gt 0 ]]
+then
+    usage
+fi
+
+basedir=$(dirname "$0")
+cfgfile="${basedir}/${cfgfilename}"
+if ! loadConfig "${cfgfile}"
+then
+    exit 1
+fi
+
+if ! docker network create --driver bridge --ipv6 \
+       --subnet "${DOCKER_V4SUBNET}" --gateway "${DOCKER_V4GATEWAY}" \
+       --subnet "${DOCKER_V6SUBNET}" --gateway "${DOCKER_V6GATEWAY}" \
+       "${DOCKER_NETWORK}"
+then
+    exit 1
+fi
+
+exit 0

@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+cd ~ >& /dev/null
+source ~/.bash_profile >& /dev/null
+"$@"
+exit $?

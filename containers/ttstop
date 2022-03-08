@@ -1,0 +1,134 @@
+#!/bin/bash
+#
+# Author: chris.jenkins@oracle.com
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+#
+# Script to stop the TimesTen container.
+#
+
+declare -r cfgfilename="container.cfg"
+declare -r dflt_containername="ttcontainer"
+declare -r chkintvl=2
+declare -r maxchecks=50
+declare -r ftemplate="ttcontainer_stop_XXXXX"
+export TMPDIR=/tmp
+
+declare basedir
+declare cfgfile
+declare tmpf
+declare -i ret=0
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    ttstop"
+    echo
+    echo "Cleanly terminates a running TimesTen container."
+    echo
+    exit 100
+}
+
+doWait()
+{
+    local res
+    local -i nchecks=0
+
+    while [[ ${nchecks} -lt ${maxchecks} ]]
+    do
+        res=$(docker logs "${DOCKER_TTCONTAINER}" 2>/dev/null | grep "info: TTSTOP" | tail -n 1)
+        if [[ "${res}" == "info: TTSTOP complete" ]]
+        then 
+            return 0
+        elif [[ "${res}" =~ "info: TTSTOP exit " ]]
+        then 
+            return 1
+        fi
+        sleep ${chkintvl}
+        nchecks=${nchecks}+1
+        if ! docker ps 2>/dev/null | grep -q "${DOCKER_TTCONTAINER}"
+        then
+            return 0
+        fi
+    done
+
+    return 2
+}
+
+loadConfig()
+{
+    local cfile
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    cfile="$1"
+
+    if ! source "${cfile}" >& /dev/null
+    then
+        echo
+        echo "error: unable to load configuration from '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_TTCONTAINER}" == "" ]]
+    then
+        export DOCKER_TTCONTAINER="${dflt_containername}"
+    fi
+
+    return 0
+}
+
+if [[ $# -gt 0 ]]
+then
+    usage
+fi
+
+basedir=$(dirname "$0")
+cfgfile="${basedir}/${cfgfilename}"
+if ! loadConfig "${cfgfile}"
+then
+    exit 1
+fi
+
+if ! docker ps 2>/dev/null | grep -q "${DOCKER_TTCONTAINER}"
+then
+    exit 0
+fi
+
+if ! tmpf=$(mktemp -q -t "${ftemplate}")
+then
+    echo >&2 "error: unable to create a temporary file"
+    exit 1
+fi
+
+if ! docker kill --signal TERM "${DOCKER_TTCONTAINER}" > "${tmpf}" 2>&1
+then
+    ret=2
+else
+    if ! doWait
+    then
+        ret=3
+    fi
+    if ! docker kill --signal KILL "${DOCKER_TTCONTAINER}" >> "${tmpf}" 2>&1
+    then
+        ret=4
+    fi
+fi
+
+if [[ ${ret} -ne 0 ]]
+then
+    cat "${tmpf}"
+    docker logs "${DOCKER_TTCONTAINER}"
+fi
+
+rm -f "${tmpf}" >& /dev/null
+
+exit ${ret}

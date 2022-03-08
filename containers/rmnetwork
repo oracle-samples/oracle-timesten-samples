@@ -1,0 +1,75 @@
+#!/bin/bash
+# 
+# Author: chris.jenkins@oracle.com
+# 
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+# 
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+# 
+# Script to create the custom docker network.
+# 
+
+declare -r cfgfilename="container.cfg"
+declare -r dflt_nwname="ttnw"
+
+declare basedir
+declare cfgfile
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    rmnetwork"
+    echo
+    echo "Removes the custom docker network."
+    echo
+    exit 100
+}
+
+loadConfig()
+{
+    local cfile
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    cfile="$1"
+
+    if ! source "${cfile}" >& /dev/null
+    then
+        echo
+        echo "error: unable to load configuration from '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_NETWORK}" == "" ]]
+    then
+        export DOCKER_NETWORK="${dflt_nwname}"
+    fi
+
+    return 0
+}
+
+if [[ $# -gt 0 ]]
+then
+    usage
+fi
+
+basedir=$(dirname "$0")
+cfgfile="${basedir}/${cfgfilename}"
+if ! loadConfig "${cfgfile}"
+then
+    exit 1
+fi
+
+# cleanup before we start
+if ! docker network rm "${DOCKER_NETWORK}"
+then
+    exit 1
+fi
+
+exit 0

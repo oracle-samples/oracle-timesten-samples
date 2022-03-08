@@ -1,0 +1,259 @@
+#!/bin/bash
+# 
+# Author: chris.jenkins@oracle.com
+# 
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+# 
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+# 
+# Script to start the TimesTenm container.
+# 
+
+declare -r cfgfilename="container.cfg"
+declare -r dflt_imagename="ttimage"
+declare -r dflt_containername="ttcontainer"
+declare -r dflt_hostname="tthost"
+declare -r dflt_nwname="ttnw"
+declare -r dflt_v4address="10.150.0.10"
+declare -r dflt_v6address="2022:1:1:150::10"
+declare -r mincsport=1025
+declare -r maxcsport=65535
+declare -r dfltcsport=6625
+declare -r ttmount="/ttdb"
+declare -r chkintvl=5
+declare -r maxchecks=20
+declare -r ftemplate="ttcontainer_start_XXXXX"
+export TMPDIR=/tmp
+
+declare basedir
+declare cfgfile
+declare tmpf
+declare pubport
+declare tmp
+declare -i network=1
+declare -i csport=0
+declare -i ret=0
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    ttstart [--network] [--csport [<portno>]]"
+    echo
+    echo "--network"
+    echo "    Attaches the container to the custom docker network. If not specified the"
+    echo "    container uses the default docker network."
+    echo
+    echo "--csport [<portno>]"
+    echo "    Maps the TimesTen client-server access port to a localhost port on"
+    echo "    the host. By default the host port used is ${dfltcsport} but this can be"
+    echo "    overridden by specifying an alternate port (${mincsport} <= portno <= ${maxcsport})."
+    echo "    A TimesTen client can then connect to TimesTen in the container via"
+    echo "    this port on the host."
+    echo
+    exit 100
+}
+
+isnumeric()
+{
+    local n=0
+    local tmp
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    tmp=$(echo "$1" | sed -e 's/^0*//')
+    if [[ "${tmp}" == "" ]]
+    then
+        return 0
+    fi
+    n=$(expr "${tmp}" + 0 2>/dev/null)
+    if [[ $? -ne 0 ]] || [[ "${n}" != "${tmp}" ]]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+
+doWait()
+{
+    local res
+    local -i nchecks=0
+
+    sleep ${chkintvl}
+    while [[ ${nchecks} -lt ${maxchecks} ]]
+    do
+        res=$(docker logs "${DOCKER_TTCONTAINER}" 2>/dev/null | grep -e "info: TT[IS][NT][IA][TR]" | tail -n 1)
+        if [[ "${res}" == "info: TTSTART complete" ]]
+        then
+            return 0
+        elif [[ "${res}" =~ "info: TTSTART exit " ]] || [[ "${res}" =~ "info: TTINIT exit " ]]
+        then
+            return 1
+        fi
+        sleep ${chkintvl}
+        nchecks=${nchecks}+1
+        if ! docker ps 2>/dev/null | grep -q "${DOCKER_TTCONTAINER}"
+        then
+            return 1
+        fi
+    done
+
+    return 2
+}
+
+loadConfig()
+{
+    local cfile
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    cfile="$1"
+
+    if ! source "${cfile}" >& /dev/null
+    then
+        echo
+        echo "error: unable to load configuration from '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_VOLUME}" == "" ]]
+    then
+        echo
+        echo "error: mandatory parameter DOCKER_VOLUME not defined in '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_TTIMAGE}" == "" ]]
+    then
+        export DOCKER_TTIMAGE="${dflt_imagename}"
+    fi
+    if [[ "${DOCKER_TTCONTAINER}" == "" ]]
+    then
+        export DOCKER_TTCONTAINER="${dflt_containername}"
+    fi
+    if [[ "${DOCKER_TTHOSTNAME}" == "" ]]
+    then
+        export DOCKER_TTHOSTNAME="${dflt_hostname}"
+    fi
+    if [[ "${DOCKER_NETWORK}" == "" ]]
+    then
+        export DOCKER_NETWORK="${dflt_nwname}"
+    fi
+    if [[ "${DOCKER_V4ADDRESS}" == "" ]]
+    then
+        export DOCKER_V4ADDRESS="${dflt_v4address}"
+    fi
+    if [[ "${DOCKER_V6ADDRESS}" == "" ]]
+    then
+        export DOCKER_V6ADDRESS="${dflt_v6address}"
+    fi
+
+    return 0
+}
+
+while [[ $# -gt 0 ]]
+do
+    case "$1" in
+        "--network")
+            if [[ ${network} -eq 0 ]]
+            then
+                usage
+            fi
+            network=0
+            ;;
+        "--csport")
+            if [[ ${csport} -gt 0 ]]
+            then
+                usage
+            fi
+            if [[ $# -lt 2 ]]
+            then
+                csport=${dfltcsport}
+            else
+                tmp="$2"
+                if [[ "${tmp:0:2}" != "--" ]] && isnumeric "${tmp}"
+                then
+                    shift
+                    csport=${tmp}
+                    if [[ ${csport} -lt ${mincsport} ]] || [[ ${csport} -gt ${maxcsport} ]]
+                    then
+                        echo >&2 "error: invalid value (${csport}) for --csport"
+                        exit 5
+                    fi
+                fi
+            fi
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
+
+basedir=$(dirname "$0")
+cfgfile="${basedir}/${cfgfilename}"
+if ! loadConfig "${cfgfile}"
+then
+    exit 1
+fi
+
+if docker ps 2>/dev/null | grep -q "${DOCKER_TTCONTAINER}"
+then
+    exit 0
+fi
+
+if ! tmpf=$(mktemp -q -t "${ftemplate}")
+then
+    echo >&2 "error: unable to create a temporary file"
+    exit 2
+fi
+
+docker container rm "${DOCKER_TTCONTAINER}" >& "${tmpf}"
+
+if [[ ${csport} -gt 0 ]]
+then
+    pubport="-p ${csport}:${dfltcsport}"
+fi
+
+if [[ ${network} -eq 0 ]]
+then
+    if ! docker run --detach ${pubport} --name="${DOCKER_TTCONTAINER}" --hostname="${DOCKER_TTHOSTNAME}" \
+                    --network="${DOCKER_NETWORK}" --ip="${DOCKER_V4ADDRESS}" --ip6="${DOCKER_V6ADDRESS}" \
+                    --mount type=volume,src="${DOCKER_VOLUME}",dst="${ttmount}" \
+                    "${DOCKER_TTIMAGE}" >> "${tmpf}" 2>&1
+    then
+        ret=3
+    fi
+else
+    if ! docker run --detach ${pubport} --name="${DOCKER_TTCONTAINER}" --hostname="${DOCKER_TTHOSTNAME}" \
+                    --mount type=volume,src="${DOCKER_VOLUME}",dst="${ttmount}" \
+                    "${DOCKER_TTIMAGE}" >> "${tmpf}" 2>&1
+    then
+        ret=3
+    fi
+fi
+if [[ ${ret} -eq 0 ]]
+then
+    if ! doWait
+    then
+        ret=4
+    fi
+fi
+
+if [[ ${ret} -ne 0 ]]
+then
+    cat "${tmpf}"
+    docker logs "${DOCKER_TTCONTAINER}"
+fi
+
+rm -f "${tmpf}" >& /dev/null
+
+exit ${ret}

@@ -1,0 +1,33 @@
+#!/usr/bin/bash
+#
+# Author: chris.jenkins@oracle.com
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+#
+# Initialisation script for TimesTen container.
+
+export PATH=/usr/bin:/usr/sbin
+
+echo
+echo "info: TTINIT start"
+
+# Set container stop handler to cleanly shutdown the database and instance.
+trap "/etc/init.d/stop-tt" SIGTERM
+
+# Perform all necessary TimesTen setup/startup
+if ! /etc/init.d/start-tt
+then
+    exit 2
+fi
+
+# Wait (potentially forever) for container stop
+while true
+do
+    sleep 1
+done
+
+exit 0

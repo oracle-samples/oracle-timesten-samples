@@ -1,0 +1,81 @@
+#!/bin/bash
+# 
+# Author: chris.jenkins@oracle.com
+# 
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+# 
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+# 
+# Script to connectr to the container as the timesten user, or
+# to run a command in the container as the timesten user.
+
+declare -r cfgfilename="container.cfg"
+declare -r dflt_containername="ttcontainer"
+
+declare basedir
+declare cfgfile
+declare -i ret=0
+
+usage()
+{
+    echo
+    echo "Usage:"
+    echo
+    echo "    ttconnect [<cmd> [<arg>...]]"
+    echo
+    echo "If no 'cmd' specified, open an interactive shell session to the"
+    echo "TimesTen container. If 'cmd' (and optional args) is specified,"
+    echo "run the command in the TimesTen container and display the output."
+    echo
+    exit 100
+}
+
+loadConfig()
+{
+    local cfile
+
+    if [[ $# -ne 1 ]]
+    then
+        return 1
+    fi
+    cfile="$1"
+
+    if ! source "${cfile}" >& /dev/null
+    then
+        echo
+        echo "error: unable to load configuration from '${cfile}'"
+        echo
+        return 1
+    fi
+    if [[ "${DOCKER_TTCONTAINER}" == "" ]]
+    then
+        export DOCKER_TTCONTAINER="${dflt_containername}"
+    fi
+
+    return 0
+}
+
+basedir=$(dirname "$0")
+cfgfile="${basedir}/${cfgfilename}"
+if ! loadConfig "${cfgfile}"
+then
+    exit 1
+fi
+
+if [[ $# -gt 0 ]]
+then
+    if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]
+    then
+        usage
+    else
+        docker exec -it "${DOCKER_TTCONTAINER}" /usr/local/bin/remenv "$@"
+        ret=$?
+    fi
+else
+    docker exec -it "${DOCKER_TTCONTAINER}" /bin/bash -il
+    ret=$?
+fi
+
+exit ${ret}

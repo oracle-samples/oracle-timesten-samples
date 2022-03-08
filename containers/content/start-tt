@@ -1,0 +1,293 @@
+#!/usr/bin/bash
+#
+# Author: chris.jenkins@oracle.com
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# LICENSE UPL 1.0
+#
+# Copyright (c) 2022 Oracle and/or its affiliates.
+#
+# TimesTen installation, startup and database creation/startup
+# script for a TimesTen container.
+#
+
+declare -r ttdir=/timesten
+declare -r ttfs=/ttdb
+declare -r dbdir=db
+declare -r ttinst=ttinst
+declare -r dbconfig="/home/timesten/ttinit/sys.odbc.ini"
+declare -r initsql="/home/timesten/ttinit/init.sql"
+
+declare ttinstallation
+declare ttinstancename
+declare ttdbname
+declare ttdsn
+declare ttcfgdsn
+
+export PATH=/usr/bin:/usr/sbin
+
+# Check the contents of /timesten and /ttdb to figure out the current
+# state of the world.
+
+getTimesTenState()
+{
+    local tmp
+    local -i itmp=0
+
+    if ! cd "${ttdir}" >& /dev/null
+    then
+        echo
+        echo "error: unable to access '${ttdir}'"
+        return 1
+    fi
+
+    if ! cd installations >& /dev/null
+    then
+        echo
+        echo "error: unable to access '${ttdir}/installations'"
+        return 1
+    fi
+    if tmp=$(ls -d tt[0-9][0-9].[0-9].* 2>/dev/null)
+    then
+        itmp=$(echo "${tmp}" | wc -l)
+        if [[ ${itmp} -lt 1 ]]
+        then
+            echo
+            echo "error: no TimesTen installations found"
+            return 1
+        elif [[ ${itmp} -gt 1 ]]
+        then
+            echo
+            echo "error: multiple TimesTen installations found"
+            return 1
+        fi
+        ttinstallation="${ttdir}/installations/${tmp}"
+    fi
+    
+    if ! cd "${ttfs}" >& /dev/null
+    then
+        echo
+        echo "error: unable to access '${ttfs}'"
+        return 1
+    fi
+    
+    if [[ -d "${ttinst}" ]] && [[ -f "${ttinst}/bin/ttenv" ]]
+    then
+        ttinstancename="${ttinst}"
+    fi
+
+    if [[ -d "${dbdir}" ]]
+    then
+        if tmp=$(ls "${dbdir}"/*.ds0 2>/dev/null)
+        then
+            itmp=$(echo "${tmp}" | wc -l)
+            if [[ ${itmp} -ne 1 ]]
+            then
+                echo
+                echo "error: multiple TimesTen databases found"
+                return 1
+            fi
+            ttdbname=$(echo "${tmp}" | sed -e "s?^${dbdir}/??" -e 's?.ds0$??')
+        fi
+    fi
+    
+    if [[ ! -f "${dbconfig}" ]]
+    then
+        echo
+        echo "error: '${dbconfig}' not found"
+        return 1
+    else
+        ttcfgdsn=$(grep -e '\[.*\]' "${dbconfig}" | grep -v -e '#' -e '\[ODBC Data Sources\]' | head -n 1 | sed -e 's/\[//g' -e 's/\]//g')
+        if [[ "${ttcfgdsn}" == "" ]]
+        then
+            echo
+            echo "error: no DSN definition found in '${dbconfig}'"
+            return 1
+        fi
+    fi
+    if [[ "${ttdbname}" != "" ]]
+    then
+        if ! tmp=$(grep -e '\[.*\]' "${ttinst}/conf/sys.odbc.ini" 2>/dev/null | grep -v -e '#' -e '\[ODBC Data Sources\]' | grep -q -e "\[${ttdbname}\]")
+        then
+            echo
+            echo "error: no entry for database '${ttdbname}' in '${ttinst}/conf/sys.odbc.ini'"
+            return 1
+        fi
+        itmp=$(echo "${tmp}" | wc -l)
+        if [[ ${itmp} -gt 1 ]]
+        then
+            echo
+            echo "error: multiple definitions for '${ttdbname}' in '${ttinst}/conf/sys.odbc.ini'"
+            return 1
+        fi
+        ttdsn="${ttdbname}"
+    else
+        ttdsn=$(grep -e '\[.*\]' "${ttinst}/conf/sys.odbc.ini" 2>/dev/null | grep -v -e '#' -e '\[ODBC Data Sources\]' | head -n 1 | sed -e 's/\[//g' -e 's/\]//g')
+    fi
+
+    if [[ "${ttdbname}" != "" ]]
+    then
+        if [[ "${ttdsn}" != "" ]] && [[ "${ttdsn}" != "${ttdbname}" ]]
+        then
+            echo
+            echo "error: DSN '${ttdsn}' does not match database name '${ttdbname}'"
+            return 1
+        fi
+        if [[ "${ttcfgdsn}" != "" ]] && [[ "${ttcfgdsn}" != "${ttdbname}" ]]
+        then
+            echo
+            echo "error: DSN '${ttcfgdsn}' does not match database name '${ttdbname}'"
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+# Perform all necessary actions to create a TimesTen instance
+# (if it does not already exist), start the instance and create
+# (if it does not already exist) and startup a TimesTen
+# database.
+
+startupTimesTen()
+{
+    local -i ret=0
+
+    if ! cd "${ttfs}" >& /dev/null
+    then
+        echo
+        echo "error: unable to access '${ttfs}' "
+        return 1
+    fi
+
+# Check instance and create if necessary
+    if [[ ! -d "${ttinst}" ]]
+    then
+        echo
+        echo "info: creating TimesTen instance '${ttinst}'"
+        if ! "${ttinstallation}/bin/ttInstanceCreate" -name "${ttinst}" -location "${ttfs}"
+        then
+            echo
+            echo "error: unable to create instance '${ttfs}/${ttinst}'"
+            return 1
+        fi
+    fi
+
+# Check database directory and create if necessary
+    if [[ ! -d "${dbdir}" ]]
+    then
+        echo
+        echo "info: creating '${ttfs}/${dbdir}'"
+        if ! mkdir -m 755 "${dbdir}"
+        then
+            echo
+            echo "error: unable to create '${ttfs}/${dbdir}'"
+            return 1
+        fi
+    fi
+
+# Copy sys.odbc.ini to instance if necessary
+    if [[ "${ttdsn}" == "" ]]
+    then
+        echo
+        echo "info: copying '${dbconfig}' to '${ttfs}/${ttinst}/conf/sys.odbc.ini'"
+        if ! cp "${dbconfig}" "${ttfs}/${ttinst}/conf/sys.odbc.ini"
+        then
+            echo
+            echo "error: unable to copy '${dbconfig}' to '${ttfs}/${ttinst}/conf/sys.odbc.ini'"
+            return 1
+        fi
+        ttdsn="${ttcfgdsn}"
+    fi
+
+# Start instance
+    if ! grep -q "enableIPv6=1" "${ttinst}/conf/timesten.conf"
+    then
+        echo "enableIPv6=1" >> "${ttinst}/conf/timesten.conf" 2>/dev/null
+    fi
+    echo
+    echo "info: starting TimesTen instance '${ttinst}'"
+    if ! "${ttinst}/bin/ttenv" ttDaemonAdmin -start -force
+    then
+        echo
+        echo "error: 'ttDaemonAdmin -start -force' failed"
+        return 1
+    fi
+    if ! "${ttinst}/bin/ttenv" ttStatus
+    then
+        echo
+        echo "error: instance did not start"
+        return 1
+    fi
+
+# Create database if it doesn't exist
+    if [[ "${ttdbname}" == "" ]]
+    then
+        echo
+        echo "info: creating database '${ttdsn}'"
+        if [[ -f "${initsql}" ]]
+        then
+            "${ttinst}/bin/ttenv" ttIsql -f "${initsql}" "${ttdsn}"
+             ret=$?
+        else
+            "${ttinst}/bin/ttenv" ttIsql -e 'quit;' "${ttdsn}"
+             ret=$?
+        fi
+        if [[ ${ret} -ne 0 ]]
+        then
+            echo
+            echo "error: database creation failed"
+            return 1
+        fi
+        ttdbname="${ttdsn}"
+    fi
+
+# Set database ramPolicy and ramLoad it
+    if [[ "${ttdsn}" != "" ]] && [[ "${ttdbname}" != "" ]]
+    then
+        echo
+        echo "info: starting database '${ttdsn}'"
+        if "${ttinst}/bin/ttenv" ttAdmin -ramPolicy manual "${ttdsn}"
+        then
+            if "${ttinst}/bin/ttenv" ttAdmin -ramLoad "${ttdsn}"
+            then
+                 echo "info: opening database '${ttdsn}'"
+                "${ttinst}/bin/ttenv" ttAdmin -open "${ttdsn}"
+            else
+                echo
+                echo "error: 'ttAdmin -ramLoad ${ttdsn}' failed"
+                return 1
+            fi
+        else
+            echo
+            echo "error: 'ttAdmin -ramPolicy manual ${ttdsn}' failed"
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+echo
+echo "info: TTSTART start"
+
+if ! getTimesTenState
+then
+    echo
+    echo "info: TTSTART exit 1"
+    exit 1
+fi
+
+if ! startupTimesTen
+then
+    echo
+    echo "info: TTSTART exit 2"
+    exit 2
+fi
+
+echo
+echo "info: TTSTART complete"
+echo
+
+exit 0
