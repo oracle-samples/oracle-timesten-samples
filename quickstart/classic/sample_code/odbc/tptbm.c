@@ -1574,6 +1574,14 @@ void initRouting( char * sdsn )
                              "turning off AUTO_COMMIT option",
                              __FILE__, __LINE__);
           }
+          rc = SQLTransact (henv, routingDSNs[i].hdbc, SQL_COMMIT);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                             "committing transaction",
+                             __FILE__, __LINE__);
+          }
           if (  isolevel == 0  )
               tIso = SQL_TXN_SERIALIZABLE;
           rc = SQLSetConnectOption (routingDSNs[i].hdbc, SQL_TXN_ISOLATION, tIso);
@@ -2602,6 +2610,16 @@ void ExecuteTptBm(unsigned int seed,
         /* value was error checked above */
         }
 
+        /* commit the transaction */
+        rc = SQLTransact (henv, ghdbc, SQL_COMMIT);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                           "committing transaction",
+                           __FILE__, __LINE__);
+        }
+
         rc = SQLSetConnectOption (ghdbc, SQL_TXN_ISOLATION, tIso);
         if (  rc != SQL_SUCCESS  )
         {
@@ -3395,16 +3413,29 @@ void ExecuteTptBm(unsigned int seed,
             }
     
             /* TimesTen doesn't require reads to be committed          */
-            if (  (opsperxact != 1) && (op_count >= opsperxact)  ) {
-              rc = SQLTransact (henv, thdbc, SQL_COMMIT);
-              if (  rc != SQL_SUCCESS  )
-              {
-                  shmhdr[procId].state = PROC_ERROR;
-                  handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                                 "committing transaction",
-                                 __FILE__, __LINE__);
-              }
-              op_count = 0;
+            if (  opsperxact != 1  ) {
+                if (  op_count >= opsperxact  ) {
+                  rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+                  if (  rc != SQL_SUCCESS  )
+                  {
+                      shmhdr[procId].state = PROC_ERROR;
+                      handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                                     "committing transaction",
+                                     __FILE__, __LINE__);
+                  }
+                  op_count = 0;
+                }
+            }
+            else
+            if (  isolevel == 0  ) {
+                rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+                if (  rc != SQL_SUCCESS  )
+                {
+                    shmhdr[procId].state = PROC_ERROR;
+                    handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                                   "committing transaction",
+                                   __FILE__, __LINE__);
+                }
             }
         }
       }

@@ -48,12 +48,6 @@ CFLAGS = /nologo /EHsc $(DEBUGFLAG) $(WINDOWS) $(THREAD_SAFE) \
 LDFLAGS	= /nologo /link /STACK:3000000 /FIXED:NO $(DEBUGLINK) $(VCPP_LIB_DIRS)
 LDFLAGS = $(LDFLAGS)  /LIBPATH:$(ODBC)\lib bufferoverflowu.lib
 
-###
-### CSLIBS : libs to link for client/server TTClasses library
-###
-
-CSLIBS  = $(ODBC)\lib\ttclient$(TTVER).lib $(VCPP_LIB_DIRS)
-
 CPLUSPLUS	=	cl
 
 ###
