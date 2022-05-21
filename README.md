@@ -10,7 +10,7 @@ This repository stores a variety of examples demonstrating how to use the Oracle
 | [kubernetes](./kubernetes) | Shows how to use the TimesTen Kubernetes Operator to deploy TimesTen in Kubernetes. |
 
 ## Supported TimesTen Releases
-In general these samples require a _minimum_ of **TimesTen 22.1.1.1.0** but our recommendation is to always use the most recent release available for your platform. Some specific samples may require a more recent timesTen release; any such requirement will be detailed in the sample's README file.
+In general these samples require a _minimum_ of **TimesTen 22.1.1.1.0** but our recommendation is to always use the most recent release available for your platform. Some specific samples may require a more recent timesTen release; any such requirement will be detailed in the sample's README file. These samples all work equally well with regular Timesten or the free TimesTen Express Edition (TimesTen XE).
 
 ## More information
 You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
