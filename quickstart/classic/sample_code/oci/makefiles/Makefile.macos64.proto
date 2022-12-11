@@ -12,8 +12,8 @@ OCIINCS         = $(TTORACLE_HOME)/sdk/include
 
 CC              = cc
 
-PLATCFLAGS      = -O3
-LDFLAGS         = 
+PLATCFLAGS      = -O3 -target x86_64-apple-macos11
+LDFLAGS         = -target x86_64-apple-macos11
 EXTRALIBS	=
 
 INCS            = -I$(OCIINCS) -I$(INSTDIR)/include -I$(COMMDIR)

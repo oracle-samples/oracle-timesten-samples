@@ -13,8 +13,8 @@ COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 
 CC              = cc
 
-PLATCFLAGS      = -O3
-LDFLAGS         = 
+PLATCFLAGS      = -O3 -target x86_64-apple-macos11
+LDFLAGS         = -target x86_64-apple-macos11
 SHLIB_SUFFIX    = dylib
 EXTRALIBS	=
 

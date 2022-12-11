@@ -16,8 +16,8 @@ COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
 
 CC              = cc
 
-PLATCFLAGS      = -m64 -O2 -finline-functions
-LDFLAGS         = -Wl,-rpath -Wl,$(INSTDIR)/lib -lpthread -lm -lc -ldl
+PLATCFLAGS      = -target x86_64-apple-macos11 -O2 -finline-functions
+LDFLAGS         = -target x86_64-apple-macos11 -Wl,-rpath -Wl,$(INSTDIR)/lib -lpthread -lm -lc -ldl
 
 INCS            = -I. -I$(INSTDIR)/include -I$(COMMDIR)
 

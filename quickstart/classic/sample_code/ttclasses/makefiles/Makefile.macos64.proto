@@ -19,11 +19,11 @@ OPTFLAG         = -O -Wuninitialized
 DEBUGFLAG       = -g -Wall -W -Wcast-qual -Wshadow -Wpointer-arith \
                   -Wno-return-type -DTTDEBUG
 
-CFLAGS          = -fPIC $(OPTFLAG) -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) \
-                  -Ilib -DTT_64BIT -DGCC $(THREAD_SAFE) \
+CFLAGS          = -target x86_64-apple-macos11 -fPIC $(OPTFLAG) -I$(INSTDIR)/include \
+                  -I$(TTC_INCLUDEDIR) -Ilib -DTT_64BIT -DGCC $(THREAD_SAFE) \
                   -I$(COMMON)
 
-LDFLAGS         = -Wl,-rpath -Wl,$(INSTDIR)/lib
+LDFLAGS         = -target x86_64-apple-macos11 -Wl,-rpath -Wl,$(INSTDIR)/lib
 CSLIBS          = -lpthread -L$(INSTDIR)/lib -lttclient -lttclassesCS
 
 CPLUSPLUS       = g++
