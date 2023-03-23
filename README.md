@@ -21,8 +21,17 @@ You can find the online documentation for Oracle TimesTen In-Memory Database in 
 ## Blogs
 You can find intersting blogs relating to TimesTen on our [blogs channel](https://blogs.oracle.com/timesten)
 
+## Contributing
+
+This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
+
+## Security
+
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
+
 ## License
 
-You may not use the identified files except in compliance with the Universal Permissive License, Version 1.0 (the "License.")
+Copyright (c) 2018, 2023 Oracle and/or its affiliates.
 
-You may obtain a copy of the License at [https://oss.oracle.com/licenses/upl](https://oss.oracle.com/licenses/upl).  A copy of the license is also reproduced in [LICENSE.md](./LICENSE.md)
+Released under the Universal Permissive License v1.0 as shown at
+<https://oss.oracle.com/licenses/upl/>.
