@@ -476,6 +476,7 @@ class Tptbm
                     try { stmt.close(); } catch ( Exception e ) { ; }
             }
 
+        System.err.println("Benchmark table was not properly populated (missing metadata).");
         return false;
     } // checkDbParams
 
