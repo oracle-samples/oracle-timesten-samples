@@ -13,8 +13,6 @@
   #include <time.h>
   #include <process.h>
   #include <winbase.h>
-  #define srandom srand
-  #define random  rand
 #else
   #include <sys/types.h>
   #include <sys/ipc.h>
@@ -1176,7 +1174,6 @@ SQLHDBC routingAPI_getConn(int* k1, int* k2,
    */
   if (  mode == M_SCALEOUT_ROUTING  )
   {
-      // i = (int)((kFactor * rand()) / ((unsigned int)RAND_MAX + 1));
       i = (int)((kFactor * random()) / ((unsigned int)RAND_MAX + 1));
       dsn = &(routingDSNs[elems[i]]);
       *sel = dsn->selstmt;
@@ -2500,7 +2497,6 @@ void ExecuteTptBm(unsigned int seed,
   SQLCHAR   descr [101];
   SQLCHAR   last_calling_party[11] = "0000000000";
 
-  // srand(seed);
   srandom(seed);
 
   /* initialize the select statement buffers */
@@ -3333,7 +3329,6 @@ void ExecuteTptBm(unsigned int seed,
       op_count++;
       if (reads != 100)
       {
-        // rand_int = rand();
         rand_int = random();
 
         if (rand_int < ((float)(reads + inserts + deletes) / 100) * ((unsigned int)RAND_MAX + 1)) {
@@ -3361,16 +3356,12 @@ void ExecuteTptBm(unsigned int seed,
       if (path == 1)                                /* select xact */
       {
         /* randomly pick argument values */
-        // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-        // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
         id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
         nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
         if (  mode == M_SCALEOUT_LOCAL  )
             while (  !  routingAPI_isLocal(&id,&nb)  )
             {
-                // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-                // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
                 id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
                 nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
             }
@@ -3442,16 +3433,12 @@ void ExecuteTptBm(unsigned int seed,
       else if (path == 0)                           /* update xact */
       {
         /* randomly pick argument values */
-        // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-        // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
         id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
         nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
         if (  mode == M_SCALEOUT_LOCAL  )
             while (  !  routingAPI_isLocal(&id,&nb)  )
             {
-                // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-                // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
                 id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
                 nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
             }

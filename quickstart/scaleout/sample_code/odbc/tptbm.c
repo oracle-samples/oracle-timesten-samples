@@ -188,8 +188,8 @@ static char usageStrFull[] =
   "                         Must be > 0. The default is no throttle.\n\n"
 
   "  -ops     <ops>         Operations per transaction.  The default is " S(DFLT_OPS) ".\n"
-  "                         In the special case where 0 is specified, no commits\n"
-  "                         are done. This may be useful for read-only testing.\n\n"
+  "                         In the special case where 0 is specified, no commit\n"
+  "                         is done. This may be useful for read-only testing.\n\n"
 
   "  -key     <keys>        Specifies the number of records (squared) to initially\n"
   "                         populate in the database. The minimum value is " S(MIN_KEY) "\n"
@@ -358,7 +358,7 @@ int parseConnectionString(
 typedef struct procinfo {
   volatile int       state;
   volatile int       nproc;
-  volatile int       pid;
+  volatile long      pid;
   volatile unsigned long   xacts;
   char               pad[CACHELINE_SIZE - (sizeof(int)+sizeof(int)+sizeof(int)+sizeof(unsigned long))];
 } procinfo_t;
@@ -1174,7 +1174,6 @@ SQLHDBC routingAPI_getConn(int* k1, int* k2,
    */
   if (  mode == M_SCALEOUT_ROUTING  )
   {
-      // i = (int)((kFactor * rand()) / ((unsigned int)RAND_MAX + 1));
       i = (int)((kFactor * random()) / ((unsigned int)RAND_MAX + 1));
       dsn = &(routingDSNs[elems[i]]);
       *sel = dsn->selstmt;
@@ -1570,6 +1569,14 @@ void initRouting( char * sdsn )
               shmhdr[procId].state = PROC_ERROR;
               handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
                              "turning off AUTO_COMMIT option",
+                             __FILE__, __LINE__);
+          }
+          rc = SQLTransact (henv, routingDSNs[i].hdbc, SQL_COMMIT);
+          if (  rc != SQL_SUCCESS  )
+          {
+              shmhdr[procId].state = PROC_ERROR;
+              handle_errors (routingDSNs[i].hdbc, SQL_NULL_HSTMT, rc, ABORT_DISCONNECT_EXIT,
+                             "committing transaction",
                              __FILE__, __LINE__);
           }
           if (  isolevel == 0  )
@@ -2490,7 +2497,6 @@ void ExecuteTptBm(unsigned int seed,
   SQLCHAR   descr [101];
   SQLCHAR   last_calling_party[11] = "0000000000";
 
-  // srand(seed);
   srandom(seed);
 
   /* initialize the select statement buffers */
@@ -2598,6 +2604,16 @@ void ExecuteTptBm(unsigned int seed,
           case 1: tIso = SQL_TXN_READ_COMMITTED;
                   break;
         /* value was error checked above */
+        }
+
+        /* commit the transaction */
+        rc = SQLTransact (henv, ghdbc, SQL_COMMIT);
+        if (  rc != SQL_SUCCESS  )
+        {
+            shmhdr[procId].state = PROC_ERROR;
+            handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                           "committing transaction",
+                           __FILE__, __LINE__);
         }
 
         rc = SQLSetConnectOption (ghdbc, SQL_TXN_ISOLATION, tIso);
@@ -3313,7 +3329,6 @@ void ExecuteTptBm(unsigned int seed,
       op_count++;
       if (reads != 100)
       {
-        // rand_int = rand();
         rand_int = random();
 
         if (rand_int < ((float)(reads + inserts + deletes) / 100) * ((unsigned int)RAND_MAX + 1)) {
@@ -3341,16 +3356,12 @@ void ExecuteTptBm(unsigned int seed,
       if (path == 1)                                /* select xact */
       {
         /* randomly pick argument values */
-        // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-        // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
         id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
         nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
         if (  mode == M_SCALEOUT_LOCAL  )
             while (  !  routingAPI_isLocal(&id,&nb)  )
             {
-                // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-                // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
                 id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
                 nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
             }
@@ -3393,32 +3404,41 @@ void ExecuteTptBm(unsigned int seed,
             }
     
             /* TimesTen doesn't require reads to be committed          */
-            if (  (opsperxact != 1) && (op_count >= opsperxact)  ) {
-              rc = SQLTransact (henv, thdbc, SQL_COMMIT);
-              if (  rc != SQL_SUCCESS  )
-              {
-                  shmhdr[procId].state = PROC_ERROR;
-                  handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                                 "committing transaction",
-                                 __FILE__, __LINE__);
-              }
-              op_count = 0;
+            if (  opsperxact != 1  ) {
+                if (  op_count >= opsperxact  ) {
+                  rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+                  if (  rc != SQL_SUCCESS  )
+                  {
+                      shmhdr[procId].state = PROC_ERROR;
+                      handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                                     "committing transaction",
+                                     __FILE__, __LINE__);
+                  }
+                  op_count = 0;
+                }
+            }
+            else
+            if (  isolevel == 0  ) {
+                rc = SQLTransact (henv, thdbc, SQL_COMMIT);
+                if (  rc != SQL_SUCCESS  )
+                {
+                    shmhdr[procId].state = PROC_ERROR;
+                    handle_errors (thdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                                   "committing transaction",
+                                   __FILE__, __LINE__);
+                }
             }
         }
       }
       else if (path == 0)                           /* update xact */
       {
         /* randomly pick argument values */
-        // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-        // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
         id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
         nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
         if (  mode == M_SCALEOUT_LOCAL  )
             while (  !  routingAPI_isLocal(&id,&nb)  )
             {
-                // id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
-                // nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
                 id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
                 nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
             }
