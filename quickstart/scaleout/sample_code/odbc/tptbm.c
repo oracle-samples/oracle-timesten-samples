@@ -61,6 +61,8 @@
 #define XS(str) #str
 #define S(str)  XS(str)
 
+#define POP_COMMIT_INTVL    1024
+
 #define NO_VALUE           -1
 #define MIN_KEY             2
 #define DBMODE_ID          -1
@@ -1919,13 +1921,14 @@ void populate(void)
     tptbm_msg0("Populating benchmark database\n");
 
     /* insert key_cnt**2 records */
+    rowcount = 0;
     for (i = 0; i < key_cnt; i++)
     {
       for (j = 0; j < key_cnt; j++)
       {
         id = i;
         nb = j;
-        sprintf ((char*) directory, "55%d%d", id, nb);
+        sprintf ((char*) directory, "55%4.4d%4.4d", id % 10000, nb % 10000);
         sprintf ((char*) descr,
                  "<place holder for description of VPN %d extension %d>",
                  id, nb);
@@ -1938,20 +1941,24 @@ void populate(void)
                            "executing insert",
                            __FILE__, __LINE__);
         }
-      }
 
-      /* commit the transaction */
-      rc = SQLTransact (henv, hdbc, SQL_COMMIT);
-      if (  rc != SQL_SUCCESS  )
-      {
-          handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
-                         "committing transaction",
-                         __FILE__, __LINE__);
-      }
+        if (  ( ++rowcount % POP_COMMIT_INTVL ) == 0  )
+        {
+          /* commit the transaction */
+          rc = SQLTransact (henv, hdbc, SQL_COMMIT);
+          if (  rc != SQL_SUCCESS  )
+          {
+              handle_errors (hdbc, SQL_NULL_HSTMT, rc, ERROR_EXIT,
+                             "committing transaction",
+                             __FILE__, __LINE__);
+          }
+        }
 
-      if (StopRequested()) {
-        err_msg1("Signal %d received. Stopping\n", SigReceived());
-        goto leavePopulate;
+        if (StopRequested()) {
+          err_msg1("Signal %d received. Stopping\n", SigReceived());
+          goto leavePopulate;
+        }
+
       }
 
     }
