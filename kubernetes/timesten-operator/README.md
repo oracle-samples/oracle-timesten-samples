@@ -1,6 +1,6 @@
 # TimesTen Kubernetes Operator
 
-The TimesTen Kubernetes Operator creates, configures and manages Oracle TimesTen In-Memory Databases running on Kubernetes. This sample roughly follows the steps in the [TimesTen Kubernetes Operator User's Guide](https://docs.oracle.com/database/timesten-18.1/TTKUB/toc.htm) which is part of the [TimesTen Documentation set](https://docs.oracle.com/en/database/other-databases/timesten/).
+The TimesTen Kubernetes Operator creates, configures and manages Oracle TimesTen In-Memory Databases running on Kubernetes. This sample roughly follows the steps in the [TimesTen Kubernetes Operator User's Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/kubernetes-operator/index.html#Oracle®-TimesTen-In-Memory-Database) which is part of the [TimesTen Documentation set](https://docs.oracle.com/en/database/other-databases/timesten/).
 
 Some of the files used in the sample are provided in the [examples](./examples) directory for your convenience. In some cases they may need minor customization to match your environment.
 
@@ -18,7 +18,7 @@ In this example:
 * The Kubernetes cluster is provisioned in Oracle Kubernetes Environment (OKE) running on Oracle Cloud Infrastructure (OCI).
 * The container registry is the Oracle Container Image Registry (OCIR).
 * The client system is a macOS system running Docker Desktop for macOS.
-* The TimesTen version being used is 18.1.4.19.0.
+* The TimesTen version being used is 22.1.1.17.0.
 * The example assumes that you are using the Kubernetes 'default' namespace. If you are using a different namespace then substitute that for 'default' where relevant.
 
 The example is not specific to the above environment and should work with any Kubernetes environment and client system with only very minor customization.
@@ -50,11 +50,11 @@ First we need to extract the TimesTen Operator files from the TimesTen software 
 
 2. Copy the TimesTen software distribution from wherever you saved it when you downloaded it to the current directory:
 
-        $ cp <download-location>/timesten1814190.server.linux8664.zip .
+        $ cp <download-location>/timesten2211170.server.linux8664.zip .
 
-3. Unzip the TimesTen software installation to create a tt18.1.4.19.0 directory:
+3. Unzip the TimesTen software installation to create a tt22.1.1.17.0 directory:
 
-        $ unzip timesten1814190.server.linux8664.zip
+        $ unzip timesten2211170.server.linux8664.zip
  
  Do _not_ delete the software distriubution ZIP file as you will need it later.
  
@@ -65,7 +65,7 @@ First we need to extract the TimesTen Operator files from the TimesTen software 
    
 5. Unzip the operator.zip from from the TimesTen software distribution into this directory:
 
-        $ unzip ../tt18.1.4.19.0/kubernetes/operator.zip
+        $ unzip ../tt22.1.1.17.0/kubernetes/operator.zip
           
 6. Change directory to the **deploy** directory, and then create the service account in your Kubernetes cluster:
 
@@ -86,16 +86,16 @@ The next step is to prepare the container image for the TimesTen Operator.
 
 1. Change directory to the extracted **operator** directory:
 
-        $ cd ../operator
+        $ cd ../image
 
 2. Copy the Timesten software distribution into this directory:
 
-        $ cp ../../timesten1814190.server.linux8664.zip .
+        $ cp ../../timesten2211170.server.linux8664.zip .
         
 3. Using your favourite text editor, edit the **Dockerfile** and set the value for **TT_DISTRO** to the exact filename of the TimesTen software distribution then save the file:
 
         ...
-        ARG TT_DISTRO=timesten1814190.server.linux8664.zip
+        ARG TT_DISTRO=timesten2211170.server.linux8664.zip
         ...
         
 4. Use the docker command to build the container image for the operator. You can use any name you like but in this example we will name it **ttclassic-operator:1**:
@@ -166,24 +166,24 @@ You have successfully deployed the TimesTen Operator to the cluster.
 
 Now we need to build the image for the containers that will run TimesTen and host our database in an active-standby high availability configuration.
 
-1. Change directory to the extracted **ttimage** directory:
+1. Change directory to the extracted **image** directory:
 
-        $ cd ../ttimage
+        $ cd ../image
 
 2. Copy the TimesTen software distribution into this directory:
 
-        $ cp ../../timesten1814190.server.linux8664.zip .
+        $ cp ../../timesten2211170.server.linux8664.zip .
         
 3. Using your favorite text editor, edit the **Dockerfile** and set the value for **TT_DISTRO** to the exact filename of the TimesTen software distribution then save the file:
 
         ...
-        ARG TT_DISTRO=timesten1814190.server.linux8664.zip
+        ARG TT_DISTRO=timesten2211170.server.linux8664.zip
         ...
         
-4. Use the docker command to build the container image for the operator. You can use any name you like but in this example we will name it **tt1814190:1**:
+4. Use the docker command to build the container image for the operator. You can use any name you like but in this example we will name it **tt2211170:1**:
 
  
-        $ docker build -t tt1814190:1 .
+        $ docker build -t tt2211170:1 .
         [+] Building 131.7s (12/12) FINISHED
         => [internal] load build definition from Dockerfile
         => => transferring dockerfile: 37B
@@ -191,16 +191,16 @@ Now we need to build the image for the containers that will run TimesTen and hos
         => exporting to image
         => => exporting layers
         => => writing image sha256:478a669ae5ec4404ecdf3bf6183cb55cba9e07730fbea65d710c19fea2097894
-        => => naming to docker.io/library/tt1814190:1
+        => => naming to docker.io/library/tt2211170:1
 
 5. Use the docker command to tag the operator image. You should substitute the details of your image registry and account for the ones used in this example:
 
-        $ docker tag tt1814190:1 phx.ocir.io/<youraccount>/tt1814190:1
+        $ docker tag tt2211170:1 phx.ocir.io/<youraccount>/tt2211170:1
         
 6. Push the image to the container image registry:
 
-        $ docker push phx.ocir.io/<youraccount>/tt1814190:1
-        The push refers to repository [phx.ocir.io/i<youraccount>/tt1814190]
+        $ docker push phx.ocir.io/<youraccount>/tt2211170:1
+        The push refers to repository [phx.ocir.io/i<youraccount>/tt2211170]
         ae69d21a0796: Pushed
         ...
         1: digest: sha256:0050899c50729f1036ceeff12c78411baed7830e673dccf9542f312ec67545d8 size: 1788
@@ -211,7 +211,7 @@ You have successfully built the TimesTen container image and pushed it to your c
 
 In order to easily configure the TimesTen instances and database to meet your needs, there are a number of metadata files that can be used to provide configuration information. For example the parameters for the database, wallets to hold the TLS certificates used to encrypt client-server and/or replication traffic, the name and password for a database admin user, a SQL file to initialise the database by creating additional users, tables, indexes and so on.
 
-Full details of the available metadata files can be found in the [documentation](https://docs.oracle.com/database/timesten-18.1/TTKUB/confmeta.htm#TTKUB147). In this sample we will focus on just the following files:
+Full details of the available metadata files can be found in the [documentation](https://docs.oracle.com/en/database/other-databases/timesten/22.1/kubernetes-operator/using-configuration-metadata1.html#GUID-AE502E52-9FBE-4A6D-AA1F-8710672E2897). In this sample we will focus on just the following files:
 
 **adminUser** This file should contain the name and password for a database user which will be created and assigned ADMIN privilege. Such a user is mandatory. The file is a text file containing a single line with the format:
 
@@ -243,15 +243,15 @@ In this example we will use:
 
 In order for these files to be used when the TimesTen containers are instantiated, we must ensure that these files get placed into the **/ttconfig** directory within the containers. The TimesTen Operator does not mandate any specific way for you to accomplish this, but Kubernetes provides a number of suitable mechanisms such as **init containers**, **config maps** and **secrets**. In this example we will use a config map:
 
-1. Change to the ttimage directory, create a new directory called ttconfig and change to that directory:
+1. Change to the image directory, create a new directory called ttconfig and change to that directory:
 
-        $ cd <my-work-dir>/timesten-operator/ttimage
+        $ cd <my-work-dir>/timesten-operator/image
         $ mkdir ttconfig
         $ cd ttconfig
         
 2. Using your favourite text editor, create the three text files **adminUser**, **db.ini** and **schema.sql** with the contents exactly as shown above.
 
-3. Change directory back up to the **ttimage** directory and then create a Kubernetes config map from the contents of the **ttconfig** directory. We will call the config map **sample**:
+3. Change directory back up to the **image** directory and then create a Kubernetes config map from the contents of the **ttconfig** directory. We will call the config map **sample**:
 
         $ cd ..
         $ kubectl create configmap sample --from-file=ttconfig
@@ -309,7 +309,7 @@ In this example we will create a TimesTenClassic object named **sample** (which 
       ttspec:
         storageClassName: oci
         storageSize: 50G
-        image: phx.ocir.io/<youraccount>/tt1814190:1
+        image: phx.ocir.io/<youraccount>/tt2211170:1
         imagePullSecret: ocirsecret
         dbConfigMap:
         - sample
@@ -629,12 +629,12 @@ Sometimes applications need to run elsewhere and connect to TimesTen using a mor
     
 6. Create a TimesTen client instance named **ttclient** in the **instances** directory:
 
-        -bash-4.2$ installation/tt18.1.4.19.0/bin/ttInstanceCreate -clientonly \
+        -bash-4.2$ installation/tt22.1.1.17.0/bin/ttInstanceCreate -clientonly \
                              -name ttclient -location /tt/home/oracle/instances
         Creating instance in /tt/home/oracle/instances/ttclient ...
         INFO: Mapping files from the installation to /tt/home/oracle/instances/ttclient/install
         The 18.1 Release Notes are located here :
-          '/tt/home/oracle/installation/tt18.1.4.19.0/README.html'
+          '/tt/home/oracle/installation/tt22.1.1.17.0/README.html'
         -bash-4.2$ ls instances
         ttclient
         -bash-4.2$
@@ -642,13 +642,13 @@ Sometimes applications need to run elsewhere and connect to TimesTen using a mor
 7. Set your session's environment to point to the instance, and then change directory to the instance's **conf** directory:
 
         -bash-4.2$ source instances/ttclient/bin/ttenv.sh
-        NOTE: No Java version found in PATH, setting environment for Java version 8
+        NOTE: Environment for Java version 17 was used for version found in PATH (20)
 
-        LD_LIBRARY_PATH set to /tt/home/oracle/instances/ttclient/ttclasses/lib:/tt/home/oracle/instances/ttclient/install/lib:/tt/home/oracle/instances/ttclient/install/ttoracle_home/instantclient_12_1
+        LD_LIBRARY_PATH set to /tt/home/oracle/instances/ttclient/install/lib:/tt/home/oracle/instances/ttclient/install/ttoracle_home/instantclient
 
-        PATH set to /tt/home/oracle/instances/ttclient/bin:/tt/home/oracle/instances/ttclient/install/bin:/tt/home/oracle/instances/ttclient/install/ttoracle_home/instantclient_12_1:/tt/home/oracle/instances/ttclient/install/ttoracle_home/instantclient_12_1/sdk:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+        PATH set to /tt/home/oracle/instances/ttclient/bin:/tt/home/oracle/instances/ttclient/install/bin:/tt/home/oracle/instances/ttclient/install/ttoracle_home/instantclient:/tt/home/oracle/instances/ttclient/install/ttoracle_home/instantclient/sdk:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin
 
-        CLASSPATH set to /tt/home/oracle/instances/ttclient/install/lib/ttjdbc8.jar:/tt/home/oracle/instances/ttclient/install/lib/orai18n.jar:/tt/home/oracle/instances/ttclient/install/lib/timestenjmsxla.jar:/tt/home/oracle/instances/ttclient/install/3rdparty/jms1.1/lib/jms.jar:.
+        CLASSPATH set to /tt/home/oracle/instances/ttclient/install/lib/ttjdbc17.jar:/tt/home/oracle/instances/ttclient/install/lib/orai18n.jar:/tt/home/oracle/instances/ttclient/install/lib/timestenjmsxla.jar:/tt/home/oracle/instances/ttclient/install/3rdparty/jms1.1/lib/jms.jar:.
 
         TNS_ADMIN set to
 
