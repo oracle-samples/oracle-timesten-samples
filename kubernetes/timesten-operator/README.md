@@ -63,7 +63,7 @@ First we need to extract the TimesTen Operator files from the TimesTen software 
         $ mkdir timesten-operator
         $ cd timesten-operator
    
-5. Unzip the operator.zip from from the TimesTen software distribution into this directory:
+5. Unzip the operator.zip from the TimesTen software distribution into this directory:
 
         $ unzip ../tt22.1.1.17.0/kubernetes/operator.zip
           
@@ -88,7 +88,7 @@ The next step is to prepare the container image for the TimesTen Operator.
 
         $ cd ../image
 
-2. Copy the Timesten software distribution into this directory:
+2. Copy the TimesTen software distribution into this directory:
 
         $ cp ../../timesten2211170.server.linux8664.zip .
         
@@ -318,7 +318,7 @@ In this example we will create a TimesTenClassic object named **sample** (which 
 
         $ cd <my-work-dir>/timesten-operator/deploy
         
-2. Using your favorite text editor, create a text file named **sample.yaml** with the contents as shown above (substitite the name of your registry pull secret and the registry image info for the values shown).
+2. Using your favorite text editor, create a text file named **sample.yaml** with the contents as shown above (substitute the name of your registry pull secret and the registry image info for the values shown).
 
 3. Initiate the deployment of the TimesTen active-standby pair and database by creating the TimesTenClassic object named **sample** using the file you just created:
 
@@ -419,7 +419,7 @@ You can repeat these commands occasionally until the deployment has completed; t
         1 row found.
         Command>
 
-5. Insert a new row into the **TESTAB** table. Note that the connection is in 'autocommit' mode so there is no need to commit the insert. Exit from ttIsql:
+5. Insert a new row into the **TESTTAB** table. Note that the connection is in 'autocommit' mode so there is no need to commit the insert. Exit from ttIsql:
 
         Command> insert into testtab values (2, 'Row 2');
         1 row inserted.
@@ -562,7 +562,7 @@ Sometimes applications need to run elsewhere and connect to TimesTen using a mor
           - name: ocirsecret
           initContainers:
           - name: init
-            image: phx.ocir.io/<youraccount>/tt1814190:1
+            image: phx.ocir.io/<youraccount>/tt2211170:1
             imagePullPolicy: Always
             volumeMounts:
             - name: tt
@@ -580,7 +580,7 @@ Sometimes applications need to run elsewhere and connect to TimesTen using a mor
               exit 0
           containers:
           - name: client
-            image: phx.ocir.io/<youraccount>/tt1814190:1
+            image: phx.ocir.io/<youraccount>/tt2211170:1
             imagePullPolicy: Always
             volumeMounts:
             - name: tt
@@ -621,7 +621,7 @@ Sometimes applications need to run elsewhere and connect to TimesTen using a mor
         -bash-4.2$ ls
         installation  instances
         -bash-4.2$ ls installation
-        tt18.1.4.19.0
+        tt22.1.1.17.0
         -bash-4.2$ ls instances
         -bash-4.2$
 
