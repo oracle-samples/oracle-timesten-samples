@@ -1,4 +1,4 @@
-Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
 
 # Compile and Run JDBC Sample Programs
 
@@ -50,7 +50,7 @@ To compile the sample programs all at once:
 
 `javac *.java`
 
-**NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations.
+**NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations. Additionally, asyncJMS2 and syncJMS2 which are sample programs using Jakarta JMS rather than Javax JMS, require separate download of jakarta.jms.jar file. Once this jar file is downloaded, location to this jar will need to be added to environment variable CLASSPATH. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward.
 
 ## How to run the sample JDBC programs
 
@@ -62,9 +62,9 @@ option in order to run the 64-bit JVM.
 
     java -Djava.library.path=${TIMESTEN_HOME}/install/lib <progname>
 
-**asyncJMS**
+**asyncJMS** or **asyncJMS2**
 
-This program uses the TimesTen JMS/XLA implementation to process messages:
+These two programs use the TimesTen JMS/XLA implementation to process messages.  asynJMS is using Javax JMS for processing JMS/XLA whereas asynJMS2 is using Jakarta JMS. The functions of these two programs are:
 
 a) Connect to the database as an XLA user
 
@@ -94,7 +94,7 @@ Examples:
   
   `java asyncJMS -xlauser <xlausername> -schema myUser`
 
-  For the full syntax of the program, use "java asyncJMS -h".
+  For the full syntax of the program, use "java asyncJMS -h" or "java asyncJMS2 -h".
 
 **level1**
 
@@ -229,9 +229,9 @@ Examples:
 
 For the full syntax of the program, use "java plsqlJDBC -help".
 
-**syncJMS**
+**syncJMS** or **syncJMS2**
 
-This program uses the TimesTen JMS/XLA implementation to process messages:
+These two programs use the TimesTen JMS/XLA implementation to process messages.  synJMS is using Javax JMS for processing JMS/XLA whereas synJMS2 is using Jakarta JMS. The functions of these two programs are:
 
 a) Connects to the database as an XLA user
 
@@ -261,7 +261,7 @@ Examples:
   
   `java syncJMS -xlauser <xlausername> -schema myUser -table product `
 
-For the full syntax of the program, use "java syncJMS -h".
+For the full syntax of the program, use "java syncJMS -h" or "java syncJMS2 -h".
 
 **Tptbm**
 

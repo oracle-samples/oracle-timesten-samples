@@ -18,9 +18,21 @@
            connectionString="DSN=sampledb" 
            xlaPrefetch="100"
     />
+      <!-- default topic for asyncJMS2 demo -->
+    <topic name="asyncJMS2"
+           connectionString="DSN=sampledb"
+           xlaPrefetch="100"
+    />
+
 
     <!-- default topic for syncJMS demo, no tables specified here -->
     <topic name="syncJMS"
+           connectionString="DSN=sampledb"
+           xlaPrefetch="100"
+    />
+
+    <!-- default topic for syncJMS2 demo, no tables specified here -->
+    <topic name="syncJMS2"
            connectionString="DSN=sampledb"
            xlaPrefetch="100"
     />

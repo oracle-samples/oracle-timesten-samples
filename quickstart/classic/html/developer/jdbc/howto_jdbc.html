@@ -82,9 +82,9 @@ e.g. If your TimesTen instance location is under <span class="codetext">/home/ti
 <p class="normal">&nbsp;</p>
 <table width="800" border="1">
   <tr>
-    <td width="121" height="174" valign="top" class="normal">&nbsp; <strong>asyncJMS</strong></td>
+    <td width="121" height="174" valign="top" class="normal">&nbsp; <strong>asyncJMS</strong> <br> &nbsp; <strong>asyncJMS2</strong></td>
     <td width="608" valign="top" class="normal">This sample can be found in the <strong>jms</strong> sub-directory. It is not supported on client only platforms such as Windows and macOS.<br><br>
-This program uses the TimesTen JMS/XLA implementation to process   messages:<br />
+      These two programs use the TimesTen JMS/XLA implementation to process messages.  asynJMS is using Javax JMS for processing JMS/XLA whereas asynJMS2 is using Jakarta JMS. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward. The functions of these two programs are:<br />
         <br />
       a) Connect to the database as an XLA user<br />
       b) Listen to committed   changes to the CUSTOMER table<br />
@@ -103,7 +103,7 @@ This program uses the TimesTen JMS/XLA implementation to process   messages:<br 
     <strong class="codetext"><em>  java asyncJMS   -xlauser &lt;xlausername&gt;</em></strong></p>
 <p>  (Connect using the default DSN sampledb, uid=xlauser and   listen to the MYUSER.CUSTOMER table)<br />
     <strong class="codetext"><em>  java   asyncJMS -xlauser &lt;xlausername&gt; -schema myUser</em></strong></p>
-<p>  For full syntax of the program, try &quot;<em class="codetext">java   asyncJMS -h</em>&quot;.</p>
+<p>  For full syntax of the program, try &quot;<em class="codetext">java   asyncJMS -h</em>&quot; or &quot;<em class="codetext">java   asyncJMS2 -h</em>&quot;.</p>
 <p>&nbsp;</p>
 <p class="normal">&nbsp; </p>
 <table width="800" border="1">
@@ -207,9 +207,9 @@ c) Disconnect from the database. </td>
 <p>&nbsp;</p>
 <table width="800" border="1">
   <tr>
-    <td width="121" valign="top" class="normal">&nbsp; <strong>syncJMS</strong></td>
+    <td width="121" valign="top" class="normal">&nbsp; <strong>syncJMS</strong> <br> &nbsp; <strong>syncJMS2</strong></td>
     <td width="608" valign="top" class="normal">This sample can be found in the <strong>jms</strong> sub-directory. It is not supported on client only platforms such as Windows and macOS.<br><br>
-This program uses the TimesTen JMS/XLA implementation to process   messages:<br />
+      These two programs use the TimesTen JMS/XLA implementation to process messages.  synJMS is using Javax JMS for processing JMS/XLA whereas synJMS2 is using Jakarta JMS. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward. The functions of these two programs are:<br />
         <br />
       a) Connects to the database as an XLA user<br />
       b) Listen to   committed changes for ANY table (defaults to the appuser.customer table).<br />
@@ -228,7 +228,7 @@ This program uses the TimesTen JMS/XLA implementation to process   messages:<br 
     <strong class="codetext"><em>  java syncJMS   -xlauser &lt;xlausername&gt;</em></strong></p>
 <p>  (Connect using the default DSN sampledb, uid=xlauser and   listen to the MYUSER.PRODUCT table)<br />
     <strong class="codetext"><em>  java   syncJMS -xlauser &lt;xlausername&gt; -schema myUser -table product </em></strong></p>
-<p>  For full syntax of the program, try &quot;<span class="codetext">java   syncJMS -h</span>&quot;.</p>
+<p>  For full syntax of the program, try &quot;<span class="codetext">java   syncJMS -h</span>&quot; or &quot;<span class="codetext">java   syncJMS2 -h</span>&quot;.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <table width="800" border="1">
