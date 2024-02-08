@@ -72,6 +72,8 @@ ttXlaAdmin \
 xlasubscriber1 \
 xlasubscriber2
 
+MD := mkdir
+
 # -----------------------------------------------------------------------------
 #  Top-level targets
 # -----------------------------------------------------------------------------
@@ -79,12 +81,15 @@ ifneq ($(strip $(TT_LIBTTEN)),)
 PROGS = $(TESTPROGS)
 endif
 
-all: $(PROGS)
+all: $(OBJ_DIR) $(PROGS)
 
 clean:
 		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS)
 		$(PLAT_SPECIFIC_CLEAN)
 
+$(OBJ_DIR):
+        $(MD) obj
+		
 # -----------------------------------------------------------------------------
 # build targets
 # -----------------------------------------------------------------------------

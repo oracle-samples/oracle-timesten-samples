@@ -22,7 +22,6 @@ Rem      <other useful comments, qualifications, etc.>
 **
 ** Copyright (c) 1989, 2017, Oracle and/or its affiliates. 
 ** All rights reserved.*/
-*/
 
 DECLARE
     num1    data_table.n1%TYPE;   -- Declare variables

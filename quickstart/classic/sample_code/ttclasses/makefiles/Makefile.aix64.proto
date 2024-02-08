@@ -2,7 +2,7 @@
 #
 # 64-bit AIX Makefile (cc_r) for the TimesTen TTCLASSES sample programs
 #
-# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 ##############################################################################
 
@@ -85,16 +85,21 @@ typetestCS
 UTILS = \
 $(OBJ_DIR)/testprog_utils.o
 
+MD := mkdir
+
 # -----------------------------------------------------------------------------
 #  Top-level targets
 # -----------------------------------------------------------------------------
 
 PROGS = $(TESTPROGS) $(TESTPROGS_CS)
 
-all: $(PROGS)
+all: $(OBJ_DIR) $(PROGS)
 
 clean:
 	-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS) $(TESTPROGS_CS) 
+
+$(OBJ_DIR):
+        $(MD) obj
 
 # -----------------------------------------------------------------------------
 # build targets

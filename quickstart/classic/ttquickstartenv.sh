@@ -6,11 +6,11 @@
 #
 # Oracle TimesTen 22.1 Quick Start Sample Program Environment setup script.
 #
-
-if [ \( "$0" != "-bash" \) -a \
-     \( "$0" != "bash" \) -a \
-     \( "$0" != "-sh" \) -a \
-     \( "$0" != "sh" \) ]
+shelltype=`basename "$0"`
+if [ \( "${shelltype}" != "-bash" \) -a \
+     \( "${shelltype}" != "bash" \) -a \
+     \( "${shelltype}" != "-sh" \) -a \
+     \( "${shelltype}" != "sh" \) ]
 then
     echo "Please 'source' this script; do not run it as a regular script."
     exit 1

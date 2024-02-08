@@ -3,7 +3,7 @@
 # Linux (gcc/g++) x86-64 (64-bit) Makefile for the TimesTen TTCLASSES 
 # sample programs.
 #
-# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 ###############################################################################
 
@@ -86,6 +86,8 @@ typetestCS
 UTILS = \
 $(OBJ_DIR)/testprog_utils.o
 
+MD := mkdir
+
 # -----------------------------------------------------------------------------
 #  Top-level targets
 # -----------------------------------------------------------------------------
@@ -97,11 +99,14 @@ ifneq ($(strip $(TT_CLIENTLIB)),)
 PROGS += $(TESTPROGS_CS)
 endif
 
-all: $(PROGS)
+all: $(OBJ_DIR) $(PROGS)
 
 clean:
 		-rm -rf $(OBJ_DIR)/*.o $(TESTPROGS) $(TESTPROGS_CS)
 		$(PLAT_SPECIFIC_CLEAN)
+
+$(OBJ_DIR):
+        $(MD) obj
 
 # -----------------------------------------------------------------------------
 # build targets

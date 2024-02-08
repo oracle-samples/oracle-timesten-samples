@@ -21,7 +21,7 @@ Rem
 ** from experiment #1.  The results are stored in the TEMP table.
 **
 ** Copyright (c) 1989, 2017, Oracle and/or its affiliates. 
-** All rights reserved.*/
+** All rights reserved.
 */
 
 DECLARE

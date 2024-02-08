@@ -285,9 +285,9 @@ Run the program using default workload mix of 80% reads, 20% updates, dsn=sample
   
   `java Tptbm -threads 2 -key 200 -sec 60`
 
-85% reads, 10% inserts, 5% updates, 4 threads, 3 minutes timing, 30 seconds ramp up and down.
+85% reads, 10% inserts, 5% updates, 4 threads.
   
-  `java Tptbm -threads 4 -read 85 -insert 10 -sec 180 -ramp 30`
+  `java Tptbm -threads 4 -read 85 -insert 10 `
 
 For the full syntax of the program, use "java Tptbm -h".
 

@@ -67,7 +67,7 @@ Oracle TimesTen is a high performance, relational, In-Memory Database (IMDB) and
 
 -   The Utility API is **not** available.
 
-Although both connection mechanisms use the ODBC API, they are implemented as separate driver libraries. At link time, an application bnary must be linked with one or other of the ODBC libraries; it cannot link with both simultaneously. Thus, without a Driver Manager, a TimesTen application can use one or the other, but not both concurrently.
+Although both connection mechanisms use the ODBC API, they are implemented as separate driver libraries. At link time, an application binary must be linked with one or other of the ODBC libraries; it cannot link with both simultaneously. Thus, without a Driver Manager, a TimesTen application can use one or the other, but not both concurrently.
 
 If one uses a commercial, or Open Source, DM with TimesTen in order to allow use of both direct mode and client/server connections concurrently from the same process, what problems or issues might be encountered?
 

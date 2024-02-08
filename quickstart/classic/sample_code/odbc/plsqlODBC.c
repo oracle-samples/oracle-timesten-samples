@@ -731,7 +731,7 @@ void getSalesPeople()
 {
   SQLHSTMT           plsql_OpenSalesPeopleCursor;  /* call the PLSQL proc to open the ref cursor */
   SQLHSTMT           ref_cursor;       /* Ref Cursor returned by PL/SQL */  
-  SQLHSTMT           real_ref_cursor;  /* Use the returned ref cursor in ODBC */
+  //SQLHSTMT           real_ref_cursor;  /* Use the returned ref cursor in ODBC, uncomment when wish to try SQLGetInfo() code below */
 
   SQLRETURN          rc;
 
@@ -763,17 +763,22 @@ void getSalesPeople()
   /*
   ** A Driver Manager may wrap a hStmt into its own structure. 
   ** Call SQLGetInfo() to get a handle to the real underlying hStmt (the one 
-  ** used by the actual ODBC driver) and use that in the SQLBindParameter() 
-  ** call.
+  ** used by the actual ODBC driver).
   ** If there is no driver manager, then SQLGetInfo() just returns a pointer 
-  ** to the current hStmt.
+  ** to the current hStmt.  Uncomment the below lines as well the define code
+  ** for real_ref_cursor above if you want to see the underlying handle returned
+  ** by SQLGetInfo() in the driver manager.
   */
+  /*
   real_ref_cursor = ref_cursor;
   rc = SQLGetInfo(hdbc, SQL_DRIVER_HSTMT, &real_ref_cursor, sizeof(real_ref_cursor), 0);
 
   handle_errors(hdbc, plsql_OpenSalesPeopleCursor, rc, ABORT_DISCONNECT_EXIT,
                 "Calling SQLGetInfo()",
-                __FILE__, __LINE__);
+                __FILE__, __LINE__); 
+  printf("The pointer to hstmt handle returned by driver manager is:%i\n",real_ref_cursor);
+  printf("The pointer to hstmt handle used by the application is:%i\n", ref_cursor);
+  */              
 
   /* Bind the PLSQL OUT parameters */
   rc = SQLBindParameter(plsql_OpenSalesPeopleCursor,
@@ -783,7 +788,7 @@ void getSalesPeople()
                         SQL_REFCURSOR,
                         0,
                         0,
-                        real_ref_cursor,
+                        ref_cursor,
                         0,
                         NULL);
 

@@ -87,9 +87,9 @@ This program measures the time needed for insertion of many rows into a table. P
   
   `bulkinsertDM -r 100000`
 
-  Default connection string, 2,000,000 rows, batchsize 512, 3 indexes, client-server version
+  Default connection string, 1,000,000 rows, batchsize 512, 3 indexes, client-server version
   
-  `bulkinsertCS -r 2000000 -s 512 -i 3`
+  `bulkinsertCS -r 1000000 -s 512 -i 3`
 
   For the full syntax of the program, use "bulkinsert -help".
 
@@ -140,7 +140,7 @@ Examples:
   For the full syntax of the program, use "tpcb -help".
 
 
-**TptBm**
+**tptbm**
 
 This program implements a multi-user throughput benchmark. By default, the transaction mix consists of 80% SELECT (read) transactions and 20% UPDATE (write) transactions. In addition to SELECTs and UPDATEs, INSERTs can also be included in the transaction mix. The ratio of SELECTs, UPDATEs and INSERTs is specified at the command line. Each transaction consists of one or more SQL operations.
 
@@ -160,9 +160,9 @@ Examples:
   
   `tptbm -proc 2 -xact 10000000 -seed 3`
 
-  Default connection string, 85% reads, 10% inserts, 5% updates, 1 process, run for 600 seconds with a 30 second ramp time, driver manager version
+  Default connection string, 85% reads, 10% inserts, 5% updates, 1 process, driver manager version
   
-  `tptbmDM -read 85 -insert 10 -sec 600 -ramp 30`
+  `tptbmDM -read 85 -insert 10`
 
   For the full syntax of the program, use "tptbm -help".
 
