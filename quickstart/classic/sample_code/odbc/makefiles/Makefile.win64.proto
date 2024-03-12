@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -21,7 +21,7 @@ OFLAG 		= /Ox
 
 # WIN64 NON Driver Manager
 PLATCFLAGS      = /DWIN64 /DWIN32 /DWINVER=0x500 /MT /EHsc $(OFLAG) /D_CRT_SECURE_NO_DEPRECATE
-LDFLAGS         = /link /STACK:3000000 /FIXED:NO bufferoverflowu.lib
+LDFLAGS         = /link /STACK:3000000 /FIXED:NO
 
 INCS            = /I$(INSTDIR)\include /I$(COMMDIR)
 
@@ -47,7 +47,10 @@ TPTBMCSOBJS     = tptbmCS.obj utils.obj ttgetopt.obj
 WISCBMCS        = wiscbmCS.exe
 WISCBMCSOBJS    = wiscbmCS.obj wiscextra.obj ttRand.obj ttTime.obj utils.obj ttgetopt.obj
 
-PROGS           = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS)
+UPDATELOBCS		= updatelobCS.exe
+UPDATELOBCSOBJS	= updatelobCS.obj ttTime.obj utils.obj ttgetopt.obj
+
+PROGS           = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) $(UPDATELOBCS)
 
 #
 # Top level targets
@@ -80,6 +83,9 @@ $(TPTBMCS):	$(TPTBMCSOBJS)
 
 $(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
 	$(CC) /Fe$@ $(WISCBMCSOBJS) $(LDFLAGS) $(CSLIBS)
+
+$(UPDATELOBCS):    $(UPDATELOBCSOBJS)
+        $(CC) /Fe$@ $(UPDATELOBCSOBJS) $(LDFLAGS) $(CSLIBS)
 
 #
 # Targets for building object files
@@ -115,3 +121,5 @@ wiscextra.obj:	wiscextra.c
 wiscbmCS.obj:	wiscbm.c wiscprotos.h sqlfunc.h
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c wiscbm.c
 
+updatelobCS.obj: updatelob.c
+	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c updatelob.c

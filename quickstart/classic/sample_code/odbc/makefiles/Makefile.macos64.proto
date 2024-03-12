@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -40,7 +40,10 @@ TPTBMCSOBJS     = tptbmCS.o utils.o ttgetopt.o
 WISCBMCS        = wiscbmCS
 WISCBMCSOBJS    = wiscbmCS.o wiscextra.o utils.o ttTime.o ttgetopt.o
 
-PROGS           = $(BLKINSCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS)
+UPDATELOBCS     = updatelobCS
+UPDATELOBCSOBJS = updatelobCS.o ttTime.o utils.o ttgetopt.o
+
+PROGS           = $(BLKINSCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) $(UPDATELOBCS)
 
 #
 # Top level targets
@@ -70,6 +73,9 @@ $(TPTBMCS):	$(TPTBMCSOBJS)
 $(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
 	$(CC) $(CFLAGS) -o $@ $(WISCBMCSOBJS) $(CSLIBS) $(LDFLAGS)
 
+$(UPDATELOBCS): $(UPDATELOBCSOBJS)
+        $(CC) $(CFLAGS) -o $@ $(UPDATELOBCSOBJS) $(CSLIBS) $(LDFLAGS)
+
 #
 # Targets for building object files
 #
@@ -98,3 +104,5 @@ wiscextra.o:	wiscextra.c
 wiscbmCS.o:	wiscbm.c wiscprotos.h sqlfunc.h
 	$(CC) $(CFLAGS) $(CSDEFS) -Wno-format-security -o $@ -c wiscbm.c
 
+updatelobCS.o: updatelob.c
+        $(CC) $(CFLAGS) $(CSDEFS) -o $@ -c updatelob.c

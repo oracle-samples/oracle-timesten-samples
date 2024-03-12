@@ -1,5 +1,5 @@
 #
-# Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -66,9 +66,16 @@ WISCBMCSOBJS    = wiscbmCS.o wiscextra.o utils.o ttTime.o ttgetopt.o
 WISCBMDM        = wiscbmDM
 WISCBMDMOBJS    = wiscbmDM.o wiscextra.o utils.o ttTime.o ttgetopt.o
 
-DCPROGS         = $(BLKINSDC) $(PLSQLODBCDC) $(TPCBDC) $(TPTBMDC) $(WISCBMDC)
-CSPROGS         = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS)
-DMPROGS         = $(BLKINSDM) $(PLSQLODBCDM) $(TPCBDM) $(TPTBMDM) $(WISCBMDM)
+UPDATELOBDC     = updatelob
+UPDATELOBOBJS   = updatelob.o ttTime.o utils.o ttgetopt.o
+UPDATELOBCS     = updatelobCS
+UPDATELOBCSOBJS = updatelobCS.o ttTime.o utils.o ttgetopt.o
+UPDATELOBDM     = updatelobDM
+UPDATELOBDMOBJS = updatelobDM.o ttTime.o utils.o ttgetopt.o
+
+DCPROGS         = $(BLKINSDC) $(PLSQLODBCDC) $(TPCBDC) $(TPTBMDC) $(WISCBMDC) $(UPDATELOBDC)
+CSPROGS         = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) $(UPDATELOBCS)
+DMPROGS         = $(BLKINSDM) $(PLSQLODBCDM) $(TPCBDM) $(TPTBMDM) $(WISCBMDM) $(UPDATELOBDM)
 
 PROGS           = $(DCPROGS) $(CSPROGS) $(DMPROGS)
 
@@ -102,6 +109,9 @@ $(TPTBMDC):	$(TPTBMDCOBJS)
 $(WISCBMDC):	$(WISCBMDCOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(WISCBMDCOBJS) $(DCLIBS)
 
+$(UPDATELOBDC): $(UPDATELOBOBJS)
+    $(CC) -o $@ $(LDFLAGS) $(UPDATELOBOBJS) $(DCLIBS)
+
 #
 # Targets for building Client Server executables
 #
@@ -121,6 +131,9 @@ $(TPTBMCS):	$(TPTBMCSOBJS)
 $(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
 	$(CC) -o $@ $(LDFLAGS) $(WISCBMCSOBJS) $(CSLIBS)
 
+$(UPDATELOBCS): $(UPDATELOBCSOBJS)
+    $(CC) -o $@ $(LDFLAGS) $(UPDATELOBCSOBJS) $(CSLIBS)
+
 #
 # Targets for building TTDM executables
 #
@@ -139,6 +152,9 @@ $(TPTBMDM):     $(TPTBMDMOBJS)
 
 $(WISCBMDM):    $(WISCBMDMOBJS) wiscprotos.h sqlfunc.h
 	$(CC) -o $@ $(LDFLAGS) $(WISCBMDMOBJS) $(DMLIBS)
+
+$(UPDATELOBDM): $(UPDATELOBDMOBJS)
+    $(CC) -o $@ $(LDFLAGS) $(UPDATELOBDMOBJS) $(DMLIBS)
 
 #
 # Targets for building object files
@@ -201,3 +217,11 @@ wiscbmCS.o:	wiscbm.c wiscprotos.h sqlfunc.h
 wiscbmDM.o:	wiscbm.c wiscprotos.h sqlfunc.h
 	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c wiscbm.c
 
+updatelob.o:    updatelob.c
+    $(CC) $(CFLAGS) -o $@ -c updatelob.c
+
+updatelobCS.o: updatelob.c
+    $(CC) $(CFLAGS) $(CSDEFS) -o $@ -c updatelob.c
+
+updatelobDM.o: updatelob.c
+    $(CC) $(CFLAGS) $(DMDEFS) -o $@ -c updatelob.c

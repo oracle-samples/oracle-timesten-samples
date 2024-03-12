@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -1176,7 +1176,7 @@ SQLHDBC routingAPI_getConn(int* k1, int* k2,
    */
   if (  mode == M_SCALEOUT_ROUTING  )
   {
-      i = (int)((kFactor * random()) / ((unsigned int)RAND_MAX + 1));
+      i = (int)((kFactor * rand()) / ((unsigned int)RAND_MAX + 1));
       dsn = &(routingDSNs[elems[i]]);
       *sel = dsn->selstmt;
       *upd = dsn->updstmt;
@@ -2473,6 +2473,8 @@ void ExecuteTptBm(unsigned int seed,
   int       insert_present;   /* present mark for inserts */
   int       delete_start = 0; /* start mark for deletes */
   int       delete_present=0; /* present mark for deletes */
+  long	    deleted = 0;
+  long      delete_max; 
 
   tt_ptrint time_diff;        /* difference in time between
                                * start and finish */
@@ -2504,7 +2506,7 @@ void ExecuteTptBm(unsigned int seed,
   SQLCHAR   descr [101];
   SQLCHAR   last_calling_party[11] = "0000000000";
 
-  srandom(seed);
+  srand(seed);
 
   /* initialize the select statement buffers */
   directory [10]  = '\0';
@@ -3183,8 +3185,7 @@ void ExecuteTptBm(unsigned int seed,
   insert_present = 0;
   delete_start = procId;
 
-  long delete_max = (key_cnt * key_cnt) / the_num_processes;
-  long deleted = 0;
+  delete_max = (key_cnt * key_cnt) / the_num_processes;
 
   ttGetTime (&main_start); /* start timing */
   time(&interval_start);
@@ -3336,7 +3337,7 @@ void ExecuteTptBm(unsigned int seed,
       op_count++;
       if (reads != 100)
       {
-        rand_int = random();
+        rand_int = rand();
 
         if (rand_int < ((float)(reads + inserts + deletes) / 100) * ((unsigned int)RAND_MAX + 1)) {
           if (rand_int < ((float)(reads + inserts)/ 100) * ((unsigned int)RAND_MAX + 1)) {
@@ -3363,14 +3364,14 @@ void ExecuteTptBm(unsigned int seed,
       if (path == 1)                                /* select xact */
       {
         /* randomly pick argument values */
-        id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
-        nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
+ 	  id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+   	  nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
         if (  mode == M_SCALEOUT_LOCAL  )
             while (  !  routingAPI_isLocal(&id,&nb)  )
             {
-                id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
-                nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
+              id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+              nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
             }
 #if defined(ROUTINGAPI_ALL)
         if (  mode == M_SCALEOUT_ROUTING  )
@@ -3440,14 +3441,14 @@ void ExecuteTptBm(unsigned int seed,
       else if (path == 0)                           /* update xact */
       {
         /* randomly pick argument values */
-        id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
-        nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
+          id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+          nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
 #if defined(SCALEOUT) && defined(ROUTINGAPI)
         if (  mode == M_SCALEOUT_LOCAL  )
             while (  !  routingAPI_isLocal(&id,&nb)  )
             {
-                id = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
-                nb = (int) (dkey_cnt * random() / ((unsigned int)RAND_MAX + 1));
+              id = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
+              nb = (int) (dkey_cnt * rand() / ((unsigned int)RAND_MAX + 1));
             }
 #if defined(ROUTINGAPI_ALL)
         if (  mode == M_SCALEOUT_ROUTING  )

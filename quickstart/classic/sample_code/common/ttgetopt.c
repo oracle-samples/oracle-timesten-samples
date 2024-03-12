@@ -900,10 +900,9 @@ get_numeric_arg(OptionList* ol, Option* o, const char* opt, int* idxP,
     case 'i':
       {
         errno = 0;
-        int i = (int)strtol(optstr, &p, 0);
         if (! chk_numeric_arg(ol, p, optstr, opt, 0)) return 0;
         if (o->argPtr != NULL) {
-          *(int*)o->argPtr = i;
+          *(int*)o->argPtr = (int)strtol(optstr, &p, 0);
         }
         break;
       }

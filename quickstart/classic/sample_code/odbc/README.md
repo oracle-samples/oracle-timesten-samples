@@ -1,4 +1,4 @@
-Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
 
 # Compile and Run ODBC Sample Programs
 
@@ -40,6 +40,8 @@ Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
     or
     
     `source quickstart/classic/ttquickstartenv.csh`
+
+NOTE: On Solaris and AIX platforms, use bash shell to run against ttquickstartenv.sh and tcsh shell to run against ttquickstartenv.csh for best results.
 
 ## How to compile the sample ODBC programs
 
@@ -186,6 +188,18 @@ Example usage:
   `wiscbm -scale 2 -q 1,3,5-7,10-14,25`
 
 For the full syntax, use "wiscbm -help".
+
+**updatelob**
+
+This program queries against a Large Binary Object(LOB) and then update the selected LOB field with new value of the same row.  PRINT_MEDIA table needs to be provisioned before executing this program.
+
+Example usage:
+
+  Default connection string
+
+  `updatelob`
+
+For the full syntac, use "updatelob -help".
 
 
 **xlaSimple**

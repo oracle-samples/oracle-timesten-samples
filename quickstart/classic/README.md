@@ -1,4 +1,4 @@
-Copyright (c) 1998, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 1998, 2024, Oracle and/or its affiliates. All rights reserved.
 
 # QuickStart for TimesTen Classic
 
@@ -20,3 +20,5 @@ The files and directories contained here are as follows:
 | [sample_config](./sample_config)           | Example configuration files for the QuickStart examples. |
 | [sample_scripts](./sample_scripts)           | Scripts used in the QuickStart examples. |
 | [sample_code](./sample_code)                 | The various sample programs making up the QuickStart examples. These programs illustrate how to use TimesTen via many of the APIs that are provided as standard as part of the product. |
+
+NOTE: On Solaris and AIX platforms, use bash shell to run against ttquickstartenv.sh and tcsh shell to run against ttquickstartenv.csh for best results.

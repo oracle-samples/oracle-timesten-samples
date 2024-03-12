@@ -7,10 +7,11 @@
 # Oracle TimesTen 22.1 Quick Start Sample Program Environment setup script.
 #
 
-if ( ("$0" != "-tcsh" ) && \
-     ( "$0" != "tcsh" ) && \
-     ( "$0" != "-csh" ) && \
-     ( "$0" != "csh" ) ) then
+set shelltype=`basename "$0"`
+if ( ("${shelltype}" != "-tcsh" ) && \
+     ( "${shelltype}" != "tcsh" ) && \
+     ( "${shelltype}" != "-csh" ) && \
+     ( "${shelltype}" != "csh" ) ) then
     echo "Please 'source' this script; do not run it as a regular script."
     exit 1
 endif
