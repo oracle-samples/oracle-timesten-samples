@@ -2,16 +2,16 @@ Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
 
 # TimesTen Python Samples
 
-This folder contains Python samples that illustrate database connection and operations using the cx_Oracle driver against the TimesTen database. 
+This folder contains Python samples that illustrate database connection and operations using the python-oracledb driver against the TimesTen database. 
 
 ## Software & Platform Support
-The following table describes the tested operating systems, cx_Oracle driver and TimesTen software versions.
+The following table describes the tested operating systems, python_oracledb driver and TimesTen software versions.
 
-OS  | Python Version | cx_Oracle Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
+OS  | Python Version | python-oracledb Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
 ------------- | --------- | --------- | ------------| ------
-Linux 64-bit  |  3.7.5   | 7.2.2+    | 18.1.4.1.0+	| 18.1.4.1.0+
-macOS  	    |  3.7.5   |7.2.2+    | 18.1.4.1.0+	| N/A
-MS Windows 64-bit   | 3.7.5  |7.2.2+    | 18.1.4.1.0+| N/A
+Linux 64-bit  |  3.7+   | 7.2.2+    | 22.1.1.25.0+	| 22.1.1.25.0+
+macOS  	    |  3.7+   |7.2.2+    | 22.1.1.25.0+	| N/A
+MS Windows 64-bit   | 3.7+  |7.2.2+    | 22.1.1.25.0+| N/A
 
 **NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/en/database/other-databases/timesten/22.1/release-notes/toc.htm).
 
@@ -22,9 +22,9 @@ MS Windows 64-bit   | 3.7.5  |7.2.2+    | 18.1.4.1.0+| N/A
 ## PRE-REQUISITES
  
 1. Python language is installed. 
-2. The cx_Oracle driver for Python is installed. 
+2. The python_oracledb for Python is installed. 
 3. A TimesTen database is created and data source is setup to access that database. 
-4. Environment to access Python, cx_Oracle driver and TimesTen data source are set up (i.e. the TimesTen environment script ttenv.sh/ttenv.csh has been executed)
+4. Environment to access Python, python_oracledb driver and TimesTen data source are set up (i.e. the TimesTen environment script ttenv.sh/ttenv.csh has been executed)
 
 For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/open-source-languages/index.html).
 
@@ -182,4 +182,4 @@ Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim 
 
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/). Online documenation for the cx_Oracle driver can be found [here](https://cx-oracle.readthedocs.io/en/latest/).
+You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/). Online documenation for the python-oracledb driver can be found [here](https://cx-oracle.readthedocs.io/en/latest/).

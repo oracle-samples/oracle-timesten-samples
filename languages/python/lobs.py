@@ -9,10 +9,11 @@
 #     reading its content.
 #
 
-import cx_Oracle
+import oracledb
 import AccessControl
 import os
 
+oracledb.defaults.fetch_lobs = False
 def lobSample(cursor):
     
   print("> Creating table with CLOB column")
@@ -34,7 +35,7 @@ def lobSample(cursor):
   outClob, = cursor.fetchone()
 
   print("> Reading CLOB")
-  print(outClob.read())
+  print(outClob)
   print("> Finished reading CLOB")
 
 
@@ -42,14 +43,14 @@ def run():
   try:
     print("> Connecting")
     credentials = AccessControl.getCredentials("lobs.py")
-    connection = cx_Oracle.connect(credentials.user, credentials.password, credentials.connstr)
+    connection = oracledb.connect(user=credentials.user, password=credentials.password, dsn=credentials.connstr)
     connection.autocommit = True
     cursor = connection.cursor()
 
     lobSample(cursor)
 
   except Exception as e:
-    print("An error ocurred", str(e))
+    print("An error occurred", str(e))
   finally:
     if(connection):
       try:
@@ -57,7 +58,7 @@ def run():
         connection.close()
         print("> Connection released")
       except Exception as e:
-        print("An error ocurred", str(e))
+        print("An error occurred", str(e))
 
 # Execute sample
 run()

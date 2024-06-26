@@ -191,7 +191,7 @@ For the full syntax, use "wiscbm -help".
 
 **updatelob**
 
-This program queries against a Large Binary Object(LOB) and then update the selected LOB field with new value of the same row.  PRINT_MEDIA table needs to be provisioned before executing this program.
+This program queries against a Large Binary Object(LOB) field and then update the selected LOB field with new value of the same row.  PRINT_MEDIA table needs to be provisioned before executing this program.
 
 Example usage:
 
@@ -199,7 +199,7 @@ Example usage:
 
   `updatelob`
 
-For the full syntac, use "updatelob -help".
+For the full syntax, use "updatelob -help".
 
 
 **xlaSimple**

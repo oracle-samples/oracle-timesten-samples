@@ -13,7 +13,7 @@
 #       - Calls a PL/SQL anonymous block to delete a row
 #       - Drops the table
 #
-import cx_Oracle
+import oracledb
 import AccessControl
 
 NUM_RECORDS = 100  # Number of records to insert.
@@ -68,7 +68,7 @@ dropStmnt   =         "DROP TABLE items"
 # Get connection and cursor.
 def connect():
   credentials = AccessControl.getCredentials("queriesAndPlsql.py")
-  connection = cx_Oracle.connect(credentials.user, credentials.password, credentials.connstr)
+  connection = oracledb.connect(user=credentials.user, password=credentials.password, dsn=credentials.connstr)
   connection.autocommit = True
   return connection.cursor()
 

@@ -11,6 +11,7 @@
 var oracledb      = require('oracledb');
 var accessControl = require('./AccessControl');
 
+oracledb.initOracleClient();
 async function run() {
 
   let connection;

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -12,6 +12,8 @@
 var fs            = require('fs');
 var oracledb      = require('oracledb');
 var accessControl = require('./AccessControl');
+oracledb.initOracleClient();
+oracledb.fetchAsString = [oracledb.CLOB];
 
 // Execute the sample
 run(lobSample);
@@ -39,17 +41,16 @@ async function lobSample(conn) {
   // Get the LOB for reading
   console.log("> Querying CLOB column");
   result = await conn.execute("SELECT text FROM clobs where id=1");
-  let outClob = result.rows[0][0];
+  // let outClob = result.rows[0][0];
 
   console.log("> Reading CLOB");
-  await new Promise( (resolve, reject) => {
-    outClob.on("data", chunk => console.log(chunk.toString()));
-    outClob.on("error", error => reject(error));
-    outClob.on("end", () => {
-      console.log("> Finished reading CLOB");
-      resolve();
-    });
-  } );
+  if (result.rows.length == 0)
+    console.error ("No results");
+  else {
+    const outClob = result.rows[0][0];
+    console.log(outClob);
+  }
+      console.log("> Finished reading CLOB");  
 }
 
 

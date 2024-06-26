@@ -16,6 +16,7 @@
 'use strict';
 var oracledb      = require('oracledb');
 var accessControl = require('./AccessControl');
+oracledb.initOracleClient();
 
 const NUM_RECORDS = 100;  // Number of records to insert
 

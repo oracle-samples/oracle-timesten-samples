@@ -13,7 +13,7 @@
 #       - Deletes a number of records (based on 'UPDATE_PERCENTAGE')
 #       - Drops the table
 #
-import cx_Oracle
+import oracledb
 import math
 import AccessControl
 
@@ -52,7 +52,7 @@ dropStmnt   = "DROP TABLE vpn_users"
 # Get connection and cursor.
 def connect():
   credentials     = AccessControl.getCredentials("sql.py")
-  connection = cx_Oracle.connect(credentials.user, credentials.password, credentials.connstr)
+  connection = oracledb.connect(user=credentials.user, password=credentials.password, dsn=credentials.connstr)
   # Set autocommit to true.
   connection.autocommit = True
   return connection.cursor()

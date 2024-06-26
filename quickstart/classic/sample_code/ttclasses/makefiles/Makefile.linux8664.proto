@@ -106,7 +106,7 @@ clean:
 		$(PLAT_SPECIFIC_CLEAN)
 
 $(OBJ_DIR):
-        $(MD) obj
+		$(MD) obj
 
 # -----------------------------------------------------------------------------
 # build targets

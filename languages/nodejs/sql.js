@@ -16,6 +16,7 @@
 'use strict';
 var oracledb      = require('oracledb');
 var accessControl = require('./AccessControl');
+oracledb.initOracleClient();
 
 const NUM_RECORDS       = 100;  // Number of records to insert. (Must have an exact square root)
 const READ_PERCENTAGE   = 80;     // Percentage of records to perform SELECTS.

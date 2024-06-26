@@ -9,13 +9,14 @@
 #
 
 from __future__ import print_function
-import cx_Oracle
+import oracledb
 import AccessControl
 
 def run():
   try:
+    oracledb.init_oracle_client();
     credentials = AccessControl.getCredentials("simple.py")
-    connection = cx_Oracle.connect(credentials.user, credentials.password, credentials.connstr)
+    connection = oracledb.connect(user=credentials.user, password=credentials.password, dsn=credentials.connstr)
       
     cursor = connection.cursor()
     cursor.execute("""
@@ -36,7 +37,7 @@ def run():
 
   except Exception as e:
     # Something went wrong
-    print("An error ocurred", str(e))
+    print("An error occurred", str(e))
 
 run()
 
