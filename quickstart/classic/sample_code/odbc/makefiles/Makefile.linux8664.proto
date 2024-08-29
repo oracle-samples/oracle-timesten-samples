@@ -111,7 +111,7 @@ $(WISCBMDC):	$(WISCBMDCOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(WISCBMDCOBJS) $(DCLIBS)
 
 $(UPDATELOBDC): $(UPDATELOBOBJS)
-        $(CC) -o $@ $(LDFLAGS) $(UPDATELOBOBJS) $(DCLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(UPDATELOBOBJS) $(DCLIBS)
 
 #
 # Targets for building Client Server executables
@@ -133,7 +133,7 @@ $(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
 	$(CC) -o $@ $(LDFLAGS) $(WISCBMCSOBJS) $(CSLIBS)
 
 $(UPDATELOBCS): $(UPDATELOBCSOBJS)
-        $(CC) -o $@ $(LDFLAGS) $(UPDATELOBCSOBJS) $(CSLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(UPDATELOBCSOBJS) $(CSLIBS)
 
 #
 # Targets for building TTDM executables
@@ -155,7 +155,7 @@ $(WISCBMDM):    $(WISCBMDMOBJS) wiscprotos.h sqlfunc.h
 	$(CC) -o $@ $(LDFLAGS) $(WISCBMDMOBJS) $(DMLIBS)
 
 $(UPDATELOBDM): $(UPDATELOBDMOBJS)
-        $(CC) -o $@ $(LDFLAGS) $(UPDATELOBDMOBJS) $(DMLIBS)
+	$(CC) -o $@ $(LDFLAGS) $(UPDATELOBDMOBJS) $(DMLIBS)
 
 #
 # Targets for building object files
@@ -219,10 +219,10 @@ wiscbmDM.o:	wiscbm.c wiscprotos.h sqlfunc.h
 	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c wiscbm.c
 
 updatelob.o:    updatelob.c
-        $(CC) $(CFLAGS) -o $@ -c updatelob.c
+	$(CC) $(CFLAGS) -o $@ -c updatelob.c
 
 updatelobCS.o: updatelob.c
-        $(CC) $(CFLAGS) $(CSDEFS) -o $@ -c updatelob.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c updatelob.c
 
 updatelobDM.o: updatelob.c
-        $(CC) $(CFLAGS) $(DMDEFS) -o $@ -c updatelob.c
+	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c updatelob.c
