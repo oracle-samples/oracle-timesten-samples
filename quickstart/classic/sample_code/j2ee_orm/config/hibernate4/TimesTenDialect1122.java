@@ -34,7 +34,6 @@ import org.hibernate.dialect.Dialect;
  * 3. Added support for the ADD_MONTHS(), MONTHS_BETWEEN(), SOUNDEX() and
  *    REPLACE () SQL functions.
  *
- * @author Jason Feldhaus (jason.feldhaus@oracle.com)
  */
  
  
