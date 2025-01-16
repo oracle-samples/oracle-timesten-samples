@@ -1,0 +1,65 @@
+#
+# Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+#
+# Makefile for C/ODBC sample programs - Client/Server ONLY
+#
+
+INSTDIR         = $(TIMESTEN_HOME)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
+
+CC              = cc
+
+PLATCFLAGS      = -O3 -target x86_64-apple-macos11
+LDFLAGS         = -target x86_64-apple-macos11
+SHLIB_SUFFIX    = dylib
+EXTRALIBS	=
+ODPIDIR		=
+
+INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
+
+DEFS		=
+CSDEFS          = -DTTCLIENTSERVER
+CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
+
+TTLINK          = -L$(INSTDIR)/lib -L$(ODPIDIR)/lib -lodpic
+
+CSLIBS          = $(TTLINK) $(EXTRALIBS)
+
+
+TPTBMODPICS         = tptbmODPICS
+TPTBMODPICSOBJS     = tptbmODPICS.o 
+
+
+PROGS           = $(TPTBMODPICS) 
+
+#
+# Top level targets
+#
+
+all:		$(PROGS)
+
+clean:
+	rm -f $(PROGS) *.o
+
+#
+# Targets for building Client Server executables
+#
+
+
+$(TPTBMODPICS):	$(TPTBMODPICSOBJS)
+	$(CC) $(CFLAGS) -o $@ $(TPTBMODPICSOBJS) $(CSLIBS) $(LDFLAGS)
+
+
+#
+# Targets for building object files
+#
+
+
+tptbmODPICS.o:	tptbmODPI.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c tptbm.c
+
+

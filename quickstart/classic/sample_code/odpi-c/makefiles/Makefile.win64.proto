@@ -1,0 +1,73 @@
+#
+# Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+#
+# Makefile for C/ODBC sample programs - Client/Server ONLY
+#
+
+TTVER		= 221
+INSTDIR         = $(TIMESTEN_HOME)\install
+
+QUICKCODEDIR    = $(QUICKSTART_HOME)\sample_code
+COMMDIR         = $(QUICKCODEDIR)\common
+ODPIDIR		=
+
+CC              = cl.exe /nologo
+
+OFLAG 		= /Ox
+
+# WIN64 NON Driver Manager
+PLATCFLAGS      = /DWIN64 /DWIN32 /DWINVER=0x500 /MT /EHsc $(OFLAG) /D_CRT_SECURE_NO_DEPRECATE
+LDFLAGS         = /link /STACK:3000000 /FIXED:NO bufferoverflowu.lib
+
+INCS            = /I$(INSTDIR)\include /I$(COMMDIR) /I$(ODPIDIR)\include
+
+CSDEFS          = /DTTCLIENTSERVER
+CFLAGS          = $(PLATCFLAGS) $(INCS)
+
+TTLINK          = /LIBPATH:$(QUICKSTART_HOME)\lib /LIBPATH:$(INSTDIR)\lib /LIBPATH:$(ODPIDIR)\lib 
+
+CSLIBS          = $(TTLINK) odpic.lib
+
+
+TPTBMODPICS         = tptbmODPICS.exe
+TPTBMODPICSOBJS     = tptbmODPICS.obj 
+
+
+PROGS           = $(TPTBMODPICS) 
+
+#
+# Top level targets
+#
+
+all:		$(PROGS)
+
+clean:
+	-erase /Q *.exe *.obj *.pdb *.sbr
+
+#
+# Targets for building executables
+#
+
+#
+# Client Server targets
+#
+
+
+
+$(TPTBMODPICS):	$(TPTBMODPICSOBJS)
+	$(CC) /Fe$@ $(TPTBMODPICSOBJS) $(LDFLAGS) $(CSLIBS)
+
+
+#
+# Targets for building object files
+#
+
+
+
+
+tptbmodpiCS.obj:	tptbmodpi.c
+	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c tptbmodpi.c

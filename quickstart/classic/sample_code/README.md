@@ -1,4 +1,4 @@
-Copyright (c) 1998, 2021, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 1998, 2025, Oracle and/or its affiliates. All rights reserved.
 
 # Sample Code for TimesTen Classic
 
@@ -18,3 +18,4 @@ The files and directories contained here are as follows:
 | [plsql](./plsql) | PL/SQL samples. |
 | [ttclasses](./ttclasses) | C++ samples using TimesTen's TTClasses API. |
 | [odp.net](./odp.net) | C# sample using Oracle ODP.NET. |
+| [odpi-c](./odpi-c) | odpi-c sample using Oracle Database Programming Interface for C (ODPI-C) |

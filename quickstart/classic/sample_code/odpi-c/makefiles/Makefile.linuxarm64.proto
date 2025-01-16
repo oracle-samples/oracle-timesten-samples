@@ -1,0 +1,71 @@
+#
+# Copyright (c) 2025, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+#
+# Makefile for ODPI-C sample programs 
+# 
+INSTDIR         = $(TIMESTEN_HOME)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
+ODPIDIR		= 
+
+CC              = gcc
+
+PLATCFLAGS      = -O2 -g -Wall
+LDFLAGS         = 
+SHLIB_SUFFIX    = so
+EXTRALIBS	=
+
+INCS            = -I$(INSTDIR)/include -I$(COMMDIR) -I$(ODPIDIR)/include
+
+DEFS		= 
+CSDEFS          = -DTTCLIENTSERVER
+DMDEFS          = -DTTDM
+CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
+
+TTLINK          = -L$(INSTDIR)/lib -L$(ODPIDIR)/lib -lodpic
+
+DCLIBS          = $(TTLINK) $(EXTRALIBS)
+
+
+TPTBMODPIDC         = tptbmODPI
+TPTBMODPIDCOBJS     = tptbmODPI.o 
+
+
+DCPROGS		= $(TPTBMODPIDC)
+
+PROGS           = $(DCPROGS) 
+
+#
+# Top level targets
+#
+
+all:		$(PROGS)
+
+nodm:		$(DCPROGS) 
+
+clean:
+	rm -f $(PROGS) *.o
+
+#
+# Targets for building Direct Linked executables
+#
+
+
+$(TPTBMODPIDC):	$(TPTBMODPIDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMODPIDCOBJS) $(DCLIBS)
+
+
+
+#
+#
+# Targets for building object files
+#
+
+
+tptbmODPI.o:	tptbmODPI.c
+	$(CC) $(CFLAGS) -o $@ -c tptbmODPI.c
+
+
