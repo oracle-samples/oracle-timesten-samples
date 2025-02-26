@@ -1,0 +1,60 @@
+
+
+<project name="TimesTenDialect" default="compile" basedir=".">
+    <property file="build.properties"/>
+    <property name="src.dir"   value="${basedir}"/>
+    <property name="build.dir" value="${basedir}/build"/>
+    <property environment="env"/>
+    <property name="hibernate.home.dir" value="${env.HIBERNATE_HOME_DIR}"/>
+
+    <!-- Initialize the build -->
+    <target name="prepare">
+        <mkdir dir="${build.dir}"/>
+    </target>
+
+    <!-- The build classpath -->
+    <!-- Env. Var. HIBERNATE_HOME_DIR should contain hibernate-core-6.6.0.Final.jar -->
+    <path id="build.classpath">
+        <fileset dir="${hibernate.home.dir}/">
+            <include name="**/hibernate-core*.jar"/>              
+        </fileset>
+         <fileset dir="${hibernate.home.dir}/">
+            <include name="**/jakarta.persistence-api-*.jar"/>              
+        </fileset>
+    </path>
+
+    <!-- Compile  -->
+    <target name="compile" depends="prepare">
+
+        <javac destdir="${build.dir}" srcdir="${src.dir}/pagination"
+               includeantruntime="false"
+               includes="TimesTenLimitHandler.java"
+               classpathref="build.classpath">
+        </javac>
+
+        <javac destdir="${build.dir}" srcdir="${src.dir}/sequence"
+               includeantruntime="false"
+               includes="TimesTenSequenceSupport.java"
+               classpathref="build.classpath">
+        </javac>
+
+        <javac destdir="${build.dir}" srcdir="${src.dir}"
+               includeantruntime="false"
+               includes="TimesTenSqlAstTranslator.java"
+               classpathref="build.classpath">
+        </javac>
+
+        <javac destdir="${build.dir}" srcdir="${src.dir}"
+               includeantruntime="false"
+               includes="TimesTenDialect.java"
+               classpathref="build.classpath">
+        </javac>
+
+    </target>
+
+    <!-- Clean -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+</project>

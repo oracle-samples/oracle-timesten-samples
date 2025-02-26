@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+* Copyright (c) 1999, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -7,8 +7,8 @@
 package com.timesten.tptbmas;
 
 import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 
 /* Each instance of the Tptbm class contains an instance of the TptbmPKey class.
  * This class represents the unique ID for each instance of Tptbm. The TPTBM 

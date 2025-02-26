@@ -14,8 +14,9 @@
         <property name="hibernate.connection.password">tiger</property>                
         <property name="hibernate.connection.driver_class">com.timesten.jdbc.TimesTenDriver</property> 
        
-        <property name="hibernate.dialect">org.hibernate.dialect.TimesTenDialect1122</property>        
-                <!-- Connection.TRANSACTION_READ_COMMITTED = 2 -->
+        <property name="hibernate.dialect">org.hibernate.dialect.TimesTenDialect</property>   
+
+        <!-- Connection.TRANSACTION_READ_COMMITTED = 2 -->
         <property name="hibernate.connection.isolation">2</property>    
         
         <!-- rely solely on the TimesTenDialect for DB capabilities -->
@@ -35,7 +36,6 @@
         <property name="hibernate.show_sql">false</property>        
         <property name="hibernate.connection.pool_size">4</property>
 
-        
         <!-- mapping file -->
         <mapping resource="META-INF/Tptbm.hbm.xml"/>
 
