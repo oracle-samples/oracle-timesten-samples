@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+* Copyright (c) 1999, 2025, Oracle and/or its affiliates.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -154,7 +154,7 @@ public class HIBClient extends CommonClient
     
     
     // open a dedicated Session for this thread
-    m_session = m_sessionFactory.openSession ();
+    m_session = m_sessionFactory.openSession();
   }
   
   public synchronized void close ()
@@ -326,6 +326,8 @@ public class HIBClient extends CommonClient
         }
         
       }
+      txnCommit();
+      txnBegin();
     }
     
     
@@ -369,6 +371,8 @@ public class HIBClient extends CommonClient
       if (cacheCount % m_maxEntitiesInCache == 0)
       {
         m_session.flush ();
+        txnCommit();
+        txnBegin();
       }      
     }
     
