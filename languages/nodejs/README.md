@@ -1,4 +1,4 @@
-Copyright (c) 2019, 2024 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2019, 2025 Oracle and/or its affiliates. All rights reserved.
 
 # TimesTen Node.js Samples
 
@@ -9,9 +9,9 @@ The following table describes the tested operating systems, node-oracledb driver
 
 OS  | Node.js Version  | node-oracledb Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
 ------------- | ------- | -------------	| ------------ | ------
-Linux 64-bit  | 14+  |6.0+    | 22.1.1.25.0+	| 22.1.1.25.0+
-macOS      |  14+  |6.0+  | 22.1.1.25.0+	| N/A
-MS Windows 64-bit    | 14+  | 6.0+    | 22.1.1.25.0+ | N/A
+Linux 64-bit  | 14.6.0+  |6.4.0+    | 22.1.1.25.0+	| 22.1.1.25.0+
+macOS      |  14.6.0+  |6.4.0+  | 22.1.1.25.0+	| N/A
+MS Windows 64-bit    | 14.6.0+  | 6.4.0+    | 22.1.1.25.0+ | N/A
 
 **NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/en/database/other-databases/timesten/22.1/release-notes/toc.htm).
 
