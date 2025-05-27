@@ -99,16 +99,16 @@ public class TimesTenDialect extends Dialect {
         return "TT_BIGINT";
 
       case SqlTypes.CHAR:
-        return "CHAR(1)";
+        return "CHAR($l)";
       case SqlTypes.VARCHAR:
       case SqlTypes.LONGVARCHAR:
         return "VARCHAR2($l)";
 
       case SqlTypes.BINARY:
-        return "BINARY($1)";
+        return "BINARY($l)";
       case SqlTypes.VARBINARY:
       case SqlTypes.LONGVARBINARY:
-        return "VARBINARY($1)";
+        return "VARBINARY($l)";
 
       case SqlTypes.NUMERIC:
       case SqlTypes.DECIMAL:
@@ -469,11 +469,6 @@ public class TimesTenDialect extends Dialect {
     return "on commit delete rows";
   }
 
-  @Override                                                            
-  protected void initDefaultProperties() {
-    super.initDefaultProperties(); 
-  }
-
   @Override
   public String currentDate() {
       return "sysdate";
@@ -515,11 +510,6 @@ public class TimesTenDialect extends Dialect {
   @Override
   public int getMaxIdentifierLength() {
     return 30;
-  }
-
-  @Override
-  public boolean canCreateSchema() {
-    return false;
   }
 
   @Override
