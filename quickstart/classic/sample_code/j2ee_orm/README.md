@@ -2,7 +2,9 @@
 
 # TptbmAS Application Server Demo
 
-This directory contains the source files and build scripts for the TptbmAS demo program. TptbmAS is a multi-user throughput benchmark that demonstrates how to configure and run the Oracle TimesTen In-Memory Database with several different J2EE application servers and object-relational mapping (ORM) frameworks. For application server configurations, TptbmAS uses an EJB 3.0 client-server application architecture. For ORM configurations, a stand-alone application uses the ORM provider's native API or the EJB 3.0 Java Persistence API (JPA) directly.
+This directory contains the source files and build scripts for the TptbmAS demo program. TptbmAS is a multi-user throughput benchmark that demonstrates how to configure and run the Oracle TimesTen In-Memory Database with several different J2EE application servers and object-relational mapping (ORM) frameworks. For application server configurations, TptbmAS uses an EJB 3.0 client-server application architecture. For ORM configurations, a stand-alone application uses the ORM provider's native API or the EJB 3.0 Java Persistence API (JPA) directly. 
+
+NOTE: The source files used for configuring TimesTen dialect for Hibernate under sub-directory *config* will not be maintained from Hibernate 6 onward from this repository. The [TimesTen dialect](https://github.com/hibernate/hibernate-orm/blob/main/hibernate-community-dialects/src/main/java/org/hibernate/community/dialect/TimesTenDialect.java) will be updated via  Hibernate-community-dialect repository on GitHub.
 
 TptbmAS can be deployed within the following software environments:
 
