@@ -42,6 +42,10 @@ Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
 
 To compile the sample programs in the sample\_code/jdbc directory, use the relevant TimesTen supported Java compiler for your platform (eg Sun, HP, JRocket or IBM JDK) to compile each sample program. Refer to the [OracleTimesTen In-Memory Database Installation Guide](https://docs.oracle.com/cd/E21901_01/timesten.1122/e21632/toc.htm) for the list of supported JDKs for your preferred platform.
 
+For JDK 11, 17, 21, and 25, the TimesTen JDBC JAR is timesten_home/install/lib/ttjdbcjdk_version.jar, where jdk_version indicates the JDK version, 11, 17, 21, or 25, for example, ttjdbc25.jar for JDK 25. The JAR is also packaged as a Java module with the Java module name, com.timesten.jdbc, so you can use it for module compilation, if your JDK supports module. 
+
+### Compile with JDK 11, 17 and 21
+
 To compile specific program:
 
 `javac <progname>.java`
@@ -49,6 +53,33 @@ To compile specific program:
 To compile the sample programs all at once:
 
 `javac *.java`
+
+### Compile using the TimesTen JDBC Module JDK 11, 17, 21 and 25
+
+#### Compile as a non-modular or mixed application:
+
+To compile specific program:
+
+`javac --classpath $CLASSPATH --module-path <module_path> <progname>.java`
+
+Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>. 
+
+To compile the sample programs all at once:
+
+`javac --classpath $CLASSPATH --module-path <module_path> *.java`
+
+#### Compile as a modular application:
+
+To compile specific program:
+
+`javac --classpath $CLASSPATH --module-path <module_path> module-info.java <progname>.java`
+
+Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>.
+
+To compile the sample programs all at once:
+
+`javac --classpath $CLASSPATH --module-path <module_path> *.java`
+
 
 **NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations. Additionally, asyncJMS2 and syncJMS2 which are sample programs using Jakarta JMS rather than Javax JMS, require separate download of jakarta.jms.jar file. Once this jar file is downloaded, location to this jar will need to be added to environment variable CLASSPATH. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward.
 
