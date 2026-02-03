@@ -18,6 +18,8 @@
  *    ttIsql -f input0.dat
  */
 
+package jdbc.demo;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.BufferedReader;

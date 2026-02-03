@@ -30,6 +30,8 @@
  *
  */
 
+package jdbc.demo;
+
 import java.io.*;
 import java.text.*;
 import java.sql.*;

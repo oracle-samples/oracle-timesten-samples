@@ -60,25 +60,25 @@ To compile the sample programs all at once:
 
 To compile specific program:
 
-`javac --classpath $CLASSPATH --module-path <module_path> <progname>.java`
+`javac -cp $CLASSPATH --module-path <module_path> <progname>.java`
 
 Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>. 
 
 To compile the sample programs all at once:
 
-`javac --classpath $CLASSPATH --module-path <module_path> *.java`
+`javac -cp $CLASSPATH --module-path <module_path> *.java`
 
 #### Compile as a modular application:
 
 To compile specific program:
 
-`javac --classpath $CLASSPATH --module-path <module_path> module-info.java <progname>.java`
+`javac --module-path <module_path> -d out module-info.java <progname>.java`
 
 Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>.
 
 To compile the sample programs all at once:
 
-`javac --classpath $CLASSPATH --module-path <module_path> *.java`
+`javac --module-path <module_path> -d out *.java`
 
 
 **NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations. Additionally, asyncJMS2 and syncJMS2 which are sample programs using Jakarta JMS rather than Javax JMS, require separate download of jakarta.jms.jar file. Once this jar file is downloaded, location to this jar will need to be added to environment variable CLASSPATH. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward.
@@ -92,6 +92,14 @@ option in order to run the 64-bit JVM.
 **NOTE:** On some platforms, such as macOS, you may need to explicitly pass a setting for java.library path to the JVM in order to run the samples. For example:
 
     java -Djava.library.path=${TIMESTEN_HOME}/install/lib <progname>
+
+**NOTE:** When you want to run using the TimesTen JDBC Module with JDK 11, 17, 21 and 25. The module-path and enable-native-access need to be added. For example:
+    
+    **Run as a non-modular or mixed application**
+    java --classpath $CLASSPATH --module-path $module_path --enable-native-access="timesten.jdbc" …
+
+    **Run as a modular application**
+    java --module-path $module_path:./out --enable-native-access="timesten.jdbc" --module my.testmodule/jdbc.demo.<progname> …
 
 **asyncJMS** or **asyncJMS2**
 

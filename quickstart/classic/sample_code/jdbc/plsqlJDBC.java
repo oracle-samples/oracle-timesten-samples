@@ -12,6 +12,9 @@
 // Call PLSQL procedure and function from JDBC
 // 
 //----------------------------------------------------------
+
+package jdbc.demo;
+
 import java.sql.*;
 import java.io.*;
 import java.text.*;
