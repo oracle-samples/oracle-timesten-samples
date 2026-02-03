@@ -90,7 +90,7 @@ export PATH="${QUICKSTART_HOME}/sample_code/odbc:${QUICKSTART_HOME}/sample_code/
 
 export LD_LIBRARY_PATH="${QUICKSTART_HOME}/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
-export CLASSPATH="${QUICKSTART_HOME}/sample_code/jdbc${CLASSPATH:+:${CLASSPATH}}"
+export CLASSPATH="${QUICKSTART_HOME}/sample_code/jdbc:${QUICKSTART_HOME}/sample_code/jdbc/out:${QUICKSTART_HOME}/sample_code/jdbc/jms/javax/out:${QUICKSTART_HOME}/sample_code/jdbc/jms/jakarta/out${CLASSPATH:+:${CLASSPATH}}"
 
 echo
 echo "PATH=${PATH}"

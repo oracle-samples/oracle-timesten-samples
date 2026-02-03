@@ -12,6 +12,9 @@
 // Java version of Tptbm benchmark for measuring scalability 
 // 
 //----------------------------------------------------------
+
+package jdbc.demo;
+
 import java.sql.*;
 import java.io.*;
 import java.text.*;
@@ -1365,7 +1368,7 @@ class TptbmRouting
         this.ds = ds;
         Statement stmt = conn.createStatement();
         ResultSet res = stmt.executeQuery(Tptbm.selRsIds);
-        TimesTenConnectionBuilder ttCb = ds.createTimesTenConnectionBuilder().user(Tptbm.username).password(Tptbm.password);
+        TimesTenConnectionBuilderClassic ttCb = ds.createTimesTenConnectionBuilderClassic().user(Tptbm.username).password(Tptbm.password);
         while ( res.next() ) {
             rsId = res.getShort(1);
             if (  Tptbm.verbose  )

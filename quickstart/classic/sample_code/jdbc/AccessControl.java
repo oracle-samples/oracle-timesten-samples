@@ -8,7 +8,8 @@
 package jdbc.demo;
 
 import java.io.*;
-class AccessControl
+
+public class AccessControl
 {
 	public String username = "appuser";
 	public String getUsername() 

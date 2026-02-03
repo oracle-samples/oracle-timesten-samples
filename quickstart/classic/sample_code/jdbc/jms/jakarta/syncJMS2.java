@@ -1,26 +1,29 @@
 /*
- * JMS/XLA syncJMS.java sample code - Processing JMS/XLA updates.
+ * JMS/XLA syncJMS2.java sample code - Processing JMS/XLA updates using jakarta jms.
  *
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
  * Note:  JMS provides two ways to read messages - one using 
  * synchronous calls to the receive() method (used here), 
  * and one using asynchronous calls to the onMessage method (used
- * in asyncJMS.java).  TimesTen's JMS/XLA facility supports both approaches
+ * in asyncJMS2.java).  TimesTen's JMS/XLA facility supports both approaches
  * However, the receive() method is generally faster. 
  * Please consider it for performance sensitive applications.
  */
 
+package jms.demo;
+
 // JMS imports
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Session;
-import javax.jms.Topic;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.TopicSession;
-import javax.jms.TopicSubscriber;
+import jakarta.jms.JMSException;
+import jakarta.jms.MapMessage;
+import jakarta.jms.Session;
+import jakarta.jms.Topic;
+//import jakarta.jms.TopicConnection;
+import jakarta.jms.TopicConnectionFactory;
+import jakarta.jms.TopicSession;
+import jakarta.jms.TopicSubscriber;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -37,13 +40,16 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.*;
 
+import jdbc.demo.AccessControl;
+import jdbc.demo.tt_version;
 
 /**
  * Demo which shows how to use JMS/XLA to process updates.
  * It synchronously subscribes to updates for a table defined at runtime from the command line
  */
-public class syncJMS
+public class syncJMS2
 {
 
   /** Subscriber */
@@ -53,7 +59,7 @@ public class syncJMS
   private static String tableName = "customer";
 
   /** JMS/XLA topic name */
-  private static String topicName = "syncJMS";
+  private static String topicName = "syncJMS2";
 
   /** XLA bookmark name */
   private static String bookmarkName = "bookmark";
@@ -96,9 +102,9 @@ public class syncJMS
   public static void main(final String[] args)
   {
 
-    // Specify the topic "syncJMS" to get the connection parameters from
-    // the syncJMS demo entry in jmsxla.xml.
-    final syncJMS demo = new syncJMS();
+    // Specify the topic "syncJMS2" to get the connection parameters from
+    // the syncJMS2 demo entry in jmsxla.xml.
+    final syncJMS2 demo = new syncJMS2();
 
     // parse command line arguments
     parseArgs(args);
@@ -269,15 +275,15 @@ public class syncJMS
   static private void usage()
   {
 
-    System.err.print("\n" + "Usage: \n\n" + "  syncJMS [-h] [-help] [-?]\n" + 
-                     "  syncJMS [-topic <topicName>] [-bookmark <bookmarkName>]\n" + 
+    System.err.print("\n" + "Usage: \n\n" + "  syncJMS2 [-h] [-help] [-?]\n" + 
+                     "  syncJMS2 [-topic <topicName>] [-bookmark <bookmarkName>]\n" + 
                      "          [-schema <schemaName>] [-table <tableName>]\n" + 
                      "          [-xlauser <username>] [-xlapassword <password>]\n\n" + 
                      "  -h                        Prints this message and exits.\n" + 
                      "  -help                     Same as -h.\n" + 
                      "  -?                        Same as -help.\n" + 
                      "  -topic <topicName>        The JMS Topic of interest.\n" + 
-                     "                            Defaults to 'syncJMS'.\n" + 
+                     "                            Defaults to 'syncJMS2'.\n" + 
                      "  -bookmark <bookmarkName>  The XLA bookmark.\n" + 
                      "                            Defaults to 'bookmark'.\n" + 
                      "  -schema <schemaName>      The schema for the table of interest.\n" + 
@@ -450,7 +456,7 @@ public class syncJMS
     private String bookmarkName; 
 
     /** JMS connection */
-    private javax.jms.TopicConnection connection; 
+    private jakarta.jms.TopicConnection connection; 
 
     /** JMS session */
     private TopicSession session; 
@@ -477,8 +483,16 @@ public class syncJMS
       {
         topicName = topicID; bookmarkName = bookmark; 
 
+//jakarta jms
+
+      Properties props = new Properties();
+
+      props.setProperty(Context.INITIAL_CONTEXT_FACTORY,
+      "com.timesten.dataserver.jakartajmsxla.SimpleInitialContextFactory");
+        
+
         // get Connection
-        Context messaging = new InitialContext(); 
+        Context messaging = new InitialContext(props); 
         TopicConnectionFactory connectionFactory = (TopicConnectionFactory)messaging.lookup("TopicConnectionFactory"); 
         connection = connectionFactory.createTopicConnection(); 
         connection.start(); 

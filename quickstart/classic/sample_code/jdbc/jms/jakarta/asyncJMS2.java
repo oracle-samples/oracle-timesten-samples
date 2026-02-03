@@ -16,6 +16,8 @@
 
  */
 
+package jms.demo;
+
 import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.*;
@@ -44,6 +46,10 @@ import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.sql.Connection;
 
+// Other imports
+
+import jdbc.demo.AccessControl;
+import jdbc.demo.tt_version;
 
 /**
  * Demo which shows how to use JMS/XLA to process updates.

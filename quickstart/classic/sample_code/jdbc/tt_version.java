@@ -7,7 +7,7 @@
 
 package jdbc.demo;
 
-class tt_version
+public class tt_version
 {
     public static final String sample_DSN = "sampledb";
     public static final String sample_DSN_CS = "sampledbCS";
