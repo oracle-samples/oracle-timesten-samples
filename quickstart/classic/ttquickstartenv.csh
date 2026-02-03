@@ -80,7 +80,7 @@ if (! ${_bad} ) then
             endif
     
             if (${?CLASSPATH}) then
-                setenv CLASSPATH  "${QUICKSTART_HOME}/sample_code/jdbc:${CLASSPATH}"
+                setenv CLASSPATH  "${QUICKSTART_HOME}/sample_code/jdbc/out:${QUICKSTART_HOME}/sample_code/jdbc/jms/javax/out:${QUICKSTART_HOME}/sample_code/jdbc/jms/jakarta/out:${CLASSPATH}"
             else
                 setenv CLASSPATH "${QUICKSTART_HOME}/sample_code/jdbc"
             endif
