@@ -110,6 +110,7 @@ Run as a modular application
 
 Make sure to also include **timesten.jmsxla** in **--enable-native-access** for jms programs like **--enable-native-access=timesten.jdbc,timesten.jmsxla**. As shown in command, the name of the module you compiled is **my.jdbc.app.module** or **my.jms.app.module** (if they are jms programs) while the package of the class you are going to execute is **jdbc.demo** or **jms.demo** (for jms programs), the name of the module and dependencies are defined in module-info.java file. As a reminder for this demos when you want to **run this as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path>. When you build and run your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
 
+### Sample programs instructions and examples
 
 **asyncJMS** or **asyncJMS2**
 
