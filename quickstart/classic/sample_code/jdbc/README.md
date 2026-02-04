@@ -80,7 +80,7 @@ To compile the sample programs all at once:
 
 `javac --module-path <module_path> -d out *.java`
 
-Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>. The "-d" is necessary to build the module application in "out" directory. If you check the "out" directory you will find module-info.class and package directories. The module name, dependencies and exports are defined in module-info.java file (you need this to compile a module), and all java files you are going to compile into a module need package name as shown in java files ("jdbc.demo" and "jms.demo"). For this demos when you want to **compile as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path> to ensure all dependendies are imported as modules and have "out" directories of jdbc and jms demos included. When you make your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
+Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>. The "-d" is necessary to build the module application in "out" directory. If you check the "out" directory you will find module-info.class and package directories. The module name, dependencies and exports are defined in module-info.java file (you need this to compile a module), and all java files you are going to compile into a module need package name as shown in java files ("jdbc.demo", "jms.demo" and "jakarta.jms.demo"). For this demos when you want to **compile as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path> to ensure all dependendies are imported as modules and have "out" directories of jdbc and jms demos included. When you make your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
 
 **NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations. Additionally, asyncJMS2 and syncJMS2 which are sample programs using Jakarta JMS rather than Javax JMS, require separate download of jakarta.jms.jar file. Once this jar file is downloaded, location to this jar will need to be added to environment variable CLASSPATH. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward.
 
@@ -140,15 +140,27 @@ Examples:
   
   `java jms.demo.asyncJMS`
 
+  or
+
+  `java jakarta.jms.demo.asyncJMS2`
+
   Connect using the default DSN sampledb, uid=xlauser, listen to APPUSER.CUSTOMER
  
   `java jms.demo.asyncJMS -xlauser <xlausername>`
+
+  or
+
+  `java jakarta.jms.demo.asyncJMS2 -xlauser <xlausername>`
 
   Connect using the default DSN sampledb, uid=xlauser and listen to the MYUSER.CUSTOMER table
   
   `java jms.demo.asyncJMS -xlauser <xlausername> -schema myUser`
 
-  For the full syntax of the program, use "java jms.demo.asyncJMS -h" or "java jms.demo.asyncJMS2 -h".
+  or
+
+  `java jakarta.jms.demo.asyncJMS2 -xlauser <xlausername> -schema myUser`
+
+  For the full syntax of the program, use "java jms.demo.asyncJMS -h" or "java jakarta.jms.demo.asyncJMS2 -h".
 
 **level1**
 
@@ -307,15 +319,27 @@ Examples:
   
   `java jms.demo.syncJMS`
 
+  or
+
+  `java jakarta.jms.demo.syncJMS2`
+
   Connect using the default DSN sampledb, uid=xlauser, listen to APPUSER.CUSTOMER
   
   `java jms.demo.syncJMS -xlauser <xlausername>`
+
+  or
+
+  `java jakarta.jms.demo.syncJMS2 -xlauser <xlausername>`
 
   Connect using the default DSN sampledb, uid=xlauser and listen to the MYUSER.PRODUCT table
   
   `java jms.demo.syncJMS -xlauser <xlausername> -schema myUser -table product `
 
-For the full syntax of the program, use "java jms.demo.syncJMS -h" or "java jms.demo.syncJMS2 -h".
+  or
+
+  `java jakarta.jms.demo.syncJMS2 -xlauser <xlausername> -schema myUser -table product `
+
+For the full syntax of the program, use "java jms.demo.syncJMS -h" or "java jakarta.jms.demo.syncJMS2 -h".
 
 **Tptbm**
 
