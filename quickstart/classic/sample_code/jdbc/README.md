@@ -102,13 +102,17 @@ Run as a non-modular or mixed application
 
     java -cp $CLASSPATH --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" jms.demo.<progname> …
 
+    java -cp $CLASSPATH --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" jakarta.jms.demo.<progname> …
+
 Run as a modular application
 
     java --module-path <module_path> --enable-native-access="timesten.jdbc" --module my.jdbc.app.module/jdbc.demo.<progname> …
 
     java --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" --module my.jms.app.module/jms.demo.<progname> …
 
-Make sure to also include **timesten.jmsxla** in **--enable-native-access** for jms programs like **--enable-native-access=timesten.jdbc,timesten.jmsxla**. As shown in command, the name of the module you compiled is **my.jdbc.app.module** or **my.jms.app.module** (if they are jms programs) while the package of the class you are going to execute is **jdbc.demo** or **jms.demo** (for jms programs), the name of the module and dependencies are defined in module-info.java file. As a reminder for this demos when you want to **run this as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path>. When you build and run your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
+    java --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" --module my.jakarta.jms.app.module/jakarta.jms.demo.<progname> …
+
+Make sure to also include **timesten.jmsxla** in **--enable-native-access** for jms programs like **--enable-native-access=timesten.jdbc,timesten.jmsxla**. As shown in command, the name of the module you compiled is **my.jdbc.app.module**, **my.jms.app.module** (if they are jms programs of javax directory) or **my.jakarta.jms.app.module** (jms programs of jakarta directory) while the package of the class you are going to execute is **jdbc.demo**, **jms.demo** (jms programs of javax directory) or **jakarta.jms.demo** (jms programs of jakarta directory), the name of the module and dependencies are defined in module-info.java file. As a reminder for this demos when you want to **run this as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path>. When you build and run your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
 
 ### Sample programs instructions and examples
 
