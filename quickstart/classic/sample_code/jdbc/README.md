@@ -24,7 +24,7 @@ Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
 
      The following scripts must be run for each of your terminal sessions...
 
-    Set up the Instance environment variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt221 directory, execute the command
+    Set up the Instance environment variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt<version> directory, execute the command
 
     `source /home/timesten/instance/tt221/bin/ttenv.sh`
 
@@ -43,6 +43,8 @@ Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
 To compile the sample programs in the sample\_code/jdbc directory, use the relevant TimesTen supported Java compiler for your platform (eg Sun, HP, JRocket or IBM JDK) to compile each sample program. Refer to the [OracleTimesTen In-Memory Database Installation Guide](https://docs.oracle.com/cd/E21901_01/timesten.1122/e21632/toc.htm) for the list of supported JDKs for your preferred platform.
 
 For JDK 11, 17, 21, and 25, the TimesTen JDBC JAR is timesten_home/install/lib/ttjdbc<jdk_version>.jar, where <jdk_version> indicates the JDK version, 11, 17, 21, or 25, for example, ttjdbc25.jar for JDK 25. The JDBC JARs are also packaged as a Java module with the Java module name **timesten.jdbc** and JMS/XLA JAR (timestenjmsxla.jar) too with module name **timesten.jmsxla** so you can use both for module compilation (import them in module-info.java), if your JDK supports modules. 
+
+**NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations, also since this use the Javax JMS you need to add the jms.jar to environment CLASSPATH which can be found in 3rdparty directory `/home/timesten/instance/tt<version>/3rdparty`. For the  asyncJMS2 and syncJMS2 which are sample programs using Jakarta JMS rather than Javax JMS, require separate download of jakarta.jms.jar file. Once this jar file is downloaded, location to this jar will need to be added to environment variable CLASSPATH. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward and **jakarta becomes the default** option if both jakarta.jms and javax.jms JARs are found in CLASSPATH.
 
 ### Compile with JDK 11, 17 and 21
 
