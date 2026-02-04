@@ -80,7 +80,7 @@ To compile the sample programs all at once:
 
 `javac --module-path <module_path> -d out *.java`
 
-Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>. The "-d" is necessary to build the module application in "out" directory. If you check the "out" directory you will find module-info.class and package directories. The module name, dependencies and exports are defined in module-info.java file (you need this to compile a module), and all java files you are going to compile into a module need package name as shown in java files ("jdbc.demo" and "jms.demo"). For this demos when you want to **compile as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path> to ensure all dependendies are imported as modules and have "out" directories of jdbc and jms demos included.
+Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>. The "-d" is necessary to build the module application in "out" directory. If you check the "out" directory you will find module-info.class and package directories. The module name, dependencies and exports are defined in module-info.java file (you need this to compile a module), and all java files you are going to compile into a module need package name as shown in java files ("jdbc.demo" and "jms.demo"). For this demos when you want to **compile as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path> to ensure all dependendies are imported as modules and have "out" directories of jdbc and jms demos included. When you make your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
 
 **NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations. Additionally, asyncJMS2 and syncJMS2 which are sample programs using Jakarta JMS rather than Javax JMS, require separate download of jakarta.jms.jar file. Once this jar file is downloaded, location to this jar will need to be added to environment variable CLASSPATH. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward.
 
@@ -92,23 +92,25 @@ option in order to run the 64-bit JVM.
 
 **NOTE:** On some platforms, such as macOS, you may need to explicitly pass a setting for java.library path to the JVM in order to run the samples. For example:
 
-    `java -Djava.library.path=${TIMESTEN_HOME}/install/lib <packagename><progname>`
+    java -Djava.library.path=${TIMESTEN_HOME}/install/lib <packagename><progname>
 
 **NOTE:** When you want to run using the TimesTen JDBC Module with JDK 11, 17, 21 and 25. The module-path and enable-native-access need to be added. For example:
     
-    **Run as a non-modular or mixed application**
-    `java -cp $CLASSPATH --module-path <module_path> --enable-native-access="timesten.jdbc" jdbc.demo.<progname> …`
+Run as a non-modular or mixed application
 
-    JMS demos
-    `java -cp $CLASSPATH --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" jms.demo.<progname> …`
+    java -cp $CLASSPATH --module-path <module_path> --enable-native-access="timesten.jdbc" jdbc.demo.<progname> …
 
-    **Run as a modular application**
-    `java --module-path <module_path> --enable-native-access="timesten.jdbc" --module my.jdbc.app.module/jdbc.demo.<progname> …`
+    java -cp $CLASSPATH --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" jms.demo.<progname> …
 
-    JMS demos
-    `java --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" --module my.jms.app.module/jms.demo.<progname> …`
 
-    Make sure to also include **timesten.jmsxla** in **--enable-native-access** for jms programs like **--enable-native-access=timesten.jdbc,timesten.jmsxla**. As shown in command the name of the module you compiled is **my.jdbc.app.module** or **my.jms.app.module** (if they are jms programs) while the package of the class you are going to execute is **jdbc.demo** or **jms.demo** (for jms programs), module name and dependencies are defined in module-info.java file. As a reminder for this demos when you want to **run this as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path>.
+Run as a modular application
+
+    java --module-path <module_path> --enable-native-access="timesten.jdbc" --module my.jdbc.app.module/jdbc.demo.<progname> …
+
+    java --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" --module my.jms.app.module/jms.demo.<progname> …
+
+
+Make sure to also include **timesten.jmsxla** in **--enable-native-access** for jms programs like **--enable-native-access=timesten.jdbc,timesten.jmsxla**. As shown in command, the name of the module you compiled is **my.jdbc.app.module** or **my.jms.app.module** (if they are jms programs) while the package of the class you are going to execute is **jdbc.demo** or **jms.demo** (for jms programs), the name of the module and dependencies are defined in module-info.java file. As a reminder for this demos when you want to **run this as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path>. When you build and run your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
 
 **asyncJMS** or **asyncJMS2**
 
