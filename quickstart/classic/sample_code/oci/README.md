@@ -146,6 +146,17 @@ Use a client/server workload with 10 * (3 reads, 1 insert and 1 update)  per tra
 For the full syntax of the program, use "tptbmOCI -help".
 
 
+**jsonSample**
+
+This sample demonstrates how to work with JSON data in TimesTen using the OCI interface. It creates a JSON-enabled purchase order table, loads JSON files from disk, creates a functional index for JSON value lookups, updates an existing document, queries by purchase order and user, and lists line items using `JSON_TABLE`. The table is dropped at the end of the run.
+
+Examples:
+
+Run the program by providing user credentials and service name
+
+`jsonSample -user <myuser> -password <mypassword> -service <myservice>`
+
+
 **ocimtquery**
 
 This program runs a set of queries provided in a file and measures (and reports) various aspects of query performance such as throughput, min/avg/max and 95/99 percentile response times. You can control how many times each query is run and how many concurrent threads are used to run the queries.

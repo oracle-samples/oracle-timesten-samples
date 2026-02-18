@@ -36,8 +36,10 @@ PLSQLOCI        = plsqlOCI.exe
 PLSQLOCIOBJS    = plsqlOCI.obj psswds.obj
 MTQUERY         = ocimtquery.exe
 MTQUERYOBJS     = ocimtquery.obj
+JSONSAMPLE      = jsonSample.exe
+JSONSAMPLEOBJS  = jsonSample.obj
 
-PROGS           = $(ADDEMP) $(TPTBMOCI) $(PLSQLOCI) $(MTQUERY)
+PROGS           = $(ADDEMP) $(TPTBMOCI) $(PLSQLOCI) $(MTQUERY) $(JSONSAMPLE)
 
 #
 # Top level targets
@@ -64,6 +66,9 @@ $(PLSQLOCI):	$(PLSQLOCIOBJS)
 $(MTQUERY):	$(MTQUERYOBJS)
 		$(CC) /Fe$@ $(MTQUERYOBJS) $(LDFLAGS) $(ICLIBS)
 
+$(JSONSAMPLE):	$(JSONSAMPLEOBJS)
+		$(CC) /Fe$@ $(JSONSAMPLEOBJS) $(LDFLAGS) $(ICLIBS)
+
 #
 # Targets for building object files
 #
@@ -79,6 +84,9 @@ plsqlOCI.obj:	plsqlOCI.c
 
 ocimtquery.obj:	ocimtquery.c
 	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c ocimtquery.c
+
+jsonSample.obj:	jsonSample.c
+	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c jsonSample.c
 
 psswds.obj:	psswds.c
 	$(CC) $(CFLAGS) /Fo$@ /FR$*.sbr /c psswds.c

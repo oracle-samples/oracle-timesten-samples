@@ -6,6 +6,8 @@ set QUICKSTART_HOME=%~dp0
 
 set PATH=%QUICKSTART_HOME%sample_code\odbc;%QUICKSTART_HOME%sample_code\proc;%QUICKSTART_HOME%sample_code\oci;%QUICKSTART_HOME%sample_code\jdbc;%QUICKSTART_HOME%sample_code\odbc_drivermgr;%QUICKSTART_HOME%sample_code\ttclasses;%PATH%
 
+set CLASSPATH=%QUICKSTART_HOME%sample_code\jdbc;%CLASSPATH%
+
 goto fini
 
 :err

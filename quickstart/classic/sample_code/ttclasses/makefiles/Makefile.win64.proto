@@ -63,7 +63,8 @@ catalog_client.obj \
 plsqlTTCLASSES_client.obj \
 pooltest_client.obj \
 ttSizeAll_client.obj \
-typetest_client.obj
+typetest_client.obj \
+jsonSample_client.obj
 
 TTC_CLIENT_DEMO_C_OBJS = \
 portable_thread_windows_client.obj
@@ -76,7 +77,8 @@ catalogCS.exe \
 plsqlTTCLASSESCS.exe \
 pooltestCS.exe \
 ttSizeAllCS.exe \
-typetestCS.exe
+typetestCS.exe \
+jsonSampleCS.exe
 
 #
 #	Top-level targets
@@ -174,6 +176,13 @@ ttSizeAllCS.exe: ttSizeAll_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) \
 typetestCS.exe: typetest_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) \
                 $(TTCLASSESDEPS)
 	$(CPLUSPLUS) /Fe$@ typetest_client.obj $(UTILS_CLIENT) \
+        $(TTCLASSES_CS_LIB) $(LDFLAGS)
+	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
+        -outputresource:$@;1)
+
+jsonSampleCS.exe: jsonSample_client.obj $(TTCLASSES_CS_LIB) $(UTILS_CLIENT) \
+                $(TTCLASSESDEPS)
+	$(CPLUSPLUS) /Fe$@ jsonSample_client.obj $(UTILS_CLIENT) \
         $(TTCLASSES_CS_LIB) $(LDFLAGS)
 	-@IF EXIST $@.manifest  ($(WINMT) -manifest $@.manifest \
         -outputresource:$@;1)

@@ -402,7 +402,7 @@ TypetestConnection::query(const char* nameP)
 
   // for binary data retrieval
   u_char binary_array[10] ;
-  long len ;
+  SQLLEN len ;
 
   queryData.setParam(1, nameP);
 

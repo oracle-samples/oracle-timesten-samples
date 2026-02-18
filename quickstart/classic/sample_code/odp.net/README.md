@@ -60,5 +60,39 @@ For all available program options, use:
  
   `DemoODP -help`
 
+
+## JsonSample
+
+`JsonSample.cs` demonstrates TimesTen JSON operations through ODP.NET. The program reconnects to a TimesTen database, recreates a JSON-enabled purchase order table, loads JSON documents from disk, creates a functional JSON index on the `User` attribute, updates an existing document, queries by purchase order and user, and lists line items using `JSON_TABLE`. The optional `-keep` switch preserves the table after the run; otherwise it is dropped.
+
+Before running the sample, ensure that your TimesTen client can resolve the target DSN by configuring Oracle Net entries. Add the DSN to `tnsnames.ora`, for example:
+
+```
+sampledbcs = (DESCRIPTION =
+                (CONNECT_DATA =
+                   (SERVICE_NAME = sampledbcs)
+                   (SERVER = timesten_client)))
+```
+
+Also configure `sqlnet.ora` so that TNSNAMES and EZCONNECT resolution are enabled:
+
+```
+# To use ezconnect syntax or tnsnames, the following entries must be
+# included in the sqlnet.ora configuration.
+NAMES.DIRECTORY_PATH= (TNSNAMES, EZCONNECT)
+```
+
+After configuring Oracle Net, create the TimesTen client DSN using the **ODBC Data Sources (64-bit)** administrative tool on Windows so that the sample can locate `sampledbCS`.
+
+Example usage:
+
+  Default credentials (appuser/sampledb) and drop the table when finished
+  
+  `JsonSample`
+
+  Override credentials, DSN, and retain the table (optional `-keep`)
+  
+  `JsonSample -user myuser -password mypassword -dsn mydsn -keep`
+
 For more information on how to use ODP.NET to develop programs for
 the TimesTen database, see the [ODP.NET Support for TimesTen User's Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/odpnet/index.html).

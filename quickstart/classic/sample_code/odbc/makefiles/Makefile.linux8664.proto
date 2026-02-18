@@ -38,6 +38,9 @@ BLKINSCSOBJS    = bulkinsertCS.o ttTime.o utils.o ttgetopt.o
 BLKINSDM        = bulkinsertDM
 BLKINSDMOBJS    = bulkinsertDM.o ttTime.o utils.o ttgetopt.o
 
+JSONSAMPLECS    = jsonSampleCS
+JSONSAMPLECSOBJS= jsonSampleCS.o ttTime.o utils.o ttgetopt.o
+
 PLSQLODBCDC     = plsqlODBC
 PLSQLODBCDCOBJS = plsqlODBC.o ttTime.o utils.o ttgetopt.o
 PLSQLODBCCS     = plsqlODBCCS
@@ -75,7 +78,7 @@ UPDATELOBDMOBJS = updatelobDM.o ttTime.o utils.o ttgetopt.o
 
 
 DCPROGS         = $(BLKINSDC) $(PLSQLODBCDC) $(TPCBDC) $(TPTBMDC) $(WISCBMDC) $(UPDATELOBDC)
-CSPROGS         = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) $(UPDATELOBCS)
+CSPROGS         = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) $(JSONSAMPLECS) $(UPDATELOBCS)
 DMPROGS         = $(BLKINSDM) $(PLSQLODBCDM) $(TPCBDM) $(TPTBMDM) $(WISCBMDM) $(UPDATELOBDM)
 
 PROGS           = $(DCPROGS) $(CSPROGS) $(DMPROGS)
@@ -122,6 +125,9 @@ $(BLKINSCS):	$(BLKINSCSOBJS)
 
 $(PLSQLODBCCS): $(PLSQLODBCCSOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCCSOBJS) $(CSLIBS)
+
+$(JSONSAMPLECS):	$(JSONSAMPLECSOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(JSONSAMPLECSOBJS) $(CSLIBS)
 
 $(TPCBCS):	$(TPCBCSOBJS)
 	$(CC) -o $@ $(LDFLAGS) $(TPCBCSOBJS) $(CSLIBS)
@@ -184,6 +190,9 @@ plsqlODBC.o:	plsqlODBC.c
 
 plsqlODBCCS.o:	plsqlODBC.c
 	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c plsqlODBC.c
+
+jsonSampleCS.o:	jsonSample.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c jsonSample.c
 
 plsqlODBCDM.o:	plsqlODBC.c
 	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c plsqlODBC.c

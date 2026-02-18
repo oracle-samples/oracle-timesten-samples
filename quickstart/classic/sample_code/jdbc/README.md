@@ -321,4 +321,19 @@ Examples:
   For the full syntax of the program, use "java TTJdbcExamples -h".
 
 
+**JsonSample**
+
+This sample demonstrates how to work with JSON data in TimesTen using JDBC. It creates a JSON-enabled purchase order table, loads JSON documents from disk, creates a functional index for JSON_VALUE lookups, updates an existing document, runs queries filtering by purchase order and user, and lists line items using `JSON_TABLE`. By default the table is dropped at the end unless the `-keep` flag is supplied.
+
+Example:
+
+  Run the program using the default DSN (sampledb) and clean up on completion
+  
+  `java JsonSample`
+
+  Run the program and retain the JSON table after completion
+  
+  `java JsonSample -keep`
+
+
 For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/java-developer/index.html).

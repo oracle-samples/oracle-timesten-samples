@@ -8,7 +8,7 @@
 # Makefile for C/ODBC sample programs - Client/Server ONLY
 #
 
-TTVER		= 221
+TTVER		= 261
 
 INSTDIR         = $(TIMESTEN_HOME)\install
 
@@ -35,6 +35,9 @@ CSLIBS          = $(TTLINK) ttclient$(TTVER).lib
 BLKINSCS        = bulkinsertCS.exe
 BLKINSCSOBJS    = bulkinsertCS.obj ttTime.obj utils.obj ttgetopt.obj
 
+JSONSAMPLECS    = jsonSampleCS.exe
+JSONSAMPLECSOBJS= jsonSampleCS.obj utils.obj ttgetopt.obj
+
 PLSQLODBCCS     = plsqlODBCCS.exe
 PLSQLODBCCSOBJS = plsqlODBCCS.obj ttTime.obj utils.obj ttgetopt.obj
 
@@ -50,7 +53,7 @@ WISCBMCSOBJS    = wiscbmCS.obj wiscextra.obj ttRand.obj ttTime.obj utils.obj ttg
 UPDATELOBCS		= updatelobCS.exe
 UPDATELOBCSOBJS	= updatelobCS.obj ttTime.obj utils.obj ttgetopt.obj
 
-PROGS           = $(BLKINSCS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) $(UPDATELOBCS)
+PROGS           = $(BLKINSCS) $(JSONSAMPLECS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) $(UPDATELOBCS)
 
 #
 # Top level targets
@@ -71,6 +74,9 @@ clean:
 
 $(BLKINSCS):	$(BLKINSCSOBJS)
 	$(CC) /Fe$@ $(BLKINSCSOBJS) $(LDFLAGS) $(CSLIBS)
+
+$(JSONSAMPLECS):    $(JSONSAMPLECSOBJS)
+        $(CC) /Fe$@ $(JSONSAMPLECSOBJS) $(LDFLAGS) $(CSLIBS)
 
 $(PLSQLODBCCS):	$(PLSQLODBCCSOBJS)
 	$(CC) /Fe$@ $(PLSQLODBCCSOBJS) $(LDFLAGS) $(CSLIBS)
@@ -102,6 +108,9 @@ ttTime.obj:	$(COMMDIR)\ttTime.c $(COMMDIR)\ttTime.h
 
 bulkinsertCS.obj: bulkinsert.c
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c bulkinsert.c
+
+jsonSampleCS.obj: jsonSample.c
+        $(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c jsonSample.c
 
 plsqlODBCCS.obj:	plsqlODBC.c
 	$(CC) $(CFLAGS) $(CSDEFS) /Fo$@ /FR$*.sbr /c plsqlODBC.c

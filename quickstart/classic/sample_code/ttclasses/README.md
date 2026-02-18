@@ -236,6 +236,23 @@ Run the program against a different dsn and user id of your choice
 For the full syntax of the program, use "typetest -h".
 
 
+**jsonSample**
+
+This sample exercises TimesTen JSON functionality using the TTClasses C++ API. It drops and recreates the `j_purchaseorder` table, loads JSON documents from the Quick Start assets, builds a functional index on the JSON `User` attribute, updates a purchase order with revised JSON, retrieves purchase orders by identifier and by user, expands JSON arrays with `JSON_TABLE`, and cleans up the table when finished (unless `-keep` is supplied).
+
+Examples:
+
+Run with the default connection string and drop the table on completion
+
+`jsonSample`
+
+Connect using a custom DSN and retain the table data (optional `-keep`)
+
+`jsonSample -connstr "DSN=<myDSN>;UID=<myUser>;PWD=<myPassword>" -keep`
+
+For the full syntax of the program, use "jsonSample -h".
+
+
 **ttXlaAdmin**
 
 This particular TTClasses sample program is available in the _quickstart/classic/sample\_code/ttclasses/xla_ directory.

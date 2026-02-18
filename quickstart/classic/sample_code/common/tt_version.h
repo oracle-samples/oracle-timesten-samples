@@ -7,15 +7,15 @@
  * at http://oss.oracle.com/licenses/upl
  */
 
-#define TTRELEASE "22.1.1.1.0"
+#define TTRELEASE "26.1.1.1.0"
 #undef TTVERSION
-#define TTVERSION "221"
-#define TTMAJOR1 22
+#define TTVERSION "261"
+#define TTMAJOR1 26
 #define TTMAJOR2 1
 #define TTMAJOR3 1
 #define TTPATCH 1
 #define TTPORTPATCH 0
-#define TTVERSION_STRING "TimesTen Release 22.1.1.1.0"
+#define TTVERSION_STRING "TimesTen Release 26.1.1.1.0"
 
 #define TTPRODUCT "TimesTen"
 

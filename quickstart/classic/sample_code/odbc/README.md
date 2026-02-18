@@ -202,6 +202,21 @@ Example usage:
 For the full syntax, use "updatelob -help".
 
 
+**jsonSample**
+
+This sample demonstrates TimesTen JSON support through ODBC. It recreates a JSON-enabled purchase order table, loads JSON documents from disk, creates a functional index on the JSON `User` attribute, updates an existing document, retrieves purchase orders by identifier and by user, and lists line items using `JSON_TABLE`. Use `-keep` to retain the table after execution; otherwise it is dropped at completion.
+
+Examples:
+
+  Default connection string, drop table on completion
+  
+  `jsonSample`
+
+  Custom connection string and retain table
+  
+  `jsonSample -connstr "DSN=sampledb;UID=appuser;PWD=appuser" -keep`
+
+
 **xlaSimple**
 
 This sample program is available in the _quickstart/classic/sample\_code/odbc/xla_ directory. Two versionbs of the binary will be built; **xlaSimple** linked directly against the **direct mode** library and **xlaSimpleDM** linked against **TTDM**.

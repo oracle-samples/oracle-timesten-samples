@@ -180,6 +180,236 @@ Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim 
 
 ```
 
+### jsonSample.py
+
+This sample demonstrates how to store, index, update, and query JSON documents in TimesTen using the `python-oracledb` driver. It showcases loading JSON files, creating a functional index on JSON content, retrieving documents by identifier and by user, and presenting JSON line items in a relational view.
+
+* Creates and drops the `j_purchaseorder` table that stores JSON purchase orders
+* Inserts two JSON purchase orders loaded from sample files
+* Creates a JSON index on the `User` attribute for efficient lookups
+* Updates a purchase order document with revised JSON content
+* Retrieves purchase orders by identifier and by user name
+* Displays purchase order line items through `JSON_TABLE`
+
+Example:
+
+```
+% python3 jsonSample.py
+Table j_purchaseorder created
+Inserted purchase order with id 1600
+Inserted purchase order with id 1721
+JSON index IDX_JSON_USER created
+Updated purchase order with id 1600 using jsondoc1-v2.json
+Purchase order for id 1600:
+{
+  "PONumber" : 1600,
+  "Reference" : "ABULL-20140421",
+  "Requestor" : "Alexis Bull",
+  "User" : "ABULL",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Alexis Bull",
+    "Address" :
+    {
+      "street" : "200 Sporting Green",
+      "city" : "South San Francisco",
+      "state" : "CA",
+      "zipCode" : 99236,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "909-555-7307"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-1234"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "One Magic Christmas",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 13131092899
+      },
+      "Quantity" : 9
+    }
+  ]
+}
+Purchase order for id 1721:
+{
+  "PONumber" : 1721,
+  "Reference" : "CGIRAFFE-20140421",
+  "Requestor" : "Carlos Giraffe",
+  "User" : "CGIRAFFE",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Carlos Giraffe",
+    "Address" :
+    {
+      "street" : "200 Main Street",
+      "city" : "Napa",
+      "state" : "CA",
+      "zipCode" : 99150,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "908-555-1207"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-4321"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "Lethal Weapon",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 85391628927
+      },
+      "Quantity" : 2
+    },
+    {
+      "ItemNumber" : 2,
+      "Part" :
+      {
+        "Description" : "Some Random Movie",
+        "UnitPrice" : 17.95,
+        "UPCCode" : 18368923299
+      },
+      "Quantity" : 1
+    }
+  ]
+}
+Purchase orders for user ABULL:
+{
+  "PONumber" : 1600,
+  "Reference" : "ABULL-20140421",
+  "Requestor" : "Alexis Bull",
+  "User" : "ABULL",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Alexis Bull",
+    "Address" :
+    {
+      "street" : "200 Sporting Green",
+      "city" : "South San Francisco",
+      "state" : "CA",
+      "zipCode" : 99236,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "909-555-7307"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-1234"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "One Magic Christmas",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 13131092899
+      },
+      "Quantity" : 9
+    }
+  ]
+}
+Purchase orders for user CGIRAFFE:
+{
+  "PONumber" : 1721,
+  "Reference" : "CGIRAFFE-20140421",
+  "Requestor" : "Carlos Giraffe",
+  "User" : "CGIRAFFE",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Carlos Giraffe",
+    "Address" :
+    {
+      "street" : "200 Main Street",
+      "city" : "Napa",
+      "state" : "CA",
+      "zipCode" : 99150,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "908-555-1207"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-4321"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "Lethal Weapon",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 85391628927
+      },
+      "Quantity" : 2
+    },
+    {
+      "ItemNumber" : 2,
+      "Part" :
+      {
+        "Description" : "Some Random Movie",
+        "UnitPrice" : 17.95,
+        "UPCCode" : 18368923299
+      },
+      "Quantity" : 1
+    }
+  ]
+}
+Line items for purchase order 1600:
+Line  SKU           Description                     Qty  Unit Price  Extended
+   1  13131092899  One Magic Christmas               9       19.95    179.55
+Table j_purchaseorder dropped
+```
+
 
 ## Documentation
 You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/). Online documenation for the python-oracledb driver can be found [here](https://cx-oracle.readthedocs.io/en/latest/).
