@@ -38,6 +38,10 @@ Copyright (c) 2010, 2017, Oracle and/or its affiliates. All rights reserved.
      
      `source quickstart/classic/ttquickstartenv.csh`
 
+     Windows:
+
+     `call quickstart/classic/ttquickstartenv.cmd`
+
 ## How to compile the sample OCI programs
 
 To compile the sample programs in the sample_code/oci directory you use a provided makefile.

@@ -41,6 +41,10 @@ Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
     
     `source quickstart/classic/ttquickstartenv.csh`
 
+    Windows:
+
+    `call quickstart/classic/ttquickstartenv.cmd`
+
 NOTE: On Solaris and AIX platforms, use bash shell to run against ttquickstartenv.sh and tcsh shell to run against ttquickstartenv.csh for best results.
 
 ## How to compile the sample ODBC programs

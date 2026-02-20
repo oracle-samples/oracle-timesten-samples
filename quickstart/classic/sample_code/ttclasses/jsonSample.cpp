@@ -1,15 +1,12 @@
-//////////////////////////////////////////////////////////////////////////
-//
-// jsonSample.cpp: TimesTen JSON sample using the TTClasses API
-//
-// Demonstrates JSON table creation, document loading, indexing, querying,
-// updating, and cleanup using the common TTClasses sample framework.
-//
-// This source follows the coding style used throughout the TTClasses
-// quickstart samples and mirrors the workflow implemented by the
-// JDBC JsonSample program.
-//
-//////////////////////////////////////////////////////////////////////////
+/*
+ * Copyright (c) 2026, Oracle and/or its affiliates. All rights reserved.
+ *
+ * Licensed under the Universal Permissive License v 1.0 as shown
+ * at http://oss.oracle.com/licenses/upl
+ *
+ *  DESCRIPTION
+ *    Demonstrates TimesTen JSON features using the TTClasses driver.
+ */
 
 #include <cstdio>
 #include <cstdlib>

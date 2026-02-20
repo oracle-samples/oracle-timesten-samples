@@ -38,6 +38,10 @@ Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
     
     `source quickstart/classic/ttquickstartenv.csh`
 
+    Windows:
+
+    `call quickstart/classic/ttquickstartenv.cmd`
+
 # How to compile the sample TTClasses (C++) programs
 
 To compile the sample programs in the sample_code/ttclasses directory you use a provided makefile.

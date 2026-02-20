@@ -1,8 +1,11 @@
 /*
- * JsonSample.java
+ * Copyright (c) 2026, Oracle and/or its affiliates. All rights reserved.
  *
- * Demonstrates JSON support in Oracle TimesTen using the
- * common quickstart command-line workflow shared by the JDBC samples.
+ * Licensed under the Universal Permissive License v 1.0 as shown
+ * at http://oss.oracle.com/licenses/upl
+ *
+ * DESCRIPTION
+ *   Demonstrates TimesTen JSON features using the JDBC driver.
  */
 
 import java.io.FileNotFoundException;

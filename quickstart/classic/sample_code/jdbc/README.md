@@ -38,6 +38,10 @@ Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
     
     `source quickstart/classic/ttquickstartenv.csh`
 
+    Windows:
+
+    `call quickstart/classic/ttquickstartenv.cmd`
+
 ## How to compile the sample JDBC programs
 
 To compile the sample programs in the sample\_code/jdbc directory, use the relevant TimesTen supported Java compiler for your platform (eg Sun, HP, JRocket or IBM JDK) to compile each sample program. Refer to the [OracleTimesTen In-Memory Database Installation Guide](https://docs.oracle.com/cd/E21901_01/timesten.1122/e21632/toc.htm) for the list of supported JDKs for your preferred platform.

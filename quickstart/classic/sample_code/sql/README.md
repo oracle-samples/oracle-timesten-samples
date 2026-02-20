@@ -26,6 +26,10 @@ The SQL samples demonstrate features of Oracle TimesTen that can be exercised di
 
    `source quickstart/classic/ttquickstartenv.csh`
 
+   Windows:
+
+   `call quickstart/classic/ttquickstartenv.cmd`
+
 ## How to run the sample SQL code
 
 Run the SQL sample code using `ttIsql`. You can either source the script interactively or run it in batch mode.
