@@ -53,8 +53,7 @@ $(OBJ_DIR)/plsqlTTCLASSES.o \
 $(OBJ_DIR)/pooltest.o \
 $(OBJ_DIR)/testprog_utils.o \
 $(OBJ_DIR)/ttSizeAll.o \
-$(OBJ_DIR)/typetest.o \
-$(OBJ_DIR)/jsonSample.o
+$(OBJ_DIR)/typetest.o
 
 TTC_DEMO_C_OBJS = \
 $(OBJ_DIR)/portable_thread_unix.o
@@ -67,8 +66,7 @@ catalog \
 plsqlTTCLASSES \
 pooltest \
 ttSizeAll \
-typetest \
-jsonSample
+typetest
 
 TESTPROGS_CS = \
 basicsCS \
@@ -78,8 +76,7 @@ catalogCS \
 plsqlTTCLASSESCS \
 pooltestCS \
 ttSizeAllCS \
-typetestCS \
-jsonSampleCS
+typetestCS
 
 UTILS = \
 $(OBJ_DIR)/testprog_utils.o
@@ -126,12 +123,6 @@ $(OBJ_DIR)/%.o:%.cpp
 $(OBJ_DIR)/%_client.o:%.cpp
 	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c $*.cpp -o $@
 
-$(OBJ_DIR)/jsonSample.o:	jsonSample.cpp
-	$(CPLUSPLUS) $(CFLAGS) -c jsonSample.cpp -o $@
-
-$(OBJ_DIR)/jsonSample_client.o:	jsonSample.cpp
-	$(CPLUSPLUS) $(CFLAGS) $(CSDEFS) -c jsonSample.cpp -o $@
-
 #
 # TTClasses direct linked sample programs
 #
@@ -168,10 +159,6 @@ typetest: $(UTILS) $(OBJ_DIR)/typetest.o
 
 ttSizeAll: $(UTILS) $(OBJ_DIR)/ttSizeAll.o
 	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll.o $(UTILS) \
-	$(LDFLAGS) $(DIRLIBS)
-
-jsonSample: $(UTILS) $(OBJ_DIR)/jsonSample.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/jsonSample.o $(UTILS) \
 	$(LDFLAGS) $(DIRLIBS)
 
 #
@@ -215,9 +202,5 @@ typetestCS: $(OBJ_DIR)/typetest_client.o  $(OBJ_DIR)/testprog_utils_client.o
 
 ttSizeAllCS: $(OBJ_DIR)/ttSizeAll_client.o $(OBJ_DIR)/testprog_utils_client.o
 	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/ttSizeAll_client.o \
-        $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
-
-jsonSampleCS: $(OBJ_DIR)/jsonSample_client.o $(OBJ_DIR)/testprog_utils_client.o
-	$(CPLUSPLUS) -o $@ $(OBJ_DIR)/jsonSample_client.o \
         $(OBJ_DIR)/testprog_utils_client.o $(LDFLAGS) $(CSLIBS)
 

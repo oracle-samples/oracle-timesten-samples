@@ -9,9 +9,10 @@ The following table describes the tested operating systems, python_oracledb driv
 
 OS  | Python Version | python-oracledb Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
 ------------- | --------- | --------- | ------------| ------
-Linux 64-bit  |  3.12.3+   | 2.2.0+    | 22.1.1.25.0+	| 22.1.1.25.0+
-macOS  	    |  3.12.3+   |2.2.0+    | 22.1.1.25.0+	| N/A
-MS Windows 64-bit   | 3.12.3+  |2.2.0+    | 22.1.1.25.0+| N/A
+Linux 64-bit  |  3.12.3+   | 2.2.0+    | 26.1.1.1.0+	| 26.1.1.1.0+
+Linux ARM 64-bit  |  3.12.12+   | 3.4.2+    | 26.1.1.1.0+	| 26.1.1.1.0+
+macOS  	    |  3.12.3+   |2.2.0+    | 26.1.1.1.0+	| N/A
+MS Windows 64-bit   | 3.12.3+  |2.2.0+    | 26.1.1.1.0+| N/A
 
 **NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/en/database/other-databases/timesten/22.1/release-notes/toc.htm).
 

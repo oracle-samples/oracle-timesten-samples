@@ -12,9 +12,9 @@ The SQL samples demonstrate features of Oracle TimesTen that can be exercised di
 
    The following scripts must be run in each terminal session:
 
-   Set up the TimesTen instance environment variables (for example, if your TimesTen instance is under `/home/timesten/instance/tt261`):
+   Set up the TimesTen instance environment variables (for example, if your TimesTen instance is under `/home/timesten/instance/<instance_name>`):
 
-   `source /home/timesten/instance/tt261/bin/ttenv.sh`
+   `source /home/timesten/instance/<instance_name>/bin/ttenv.sh`
 
    Set up Quick Start environment variables:
 

@@ -15,9 +15,9 @@ The following steps must be performed on the Unix/Linux machine hosting the Time
  
 2. Set up sample database and user accounts
 
-    The following build_sampledb script should be run once to set up the sample database and user accounts. First set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/tt221 directory, execute the command
+    The following build_sampledb script should be run once to set up the sample database and user accounts. First set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/<instance_name> directory, execute the command
 
-    `source /home/timesten/instance/tt221/bin/ttenv.sh`
+    `source /home/timesten/instance/<instance_name>/bin/ttenv.sh`
 
     Run the quickstart/classic/sample_scripts/createdb/build_sampledb script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
 
@@ -92,7 +92,7 @@ Example usage:
 
   Override credentials, DSN, and retain the table (optional `-keep`)
   
-  `JsonSample -user myuser -password mypassword -dsn mydsn -keep`
+  `JsonSample -user myuser -password mypassword -dsn mydsn`
 
 For more information on how to use ODP.NET to develop programs for
 the TimesTen database, see the [ODP.NET Support for TimesTen User's Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/odpnet/index.html).

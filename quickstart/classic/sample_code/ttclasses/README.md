@@ -6,30 +6,12 @@ Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
 
 1. Manually Configure the Sample DSN for the Sample Programs; refer to _quickstart/classic/html/developer/sample\_dsn\_setup.html_
 
-2. Set up sample database and user accounts
+2. Set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/<instance_name> directory, execute the following command:
 
-    The following build_sampledb script should be run once to set up the sample database and user accounts. First set up the Instance Environment Variables e.g. if your TimesTen instance location is under /home/timesten/instance/tt221 directory, execute the command
+    `source /home/timesten/instance/<instance_name>/bin/ttenv.sh`
 
-    `source /home/timesten/instance/tt221/bin/ttenv.sh`
-
-    Run the quickstart/classic/sample_scripts/createdb/build\_sampledb script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
-
-    Unix/Linux:
-    
-    `cd quickstart/classic/sample_scripts/createdb`
-    
-    `./build_sampledb.sh`
-
-3. Set up environment to compile and run the sample application
-
-    The following scripts must be run in every terminal session.
-
-    Set up the Instance environment variables. e.g. if your TimesTen instance location is under /home/timesten/instance/tt221 directory, execute the command
-
-    `source /home/timesten/instance/tt221/bin/ttenv.sh`
-
-    Set up quickstart environment variables:
-    
+3. Set up quickstart environment variables:
+      
     Unix/Linux: 	  	
     
     `. quickstart/classic/ttquickstartenv.sh`
@@ -41,6 +23,15 @@ Copyright (c) 2009, 2017, Oracle and/or its affiliates. All rights reserved.
     Windows:
 
     `call quickstart/classic/ttquickstartenv.cmd`
+
+4. Run the _quickstart/classic/sample\_scripts/createdb/build\_sampledb_ script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
+
+    Unix/Linux:
+    
+    `cd  quickstart/classic/sample_scripts/createdb`
+    
+    `./build_sampledb.sh`
+
 
 # How to compile the sample TTClasses (C++) programs
 
@@ -248,11 +239,11 @@ Examples:
 
 Run with the default connection string and drop the table on completion
 
-`jsonSample`
+`./jsonSample`
 
-Connect using a custom DSN and retain the table data (optional `-keep`)
+Connect using a custom DSN (optional retain the table with `-keep`)
 
-`jsonSample -connstr "DSN=<myDSN>;UID=<myUser>;PWD=<myPassword>" -keep`
+`./jsonSample -connstr "DSN=<myDSN>;UID=<myUser>;PWD=<myPassword>"`
 
 For the full syntax of the program, use "jsonSample -h".
 
