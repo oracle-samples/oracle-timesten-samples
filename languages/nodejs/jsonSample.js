@@ -19,9 +19,9 @@ oracledb.autoCommit = true;
 oracledb.fetchAsString = [oracledb.CLOB];
 
 const TABLE_NAME      = 'j_purchaseorder';
-const JSON_DOC1       = '../../quickstart/classic/sample_code/common/jsondoc1.json';
-const JSON_DOC1_V2    = '../../quickstart/classic/sample_code/common/jsondoc1-v2.json';
-const JSON_DOC2       = '../../quickstart/classic/sample_code/common/jsondoc2.json';
+const JSON_DOC1       = '../../quickstart/sample_code/common/jsondoc1.json';
+const JSON_DOC1_V2    = '../../quickstart/sample_code/common/jsondoc1-v2.json';
+const JSON_DOC2       = '../../quickstart/sample_code/common/jsondoc2.json';
 const ALLOWED_ARGS    = ['-u', '-p', '-c', '-keep', '-help', '-h'];
 const JSON_FETCH_OPTIONS = { outFormat: oracledb.OUT_FORMAT_OBJECT };
 const USAGE = `
