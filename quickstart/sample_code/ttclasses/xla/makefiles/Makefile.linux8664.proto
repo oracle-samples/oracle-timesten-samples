@@ -37,7 +37,7 @@ EXTRALIBS       = -ldl -lrt -lstdc++ -lttco
 endif
 
 LDFLAGS       = $(USING_GCC_32_LD)
-DIRLIBS       = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -ltten -lttclasses
+DIRLIBS       = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -ltten -lttclasses -lttxla
 
 CPLUSPLUS     = g++
 CC            = gcc

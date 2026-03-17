@@ -23,8 +23,9 @@ CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
 
 TTLINK          = -L$(INSTDIR)/lib
 
-DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
-DMLIBS          = $(TTLINK) -lttdrvmgr $(EXTRALIBS)
+XLALIBS         = -lttxla
+DCLIBS          = $(TTLINK) $(XLALIBS) -ltten $(EXTRALIBS)
+DMLIBS          = $(TTLINK) $(XLALIBS) -lttdrvmgr $(EXTRALIBS)
 
 
 XLASIMPLEDC     = xlaSimple

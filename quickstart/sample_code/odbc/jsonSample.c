@@ -113,7 +113,7 @@ main(int argc, char *argv[])
                 "allocating ODBC connection", __FILE__, __LINE__);
 
   rc = SQLDriverConnect(hdbc, NULL, (SQLCHAR *) connstr, SQL_NTS,
-                        NULL, 0, NULL, SQL_DRIVER_NOPROMPT);
+                        NULL, 0, NULL, SQL_DRIVER_COMPLETE);
   if (handle_errors(hdbc, SQL_NULL_HSTMT, rc, NO_EXIT,
                     "connecting with SQLDriverConnect", __FILE__, __LINE__) != 0) {
     cleanup(XA_ABORT);

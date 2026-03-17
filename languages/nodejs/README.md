@@ -191,7 +191,7 @@ This sample showcases TimesTen JSON capabilities from Node.js using the `node-or
 Example:
 
 ```
-% node jsonSample.js
+% node jsonSample.js -u <username> -p <password> [-c <connectionString>]
 Connecting
 Connected
 Table j_purchaseorder created

@@ -195,7 +195,7 @@ This sample demonstrates how to store, index, update, and query JSON documents i
 Example:
 
 ```
-% python3 jsonSample.py
+% python3 jsonSample.py -u <username> -p <password> [-c <connectionString>]
 Table j_purchaseorder created
 Inserted purchase order with id 1600
 Inserted purchase order with id 1721

@@ -24,7 +24,7 @@ CFLAGS        = $(OPTFLAG) $(THREAD_SAFE) -I.. -I$(TTC_INCLUDEDIR) \
                 -DUSE_OLD_CPP_STREAMS -I$(COMMON)
 
 LDFLAGS       = $(LD64) -bh:5
-DIRLIBS       = -L$(INSTDIR)/lib -ltten -lttclasses -lm -lpthread -lC_r
+DIRLIBS       = -L$(INSTDIR)/lib -ltten -lttclasses -lm -lpthread -lC_r -lttxla
 
 CPLUSPLUS     = xlc_r
 CC            = xlc_r
