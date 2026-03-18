@@ -31,8 +31,9 @@ CFLAGS        = $(OPTFLAG) $(THREAD_SAFE) -I$(TTC_INCLUDEDIR) \
                 -I$(COMMON)
 
 LDFLAGS       = $(LD64) -bh:5
-DIRLIBS       = -L$(INSTDIR)/lib -ltten -lttclasses -lm -lpthread -lC_r
-CSLIBS        = -L$(INSTDIR)/lib -lttclient -lttclassesCS -lm -lpthread -lC_r
+XLALIBS       = -lttxla
+DIRLIBS       = -L$(INSTDIR)/lib -ltten -lttclasses -lm -lpthread -lC_ri $(XLALIBS)
+CSLIBS        = -L$(INSTDIR)/lib -lttclient -lttclassesCS -lm -lpthread -lC_r $(XLALIBS)
 
 CPLUSPLUS     = xlc_r
 CC            = xlc_r

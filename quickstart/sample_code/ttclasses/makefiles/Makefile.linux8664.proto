@@ -24,8 +24,9 @@ CFLAGS        = $(OPTFLAG) -DTT_64BIT -I$(INSTDIR)/include -I$(TTC_INCLUDEDIR) -
                 -DGCC $(THREAD_SAFE) -I$(COMMON)
 
 LDFLAGS       = 
-DCLIBS        = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -ltten -lttclasses
-CSLIBS        = -lpthread -lnsl $(EXTRALIBS) -L$(INSTDIR)/lib -lttclient -lttclassesCS
+XLALIBS       = -lttxla
+DCLIBS        = -lpthread -lnsl $(EXTRALIBS) $(XLALIBS) -L$(INSTDIR)/lib -ltten -lttclasses
+CSLIBS        = -lpthread -lnsl $(EXTRALIBS) $(XLALIBS) -L$(INSTDIR)/lib -lttclient -lttclassesCS
 
 CPLUSPLUS     = g++
 CC            = gcc
