@@ -1,0 +1,49 @@
+{
+  "PONumber": 1721,
+  "Reference": "CGIRAFFE-20140421",
+  "Requestor": "Carlos Giraffe",
+  "User": "CGIRAFFE",
+  "CostCenter": "A50",
+  "ShippingInstructions": {
+    "name": "Carlos Giraffe",
+    "Address": {
+      "street": "200 Main Street",
+      "city": "Napa",
+      "state": "CA",
+      "zipCode": 99150,
+      "country": "United States of America"
+    },
+    "Phone": [
+      {
+        "type": "Office",
+        "number": "908-555-1207"
+      },
+      {
+        "type": "Mobile",
+        "number": "415-555-4321"
+      }
+    ]
+  },
+  "Special Instructions": null,
+  "AllowPartialShipment": false,
+  "LineItems": [
+    {
+      "ItemNumber": 1,
+      "Part": {
+        "Description": "Lethal Weapon",
+        "UnitPrice": 19.95,
+        "UPCCode": 85391628927
+      },
+      "Quantity": 2
+    },
+    {
+      "ItemNumber": 2,
+      "Part": {
+        "Description": "Some Random Movie",
+        "UnitPrice": 17.95,
+        "UPCCode": 18368923299
+      },
+      "Quantity": 1
+    }
+  ]
+}

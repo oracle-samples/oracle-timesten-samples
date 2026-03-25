@@ -9,11 +9,12 @@ The following table describes the tested operating systems, python_oracledb driv
 
 OS  | Python Version | python-oracledb Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
 ------------- | --------- | --------- | ------------| ------
-Linux 64-bit  |  3.12.3+   | 2.2.0+    | 22.1.1.25.0+	| 22.1.1.25.0+
-macOS  	    |  3.12.3+   |2.2.0+    | 22.1.1.25.0+	| N/A
-MS Windows 64-bit   | 3.12.3+  |2.2.0+    | 22.1.1.25.0+| N/A
+Linux 64-bit  |  3.12.3+   | 2.2.0+    | 26.1.1.1.0+	| 26.1.1.1.0+
+Linux ARM 64-bit  |  3.12.12+   | 3.4.2+    | 26.1.1.1.0+	| 26.1.1.1.0+
+macOS  	    |  3.12.3+   |2.2.0+    | 26.1.1.1.0+	| N/A
+MS Windows 64-bit   | 3.12.3+  |2.2.0+    | 26.1.1.1.0+| N/A
 
-**NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/en/database/other-databases/timesten/22.1/release-notes/toc.htm).
+**NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/en/database/other-databases/timesten/26.1/release-notes/toc.htm).
 
 **NOTE2**: Python version 2.7 also works against TimesTen databases even though it's not listed in the chart above.
 
@@ -24,13 +25,13 @@ MS Windows 64-bit   | 3.12.3+  |2.2.0+    | 22.1.1.25.0+| N/A
 1. Python language is installed. 
 2. The python_oracledb for Python is installed. 
 3. A TimesTen database is created and data source is setup to access that database. 
-4. Environment to access Python, python_oracledb driver and TimesTen data source are set up (i.e. the TimesTen environment script ttenv.sh/ttenv.csh has been executed)
+4. Environment to access Python, python_oracledb driver and TimesTen data source are set up (i.e. the TimesTen environment script ttenv.sh/ttenv.csh/ttquickstartenv.cmd has been executed)
 
-For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/open-source-languages/index.html).
+For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/open-source-languages/index.html).
 
 ## Known Problems and Limitations
 
-* NVARCHAR/NCHAR data types in a Python application are encoded as UTF-16, the [same difference between Oracle and TimesTen](https://docs.oracle.com/en/database/other-databases/timesten/22.1/cache/compatibility-timesten-and-oracle-databases.html#GUID-13FF0E9B-9250-49DB-810A-89EE48605E5E) as noted in the TimesTen Documentation.
+* NVARCHAR/NCHAR data types in a Python application are encoded as UTF-16, the [same difference between Oracle and TimesTen](https://docs.oracle.com/en/database/other-databases/timesten/26.1/cache/compatibility-timesten-and-oracle-databases.html#GUID-13FF0E9B-9250-49DB-810A-89EE48605E5E) as noted in the TimesTen Documentation.
 * DML statements with RETURN INTO are currently not supported.
 * The value returned for the sub-second field of a PL/SQL output parameter of type Timestamp may incorrect. 
 * When using the built-in procedures ttRepStateSave() & ttRepSubscriberWait() to set the replication state from a Python applications, the operation may take some time to take effect. Your application should wait much longer than the set waitTime specified in the call to ttRepSubscriberWait() to avoid timeouts.
@@ -178,6 +179,236 @@ Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim 
 > Connection released
 
 
+```
+
+### jsonSample.py
+
+This sample demonstrates how to store, index, update, and query JSON documents in TimesTen using the `python-oracledb` driver. It showcases loading JSON files, creating a functional index on JSON content, retrieving documents by identifier and by user, and presenting JSON line items in a relational view.
+
+* Creates and drops the `j_purchaseorder` table that stores JSON purchase orders
+* Inserts two JSON purchase orders loaded from sample files
+* Creates a JSON index on the `User` attribute for efficient lookups
+* Updates a purchase order document with revised JSON content
+* Retrieves purchase orders by identifier and by user name
+* Displays purchase order line items through `JSON_TABLE`
+
+Example:
+
+```
+% python3 jsonSample.py -u <username> -p <password> [-c <connectionString>]
+Table j_purchaseorder created
+Inserted purchase order with id 1600
+Inserted purchase order with id 1721
+JSON index IDX_JSON_USER created
+Updated purchase order with id 1600 using jsondoc1-v2.json
+Purchase order for id 1600:
+{
+  "PONumber" : 1600,
+  "Reference" : "ABULL-20140421",
+  "Requestor" : "Alexis Bull",
+  "User" : "ABULL",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Alexis Bull",
+    "Address" :
+    {
+      "street" : "200 Sporting Green",
+      "city" : "South San Francisco",
+      "state" : "CA",
+      "zipCode" : 99236,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "909-555-7307"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-1234"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "One Magic Christmas",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 13131092899
+      },
+      "Quantity" : 9
+    }
+  ]
+}
+Purchase order for id 1721:
+{
+  "PONumber" : 1721,
+  "Reference" : "CGIRAFFE-20140421",
+  "Requestor" : "Carlos Giraffe",
+  "User" : "CGIRAFFE",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Carlos Giraffe",
+    "Address" :
+    {
+      "street" : "200 Main Street",
+      "city" : "Napa",
+      "state" : "CA",
+      "zipCode" : 99150,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "908-555-1207"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-4321"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "Lethal Weapon",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 85391628927
+      },
+      "Quantity" : 2
+    },
+    {
+      "ItemNumber" : 2,
+      "Part" :
+      {
+        "Description" : "Some Random Movie",
+        "UnitPrice" : 17.95,
+        "UPCCode" : 18368923299
+      },
+      "Quantity" : 1
+    }
+  ]
+}
+Purchase orders for user ABULL:
+{
+  "PONumber" : 1600,
+  "Reference" : "ABULL-20140421",
+  "Requestor" : "Alexis Bull",
+  "User" : "ABULL",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Alexis Bull",
+    "Address" :
+    {
+      "street" : "200 Sporting Green",
+      "city" : "South San Francisco",
+      "state" : "CA",
+      "zipCode" : 99236,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "909-555-7307"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-1234"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "One Magic Christmas",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 13131092899
+      },
+      "Quantity" : 9
+    }
+  ]
+}
+Purchase orders for user CGIRAFFE:
+{
+  "PONumber" : 1721,
+  "Reference" : "CGIRAFFE-20140421",
+  "Requestor" : "Carlos Giraffe",
+  "User" : "CGIRAFFE",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Carlos Giraffe",
+    "Address" :
+    {
+      "street" : "200 Main Street",
+      "city" : "Napa",
+      "state" : "CA",
+      "zipCode" : 99150,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "908-555-1207"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-4321"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "Lethal Weapon",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 85391628927
+      },
+      "Quantity" : 2
+    },
+    {
+      "ItemNumber" : 2,
+      "Part" :
+      {
+        "Description" : "Some Random Movie",
+        "UnitPrice" : 17.95,
+        "UPCCode" : 18368923299
+      },
+      "Quantity" : 1
+    }
+  ]
+}
+Line items for purchase order 1600:
+Line  SKU           Description                     Qty  Unit Price  Extended
+   1  13131092899  One Magic Christmas               9       19.95    179.55
+Table j_purchaseorder dropped
 ```
 
 

@@ -1,0 +1,253 @@
+#
+# Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+#
+# Makefile for C/ODBC sample programs
+#
+
+INSTDIR         = $(TIMESTEN_HOME)/install
+COMMDIR         = $(QUICKSTART_HOME)/sample_code/common
+
+CC              = gcc
+
+PLATCFLAGS      = -O3 -finline-functions -Wno-stringop-overflow
+LDFLAGS         = 
+SHLIB_SUFFIX    = so
+EXTRALIBS	=
+
+INCS            = -I$(INSTDIR)/include -I$(COMMDIR)
+
+DEFS		= 
+CSDEFS          = -DTTCLIENTSERVER
+DMDEFS          = -DTTDM
+CFLAGS          = $(PLATCFLAGS) $(DEFS) $(INCS)
+
+TTLINK          = -L$(INSTDIR)/lib
+
+DCLIBS          = $(TTLINK) -ltten $(EXTRALIBS)
+CSLIBS          = $(TTLINK) -lttclient $(EXTRALIBS)
+DMLIBS          = $(TTLINK) -lttdrvmgr $(EXTRALIBS)
+
+BLKINSDC        = bulkinsert
+BLKINSDCOBJS    = bulkinsert.o ttTime.o utils.o ttgetopt.o
+BLKINSCS        = bulkinsertCS
+BLKINSCSOBJS    = bulkinsertCS.o ttTime.o utils.o ttgetopt.o
+BLKINSDM        = bulkinsertDM
+BLKINSDMOBJS    = bulkinsertDM.o ttTime.o utils.o ttgetopt.o
+
+JSONSAMPLEDC    = jsonSample
+JSONSAMPLEDCOBJS= jsonSample.o ttTime.o utils.o ttgetopt.o
+JSONSAMPLECS    = jsonSampleCS
+JSONSAMPLECSOBJS= jsonSampleCS.o ttTime.o utils.o ttgetopt.o
+JSONSAMPLEDM    = jsonSampleDM
+JSONSAMPLEDMOBJS= jsonSampleDM.o ttTime.o utils.o ttgetopt.o
+
+PLSQLODBCDC     = plsqlODBC
+PLSQLODBCDCOBJS = plsqlODBC.o ttTime.o utils.o ttgetopt.o
+PLSQLODBCCS     = plsqlODBCCS
+PLSQLODBCCSOBJS = plsqlODBCCS.o ttTime.o utils.o ttgetopt.o
+PLSQLODBCDM     = plsqlODBCDM
+PLSQLODBCDMOBJS = plsqlODBCDM.o ttTime.o utils.o ttgetopt.o
+
+TPCBDC          = tpcb
+TPCBDCOBJS      = tpcb.o ttTime.o utils.o ttgetopt.o
+TPCBCS          = tpcbCS
+TPCBCSOBJS      = tpcbCS.o ttTime.o utils.o ttgetopt.o
+TPCBDM          = tpcbDM
+TPCBDMOBJS      = tpcbDM.o ttTime.o utils.o ttgetopt.o
+
+TPTBMDC         = tptbm
+TPTBMDCOBJS     = tptbm.o utils.o ttgetopt.o
+TPTBMCS         = tptbmCS
+TPTBMCSOBJS     = tptbmCS.o utils.o ttgetopt.o
+TPTBMDM         = tptbmDM
+TPTBMDMOBJS     = tptbmDM.o utils.o ttgetopt.o
+
+WISCBMDC        = wiscbm
+WISCBMDCOBJS    = wiscbm.o wiscextra.o utils.o ttTime.o ttgetopt.o
+WISCBMCS        = wiscbmCS
+WISCBMCSOBJS    = wiscbmCS.o wiscextra.o utils.o ttTime.o ttgetopt.o
+WISCBMDM        = wiscbmDM
+WISCBMDMOBJS    = wiscbmDM.o wiscextra.o utils.o ttTime.o ttgetopt.o
+
+UPDATELOBDC     = updatelob
+UPDATELOBOBJS   = updatelob.o ttTime.o utils.o ttgetopt.o
+UPDATELOBCS     = updatelobCS
+UPDATELOBCSOBJS = updatelobCS.o ttTime.o utils.o ttgetopt.o
+UPDATELOBDM     = updatelobDM
+UPDATELOBDMOBJS = updatelobDM.o ttTime.o utils.o ttgetopt.o
+
+
+DCPROGS         = $(BLKINSDC) $(JSONSAMPLE) $(PLSQLODBCDC) $(TPCBDC) $(TPTBMDC) $(WISCBMDC) $(UPDATELOBDC)
+CSPROGS         = $(BLKINSCS) $(JSONSAMPLECS) $(PLSQLODBCCS) $(TPCBCS) $(TPTBMCS) $(WISCBMCS) $(UPDATELOBCS)
+DMPROGS         = $(BLKINSDM) $(JSONSAMPLEDM) $(PLSQLODBCDM) $(TPCBDM) $(TPTBMDM) $(WISCBMDM) $(UPDATELOBDM)
+
+PROGS           = $(DCPROGS) $(CSPROGS) $(DMPROGS)
+
+#
+# Top level targets
+#
+
+all:		$(PROGS)
+
+nodm:		$(DCPROGS) $(CSPROGS)
+
+clean:
+	rm -f $(PROGS) *.o
+
+#
+# Targets for building Direct Linked executables
+#
+
+$(BLKINSDC):	$(BLKINSDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(BLKINSDCOBJS) $(DCLIBS)
+
+$(JSONSAMPLEDC): $(JSONSAMPLEDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(JSONSAMPLEDCOBJS) $(DCLIBS)
+
+$(PLSQLODBCDC): $(PLSQLODBCDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCDCOBJS) $(DCLIBS)
+
+$(TPCBDC):	$(TPCBDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPCBDCOBJS) $(DCLIBS)
+
+$(TPTBMDC):	$(TPTBMDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMDCOBJS) $(DCLIBS)
+
+$(WISCBMDC):	$(WISCBMDCOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMDCOBJS) $(DCLIBS)
+
+$(UPDATELOBDC): $(UPDATELOBOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(UPDATELOBOBJS) $(DCLIBS)
+
+#
+# Targets for building Client Server executables
+#
+
+$(BLKINSCS):	$(BLKINSCSOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(BLKINSCSOBJS) $(CSLIBS)
+
+$(JSONSAMPLECS):        $(JSONSAMPLECSOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(JSONSAMPLECSOBJS) $(CSLIBS)
+
+$(PLSQLODBCCS): $(PLSQLODBCCSOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCCSOBJS) $(CSLIBS)
+
+$(TPCBCS):	$(TPCBCSOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPCBCSOBJS) $(CSLIBS)
+
+$(TPTBMCS):	$(TPTBMCSOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMCSOBJS) $(CSLIBS) 
+
+$(WISCBMCS):	$(WISCBMCSOBJS) wiscprotos.h sqlfunc.h
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMCSOBJS) $(CSLIBS)
+
+$(UPDATELOBCS): $(UPDATELOBCSOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(UPDATELOBCSOBJS) $(CSLIBS)
+
+#
+# Targets for building TTDM executables
+#
+
+$(BLKINSDM):    $(BLKINSDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(BLKINSDMOBJS) $(DMLIBS)
+
+$(JSONSAMPLEDM): $(JSONSAMPLEDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(JSONSAMPLEDMOBJS) $(DMLIBS)
+
+$(PLSQLODBCDM): $(PLSQLODBCDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(PLSQLODBCDMOBJS) $(DMLIBS)
+
+$(TPCBDM):      $(TPCBDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPCBDMOBJS) $(DMLIBS)
+
+$(TPTBMDM):     $(TPTBMDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(TPTBMDMOBJS) $(DMLIBS)
+
+$(WISCBMDM):    $(WISCBMDMOBJS) wiscprotos.h sqlfunc.h
+	$(CC) -o $@ $(LDFLAGS) $(WISCBMDMOBJS) $(DMLIBS)
+
+$(UPDATELOBDM): $(UPDATELOBDMOBJS)
+	$(CC) -o $@ $(LDFLAGS) $(UPDATELOBDMOBJS) $(DMLIBS)
+
+#
+# Targets for building object files
+#
+
+utils.o:	$(COMMDIR)/utils.c $(COMMDIR)/utils.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/utils.c
+
+ttgetopt.o:	$(COMMDIR)/ttgetopt.c $(COMMDIR)/ttgetopt.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/ttgetopt.c
+
+ttTime.o:	$(COMMDIR)/ttTime.c $(COMMDIR)/ttTime.h
+	$(CC) $(CFLAGS) -o $@ -c $(COMMDIR)/ttTime.c
+
+bulkinsert.o:	bulkinsert.c
+	$(CC) $(CFLAGS) -o $@ -c bulkinsert.c
+
+bulkinsertCS.o:	bulkinsert.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c bulkinsert.c
+
+bulkinsertDM.o:	bulkinsert.c
+	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c bulkinsert.c
+
+jsonSample.o:    jsonSample.c
+	$(CC) $(CFLAGS) -o $@ -c jsonSample.c
+
+jsonSampleCS.o:  jsonSample.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c jsonSample.c
+
+jsonSampleDM.o:  jsonSample.c
+	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c jsonSample.c
+
+plsqlODBC.o:	plsqlODBC.c
+	$(CC) $(CFLAGS) -o $@ -c plsqlODBC.c
+
+plsqlODBCCS.o:	plsqlODBC.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c plsqlODBC.c
+
+plsqlODBCDM.o:	plsqlODBC.c
+	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c plsqlODBC.c
+
+tpcb.o:		tpcb.c
+	$(CC) $(CFLAGS) -o $@ -c tpcb.c
+
+tpcbCS.o:	tpcb.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c tpcb.c
+
+tpcbDM.o:	tpcb.c
+	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c tpcb.c
+
+tptbm.o:	tptbm.c
+	$(CC) $(CFLAGS) -o $@ -c tptbm.c
+
+tptbmCS.o:	tptbm.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c tptbm.c
+
+tptbmDM.o:	tptbm.c
+	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c tptbm.c
+
+wiscextra.o:	wiscextra.c
+	$(CC) $(CFLAGS) -o $@ -c wiscextra.c
+
+wiscbm.o:	wiscbm.c wiscprotos.h sqlfunc.h
+	$(CC) $(CFLAGS) -o $@ -c wiscbm.c
+
+wiscbmCS.o:	wiscbm.c wiscprotos.h sqlfunc.h
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c wiscbm.c
+
+wiscbmDM.o:	wiscbm.c wiscprotos.h sqlfunc.h
+	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c wiscbm.c
+
+updatelob.o:    updatelob.c
+	$(CC) $(CFLAGS) -o $@ -c updatelob.c
+
+updatelobCS.o: updatelob.c
+	$(CC) $(CFLAGS) $(CSDEFS) -o $@ -c updatelob.c
+
+updatelobDM.o: updatelob.c
+	$(CC) $(CFLAGS) $(DMDEFS) -o $@ -c updatelob.c

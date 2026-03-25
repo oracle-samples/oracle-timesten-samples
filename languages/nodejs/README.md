@@ -9,11 +9,12 @@ The following table describes the tested operating systems, node-oracledb driver
 
 OS  | Node.js Version  | node-oracledb Driver Version | TimesTen Client Driver	| TimesTen Direct Driver
 ------------- | ------- | -------------	| ------------ | ------
-Linux 64-bit  | 14.6.0+  |6.4.0+    | 22.1.1.25.0+	| 22.1.1.25.0+
-macOS      |  14.6.0+  |6.4.0+  | 22.1.1.25.0+	| N/A
-MS Windows 64-bit    | 14.6.0+  | 6.4.0+    | 22.1.1.25.0+ | N/A
+Linux 64-bit  | 14.6.0+  |6.4.0+    | 26.1.1.1.0+	| 26.1.1.1.0+
+Linux ARM 64-bit  | 22.22.0+  |6.10.0+    | 26.1.1.1.0+	| 26.1.1.1.0+
+macOS      |  14.6.0+  |6.4.0+  | 26.1.1.1.0+	| N/A
+MS Windows 64-bit    | 14.6.0+  | 6.4.0+    | 26.1.1.1.0+ | N/A
 
-**NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/en/database/other-databases/timesten/22.1/release-notes/toc.htm).
+**NOTE**: Access to TimesTen Databases on any supported TimesTen server platforms can be achieved using the TimesTen client driver from any of the platforms listed above. For more information on supported TimesTen platforms, see [TimesTen Release Notes](https://docs.oracle.com/en/database/other-databases/timesten/26.1/release-notes/toc.htm).
 
 
 ## PRE-REQUISITES
@@ -21,13 +22,13 @@ MS Windows 64-bit    | 14.6.0+  | 6.4.0+    | 22.1.1.25.0+ | N/A
 1. Node.js language is installed. 
 2. The node-oracledb driver is installed. 
 3. A TimesTen database is created and data source is setup to access that database. 
-4. Environment to access Node.js, node-oracledb driver and TimesTen data source are set up (i.e. the TimesTen environment script ttenv.sh/ttenv.csh has been executed)
+4. Environment to access Node.js, node-oracledb driver and TimesTen data source are set up (i.e. the TimesTen environment script ttenv.sh/ttenv.csh/ttquickstartenv.cmd has been executed)
 
-For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/en/database/other-databases/timesten/22.1/open-source-languages/index.html).
+For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/open-source-languages/index.html).
 
 ## Known Problems and Limitations
 
-* NVARCHAR/NCHAR data types in a Node.js application are encoded as UTF-16, the [same difference between Oracle and TimesTen](https://docs.oracle.com/en/database/other-databases/timesten/22.1/cache/compatibility-timesten-and-oracle-databases.html#GUID-13FF0E9B-9250-49DB-810A-89EE48605E5E) as noted in the TimesTen Documentation.
+* NVARCHAR/NCHAR data types in a Node.js application are encoded as UTF-16, the [same difference between Oracle and TimesTen](https://docs.oracle.com/en/database/other-databases/timesten/26.1/cache/compatibility-timesten-and-oracle-databases.html#GUID-13FF0E9B-9250-49DB-810A-89EE48605E5E) as noted in the TimesTen Documentation.
 * Fetching a clob inside a stored procedure through a Node.js application can result in error ORA-00600.
 * DML statements with RETURN INTO are currently not supported.
 * The value returned for the sub-second field of a PL/SQL output parameter of type Timestamp may be incorrect. 
@@ -174,6 +175,243 @@ Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim 
 > Connection released
 
 
+```
+
+### jsonSample.js
+
+This sample showcases TimesTen JSON capabilities from Node.js using the `node-oracledb` driver. It recreates a JSON-enabled purchase order table, loads and updates JSON documents, creates a functional JSON index, runs JSON_VALUE queries by user, and renders line items through `JSON_TABLE`.
+
+* Creates and drops the `j_purchaseorder` table used to store JSON purchase orders
+* Loads two purchase order documents from JSON files
+* Builds a JSON value index on the `User` field for targeted lookups
+* Updates an existing purchase order with revised JSON content
+* Retrieves purchase orders by identifier and by user name
+* Formats purchase order line items using `JSON_TABLE`
+
+Example:
+
+```
+% node jsonSample.js -u <username> -p <password> [-c <connectionString>]
+Connecting
+Connected
+Table j_purchaseorder created
+Reading jsondoc1.json
+Reading jsondoc1-v2.json
+Reading jsondoc2.json
+Inserted purchase order with id 1600
+Inserted purchase order with id 1721
+JSON index IDX_JSON_USER created
+Updated purchase order with id 1600 using jsondoc1-v2.json
+Purchase order 1600:
+{
+  "PONumber" : 1600,
+  "Reference" : "ABULL-20140421",
+  "Requestor" : "Alexis Bull",
+  "User" : "ABULL",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Alexis Bull",
+    "Address" :
+    {
+      "street" : "200 Sporting Green",
+      "city" : "South San Francisco",
+      "state" : "CA",
+      "zipCode" : 99236,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "909-555-7307"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-1234"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "One Magic Christmas",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 13131092899
+      },
+      "Quantity" : 9
+    }
+  ]
+}
+Purchase order 1721:
+{
+  "PONumber" : 1721,
+  "Reference" : "CGIRAFFE-20140421",
+  "Requestor" : "Carlos Giraffe",
+  "User" : "CGIRAFFE",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Carlos Giraffe",
+    "Address" :
+    {
+      "street" : "200 Main Street",
+      "city" : "Napa",
+      "state" : "CA",
+      "zipCode" : 99150,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "908-555-1207"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-4321"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "Lethal Weapon",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 85391628927
+      },
+      "Quantity" : 2
+    },
+    {
+      "ItemNumber" : 2,
+      "Part" :
+      {
+        "Description" : "Some Random Movie",
+        "UnitPrice" : 17.95,
+        "UPCCode" : 18368923299
+      },
+      "Quantity" : 1
+    }
+  ]
+}
+Purchase orders for user ABULL:
+{
+  "PONumber" : 1600,
+  "Reference" : "ABULL-20140421",
+  "Requestor" : "Alexis Bull",
+  "User" : "ABULL",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Alexis Bull",
+    "Address" :
+    {
+      "street" : "200 Sporting Green",
+      "city" : "South San Francisco",
+      "state" : "CA",
+      "zipCode" : 99236,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "909-555-7307"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-1234"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "One Magic Christmas",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 13131092899
+      },
+      "Quantity" : 9
+    }
+  ]
+}
+Purchase orders for user CGIRAFFE:
+{
+  "PONumber" : 1721,
+  "Reference" : "CGIRAFFE-20140421",
+  "Requestor" : "Carlos Giraffe",
+  "User" : "CGIRAFFE",
+  "CostCenter" : "A50",
+  "ShippingInstructions" :
+  {
+    "name" : "Carlos Giraffe",
+    "Address" :
+    {
+      "street" : "200 Main Street",
+      "city" : "Napa",
+      "state" : "CA",
+      "zipCode" : 99150,
+      "country" : "United States of America"
+    },
+    "Phone" :
+    [
+      {
+        "type" : "Office",
+        "number" : "908-555-1207"
+      },
+      {
+        "type" : "Mobile",
+        "number" : "415-555-4321"
+      }
+    ]
+  },
+  "Special Instructions" : null,
+  "AllowPartialShipment" : false,
+  "LineItems" :
+  [
+    {
+      "ItemNumber" : 1,
+      "Part" :
+      {
+        "Description" : "Lethal Weapon",
+        "UnitPrice" : 19.95,
+        "UPCCode" : 85391628927
+      },
+      "Quantity" : 2
+    },
+    {
+      "ItemNumber" : 2,
+      "Part" :
+      {
+        "Description" : "Some Random Movie",
+        "UnitPrice" : 17.95,
+        "UPCCode" : 18368923299
+      },
+      "Quantity" : 1
+    }
+  ]
+}
+Line items for purchase order 1600:
+Line  SKU           Description                     Qty  Unit Price  Extended
+   1  13131092899  One Magic Christmas               9       19.95    179.55
+Completed JSON sample operations
+Table j_purchaseorder dropped
+Connection has been released
 ```
 
 

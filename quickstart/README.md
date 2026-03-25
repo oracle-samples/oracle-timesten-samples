@@ -1,20 +1,24 @@
-# TimesTen QuickStart and Scaleout Samples
+Copyright (c) 1998, 2026, Oracle and/or its affiliates. All rights reserved.
 
-The Oracle TimesTen In-Memory Database can be deployed in two distinct modes; Classic and Scaleout.
+# QuickStart for TimesTen
 
-Classic mode is equivalent to the original TimesTen In-Memory Database and TimesTen Application-Tier Database Cache products from releases prior to 18.1. It includes all of the functionality of those products plus additional enhancements. The focus is on delivering low, consistent latency for SQL operations and transactions, high throughput (within the constraints of a single computer system) and high performance high availability.
+This directory contains the TimesTen Classic QuickStart. The QuickStart contains a wealth of tutorials, how-tos, examples and sample programs to help you quickly get up to speed with TimesTen. 
 
-Scaleout mode is a new feature introduced in the TimesTen 18.1 release. In this mode, TimesTen is deployed as a distributed, shared nothing, elastically scalable, highly available, relational in-memory database. The focus is on very high throughput (utilizing the computing power of multiple individual computer systems), providing a single database image for applications (transparent data distribution), automatic high availability and elastic scalability.
+The QuickStart is primarily accessed via a web browser starting with the index.html file in this directory - open this file in your browser to get started. 
 
-This folder contains the original TimesTen Classic QuickStart (which also covers Application-Tier Database Cache) and some Scaleout sample programs. See the README files in the individual folders for more information.
+You can also access the code samples directly in their own directories, where you will find README files with the necessary information to help you use them.
 
-| Repo/Folder name            | Description                                     |
-| :-------------------------- | :---------------------------------------------- |
-| [classic](./classic)        | Classic QuickStart                         |
-| [scaleout](./scaleout)              | Scaleout sample programs.                      |
+The files and directories contained here are as follows:
 
-## More information
-You can find more information on the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
+| File/Directory                               | Description                              |
+| :------------------------------------------- | :----------                           |
+| [ttquickstartenv.csh](./ttquickstartenv.csh) | Script to configure the required environment variables for the C shell and compatible shells (csh, tcsh). |
+| [ttquickstartenv.zsh](./ttquickstartenv.zsh)  | Script to configure the required environment variables for the Z shell. |
+| [ttquickstartenv.sh](./ttquickstartenv.sh)   | Script to configure the required environment variables for the Bourne shell and compatible shells (sh, ksh, bash, ...). |
+| [index.html](./index.html)   | The main entry point to the QuickStart; open this file in your browser to get started. |
+| [html](./html)   | The HTML content for the QuickStart. |
+| [sample_config](./sample_config)           | Example configuration files for the QuickStart examples. |
+| [sample_scripts](./sample_scripts)           | Scripts used in the QuickStart examples. |
+| [sample_code](./sample_code)                 | The various sample programs making up the QuickStart examples. These programs illustrate how to use TimesTen via many of the APIs that are provided as standard as part of the product. |
 
-## Documentation
-You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/)
+NOTE: On Solaris and AIX platforms, use bash shell to run against ttquickstartenv.sh and tcsh shell to run against ttquickstartenv.csh for best results.
