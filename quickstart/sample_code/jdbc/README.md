@@ -11,24 +11,24 @@ Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
     `source /home/timesten/instance/<instance_name>/bin/ttenv.sh`
 
 3. Set up quickstart environment variables:
-      
-    Unix/Linux: 	  	
     
-    `. quickstart/classic/ttquickstartenv.sh`
-    
+    Unix/Linux:
+
+    `. quickstart/ttquickstartenv.sh`
+
     or
-    
-    `source quickstart/classic/ttquickstartenv.csh`
+
+    `source quickstart/ttquickstartenv.csh`
 
     Windows:
 
-    `call quickstart/classic/ttquickstartenv.cmd`
-
-4. Run the _quickstart/classic/sample\_scripts/createdb/build\_sampledb_ script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
+    `call quickstart/ttquickstartenv.cmd`
+ 
+4. Run the _quickstart/sample\_scripts/createdb/build\_sampledb_ script, which creates the sample database and user accounts that are used by the sample programs. This script creates the TimesTen user accounts and prompts you for the desired user passwords.
 
     Unix/Linux:
     
-    `cd  quickstart/classic/sample_scripts/createdb`
+    `cd  quickstart/sample_scripts/createdb`
     
     `./build_sampledb.sh`
 
