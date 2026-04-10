@@ -4,7 +4,7 @@ Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
 
 ## IMPORTANT PRE-REQUISITES
 
-1. Manually Configure the Sample DSN for the Sample Programs. Refer to _quickstart/classic/html/developer/sample\_dsn\_setup.html_.
+1. Manually Configure the Sample DSN for the Sample Programs. Refer to _quickstart/html/developer/sample\_dsn\_setup.html_.
 
 2. Set up the Instance Environment Variables e.g. If your TimesTen instance location is under /home/timesten/instance/<instance_name> directory, execute the following command:
 
@@ -404,11 +404,11 @@ Example:
 
   Run the program using the default DSN (sampledb) and clean up on completion
   
-  `java JsonSample`
+  `java jdbc.demo.JsonSample`
 
   Run the program and retain the JSON table after completion
   
-  `java JsonSample -keep`
+  `java jdbc.demo.JsonSample -keep`
 
 
 For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/java-developer/index.html).
