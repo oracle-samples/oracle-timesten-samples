@@ -1,7 +1,7 @@
 /*
  * level2.java
  *
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2026, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -16,6 +16,8 @@
  * 6. Disconnect from the database
  *
  */
+
+package jdbc.demo;
 
 import java.math.BigInteger;
 import java.io.PrintStream;

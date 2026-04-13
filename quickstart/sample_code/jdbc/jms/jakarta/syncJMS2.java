@@ -1,7 +1,7 @@
 /*
  * JMS/XLA syncJMS2.java sample code - Processing JMS/XLA updates using jakarta jms.
  *
- * Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024, 2026, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -12,6 +12,8 @@
  * However, the receive() method is generally faster. 
  * Please consider it for performance sensitive applications.
  */
+
+package jakarta.jms.demo;
 
 // JMS imports
 import jakarta.jms.JMSException;
@@ -40,6 +42,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.*;
 
+import jdbc.demo.AccessControl;
+import jdbc.demo.tt_version;
 
 /**
  * Demo which shows how to use JMS/XLA to process updates.

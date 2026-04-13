@@ -8,6 +8,8 @@
  *   Demonstrates TimesTen JSON features using the JDBC driver.
  */
 
+package jdbc.demo;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;

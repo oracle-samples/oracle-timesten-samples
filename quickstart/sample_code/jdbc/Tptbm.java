@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2026, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -12,6 +12,9 @@
 // Java version of Tptbm benchmark for measuring scalability 
 // 
 //----------------------------------------------------------
+
+package jdbc.demo;
+
 import java.sql.*;
 import java.io.*;
 import java.text.*;
@@ -21,8 +24,6 @@ import com.timesten.jdbc.*;
 
 class Tptbm
 {
-    // Compilation control
-    static public final boolean enableScaleout = false;
 
     // class constants
     static public final int TPTBM_NONE = -1;
@@ -36,11 +37,7 @@ class Tptbm
     static public final int dbModeId = -1;
     static public final int dbModeNb = -1;
     static public final int modeClassic = 0;
-    static public final int modeScaleout = 1;
-    static public final int modeScaleoutLocal = 2;
-    static public final int modeScaleoutRouting = 3;
     static public final String dbModeClassicS = "CLASSIC";
-    static public final String dbModeScaleoutS = "SCALEOUT";
 
     //---------------------------------------------------
     // class variables
@@ -139,33 +136,18 @@ class Tptbm
     // Indicates if we are running in C/S mode
     public static boolean isCS = false;
 
-   // Indicates if we are connected to a Scaleout database
-   public static boolean isScaleout = false;
-
     // Run mode
     public static int runMode = modeClassic;
 
     // TimesTen Data source
     public static TimesTenDataSource ttds = null;
 
-    // Total number of replica sets
-    public static int numReplicaSets = 0;
-
     //--------------------------------------------------
     // More class constants
     //--------------------------------------------------
 
-    public static final String selDbType =
-        "SELECT paramvalue FROM v$configuration WHERE paramname = 'TTGrid'";
-
     public static final String selDbMode =
         "SELECT descr FROM VPN_USERS WHERE vpn_id = " + dbModeId + " AND vpn_nb = " + dbModeNb;
-
-    public static final String selNumRs = 
-        "select count(distinct(repset)) from v$distribution_current";
-
-    public static final String selRsIds = 
-        "select distinct(repset) rs from v$distribution_current order by rs";
 
     public static final String insertStmt = 
 	"insert into vpn_users values (?,?,?,'0000000000',?)";
@@ -193,8 +175,6 @@ class Tptbm
 	"descr              CHAR(100) NOT NULL," +
 	"PRIMARY KEY (vpn_id,vpn_nb))";
 
-    private static final String distClause = 
-        " distribute by hash(vpn_id, vpn_nb)";
 
     public static final String exec_plsql_stmnt =
     "DECLARE " +
@@ -303,14 +283,6 @@ class Tptbm
                 ttds.setUser(username);
                 ttds.setPassword(password);
                 conn = ttds.getConnection();
-
-                // check database type
-                isScaleout = getDbType(conn);
-                if (  (runMode > modeClassic) && !isScaleout  ) {
-                    System.err.println("\n'-scaleout' was specified but database is classic\n");
-		    conn.close();
-		    System.exit(1);
-                }
             }
 
             System.out.println();
@@ -343,17 +315,6 @@ class Tptbm
                 }
             }
 
-            if (  runMode == modeScaleoutRouting ) {
-                Statement stmt = conn.createStatement();
-                ResultSet res = stmt.executeQuery(selNumRs);
-                if (  !res.next() ) {
-                    System.err.println("Unable to retrieve grid topography");
-                    System.exit(2);
-                }
-                numReplicaSets = res.getInt(1);
-                res.close();
-                stmt.close();
-            }
 
 	    controller = new TptbmThreadController(numThreads, numXacts, testDuration, rampTime);
             System.out.println();
@@ -386,11 +347,6 @@ class Tptbm
 	        System.out.print("Transactions Per Sec: ");
 	        System.out.printf("%9d\n", tps);
 
-                if (  verbose && (runMode == modeScaleoutLocal)  ) {
-                    double avgLoc = (double)totalLocates / (double)totalXacts;
-                    System.out.print("Average location cycles:  ");
-                    System.out.printf("%.3f per operation\n", avgLoc);
-                }
             }
 
             System.out.println("");
@@ -403,31 +359,6 @@ class Tptbm
         System.exit(0);
     }
 
-    //--------------------------------------------------
-    // getDbType()
-    //--------------------------------------------------
-    static private boolean getDbType(Connection conn) {
-        Statement stmt = null;
-        ResultSet res = null;
-
-        if (  conn != null  )
-            try {
-                stmt = conn.createStatement();
-                res = stmt.executeQuery(selDbType);
-                if (  res.next()  )
-                    if (  res.getInt(1) == 1  )
-                        return true;
-            } catch ( Exception e ) {
-                return false;
-            } finally {
-                if ( res != null )
-                    try { res.close(); } catch ( Exception e ) { ; }
-                if ( stmt != null )
-                    try { stmt.close(); } catch ( Exception e ) { ; }
-            }
-
-        return false;
-    } // getDbType
 
     //--------------------------------------------------
     // checkDbParams()
@@ -452,7 +383,7 @@ class Tptbm
                         int i2 = dbp.indexOf(' ');
                         dbk = dbp.substring(i,i2);
                         i = Integer.parseInt(dbk);
-                        if (  dbm.equals(dbModeClassicS) || dbm.equals(dbModeScaleoutS)  ) {
+                        if (  dbm.equals(dbModeClassicS)) {
                            if (  ! Tptbm.fkey  ) {
                                key = i;
                                return true;
@@ -501,9 +432,7 @@ class Tptbm
              //"        [-csCommit] [-commitReads] [-range] [-key <keys>] [-plsql]\n" +
              "        [-commitReads] [-range] [-key <keys>] [-plsql]\n" +
 	     "        [-trace] [-nobuild | -build]" );
-        if ( enableScaleout )
-	    System.err.println(
-             "        [-scaleout [local | routing]]");
+
 	System.err.println("");
            
 
@@ -583,38 +512,11 @@ class Tptbm
 	     "                         already populated. Cannot be used with '-insert' or\n" +
              "                         '-delete'.\n" );
 
-         if ( ! enableScaleout  )
+
              System.err.println(
 	     "  -build                 Builds table and exits. Only the '-key' and '-range'\n" +
 	     "                         parameters are relevant.\n");
-         else
-             System.err.println(
-	     "  -build                 Builds table and exits. Only the '-key', '-range' and\n" +
-	     "                         '-scaleout' parameters are relevant.\n\n" +
 
-	     "  -scaleout              Run in Scaleout mode. Creates the table with a hash\n" +
-             "                         distribution and adapts runtime behaviour for Scaleout.\n" +
-             "                         If not specified then the default is to run in Classic mode.\n" +
-             "                         You can run in Classic mode aginst a database built in\n" +
-             "                         Scaleout mode but not vice-versa.\n\n" +
-
-	     "      local              Use the routing API to constrain all data access to be to\n" +
-             "                         rows in the locally connected database element; each thread\n" +
-             "                         generates keys that it knows refer to rows in the element\n" +
-             "                         that it is connected to. Only relevant at run-time. Cannot\n" +
-             "                         be used with '-plsql'.\n\n" +
-
-	     "      routing            Use the routing API to optimize data access. Each\n" +
-             "                         thread maintains a connection to every database\n" +
-             "                         element and uses the routing API to direct operations\n" +
-             "                         to an element that it knows contains the target row.\n" +
-             "                         Only relevant at run time. Cannot be used with '-multiop',\n" +
-             "                         with '-min' or '-max' > 1 or with '-plsql'. Can only be\n" +
-             "                         used in client-server mode.\n\n" +
-
-             "For the most accurate results, use duration mode (-sec) with a measurement\n" +
-             "time of at least several minutes and a ramp time of at least 30 seconds.\n"
-	     );
         } // full
 	System.exit(1);
     }
@@ -726,8 +628,6 @@ class Tptbm
 	        stmt.executeUpdate("drop table vpn_users");
 	    } catch ( SQLException ex ) { ; }
 
-            if (  runMode > modeClassic  )
-                dist = distClause;
 	    if( range )
                 createStmt = createStmtRange + dist;
             else
@@ -741,8 +641,7 @@ class Tptbm
             // Store the database mode and key value
             if (  runMode == modeClassic  )
                 dbm = dbModeClassicS;
-            else
-                dbm = dbModeScaleoutS;
+  
             pstmt.setInt(1,dbModeId);
             pstmt.setInt(2,dbModeNb);
             pstmt.setString(3," ");
@@ -1038,28 +937,6 @@ class Tptbm
 		i += 1;
 	    }
 
-            // scaleout and routing mode
-	    else if(args[i].equalsIgnoreCase("-scaleout")) {
-                if (  ! enableScaleout  )
-                    usage(false);
-                if (  runMode > modeClassic  )
-                    usage(false);
-                runMode = modeScaleout;
-		if(++i < args.length) {
-		    if(args[i].equalsIgnoreCase("local")) {
-                        runMode = modeScaleoutLocal;
-		        i += 1;
-                    }
-                    else
-		    if(args[i].equalsIgnoreCase("routing")) {
-                        runMode = modeScaleoutRouting;
-		        i += 1;
-                    }
-                    else
-		    if(!args[i].startsWith("-"))
-                        usage(false);
-	        }
-	    }
 
 	    // verbose (undocumented)
 	    else if(args[i].equalsIgnoreCase("-verbose")) {
@@ -1164,13 +1041,6 @@ class Tptbm
         if (  dbms == TPTBM_NONE  )
             dbms = TPTBM_TIMESTEN;
 
-        if (  usePlsql && (runMode > modeScaleout)  ) {
-            if (  runMode == modeScaleoutLocal  )
-	       System.err.println("'-plsql' cannot be combined with '-scaleout local'");
-            else
-	       System.err.println("'-plsql' cannot be combined with '-scaleout routing'");
-	    System.exit(1);
-        }
 
         if (  numXacts == 0  ) {
             if (  testDuration <= 0  )
@@ -1265,16 +1135,8 @@ class Tptbm
 
         if (  dbms == TPTBM_ORACLE  ) {
             range = true;
-            if (  (dbms == TPTBM_ORACLE) && (runMode > modeClassic)  ) {
-                  System.err.println("'-scaleout' can only be used with TimesTen.");
-                  System.exit(1);
-            }
         }
 
-        if (  !isCS && (runMode == modeScaleoutRouting)  )   {
-              System.err.println("'-scaleout routing' can only be used with client/server connections.");
-              System.exit(1);
-        }
 
         if (multiop == 0) {
             int nx = numXacts;
@@ -1289,16 +1151,8 @@ class Tptbm
               System.err.println("Deletes as part of transaction mix exceed number initially populated." );
               System.exit(1);
             }
-        } else
-        if (  runMode > modeScaleout  ) {
-              System.err.println("'-scaleout local' or '-scaleout routing' cannnot be used with '-multiop'.");
-              System.exit(1);
-        }
+        } 
  
-        if (  (runMode > modeScaleoutLocal) && ((min_xact != 1) || (max_xact != 1))  ) {
-              System.err.println("'-scaleout routing' cannnot be used with '-min' or '-max' > 1.");
-              System.exit(1);
-        }
 
 	if (usePlsql) {
 	    if (multiop < 1) {
@@ -1339,102 +1193,7 @@ class TptbmConnection
     TptbmConnection() { }
 } // TptbmConnection
 
-//--------------------------------------------------
-// Class: TptbmRouting
-//--------------------------------------------------
 
-class TptbmRouting
-{
-    private int numRs = 0;
-    private TimesTenDataSource ds = null;
-    private TptbmConnection rsConn[] = null;
-
-    TptbmRouting(int nRs) {
-        numRs = nRs;
-        rsConn = new TptbmConnection[numRs];
-    }
-
-    public boolean buildRouting( TimesTenDataSource ds, Connection conn, 
-                                 boolean prefetchClose,
-                                 String selectStmt, String insertStmt,
-                                 String updateStmt, String deleteStmt )
-        throws SQLException
-    {
-        int rsind = 0;
-        short rsId = 0;
-        this.ds = ds;
-        Statement stmt = conn.createStatement();
-        ResultSet res = stmt.executeQuery(Tptbm.selRsIds);
-        TimesTenConnectionBuilder ttCb = ds.createTimesTenConnectionBuilder().user(Tptbm.username).password(Tptbm.password);
-        while ( res.next() ) {
-            rsId = res.getShort(1);
-            if (  Tptbm.verbose  )
-                if (  rsId != (rsind + 1)  ) 
-                    System.err.println("Warning: routing error: build: " + rsId + " should be " + (rsind+1));
-            rsConn[rsind] = new TptbmConnection();
-            rsConn[rsind].rsId = rsId;
-            rsConn[rsind].conn = ttCb.replicaSetID(rsId).build();
-            rsConn[rsind].selStmt = rsConn[rsind].conn.prepareStatement(selectStmt);
-            rsConn[rsind].insStmt = rsConn[rsind].conn.prepareStatement(insertStmt);
-            rsConn[rsind].updStmt = rsConn[rsind].conn.prepareStatement(updateStmt);
-            rsConn[rsind].delStmt = rsConn[rsind].conn.prepareStatement(deleteStmt);
-            if (  prefetchClose )
-                ((TimesTenConnection)rsConn[rsind].conn).setTtPrefetchClose(true);
-	    rsConn[rsind].conn.setAutoCommit(false);
-            rsind += 1;
-        }
-        res.close(); res = null;
-        stmt.close(); stmt = null;
-        for (rsind = 0; rsind < numRs; rsind++) 
-            rsConn[rsind].conn.commit();
-        if (  rsind == 0  )
-            return false;
-        return true;
-    }
-
-    public void cleanup() 
-    {
-        int rsind = 0;
-        for (rsind = 0; rsind < numRs; rsind++) {
-            try { rsConn[rsind].conn.commit(); } catch ( Exception e ) { ; }
-            try { rsConn[rsind].selStmt.close(); } catch ( Exception e ) { ; }
-            try { rsConn[rsind].insStmt.close(); } catch ( Exception e ) { ; }
-            try { rsConn[rsind].updStmt.close(); } catch ( Exception e ) { ; }
-            try { rsConn[rsind].delStmt.close(); } catch ( Exception e ) { ; }
-            if (  rsConn[rsind].initPlsqlStmt != null  ) {
-                try { rsConn[rsind].initPlsqlStmt.close(); } catch ( Exception e ) { ; }
-                try { rsConn[rsind].execPlsqlStmt.close(); } catch ( Exception e ) { ; }
-            }
-            try { rsConn[rsind].conn.close(); } catch ( Exception e ) { ; }
-        }
-    }
-
-    public TptbmConnection getConnection( int id, int nb )
-        throws SQLException
-    {
-        TimesTenDistributionKey dk = null;
-        int rs;
-        int rsind;
-
-        dk = ds.createTimesTenDistributionKeyBuilder()
-               .subkey(id, Types.INTEGER)
-               .subkey(nb, Types.INTEGER)
-                       .build();
-
-        rs = (int)dk.getReplicaSetID();
-        rsind = rs - 1;
-        dk = null;
-        // for (rsind = 0; rsind < numRs; rsind++) {
-        //     if (  rs == rsConn[rsind].rsId  ) 
-        //        return rsConn[rsind];
-        // }
-        if (  Tptbm.verbose  )
-            if (  rsConn[rsind].rsId != rs  )
-                System.err.println("Warning: routing error: route: " + rsConn[rsind].rsId + " should be " + rs);
-
-        return rsConn[rsind];
-    }
-} // TptbmRouting
 
 //--------------------------------------------------
 // Class: TptbmError
@@ -1487,9 +1246,6 @@ class TptbmThread extends Thread
 
     // connection for the thread
     private TptbmConnection connection = new TptbmConnection();
-
-    // Routing info
-    private TptbmRouting routingInfo = null;
 
     // Replica set ID for my connection
     private int myRsId = 0;
@@ -1686,29 +1442,6 @@ class TptbmThread extends Thread
         return totalLocCycles;
     }
     
-    //--------------------------------------------------
-    // Method : keyIsLocal
-    // Checks if a key value is located in the replica
-    // set to which we are connected.
-    //--------------------------------------------------
-    private boolean keyIsLocal( int rsId, int id, int nb )
-        throws SQLException
-    {
-        TimesTenDistributionKey dk = null;
-
-        if (  rsId <= 0  )
-            return true;
-
-        dk = Tptbm.ttds.createTimesTenDistributionKeyBuilder()
-                       .subkey(id, Types.INTEGER)
-                       .subkey(nb, Types.INTEGER)
-                       .build();
-
-        if (  rsId == dk.getReplicaSetID()  )
-            return true;
-
-        return false;
-    } // keyIsLocal
 
     //--------------------------------------------------
     // Method : execute 
@@ -1819,21 +1552,7 @@ class TptbmThread extends Thread
 		        nb_int = (int)((Tptbm.key-1)*rand.nextFloat());
                         if (  timing || (numXacts > 0)  )
                             totalLocCycles++;
-                        if (  Tptbm.runMode == Tptbm.modeScaleoutLocal  ) {
-                            while ( ! keyIsLocal(myRsId, id_int, nb_int) ) {
-		                id_int = (int)((Tptbm.key-1)*rand.nextFloat());
-		                nb_int = (int)((Tptbm.key-1)*rand.nextFloat());
-                                if (  timing || (numXacts > 0)  )
-                                    totalLocCycles++;
-                            }
-                        } else
-                        if (  Tptbm.runMode == Tptbm.modeScaleoutRouting ) {
-                            tconn = routingInfo.getConnection(id_int, nb_int);
-                            prepSelStmt = tconn.selStmt;
-                            prepInsStmt = tconn.insStmt;
-                            prepDelStmt = tconn.delStmt;
-                            prepUpdStmt = tconn.updStmt;
-                        }
+
     
 		        prepSelStmt.setInt(1, id_int);
 		        prepSelStmt.setInt(2, nb_int);
@@ -1869,21 +1588,6 @@ class TptbmThread extends Thread
 		        nb_int = (int)((Tptbm.key-1)*rand.nextFloat());
                         if (  timing || (numXacts > 0)  )
                             totalLocCycles++;
-                        if (  Tptbm.runMode == Tptbm.modeScaleoutLocal  ) {
-                            while ( ! keyIsLocal(myRsId, id_int, nb_int) ) {
-		                id_int = (int)((Tptbm.key-1)*rand.nextFloat());
-		                nb_int = (int)((Tptbm.key-1)*rand.nextFloat());
-                                if (  timing || (numXacts > 0)  )
-                                    totalLocCycles++;
-                            }
-                        } else
-                        if (  Tptbm.runMode == Tptbm.modeScaleoutRouting ) {
-                            tconn = routingInfo.getConnection(id_int, nb_int);
-                            prepSelStmt = tconn.selStmt;
-                            prepInsStmt = tconn.insStmt;
-                            prepDelStmt = tconn.delStmt;
-                            prepUpdStmt = tconn.updStmt;
-                        }
 		        prepUpdStmt.setString(1, id_int + "x" + nb_int);
 		        prepUpdStmt.setInt(2, id_int);
 		        prepUpdStmt.setInt(3, nb_int);
@@ -1909,25 +1613,7 @@ class TptbmThread extends Thread
 		        }
                         if (  timing || (numXacts > 0)  )
                             totalLocCycles++;
-                        if (  Tptbm.runMode == Tptbm.modeScaleoutLocal  ) {
-                            while ( ! keyIsLocal(myRsId, id_int, nb_int) ) {
-		                id_int = delete_start;
-		                nb_int = delete_present++;
-                                if (  timing || (numXacts > 0)  )
-                                    totalLocCycles++;
-		                if (delete_present == Tptbm.key) {
-			            delete_present = 0;
-			            delete_start += Tptbm.numThreads;
-		                }
-                            }
-                        } else
-                        if (  Tptbm.runMode == Tptbm.modeScaleoutRouting ) {
-                            tconn = routingInfo.getConnection(id_int, nb_int);
-                            prepSelStmt = tconn.selStmt;
-                            prepInsStmt = tconn.insStmt;
-                            prepDelStmt = tconn.delStmt;
-                            prepUpdStmt = tconn.updStmt;
-                        }
+
 		        prepDelStmt.setInt(1, id_int);
 		        prepDelStmt.setInt(2, nb_int);
 		        if(Tptbm.threadtrace)
@@ -1953,25 +1639,7 @@ class TptbmThread extends Thread
 		        }
                         if (  timing || (numXacts > 0)  )
                             totalLocCycles++;
-                        if (  Tptbm.runMode == Tptbm.modeScaleoutLocal  ) {
-                            while ( ! keyIsLocal(myRsId, id_int, nb_int) ) {
-		                id_int = insert_start;
-		                nb_int = insert_present++;
-                                if (  timing || (numXacts > 0)  )
-                                    totalLocCycles++;
-		                if (insert_present == Tptbm.key) {
-			            insert_present = 0;
-			            insert_start += Tptbm.numThreads;
-		                }
-                            }
-                        } else
-                        if (  Tptbm.runMode == Tptbm.modeScaleoutRouting ) {
-                            tconn = routingInfo.getConnection(id_int, nb_int);
-                            prepSelStmt = tconn.selStmt;
-                            prepInsStmt = tconn.insStmt;
-                            prepDelStmt = tconn.delStmt;
-                            prepUpdStmt = tconn.updStmt;
-                        }
+
 		        prepInsStmt.setInt(1, id_int);
 		        prepInsStmt.setInt(2, nb_int);
 		        prepInsStmt.setString(3, "55"+(id_int%10000)+(nb_int%10000));
@@ -2027,15 +1695,7 @@ class TptbmThread extends Thread
 	  ((TimesTenConnection)connection.conn).setTtPrefetchClose(true);
 	}
 
-        // If scaleout, get connection's replica set id
-        if (  Tptbm.runMode > Tptbm.modeClassic ) {
-            Statement stmt = null;
-            ResultSet rs = null;
-            stmt = connection.conn.createStatement();
-            rs = stmt.executeQuery(getRsIdStmt);
-            if (  rs.next()  ) 
-                myRsId = rs.getInt(1);
-        }
+
 
 	connection.conn.commit();
 	if(Tptbm.threadtrace)
@@ -2049,12 +1709,7 @@ class TptbmThread extends Thread
 	   connection.execPlsqlStmt = connection.conn.prepareStatement(Tptbm.exec_plsql_stmnt);
 	}
 
-        if (  Tptbm.runMode == Tptbm.modeScaleoutRouting ) {
-            routingInfo = new TptbmRouting(Tptbm.numReplicaSets);
-            routingInfo.buildRouting(ttds,connection.conn, Tptbm.prefetchClose,
-                                     selectStmt,Tptbm.insertStmt,
-                                     updateStmt,Tptbm.deleteStmt);
-        }
+
 
 	connection.conn.commit();	
 
@@ -2081,8 +1736,7 @@ class TptbmThread extends Thread
 		connection.execPlsqlStmt.close();
 	    }
 	    connection.conn.close();
-            if (  Tptbm.runMode == Tptbm.modeScaleoutRouting )
-                routingInfo.cleanup();
+
 	}
 	catch ( SQLException e ) {
 	    Tptbm.printSQLException(e);

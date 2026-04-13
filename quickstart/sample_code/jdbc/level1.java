@@ -1,7 +1,7 @@
 /*
  * level1.java
  *
- * Copyright (c) 1999, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2026, Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -17,6 +17,8 @@
  * Run the following command every time before running this demo:
  *    ttIsql -f input0.dat
  */
+
+package jdbc.demo;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
