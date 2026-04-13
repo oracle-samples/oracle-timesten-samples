@@ -1,4 +1,4 @@
-Copyright (c) 2010, 2024, Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2010, 2026, Oracle and/or its affiliates. All rights reserved.
 
 # Compile and Run JDBC Sample Programs
 
