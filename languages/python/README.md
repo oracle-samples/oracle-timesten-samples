@@ -72,12 +72,12 @@ Connection has been released
 
 ### sql.py
 
-This Python sample program connects to a TimesTen Database and performs the following operations:
+This Python sample program connects to a TimesTen database and performs SQL operations against an `api_sessions` table that represents active sessions for application services. It performs the following operations:
 
 
-* Creates a table called "vpn_users"
-* Populates the table
-* Performs a number of Selects, Updates and Deletes against the table
+* Creates a table called `api_sessions`
+* Populates the table with sample API session records
+* Performs a number of selects, updates, and deletes against the table
 * Drops the table
 * Disconnects from the database
 
