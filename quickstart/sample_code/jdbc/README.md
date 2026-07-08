@@ -2,6 +2,31 @@ Copyright (c) 2010, 2026, Oracle and/or its affiliates. All rights reserved.
 
 # Compile and Run JDBC Sample Programs
 
+This directory is the home for TimesTen Java samples. The samples remain in the QuickStart tree so existing documentation, scripts, and workflows continue to work. New Java developers should start with the recommended samples below, then use the classic samples when they need broader API coverage, compatibility checks, or benchmarking.
+
+## Recommended Java samples
+
+| Sample | File | Why start here |
+| :----- | :--- | :------------- |
+| JSON with JDBC | [JsonSample.java](./JsonSample.java) | Demonstrates a current application pattern: JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
+| JDBC basics | [TTJdbcExamples.java](./TTJdbcExamples.java) | Shows core JDBC operations including connection handling, DDL, DML, prepared statements, indexes, query plans, and batch updates. |
+| PL/SQL from Java | [plsqlJDBC.java](./plsqlJDBC.java) | Shows how Java applications call TimesTen PL/SQL procedures, functions, anonymous blocks, and ref cursors. |
+| Transactional order processing | [level3.java](./level3.java) and [level4.java](./level4.java) | Classic single-threaded and multi-threaded transaction examples for order-processing workloads. |
+
+## Classic and specialized Java samples
+
+The remaining samples are still available for users who need specific TimesTen features or compatibility references.
+
+| Category | Samples | Description |
+| :------- | :------ | :---------- |
+| Introductory JDBC | `level1`, `level2` | Basic DriverManager/DataSource usage and simple table operations. |
+| Transaction processing | `level3`, `level4` | Order-processing workload, including rollback behavior and multi-threaded throughput. |
+| PL/SQL integration | `plsqlJDBC` | Calls stored procedures, functions, anonymous blocks, and ref cursors. |
+| JSON | `JsonSample` | Current JSON document example using the TimesTen JSON data type and SQL/JSON functions. |
+| Benchmarking | `Tptbm` | Multi-user throughput benchmark with configurable transaction mix. |
+| JMS/XLA | `asyncJMS`, `asyncJMS2`, `syncJMS`, `syncJMS2` | Change-notification examples using TimesTen JMS/XLA. These are specialized samples with additional prerequisites. |
+| Support utilities | `AccessControl`, `IOLibrary`, `InitializeDatabase`, `PasswordField`, `EraserThread`, `tt_version` | Shared helper classes used by the runnable samples. |
+
 ## IMPORTANT PRE-REQUISITES
 
 1. Manually Configure the Sample DSN for the Sample Programs. Refer to _quickstart/html/developer/sample\_dsn\_setup.html_.

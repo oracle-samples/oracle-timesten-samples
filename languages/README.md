@@ -1,14 +1,25 @@
 # TimesTen Open Source Languages Samples
 
-This folder contains various examples that illustrate database connection and operations using 3rd party open source languages against the TimesTen database.   
+This folder contains open source language samples for application developers using Oracle TimesTen In-Memory Database. Java/JDBC samples are maintained separately in the classic QuickStart tree at [quickstart/sample_code/jdbc](../quickstart/sample_code/jdbc).
+
+## Recommended samples
+
+Start here for current application-development examples:
+
+| Language | Start here | Description |
+| :------- | :--------- | :---------- |
+| Python | [python](./python) | Python samples using the `python-oracledb` driver. Includes connection, SQL, PL/SQL, LOB, access-control, and JSON examples. |
+| Node.js | [nodejs](./nodejs) | Node.js samples using the `node-oracledb` driver. Includes connection, SQL, PL/SQL, LOB, access-control, and JSON examples. |
+
+## Directory map
 
 | Repository/Folder name            | Description                                     |
 | :-------------------------- | :---------------------------------------------- |
-| [nodejs](./nodejs)        | Node.js    Sample programs                     |
+| [nodejs](./nodejs)        | Node.js sample programs.                     |
 | [python](./python)              | Python sample programs.                      |
 
 ## More information
 You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
 
 ## Documentation
-You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/). 
+You can find the online documentation for Oracle TimesTen In-Memory Database in the [Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/).
