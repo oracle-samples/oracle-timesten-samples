@@ -2,7 +2,7 @@ Copyright (c) 1998, 2026, Oracle and/or its affiliates. All rights reserved.
 
 # Sample Code for TimesTen Classic
 
-This directory contains the classic TimesTen sample-code collection. The samples are kept in their existing locations for compatibility with QuickStart documentation, scripts, and long-standing user workflows. Most of these samples will also work with TimesTen Scaleout.
+This directory contains the TimesTen sample-code collection. The samples are kept in their existing locations for compatibility with QuickStart documentation, scripts, and long-standing user workflows. Most of these samples will also work with TimesTen Scaleout.
 
 Each sample directory contains a README file with the necessary information to help you use the associated sample(s).
 
@@ -16,7 +16,7 @@ For new application-development work, the following entry points are usually the
 | Python | [../../languages/python](../../languages/python) | Python samples using the `python-oracledb` driver. |
 | Node.js | [../../languages/nodejs](../../languages/nodejs) | Node.js samples using the `node-oracledb` driver. |
 
-## Classic API and compatibility samples
+## API and compatibility samples
 
 The rest of this tree remains available for customers who need specific APIs, older integration patterns, performance tests, or compatibility references.
 
@@ -29,7 +29,7 @@ The rest of this tree remains available for customers who need specific APIs, ol
 | [ttclasses](./ttclasses) | C++ samples using TimesTen's TTClasses API. |
 | [odp.net](./odp.net) | C# sample using Oracle ODP.NET. |
 | [odpi-c](./odpi-c) | ODPI-C sample using Oracle Database Programming Interface for C. |
-| [j2ee_orm](./j2ee_orm)  | Classic J2EE application-server and ORM samples, including WebLogic, JBoss, WebSphere, GlassFish, and Hibernate examples. |
+| [j2ee_orm](./j2ee_orm)  | J2EE application-server and ORM samples, including WebLogic, JBoss, WebSphere, GlassFish, and Hibernate examples. |
 
 ## Full directory map
 

@@ -4,7 +4,7 @@ This repository stores a variety of examples demonstrating how to use the Oracle
 
 ## Recommended starting points
 
-If you are new to these samples, start with the language and deployment examples below. They highlight the most common application-development paths while keeping the classic QuickStart material available for deeper product coverage.
+If you are new to these samples, start with the language and deployment examples below. They highlight the most common application-development paths while keeping the QuickStart material available for deeper product coverage.
 
 | Area | Start here | Description |
 | :--- | :--------- | :---------- |
@@ -20,13 +20,13 @@ If you are new to these samples, start with the language and deployment examples
 | Repo/Folder name            | Description                                     |
 | :-------------------------- | :---------------------------------------------- |
 | [languages](./languages) | Open source language samples for Python and Node.js. |
-| [quickstart](./quickstart)  | Classic QuickStart, Scaleout, administration, and API samples. |
+| [quickstart](./quickstart)  | QuickStart, Scaleout, administration, and API samples. |
 | [containers](./containers) | Sample showing how to run TimesTen in a container with a persistent database. |
 | [kubernetes](./kubernetes) | Shows how to use the TimesTen Kubernetes Operator to deploy TimesTen in Kubernetes. |
 
-## Classic and compatibility samples
+## Long-standing and compatibility samples
 
-The classic QuickStart tree remains part of this repository. It includes long-standing samples for JDBC, ODBC, OCI, PL/SQL, TTClasses, ODP.NET, ODPI-C, J2EE/ORM integrations, administration tasks, cache, replication, and performance testing. These samples are useful for existing deployments, compatibility testing, and product-feature coverage even when they are not the first recommended path for new application developers.
+The QuickStart tree remains part of this repository. It includes long-standing samples for JDBC, ODBC, OCI, PL/SQL, TTClasses, ODP.NET, ODPI-C, J2EE/ORM integrations, administration tasks, cache, replication, and performance testing. These samples are useful for existing deployments, compatibility testing, and product-feature coverage even when they are not the first recommended path for new application developers.
 
 ## Supported TimesTen Releases
 In general these samples require a _minimum_ of **TimesTen 22.1.1.1.0** but our recommendation is to always use the most recent release available for your platform. Some specific samples may require a more recent TimesTen release; any such requirement will be detailed in the sample's README file. These samples all work equally well with regular TimesTen or the free TimesTen Express Edition (TimesTen XE).

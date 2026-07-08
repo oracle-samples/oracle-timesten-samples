@@ -2,7 +2,7 @@ Copyright (c) 2010, 2026, Oracle and/or its affiliates. All rights reserved.
 
 # Compile and Run JDBC Sample Programs
 
-This directory is the home for TimesTen Java samples. The samples remain in the QuickStart tree so existing documentation, scripts, and workflows continue to work. New Java developers should start with the recommended samples below, then use the classic samples when they need broader API coverage, compatibility checks, or benchmarking.
+This directory is the home for TimesTen Java samples. The samples remain in the QuickStart tree so existing documentation, scripts, and workflows continue to work. New Java developers should start with the recommended samples below, then use the additional samples when they need broader API coverage, compatibility checks, or benchmarking.
 
 ## Recommended Java samples
 
@@ -11,9 +11,9 @@ This directory is the home for TimesTen Java samples. The samples remain in the 
 | JSON with JDBC | [JsonSample.java](./JsonSample.java) | Demonstrates a current application pattern: JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
 | JDBC basics | [TTJdbcExamples.java](./TTJdbcExamples.java) | Shows core JDBC operations including connection handling, DDL, DML, prepared statements, indexes, query plans, and batch updates. |
 | PL/SQL from Java | [plsqlJDBC.java](./plsqlJDBC.java) | Shows how Java applications call TimesTen PL/SQL procedures, functions, anonymous blocks, and ref cursors. |
-| Transactional order processing | [level3.java](./level3.java) and [level4.java](./level4.java) | Classic single-threaded and multi-threaded transaction examples for order-processing workloads. |
+| Transactional order processing | [level3.java](./level3.java) and [level4.java](./level4.java) | Single-threaded and multi-threaded transaction examples for order-processing workloads. |
 
-## Classic and specialized Java samples
+## Additional and specialized Java samples
 
 The remaining samples are still available for users who need specific TimesTen features or compatibility references.
 
@@ -60,13 +60,13 @@ The remaining samples are still available for users who need specific TimesTen f
 
 ## How to compile the sample JDBC programs
 
-To compile the sample programs in the sample\_code/jdbc directory, use the relevant TimesTen supported Java compiler for your platform (eg Sun, HP, JRocket or IBM JDK) to compile each sample program. Refer to the [OracleTimesTen In-Memory Database Installation Guide](https://docs.oracle.com/cd/E21901_01/timesten.1122/e21632/toc.htm) for the list of supported JDKs for your preferred platform.
+To compile the sample programs in the sample\_code/jdbc directory, use a JDK supported by your TimesTen release and platform. For current platform and JDK support details, refer to the TimesTen release notes and installation documentation in the [Oracle TimesTen In-Memory Database Documentation Library](https://docs.oracle.com/en/database/other-databases/timesten/).
 
 For JDK 11, 17, 21, and 25, the TimesTen JDBC JAR is timesten_home/install/lib/ttjdbc<jdk_version>.jar, where <jdk_version> indicates the JDK version, 11, 17, 21, or 25, for example, ttjdbc25.jar for JDK 25. The JDBC JARs are also packaged as a Java module with the Java module name **timesten.jdbc** and JMS/XLA JAR (timestenjmsxla.jar) too with module name **timesten.jmsxla** so you can use both for module compilation (import them in module-info.java), if your JDK supports modules. 
 
-**NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations, also since this use the Javax JMS you need to add the jms.jar to environment CLASSPATH for releases after TT221 which can be found in 3rdparty directory `/home/timesten/instance/tt<version>/3rdparty`. For the  asyncJMS2 and syncJMS2 which are sample programs using Jakarta JMS rather than Javax JMS, require separate download of jakarta.jms.jar file. Once this jar file is downloaded, location to this jar will need to be added to environment variable CLASSPATH. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward and **jakarta becomes the default** option if both jakarta.jms and javax.jms JARs are found in CLASSPATH.
+**NOTE:** The JMS/XLA samples are specialized examples with additional prerequisites. XLA does not support applications linked with a driver manager library or the client/server library, so the JMS/XLA samples cannot be compiled or run in client-only installations. The `asyncJMS` and `syncJMS` samples use Javax JMS and require `jms.jar` in `CLASSPATH`. The `asyncJMS2` and `syncJMS2` samples use Jakarta JMS and require `jakarta.jms.jar` in `CLASSPATH`. Support for Jakarta JMS was added in TimesTen 22.1.1.20.0, and Jakarta is the default if both Jakarta JMS and Javax JMS JARs are found in `CLASSPATH`.
 
-### Compile with JDK 11, 17 and 21
+### Compile with a supported JDK
 
 To compile specific program:
 
@@ -78,7 +78,7 @@ To compile the sample programs all at once:
 
 The "-d" is necessary to build the module application in "out" directory. If you check the "out" directory you will find package directories.
 
-### Compile using the TimesTen JDBC Module JDK 11, 17, 21 and 25
+### Compile using the TimesTen JDBC module
 
 #### Compile as a non-modular or mixed application:
 
@@ -102,9 +102,9 @@ To compile the sample programs all at once:
 
 `javac --module-path <module_path> -d out *.java`
 
-Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>. The "-d" is necessary to build the module application in "out" directory. If you check the "out" directory you will find module-info.class and package directories. The module name, dependencies and exports are defined in module-info.java file (you need this to compile a module), and all java files you are going to compile into a module need package name as shown in java files ("jdbc.demo", "jms.demo" and "jakarta.jms.demo"). For this demos when you want to **compile as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path> to ensure all dependendies are imported as modules and have "out" directories of jdbc and jms demos included. When you make your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
+Where <module_path> is timesten_home/install/lib/ttjdbc<jdk_version>.jar:<existing_path_to_modules>. The "-d" option is necessary to build the module application in the "out" directory. The "out" directory contains module-info.class and package directories. The module name, dependencies, and exports are defined in module-info.java. All Java files compiled into the sample module need package names matching the sample source files, such as "jdbc.demo", "jms.demo", and "jakarta.jms.demo". For these samples, when you compile as a module application, you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES**) as your <module_path> so dependencies and sample output directories are available as modules. When you build your own module application, define your own module-info.java and package names accordingly.
 
-**NOTE:** Since XLA does not support applications linked with a driver manager library or the client/server library, the asyncJMS and syncJMS demos cannot be compiled or run in client-only installations. Additionally, asyncJMS2 and syncJMS2 which are sample programs using Jakarta JMS rather than Javax JMS, require separate download of jakarta.jms.jar file. Once this jar file is downloaded, location to this jar will need to be added to environment variable CLASSPATH. Support for Jakarta JMS has been added to the TimesTen release from version 22.1.1.20.0 onward.
+**NOTE:** JMS/XLA samples have additional requirements. They cannot be compiled or run in client-only installations, and the Jakarta JMS variants (`asyncJMS2` and `syncJMS2`) require `jakarta.jms.jar` in `CLASSPATH`.
 
 ## How to run the sample JDBC programs
 
@@ -116,7 +116,7 @@ option in order to run the 64-bit JVM.
 
     java -Djava.library.path=${TIMESTEN_HOME}/install/lib <packagename><progname>
 
-**NOTE:** When you want to run using the TimesTen JDBC Module with JDK 11, 17, 21 and 25. The module-path and enable-native-access need to be added. For example:
+**NOTE:** When you run with the TimesTen JDBC module, include the module path and enable native access. For example:
     
 Run as a non-modular or mixed application
 
@@ -134,13 +134,13 @@ Run as a modular application
 
     java --module-path <module_path> --enable-native-access="timesten.jdbc,timesten.jmsxla" --module my.jakarta.jms.app.module/jakarta.jms.demo.<progname> …
 
-Make sure to also include **timesten.jmsxla** in **--enable-native-access** for jms programs like **--enable-native-access=timesten.jdbc,timesten.jmsxla**. As shown in command, the name of the module you compiled is **my.jdbc.app.module**, **my.jms.app.module** (if they are jms programs of javax directory) or **my.jakarta.jms.app.module** (jms programs of jakarta directory) while the package of the class you are going to execute is **jdbc.demo**, **jms.demo** (jms programs of javax directory) or **jakarta.jms.demo** (jms programs of jakarta directory), the name of the module and dependencies are defined in module-info.java file. As a reminder for this demos when you want to **run this as a module application** you can use $CLASSPATH (set in **IMPORTANT PRE-REQUISITES** section) as your <module_path>. When you build and run your own module application (not this demos) make sure to define your own module-info.java (module name, dependencies, exports, etc.) and name your packages accordingly.
+For JMS programs, also include **timesten.jmsxla** in **--enable-native-access**, for example **--enable-native-access=timesten.jdbc,timesten.jmsxla**. In the commands above, the sample module names are **my.jdbc.app.module**, **my.jms.app.module**, and **my.jakarta.jms.app.module**. The package names are **jdbc.demo**, **jms.demo**, and **jakarta.jms.demo**. The module names and dependencies are defined in module-info.java. When you build and run your own module application, define your own module-info.java and package names accordingly.
 
 ### Sample programs instructions and examples
 
 **asyncJMS** or **asyncJMS2**
 
-These two programs use the TimesTen JMS/XLA implementation to process messages.  asynJMS is using Javax JMS for processing JMS/XLA whereas asynJMS2 is using Jakarta JMS. The functions of these two programs are:
+These two programs use the TimesTen JMS/XLA implementation to process messages. `asyncJMS` uses Javax JMS, while `asyncJMS2` uses Jakarta JMS. The functions of these two programs are:
 
 a) Connect to the database as an XLA user
 
@@ -152,7 +152,7 @@ d) ASYNCHRONOUSLY receive messages via onMessage() and a JMS MessageListener
 
 e) Display the change records to the console
 
-f) Disconnect from the database when the used enters CTRL-C
+f) Disconnect from the database when the user enters CTRL-C
 
 Either the level1 - level4 JDBC programs or ttIsql can be used to apply committed changes to the CUSTOMER table.
 
@@ -319,7 +319,7 @@ For the full syntax of the program, use "java jdbc.demo.plsqlJDBC -help".
 
 **syncJMS** or **syncJMS2**
 
-These two programs use the TimesTen JMS/XLA implementation to process messages.  synJMS is using Javax JMS for processing JMS/XLA whereas synJMS2 is using Jakarta JMS. The functions of these two programs are:
+These two programs use the TimesTen JMS/XLA implementation to process messages. `syncJMS` uses Javax JMS, while `syncJMS2` uses Jakarta JMS. The functions of these two programs are:
 
 a) Connects to the database as an XLA user
 
@@ -331,7 +331,7 @@ d) SYNCHRONOUSLY receive messages via the receive method in the get routine
 
 e) Display the change records to the console
 
-f) Disconnect from the database when the used enters CTRL-C
+f) Disconnect from the database when the user enters CTRL-C
 
 Either the level1 - level4 JDBC programs or ttIsql can be used to apply committed changes to the CUSTOMER, PRODUCT, ORDERS, ORDER_ITEM and INVENTORY tables
 
@@ -381,7 +381,7 @@ Run the program using default workload mix of 80% reads, 20% updates, dsn=sample
   
   `java jdbc.demo.Tptbm`
 
-80% reads, 20% updates, 2 threads, populate the table with 400,000 rows, and run for 60 seconds with a 10 second ramp-upand ramp-down time.
+80% reads, 20% updates, 2 threads, populate the table with 400,000 rows, and run for 60 seconds with a 10 second ramp-up and ramp-down time.
   
   `java jdbc.demo.Tptbm -threads 2 -key 200 -sec 60`
 
