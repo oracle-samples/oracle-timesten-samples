@@ -1,4 +1,4 @@
-Copyright (c) 2019, 2025 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2019, 2026 Oracle and/or its affiliates. All rights reserved.
 
 # TimesTen Node.js Samples
 
@@ -113,6 +113,46 @@ Performing deletes
   delete(ed) 20 rows
 Connection has been released
 ```
+
+### aiResponseCache.js
+
+This sample demonstrates how an application can use TimesTen as the authoritative store for active AI response cache state. The application computes deterministic cache keys for AI requests, checks TimesTen for fresh cached responses, simulates model calls on cache misses, stores responses with operational metadata and expiration timestamps, and removes expired entries.
+
+> **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
+
+* Creates and drops the `ai_response_cache` table
+* Creates indexes for tenant/model and expiration lookups
+* Seeds one expired cache entry
+* Processes sample AI requests, showing cache misses and cache hits
+* Updates hit counts and last-accessed timestamps on cache hits
+* Stores model metadata in a JSON column and queries it with SQL/JSON
+* Deletes expired cache entries
+
+Example:
+
+```
+% node aiResponseCache.js -u username -p password [-c <connectionString>]
+Table ai_response_cache created
+Index IDX_AI_CACHE_TENANT_MODEL created
+Index IDX_AI_CACHE_EXPIRES created
+Seeded 1 expired cache entry
+CACHE MISS tenant=retail_app model=support-summary-v1 stored_for_minutes=30
+  Response: Simulated response for retail_app using support-summary-v1: Summarize order 45012 for a support agent.
+CACHE HIT  tenant=retail_app model=support-summary-v1 hits=1 expires=...
+  Response: Simulated response for retail_app using support-summary-v1: Summarize order 45012 for a support agent.
+  Safety label from metadata: allowed
+CACHE MISS tenant=field_service model=technician-assist-v1 stored_for_minutes=30
+  Response: Simulated response for field_service using technician-assist-v1: Draft troubleshooting steps for a router with intermittent packet loss.
+Cache summary by tenant and model:
+  tenant=field_service  model=technician-assist-v1   entries=1 hits=0
+  tenant=retail_app     model=support-summary-v1     entries=2 hits=1
+Metadata safety labels:
+  cache_key=... safetyLabel=allowed
+Deleted 1 expired cache entry
+Table ai_response_cache dropped
+Connection has been released
+```
+
 ### queriesAndPlsql.js
 
 The queriesAndPlsql sample program connects to a TimesTen database and performs a number of database operations with PL/SQL: 
