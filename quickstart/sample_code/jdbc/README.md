@@ -9,6 +9,7 @@ This directory is the home for TimesTen Java samples. The samples remain in the 
 | Sample | File | Why start here |
 | :----- | :--- | :------------- |
 | JSON with JDBC | [JsonSample.java](./JsonSample.java) | Demonstrates a current application pattern: JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
+| AI response cache | [AiResponseCache.java](./AiResponseCache.java) | Shows how TimesTen can keep a fast, authoritative cache for simulated AI responses, including hit tracking, expiration, and JSON metadata. |
 | JDBC basics | [TTJdbcExamples.java](./TTJdbcExamples.java) | Shows core JDBC operations including connection handling, DDL, DML, prepared statements, indexes, query plans, and batch updates. |
 | PL/SQL from Java | [plsqlJDBC.java](./plsqlJDBC.java) | Shows how Java applications call TimesTen PL/SQL procedures, functions, anonymous blocks, and ref cursors. |
 | Transactional order processing | [level3.java](./level3.java) and [level4.java](./level4.java) | Single-threaded and multi-threaded transaction examples for order-processing workloads. |
@@ -23,6 +24,7 @@ The remaining samples are still available for users who need specific TimesTen f
 | Transaction processing | `level3`, `level4` | Order-processing workload, including rollback behavior and multi-threaded throughput. |
 | PL/SQL integration | `plsqlJDBC` | Calls stored procedures, functions, anonymous blocks, and ref cursors. |
 | JSON | `JsonSample` | Current JSON document example using the TimesTen JSON data type and SQL/JSON functions. |
+| AI response cache | `AiResponseCache` | Simulated AI response cache with TTL, hit counting, and JSON metadata stored in TimesTen as the system of record for active cache state. |
 | Benchmarking | `Tptbm` | Multi-user throughput benchmark with configurable transaction mix. |
 | JMS/XLA | `asyncJMS`, `asyncJMS2`, `syncJMS`, `syncJMS2` | Change-notification examples using TimesTen JMS/XLA. These are specialized samples with additional prerequisites. |
 | Support utilities | `AccessControl`, `IOLibrary`, `InitializeDatabase`, `PasswordField`, `EraserThread`, `tt_version` | Shared helper classes used by the runnable samples. |
@@ -434,6 +436,19 @@ Example:
   Run the program and retain the JSON table after completion
   
   `java jdbc.demo.JsonSample -keep`
+
+
+**AiResponseCache**
+
+This sample demonstrates a fast AI response cache pattern in TimesTen. It creates a cache table with response text, metadata, hit counts, and expiration timestamps; simulates cache hits and misses; and then removes expired rows before dropping the table. The demo keeps TimesTen as the active system of record for the cache state and uses simulated responses so the focus stays on the storage and retrieval pattern.
+
+Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
+
+Example:
+
+  Run the program using the default DSN (sampledb)
+
+  `java jdbc.demo.AiResponseCache`
 
 
 For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/java-developer/index.html).
