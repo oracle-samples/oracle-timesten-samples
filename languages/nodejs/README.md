@@ -196,6 +196,46 @@ The sample also prints a session summary that is easier to scan as a table:
 | field_service | user_204 | router-troubleshooting | 1 | technician-assist-v1 | allowed |
 | retail_app | user_001 | order-status | 2 | support-summary-v1 | allowed |
 
+### featureStore.js
+
+This sample demonstrates how an application can use TimesTen as a fast online feature store for real-time personalization support. It keeps the latest feature values close to the service that needs them, so it can fetch the current state with very low latency, refresh stale data, and store a JSON audit trail for downstream analysis.
+
+> **Note:** The sample uses simulated feature updates and does not call an AI model, perform vector search, or run in-database model inference.
+
+* Creates and drops the `user_features` table
+* Creates indexes for tenant/user and freshness lookups
+* Seeds one stale feature row so cleanup behavior is visible
+* Upserts fresh feature values for sample users
+* Fetches the current feature set for a user with low latency
+* Stores a JSON audit payload for the resulting personalization decision
+* Deletes stale feature rows
+
+Example:
+
+```
+% node featureStore.js -u username -p password [-c <connectionString>]
+Table user_features created
+Index IDX_USER_FEATURES_TENANT_USER created
+Index IDX_USER_FEATURES_FRESHNESS created
+Seeded 1 stale feature row
+FEATURE UPSERT tenant=retail_app user=user_001 feature=cart_value model=feature-agg-v1
+FEATURE UPSERT tenant=retail_app user=user_001 feature=preferred_channel model=feature-agg-v1
+FEATURE UPSERT tenant=field_service user=user_204 feature=device_risk model=feature-agg-v2
+Active feature groups:
+  tenant=field_service user=user_204  features=1 numeric_sum=73
+  tenant=retail_app    user=user_001  features=2 numeric_sum=128
+Current features for tenant=retail_app user=user_001:
+  feature=cart_value freshness=... model=feature-agg-v1
+    value={"valueType":"numeric","value":128,"source":"checkout-events","freshness":"seconds"}
+    audit={"tenantId":"retail_app","userId":"user_001","featureName":"cart_value",...}
+  feature=preferred_channel freshness=... model=feature-agg-v1
+    value={"valueType":"string","value":"mobile","source":"profile-service","freshness":"minutes"}
+    audit={"tenantId":"retail_app","userId":"user_001","featureName":"preferred_channel",...}
+Deleted 1 expired feature row
+Table user_features dropped
+Connection has been released
+```
+
 ### queriesAndPlsql.js
 
 The queriesAndPlsql sample program connects to a TimesTen database and performs a number of database operations with PL/SQL: 
