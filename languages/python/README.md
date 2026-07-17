@@ -154,6 +154,42 @@ Table ai_response_cache dropped
 Connection has been released
 ```
 
+### chatSessionMemory.py
+
+This sample demonstrates how an application can use TimesTen as the authoritative store for short-lived AI chat/session memory. It stores recent messages, tool-call metadata, safety labels, and citations in a JSON column so the application can restore context quickly between turns.
+
+> **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
+
+* Creates and drops the `chat_sessions` table
+* Creates indexes for tenant/user and expiration lookups
+* Seeds one expired chat session
+* Starts and resumes sample chat sessions
+* Stores recent messages and metadata in JSON
+* Queries JSON fields to summarize active sessions
+* Deletes expired chat sessions
+
+Example:
+
+```
+% python3 chatSessionMemory.py -u username -p password [-c <connectionString>]
+Table chat_sessions created
+Index IDX_CHAT_SESSIONS_TENANT_USER created
+Index IDX_CHAT_SESSIONS_EXPIRES created
+Seeded 1 expired chat session
+SESSION START tenant=retail_app user=user_001 topic=order-status turns=1
+  Assistant: Simulated reply for retail_app using support-summary-v1: The order is currently in transit and should arrive tomorrow.
+SESSION RESUME tenant=retail_app user=user_001 topic=order-status turns=2
+  Assistant: Simulated reply for retail_app using support-summary-v1: I remember your earlier message: Where is order 45012?. The order is still in transit and is expected to arrive tomorrow.
+SESSION START tenant=field_service user=user_204 topic=router-troubleshooting turns=1
+  Assistant: Simulated reply for field_service using technician-assist-v1: The router is still showing intermittent packet loss, so continue with the cable and firmware checks.
+Active sessions by tenant/user/topic:
+  tenant=field_service user=user_204  topic=router-troubleshooting   turns=1 model=technician-assist-v1   safety=allowed
+  tenant=retail_app    user=user_001  topic=order-status            turns=2 model=support-summary-v1    safety=allowed
+Deleted 1 expired chat session
+Table chat_sessions dropped
+Connection has been released
+```
+
 ### queriesAndPlsql.py
 
 This Python sample program connects to a TimesTen Database and performs a number of database operations with PL/SQL: 
