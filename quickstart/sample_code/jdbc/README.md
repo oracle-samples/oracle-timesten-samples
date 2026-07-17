@@ -8,6 +8,7 @@ This directory is the home for TimesTen Java samples. The samples remain in the 
 
 | Sample | File | Why start here |
 | :----- | :--- | :------------- |
+| API session state | [ApiSessions.java](./ApiSessions.java) | Shows a modern application-session pattern: active session storage, request counters, last-seen timestamps, and row cleanup in TimesTen. |
 | JSON with JDBC | [JsonSample.java](./JsonSample.java) | Demonstrates a current application pattern: JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
 | AI response cache | [AiResponseCache.java](./AiResponseCache.java) | Shows how TimesTen can keep a fast, authoritative cache for simulated AI responses, including hit tracking, expiration, and JSON metadata. |
 | JDBC basics | [TTJdbcExamples.java](./TTJdbcExamples.java) | Shows core JDBC operations including connection handling, DDL, DML, prepared statements, indexes, query plans, and batch updates. |
@@ -436,6 +437,17 @@ Example:
   Run the program and retain the JSON table after completion
   
   `java jdbc.demo.JsonSample -keep`
+
+
+**ApiSessions**
+
+This sample demonstrates a modern application-session pattern in TimesTen. It creates an `api_sessions` table, seeds active session rows, performs reads to simulate session lookups, updates request counters and last-seen timestamps for active sessions, and removes some inactive rows before cleanup. The data model is intentionally short-lived and operational, which makes it a good fit for an in-memory database.
+
+Example:
+
+  Run the program using the default DSN (sampledb)
+
+  `java jdbc.demo.ApiSessions`
 
 
 **AiResponseCache**
