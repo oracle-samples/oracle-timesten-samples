@@ -2,6 +2,17 @@
 
 This repository stores a variety of examples demonstrating how to use the Oracle TimesTen In-Memory Database.
 
+## Start here by use case
+
+If you are looking for a modern application pattern, start with the use case below and then drill into the language or QuickStart samples that match it best.
+
+| Use case | Start here | Why this is useful |
+| :--- | :--------- | :----------------- |
+| AI and live application state | [languages/python](./languages/python), [languages/nodejs](./languages/nodejs), [quickstart/sample_code/jdbc](./quickstart/sample_code/jdbc) | Shows TimesTen as a fast store for chat memory, feature state, response cache, and other hot application data. |
+| JSON application data | [languages/python/jsonSample.py](./languages/python/jsonSample.py), [languages/nodejs/jsonSample.js](./languages/nodejs/jsonSample.js), [quickstart/sample_code/jdbc/JsonSample.java](./quickstart/sample_code/jdbc/JsonSample.java) | Demonstrates JSON document storage, indexing, update, and query patterns. |
+| Core SQL and transactional patterns | [quickstart/sample_code/jdbc](./quickstart/sample_code/jdbc), [languages/python/sql.py](./languages/python/sql.py), [languages/nodejs/sql.js](./languages/nodejs/sql.js) | Good starting points for operational app-state and transaction samples. |
+| Containers and deployment | [containers](./containers), [kubernetes](./kubernetes) | Shows how to run TimesTen in containers or on Kubernetes. |
+
 ## Recommended starting points
 
 If you are new to these samples, start with the language and deployment examples below. They highlight the most common application-development paths while keeping the QuickStart material available for deeper product coverage.

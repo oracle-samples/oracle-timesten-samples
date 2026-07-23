@@ -4,6 +4,16 @@ Copyright (c) 2019, 2026 Oracle and/or its affiliates. All rights reserved.
 
 This folder contains Python samples that illustrate database connection and operations using the python-oracledb driver against the TimesTen database. 
 
+## Start here by use case
+
+If you already know the kind of application pattern you want to see, start here and then work down into the individual sample sections below.
+
+| Use case | Samples | Why start here |
+| :------- | :------ | :------------- |
+| AI and live application state | `aiResponseCache.py`, `chatSessionMemory.py`, `featureStore.py` | Shows TimesTen as a fast store for hot application state, session memory, and personalization features. |
+| JSON application data | `jsonSample.py` | Demonstrates JSON document storage, indexing, update, and query workflows. |
+| Core SQL and transactional patterns | `sql.py`, `queriesAndPlsql.py`, `lobs.py`, `simple.py` | Good starting points for SQL, PL/SQL, and basic data-access examples. |
+
 ## Software & Platform Support
 The following table describes the tested operating systems, python_oracledb driver and TimesTen software versions.
 

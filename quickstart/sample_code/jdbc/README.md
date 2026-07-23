@@ -4,6 +4,16 @@ Copyright (c) 2010, 2026, Oracle and/or its affiliates. All rights reserved.
 
 This directory is the home for TimesTen Java samples. The samples remain in the QuickStart tree so existing documentation, scripts, and workflows continue to work. New Java developers should start with the recommended samples below, then use the additional samples when they need broader API coverage, compatibility checks, or benchmarking.
 
+## Start here by use case
+
+If you already know the kind of application pattern you want to see, start here and then work down into the recommended and specialized sample lists below.
+
+| Use case | Primary samples | Why start here |
+| :------- | :-------------- | :------------- |
+| AI and live application state | `ChatSessionMemory`, `FeatureStore`, `AiResponseCache` | Shows TimesTen as a fast store for session memory, personalization features, and response cache. |
+| JSON application data | `JsonSample` | Demonstrates JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
+| Core JDBC and transactional patterns | `TTJdbcExamples`, `plsqlJDBC`, `level3`, `level4` | Good starting points for JDBC fundamentals and transactional workloads. |
+
 ## Recommended Java samples
 
 | Sample | File | Why start here |
