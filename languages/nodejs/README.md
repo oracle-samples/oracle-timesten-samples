@@ -116,7 +116,7 @@ Connection has been released
 
 ### aiResponseCache.js
 
-This sample demonstrates how an application can use TimesTen as the authoritative store for active AI response cache state. The application computes deterministic cache keys for AI requests, checks TimesTen for fresh cached responses, simulates model calls on cache misses, stores responses with operational metadata and expiration timestamps, and removes expired entries.
+This sample demonstrates how an application can use TimesTen as the primary store for active AI response cache state. The application computes deterministic cache keys for AI requests, checks TimesTen for fresh cached responses, simulates model calls on cache misses, stores responses with operational metadata and expiration timestamps, and removes expired entries.
 
 > **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
 
@@ -155,7 +155,7 @@ Connection has been released
 
 ### chatSessionMemory.js
 
-This sample demonstrates how an application can use TimesTen as the authoritative store for short-lived AI chat/session memory. It stores recent messages, tool-call metadata, safety labels, and citations in a JSON column so the application can restore context quickly between turns.
+This sample demonstrates how an application can use TimesTen as the primary store for active chat session memory. It stores recent messages, tool-call metadata, safety labels, and citations in a JSON column so the application can restore context quickly between turns.
 
 > **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
 

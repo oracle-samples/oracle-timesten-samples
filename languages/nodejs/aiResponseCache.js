@@ -6,7 +6,7 @@
  *
  *  DESCRIPTION
  *    This sample demonstrates how an application can use TimesTen as the
- *    authoritative store for active AI response cache state. The application
+ *    primary store for active AI response cache state. The application
  *    computes a deterministic cache key for each AI request, checks TimesTen
  *    for a fresh cached response, simulates a model call on cache miss, and
  *    stores the response and operational metadata with an expiration time.

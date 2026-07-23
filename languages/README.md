@@ -1,6 +1,6 @@
 # TimesTen Open Source Languages Samples
 
-This folder contains open source language samples for application developers using Oracle TimesTen In-Memory Database. Java/JDBC samples are maintained separately in the QuickStart tree at [quickstart/sample_code/jdbc](../quickstart/sample_code/jdbc). The Python and Node.js directories now also include AI response cache, chat/session memory, and feature store samples that show TimesTen as the authoritative store for active AI state.
+This folder contains open source language samples for application developers using Oracle TimesTen In-Memory Database. Java/JDBC samples are maintained separately in the QuickStart tree at [quickstart/sample_code/jdbc](../quickstart/sample_code/jdbc). The Python and Node.js directories now also include AI response cache, chat/session memory, and feature store samples that show TimesTen as the primary store for active AI state.
 
 ## Recommended samples
 

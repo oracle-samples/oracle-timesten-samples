@@ -6,7 +6,7 @@
  *
  *  DESCRIPTION
  *    This sample demonstrates how an application can use TimesTen as the
- *    authoritative store for short-lived AI chat/session memory. The
+ *    primary store for active chat session memory. The
  *    application stores recent messages, tool-call metadata, safety labels,
  *    and citations in JSON so it can restore context quickly between turns.
  *

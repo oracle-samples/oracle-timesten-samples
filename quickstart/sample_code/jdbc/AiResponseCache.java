@@ -5,7 +5,7 @@
  * at http://oss.oracle.com/licenses/upl
  *
  * DESCRIPTION
- *   Demonstrates how an application can use TimesTen as the authoritative
+ *   Demonstrates how an application can use TimesTen as the primary
  *   store for active AI response cache state. The application computes a
  *   deterministic cache key for each AI request, checks TimesTen for a fresh
  *   cached response, simulates a model call on cache miss, and stores the

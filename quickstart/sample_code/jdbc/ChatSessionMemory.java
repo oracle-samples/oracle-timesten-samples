@@ -5,7 +5,7 @@
  * at http://oss.oracle.com/licenses/upl
  *
  * DESCRIPTION
- *   Demonstrates how an application can use TimesTen as the authoritative
+ *   Demonstrates how an application can use TimesTen as the primary
  *   store for short-lived AI chat/session memory. The application stores
  *   recent messages, tool-call metadata, safety labels, and citations in JSON
  *   so it can restore context quickly between turns.

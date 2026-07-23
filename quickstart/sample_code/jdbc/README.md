@@ -12,7 +12,7 @@ This directory is the home for TimesTen Java samples. The samples remain in the 
 | AI chat session memory | [ChatSessionMemory.java](./ChatSessionMemory.java) | Shows a short-lived AI context pattern: recent messages, JSON metadata, TTL cleanup, and fast session restoration in TimesTen. |
 | Online feature store | [FeatureStore.java](./FeatureStore.java) | Shows a real-time personalization pattern: feature upserts, JSON audit metadata, freshness checks, and fast retrieval in TimesTen. |
 | JSON with JDBC | [JsonSample.java](./JsonSample.java) | Demonstrates a current application pattern: JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
-| AI response cache | [AiResponseCache.java](./AiResponseCache.java) | Shows how TimesTen can keep a fast, authoritative cache for simulated AI responses, including hit tracking, expiration, and JSON metadata. |
+| AI response cache | [AiResponseCache.java](./AiResponseCache.java) | Shows how TimesTen can keep a fast cache for simulated AI responses, including hit tracking, expiration, and JSON metadata. |
 | JDBC basics | [TTJdbcExamples.java](./TTJdbcExamples.java) | Shows core JDBC operations including connection handling, DDL, DML, prepared statements, indexes, query plans, and batch updates. |
 | PL/SQL from Java | [plsqlJDBC.java](./plsqlJDBC.java) | Shows how Java applications call TimesTen PL/SQL procedures, functions, anonymous blocks, and ref cursors. |
 | Transactional order processing | [level3.java](./level3.java) and [level4.java](./level4.java) | Single-threaded and multi-threaded transaction examples for order-processing workloads. |
@@ -27,9 +27,9 @@ The remaining samples are still available for users who need specific TimesTen f
 | Transaction processing | `level3`, `level4` | Order-processing workload, including rollback behavior and multi-threaded throughput. |
 | PL/SQL integration | `plsqlJDBC` | Calls stored procedures, functions, anonymous blocks, and ref cursors. |
 | JSON | `JsonSample` | Current JSON document example using the TimesTen JSON data type and SQL/JSON functions. |
-| AI chat/session memory | `ChatSessionMemory` | Simulated chat memory cache with TTL, message history, and JSON metadata stored in TimesTen as the system of record for active session state. |
+| AI chat/session memory | `ChatSessionMemory` | Simulated chat memory cache with TTL, message history, and JSON metadata stored in TimesTen as the primary store for active session state. |
 | Online feature store | `FeatureStore` | Simulated personalization feature store with TTL, JSON feature values, audit metadata, and low-latency reads in TimesTen. |
-| AI response cache | `AiResponseCache` | Simulated AI response cache with TTL, hit counting, and JSON metadata stored in TimesTen as the system of record for active cache state. |
+| AI response cache | `AiResponseCache` | Simulated AI response cache with TTL, hit counting, and JSON metadata stored in TimesTen as the primary store for active cache state. |
 | Benchmarking | `Tptbm` | Multi-user throughput benchmark with configurable transaction mix. |
 | JMS/XLA | `asyncJMS`, `asyncJMS2`, `syncJMS`, `syncJMS2` | Change-notification examples using TimesTen JMS/XLA. These are specialized samples with additional prerequisites. |
 | Support utilities | `AccessControl`, `IOLibrary`, `InitializeDatabase`, `PasswordField`, `EraserThread`, `tt_version` | Shared helper classes used by the runnable samples. |
