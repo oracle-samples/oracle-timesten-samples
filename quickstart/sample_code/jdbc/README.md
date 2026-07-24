@@ -13,6 +13,7 @@ If you already know the kind of application pattern you want to see, start here 
 | AI and live application state | `ChatSessionMemory`, `FeatureStore`, `AiResponseCache` | Shows TimesTen as a fast store for session memory, personalization features, and response cache. |
 | JSON application data | `JsonSample` | Demonstrates JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
 | Real-time financial authorization state | `PaymentAuthorizationState` | Shows TimesTen as a low-latency store for payment authorization decisions, idempotent replay, and hot risk state. |
+| Real-time telecom call routing state | `TelecomCallRoutingState` | Shows TimesTen as a low-latency store for telecom routing decisions, idempotent replay, and hot session state. |
 | Core JDBC and transactional patterns | `TTJdbcExamples`, `plsqlJDBC`, `level3`, `level4` | Good starting points for JDBC fundamentals and transactional workloads. |
 
 ## Recommended Java samples
@@ -25,6 +26,7 @@ If you already know the kind of application pattern you want to see, start here 
 | JSON with JDBC | [JsonSample.java](./JsonSample.java) | Demonstrates a current application pattern: JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
 | AI response cache | [AiResponseCache.java](./AiResponseCache.java) | Shows how TimesTen can keep a fast cache for simulated AI responses, including hit tracking, expiration, and JSON metadata. |
 | Payment authorization state | [PaymentAuthorizationState.java](./PaymentAuthorizationState.java) | Shows how TimesTen can keep hot payment authorization decisions, idempotent replay, and JSON metadata close to the transaction flow. |
+| Telecom call routing state | [TelecomCallRoutingState.java](./TelecomCallRoutingState.java) | Shows how TimesTen can keep hot telecom routing decisions, idempotent replay, and JSON metadata close to the session flow. |
 | JDBC basics | [TTJdbcExamples.java](./TTJdbcExamples.java) | Shows core JDBC operations including connection handling, DDL, DML, prepared statements, indexes, query plans, and batch updates. |
 | PL/SQL from Java | [plsqlJDBC.java](./plsqlJDBC.java) | Shows how Java applications call TimesTen PL/SQL procedures, functions, anonymous blocks, and ref cursors. |
 | Transactional order processing | [level3.java](./level3.java) and [level4.java](./level4.java) | Single-threaded and multi-threaded transaction examples for order-processing workloads. |
@@ -43,6 +45,7 @@ The remaining samples are still available for users who need specific TimesTen f
 | Online feature store | `FeatureStore` | Simulated personalization feature store with TTL, JSON feature values, audit metadata, and low-latency reads in TimesTen. |
 | AI response cache | `AiResponseCache` | Simulated AI response cache with TTL, hit counting, and JSON metadata stored in TimesTen as the primary store for active cache state. |
 | Payment authorization state | `PaymentAuthorizationState` | Simulated payment authorization flow with TTL, idempotent replay, JSON request/decision metadata, and low-latency decisioning in TimesTen. |
+| Telecom call routing state | `TelecomCallRoutingState` | Simulated telecom routing flow with TTL, idempotent replay, JSON request/decision metadata, and low-latency decisioning in TimesTen. |
 | Benchmarking | `Tptbm` | Multi-user throughput benchmark with configurable transaction mix. |
 | JMS/XLA | `asyncJMS`, `asyncJMS2`, `syncJMS`, `syncJMS2` | Change-notification examples using TimesTen JMS/XLA. These are specialized samples with additional prerequisites. |
 | Support utilities | `AccessControl`, `IOLibrary`, `InitializeDatabase`, `PasswordField`, `EraserThread`, `tt_version` | Shared helper classes used by the runnable samples. |
@@ -501,6 +504,29 @@ Example:
   Run the program using the default DSN (sampledb)
 
   `java jdbc.demo.PaymentAuthorizationState`
+
+
+**TelecomCallRoutingState**
+
+This sample demonstrates a real-time telecom call routing state flow in TimesTen. It creates a call routing table with tenant, subscriber, call, region, slice, priority, route state, and expiration fields; applies deterministic routing rules; stores request and decision metadata in JSON; shows idempotent replay for repeated call requests; and removes expired rows before dropping the table. The demo uses simulated rules so the focus stays on low-latency routing decisions and state management.
+
+The sample performs the following steps:
+
+  - Creates a `call_routing_state` table
+  - Creates indexes for tenant/subscriber, call id, and expiration lookups
+  - Seeds one expired routing record
+  - Processes call routing requests
+  - Shows a repeated request being replayed from the existing state
+  - Stores request and decision metadata in JSON
+  - Summarizes active routing decisions by tenant/subscriber/state
+  - Deletes expired routing records
+  - Drops the table
+
+Example:
+
+  Run the program using the default DSN (sampledb)
+
+  `java jdbc.demo.TelecomCallRoutingState`
 
 
 For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/java-developer/index.html).
