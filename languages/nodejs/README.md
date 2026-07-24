@@ -13,6 +13,7 @@ If you already know the kind of application pattern you want to see, start here 
 | AI and live application state | `aiResponseCache.js`, `chatSessionMemory.js`, `featureStore.js` | Shows TimesTen as a fast store for hot application state, session memory, and personalization features. |
 | JSON application data | `jsonSample.js` | Demonstrates JSON document storage, indexing, update, and query workflows. |
 | Real-time financial authorization state | `paymentAuthorizationState.js` | Shows TimesTen as a low-latency store for payment authorization decisions, idempotent replay, and hot risk state. |
+| Real-time telecom call routing state | `telecomCallRoutingState.js` | Shows TimesTen as a low-latency store for telecom routing decisions, idempotent replay, and hot session state. |
 | Core SQL and transactional patterns | `sql.js`, `queriesAndPlsql.js`, `lobs.js`, `simple.js` | Good starting points for SQL, PL/SQL, and basic data-access examples. |
 
 ## Software & Platform Support
@@ -283,6 +284,45 @@ Active authorization details:
   payment_id=pay_1001   merchant=orchard-books        status=APPROVED amount=$49.95 risk=0.12 reason=within_limit_and_low_risk   expires_at=...
 Deleted 1 expired authorization record
 Table payment_authorizations dropped
+Connection has been released
+```
+
+### telecomCallRoutingState.js
+
+This sample demonstrates how an application can use TimesTen as a fast store for real-time telecom call routing state. It keeps hot routing decisions close to the service that needs them, applies deterministic routing rules, stores request and decision metadata in JSON, and removes expired routing records.
+
+> **Note:** The sample uses simulated routing rules. It does not call a telecom switch, perform network signaling, or depend on an external service.
+
+* Creates and drops the `call_routing_state` table
+* Creates indexes for tenant/subscriber, call id, and expiration lookups
+* Seeds one expired routing record
+* Processes sample call routing requests
+* Shows idempotent replay for a repeated call request
+* Stores request and decision metadata in JSON
+* Summarizes active routing decisions by tenant/subscriber/state
+* Deletes expired routing records
+
+Example:
+
+```
+% node telecomCallRoutingState.js -u username -p password [-c <connectionString>]
+Table call_routing_state created
+Index IDX_CALL_ROUTING_TENANT_SUBSCRIBER created
+Index IDX_CALL_ROUTING_CALL_ID created
+Index IDX_CALL_ROUTING_EXPIRES created
+Seeded 1 expired routing record
+ROUTE DECISION tenant=north_mobile subscriber=sub_1001 call_id=call_1001 state=ROUTED source=us-east target=us-east slice=gold reason=standard_route hold_expires=...
+ROUTE REPLAY tenant=north_mobile subscriber=sub_1001 call_id=call_1001 state=ROUTED reason=standard_route expires_at=...
+ROUTE DECISION tenant=north_mobile subscriber=sub_2002 call_id=call_2001 state=BLOCKED source=us-east target=eu-west slice=silver reason=roaming_not_allowed hold_expires=...
+ROUTE DECISION tenant=field_support subscriber=sub_3003 call_id=call_3001 state=PRIORITIZED source=us-west target=us-west slice=platinum reason=emergency_route_override hold_expires=...
+Active routing decisions by tenant/subscriber/state:
+  tenant=field_support subscriber=sub_3003 state=PRIORITIZED rows=1
+  tenant=north_mobile subscriber=sub_1001 state=ROUTED      rows=1
+  tenant=north_mobile subscriber=sub_2002 state=BLOCKED     rows=1
+Active routing details:
+  call_id=call_1001   source=us-east  target=us-east  slice=gold     priority=standard   state=ROUTED      reason=standard_route           expires_at=...
+Deleted 1 expired routing record
+Table call_routing_state dropped
 Connection has been released
 ```
 
