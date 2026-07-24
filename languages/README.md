@@ -9,8 +9,8 @@ If you already know the kind of application pattern you want to see, start here 
 | Use case | Primary samples | Why start here |
 | :------- | :-------------- | :------------- |
 | AI and live application state | [python/aiResponseCache.py](./python/aiResponseCache.py), [python/chatSessionMemory.py](./python/chatSessionMemory.py), [python/featureStore.py](./python/featureStore.py), [nodejs/aiResponseCache.js](./nodejs/aiResponseCache.js), [nodejs/chatSessionMemory.js](./nodejs/chatSessionMemory.js), [nodejs/featureStore.js](./nodejs/featureStore.js) | Shows TimesTen as a fast store for chat memory, feature state, and response cache patterns. |
-| JSON application data | [python/jsonSample.py](./python/jsonSample.py), [nodejs/jsonSample.js](./nodejs/jsonSample.js), [quickstart/sample_code/jdbc/JsonSample.java](../quickstart/sample_code/jdbc/JsonSample.java) | Demonstrates JSON document storage and query workflows. |
-| Core SQL and transactional patterns | [python/sql.py](./python/sql.py), [nodejs/sql.js](./nodejs/sql.js), [quickstart/sample_code/jdbc/ApiSessions.java](../quickstart/sample_code/jdbc/ApiSessions.java) | Good starting points for operational app-state examples. |
+| JSON application data | [python/jsonSample.py](./python/jsonSample.py), [nodejs/jsonSample.js](./nodejs/jsonSample.js) | Demonstrates JSON document storage and query workflows. |
+| Core SQL and transactional patterns | [python/sql.py](./python/sql.py), [nodejs/sql.js](./nodejs/sql.js) | Good starting points for operational app-state examples. |
 
 ## Recommended samples
 
