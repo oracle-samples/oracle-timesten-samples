@@ -12,6 +12,7 @@ If you already know the kind of application pattern you want to see, start here 
 | :------- | :------ | :------------- |
 | AI and live application state | `aiResponseCache.py`, `chatSessionMemory.py`, `featureStore.py` | Shows TimesTen as a fast store for hot application state, session memory, and personalization features. |
 | JSON application data | `jsonSample.py` | Demonstrates JSON document storage, indexing, update, and query workflows. |
+| Real-time financial authorization state | `paymentAuthorizationState.py` | Shows TimesTen as a low-latency store for payment authorization decisions, idempotent replay, and hot risk state. |
 | Core SQL and transactional patterns | `sql.py`, `queriesAndPlsql.py`, `lobs.py`, `simple.py` | Good starting points for SQL, PL/SQL, and basic data-access examples. |
 
 ## Software & Platform Support
@@ -237,6 +238,45 @@ Current features for tenant=retail_app user=user_001:
     audit={"tenantId":"retail_app","userId":"user_001","featureName":"preferred_channel",...}
 Deleted 1 expired feature row
 Table user_features dropped
+Connection has been released
+```
+
+### paymentAuthorizationState.py
+
+This sample demonstrates how an application can use TimesTen as a fast store for real-time payment authorization state. It keeps hot authorization decisions close to the service that needs them, applies deterministic approval and decline rules, stores request and decision metadata in JSON, and removes expired authorization records.
+
+> **Note:** The sample uses simulated authorization rules. It does not call an external payment gateway, perform fraud-model inference, or depend on an external service.
+
+* Creates and drops the `payment_authorizations` table
+* Creates indexes for tenant/account, payment id, and expiration lookups
+* Seeds one expired authorization record
+* Processes sample payment authorization requests
+* Shows idempotent replay for a repeated payment request
+* Stores request and decision metadata in JSON
+* Summarizes active authorizations by tenant/account/status
+* Deletes expired authorization records
+
+Example:
+
+```
+% python3 paymentAuthorizationState.py -u username -p password [-c <connectionString>]
+Table payment_authorizations created
+Index IDX_PAYMENT_AUTH_TENANT_ACCOUNT created
+Index IDX_PAYMENT_AUTH_PAYMENT_ID created
+Index IDX_PAYMENT_AUTH_EXPIRES created
+Seeded 1 expired authorization record
+AUTH DECISION tenant=retail_app account=acct_1001 merchant=orchard-books payment_id=pay_1001 status=APPROVED amount=$49.95 risk=0.12 reason=within_limit_and_low_risk hold_expires=...
+AUTH REPLAY tenant=retail_app account=acct_1001 merchant=orchard-books payment_id=pay_1001 status=APPROVED reason=within_limit_and_low_risk expires_at=...
+AUTH DECISION tenant=retail_app account=acct_1002 merchant=pro-office-supplies payment_id=pay_2001 status=DECLINED amount=$399.00 risk=0.08 reason=amount_exceeds_limit hold_expires=...
+AUTH DECISION tenant=field_service account=acct_2001 merchant=route-parts payment_id=pay_3001 status=REVIEW amount=$149.00 risk=0.87 reason=risk_score_requires_review hold_expires=...
+Active authorizations by tenant/account/status:
+  tenant=field_service account=acct_2001 status=REVIEW   rows=1  total=$149.00
+  tenant=retail_app    account=acct_1001 status=APPROVED rows=1  total=$49.95
+  tenant=retail_app    account=acct_1002 status=DECLINED rows=1  total=$399.00
+Active authorization details:
+  payment_id=pay_1001   merchant=orchard-books        status=APPROVED amount=$49.95 risk=0.12 reason=within_limit_and_low_risk   expires_at=...
+Deleted 1 expired authorization record
+Table payment_authorizations dropped
 Connection has been released
 ```
 
