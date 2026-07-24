@@ -1,6 +1,6 @@
 # TimesTen Open Source Languages Samples
 
-This folder contains open source language samples for application developers using Oracle TimesTen In-Memory Database. Java/JDBC samples are maintained separately in the QuickStart tree at [quickstart/sample_code/jdbc](../quickstart/sample_code/jdbc). The Python and Node.js directories now also include AI response cache, chat/session memory, and feature store samples that show TimesTen as the primary store for active AI state.
+This folder contains open source language samples for application developers using Oracle TimesTen In-Memory Database. Java/JDBC samples are maintained separately in the QuickStart tree at [quickstart/sample_code/jdbc](../quickstart/sample_code/jdbc). The Python and Node.js directories now also include AI response cache, chat/session memory, and feature store samples that show TimesTen as the primary store for active AI state. The Python and Node.js directories also include a real-time payment authorization sample for low-latency financial decisioning.
 
 ## Start here by use case
 
@@ -10,6 +10,7 @@ If you already know the kind of application pattern you want to see, start here 
 | :------- | :-------------- | :------------- |
 | AI and live application state | [python/aiResponseCache.py](./python/aiResponseCache.py), [python/chatSessionMemory.py](./python/chatSessionMemory.py), [python/featureStore.py](./python/featureStore.py), [nodejs/aiResponseCache.js](./nodejs/aiResponseCache.js), [nodejs/chatSessionMemory.js](./nodejs/chatSessionMemory.js), [nodejs/featureStore.js](./nodejs/featureStore.js) | Shows TimesTen as a fast store for chat memory, feature state, and response cache patterns. |
 | JSON application data | [python/jsonSample.py](./python/jsonSample.py), [nodejs/jsonSample.js](./nodejs/jsonSample.js) | Demonstrates JSON document storage and query workflows. |
+| Real-time financial authorization state | [python/paymentAuthorizationState.py](./python/paymentAuthorizationState.py), [nodejs/paymentAuthorizationState.js](./nodejs/paymentAuthorizationState.js) | Shows TimesTen as a low-latency store for payment authorization decisions, idempotent replay, and hot risk state. |
 | Core SQL and transactional patterns | [python/sql.py](./python/sql.py), [nodejs/sql.js](./nodejs/sql.js) | Good starting points for operational app-state examples. |
 
 ## Recommended samples
@@ -18,8 +19,8 @@ Start here for current application-development examples:
 
 | Language | Start here | Description |
 | :------- | :--------- | :---------- |
-| Python | [python](./python) | Python samples using the `python-oracledb` driver. Includes connection, SQL, PL/SQL, LOB, access-control, JSON, and AI state examples. |
-| Node.js | [nodejs](./nodejs) | Node.js samples using the `node-oracledb` driver. Includes connection, SQL, PL/SQL, LOB, access-control, JSON, and AI state examples. |
+| Python | [python](./python) | Python samples using the `python-oracledb` driver. Includes connection, SQL, PL/SQL, LOB, access-control, JSON, AI state, and financial authorization examples. |
+| Node.js | [nodejs](./nodejs) | Node.js samples using the `node-oracledb` driver. Includes connection, SQL, PL/SQL, LOB, access-control, JSON, AI state, and financial authorization examples. |
 
 ## Directory map
 
