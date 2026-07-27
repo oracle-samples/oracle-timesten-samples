@@ -57,17 +57,17 @@ const CREATE_TABLE = `
 `;
 
 const CREATE_TENANT_SUBSCRIBER_INDEX = `
-  CREATE INDEX idx_call_routing_tenant_subscriber
+  CREATE INDEX idx_call_route_tenant_sub
   ON call_routing_state (tenant_id, subscriber_id)
 `;
 
 const CREATE_CALL_ID_INDEX = `
-  CREATE INDEX idx_call_routing_call_id
+  CREATE INDEX idx_call_route_call_id
   ON call_routing_state (call_id)
 `;
 
 const CREATE_EXPIRES_INDEX = `
-  CREATE INDEX idx_call_routing_expires
+  CREATE INDEX idx_call_route_expires
   ON call_routing_state (expires_at)
 `;
 
@@ -234,11 +234,11 @@ async function createSchema(connection) {
   await connection.execute(CREATE_TABLE);
   console.log(`Table ${TABLE_NAME} created`);
   await connection.execute(CREATE_TENANT_SUBSCRIBER_INDEX);
-  console.log('Index IDX_CALL_ROUTING_TENANT_SUBSCRIBER created');
+  console.log('Index IDX_CALL_ROUTE_TENANT_SUB created');
   await connection.execute(CREATE_CALL_ID_INDEX);
-  console.log('Index IDX_CALL_ROUTING_CALL_ID created');
+  console.log('Index IDX_CALL_ROUTE_CALL_ID created');
   await connection.execute(CREATE_EXPIRES_INDEX);
-  console.log('Index IDX_CALL_ROUTING_EXPIRES created');
+  console.log('Index IDX_CALL_ROUTE_EXPIRES created');
 }
 
 function buildRoutingKey(callRequest) {

@@ -56,17 +56,17 @@ CREATE_TABLE = f"""
 """
 
 CREATE_TENANT_SUBSCRIBER_INDEX = f"""
-  CREATE INDEX idx_call_routing_tenant_subscriber
+  CREATE INDEX idx_call_route_tenant_sub
   ON {TABLE_NAME} (tenant_id, subscriber_id)
 """
 
 CREATE_CALL_ID_INDEX = f"""
-  CREATE INDEX idx_call_routing_call_id
+  CREATE INDEX idx_call_route_call_id
   ON {TABLE_NAME} (call_id)
 """
 
 CREATE_EXPIRES_INDEX = f"""
-  CREATE INDEX idx_call_routing_expires
+  CREATE INDEX idx_call_route_expires
   ON {TABLE_NAME} (expires_at)
 """
 
@@ -221,11 +221,11 @@ def create_schema(cursor):
   cursor.execute(CREATE_TABLE)
   print(f"Table {TABLE_NAME} created")
   cursor.execute(CREATE_TENANT_SUBSCRIBER_INDEX)
-  print("Index IDX_CALL_ROUTING_TENANT_SUBSCRIBER created")
+  print("Index IDX_CALL_ROUTE_TENANT_SUB created")
   cursor.execute(CREATE_CALL_ID_INDEX)
-  print("Index IDX_CALL_ROUTING_CALL_ID created")
+  print("Index IDX_CALL_ROUTE_CALL_ID created")
   cursor.execute(CREATE_EXPIRES_INDEX)
-  print("Index IDX_CALL_ROUTING_EXPIRES created")
+  print("Index IDX_CALL_ROUTE_EXPIRES created")
 
 
 def build_routing_key(call_request):

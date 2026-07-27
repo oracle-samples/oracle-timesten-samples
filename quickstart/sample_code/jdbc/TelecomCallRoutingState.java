@@ -77,15 +77,15 @@ public class TelecomCallRoutingState
     + "expires_at         TIMESTAMP      NOT NULL)";
 
   private static final String CREATE_TENANT_SUBSCRIBER_INDEX_SQL =
-    "CREATE INDEX idx_call_routing_tenant_subscriber "
+    "CREATE INDEX idx_call_route_tenant_sub "
     + "ON " + TABLE_NAME + " (tenant_id, subscriber_id)";
 
   private static final String CREATE_CALL_ID_INDEX_SQL =
-    "CREATE INDEX idx_call_routing_call_id "
+    "CREATE INDEX idx_call_route_call_id "
     + "ON " + TABLE_NAME + " (call_id)";
 
   private static final String CREATE_EXPIRES_INDEX_SQL =
-    "CREATE INDEX idx_call_routing_expires "
+    "CREATE INDEX idx_call_route_expires "
     + "ON " + TABLE_NAME + " (expires_at)";
 
   private static final String INSERT_ROUTING_SQL =
@@ -329,11 +329,11 @@ public class TelecomCallRoutingState
     executeStatement(connection, CREATE_TABLE_SQL);
     System.out.println("Table " + TABLE_NAME + " created");
     executeStatement(connection, CREATE_TENANT_SUBSCRIBER_INDEX_SQL);
-    System.out.println("Index IDX_CALL_ROUTING_TENANT_SUBSCRIBER created");
+    System.out.println("Index IDX_CALL_ROUTE_TENANT_SUB created");
     executeStatement(connection, CREATE_CALL_ID_INDEX_SQL);
-    System.out.println("Index IDX_CALL_ROUTING_CALL_ID created");
+    System.out.println("Index IDX_CALL_ROUTE_CALL_ID created");
     executeStatement(connection, CREATE_EXPIRES_INDEX_SQL);
-    System.out.println("Index IDX_CALL_ROUTING_EXPIRES created");
+    System.out.println("Index IDX_CALL_ROUTE_EXPIRES created");
   }
 
   private void seedExpiredRouting(Connection connection) throws SQLException
