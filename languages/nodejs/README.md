@@ -130,7 +130,7 @@ Connection has been released
 
 This sample demonstrates how an application can use TimesTen as the primary store for active AI response cache state. The application computes deterministic cache keys for AI requests, checks TimesTen for fresh cached responses, simulates model calls on cache misses, stores responses with operational metadata and expiration timestamps, and removes expired entries.
 
-> **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
+> **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, or run in-database model inference.
 
 * Creates and drops the `ai_response_cache` table
 * Creates indexes for tenant/model and expiration lookups
@@ -169,7 +169,7 @@ Connection has been released
 
 This sample demonstrates how an application can use TimesTen as the primary store for active chat session memory. It stores recent messages, tool-call metadata, safety labels, and citations in a JSON column so the application can restore context quickly between turns.
 
-> **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
+> **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, or run in-database model inference.
 
 * Creates and drops the `chat_sessions` table
 * Creates indexes for tenant/user and expiration lookups

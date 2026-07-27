@@ -24,7 +24,6 @@ If you are new to these samples, start with the language and deployment examples
 | Python | [languages/python](./languages/python) | Python samples using the `python-oracledb` driver. |
 | Node.js | [languages/nodejs](./languages/nodejs) | Node.js samples using the `node-oracledb` driver. |
 | Java | [quickstart/sample_code/jdbc](./quickstart/sample_code/jdbc) | Java samples using the TimesTen JDBC driver. |
-| JSON | [Python JSON](./languages/python), [Node.js JSON](./languages/nodejs), [Java JSON](./quickstart/sample_code/jdbc) | JSON document storage, indexing, update, and query examples. |
 | Containers | [containers](./containers) | Run TimesTen in a container with a persistent database. |
 | Kubernetes | [kubernetes](./kubernetes) | Deploy TimesTen with the TimesTen Kubernetes Operator. |
 
