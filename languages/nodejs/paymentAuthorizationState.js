@@ -58,7 +58,7 @@ const CREATE_TABLE = `
 `;
 
 const CREATE_TENANT_ACCOUNT_INDEX = `
-  CREATE INDEX idx_payment_auth_tenant_account
+  CREATE INDEX idx_pay_auth_tenant_acct
   ON payment_authorizations (tenant_id, account_id)
 `;
 
@@ -241,7 +241,7 @@ async function createSchema(connection) {
   await connection.execute(CREATE_TABLE);
   console.log(`Table ${TABLE_NAME} created`);
   await connection.execute(CREATE_TENANT_ACCOUNT_INDEX);
-  console.log('Index IDX_PAYMENT_AUTH_TENANT_ACCOUNT created');
+  console.log('Index IDX_PAY_AUTH_TENANT_ACCT created');
   await connection.execute(CREATE_PAYMENT_ID_INDEX);
   console.log('Index IDX_PAYMENT_AUTH_PAYMENT_ID created');
   await connection.execute(CREATE_EXPIRES_INDEX);

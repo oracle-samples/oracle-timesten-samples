@@ -79,7 +79,7 @@ public class PaymentAuthorizationState
     + "expires_at         TIMESTAMP      NOT NULL)";
 
   private static final String CREATE_TENANT_ACCOUNT_INDEX_SQL =
-    "CREATE INDEX idx_payment_auth_tenant_account "
+    "CREATE INDEX idx_pay_auth_tenant_acct "
     + "ON " + TABLE_NAME + " (tenant_id, account_id)";
 
   private static final String CREATE_PAYMENT_ID_INDEX_SQL =
@@ -328,7 +328,7 @@ public class PaymentAuthorizationState
     executeStatement(connection, CREATE_TABLE_SQL);
     System.out.println("Table " + TABLE_NAME + " created");
     executeStatement(connection, CREATE_TENANT_ACCOUNT_INDEX_SQL);
-    System.out.println("Index IDX_PAYMENT_AUTH_TENANT_ACCOUNT created");
+    System.out.println("Index IDX_PAY_AUTH_TENANT_ACCT created");
     executeStatement(connection, CREATE_PAYMENT_ID_INDEX_SQL);
     System.out.println("Index IDX_PAYMENT_AUTH_PAYMENT_ID created");
     executeStatement(connection, CREATE_EXPIRES_INDEX_SQL);

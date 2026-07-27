@@ -57,7 +57,7 @@ CREATE_TABLE = f"""
 """
 
 CREATE_TENANT_ACCOUNT_INDEX = f"""
-  CREATE INDEX idx_payment_auth_tenant_account
+  CREATE INDEX idx_pay_auth_tenant_acct
   ON {TABLE_NAME} (tenant_id, account_id)
 """
 
@@ -240,7 +240,7 @@ def create_schema(cursor):
   cursor.execute(CREATE_TABLE)
   print(f"Table {TABLE_NAME} created")
   cursor.execute(CREATE_TENANT_ACCOUNT_INDEX)
-  print("Index IDX_PAYMENT_AUTH_TENANT_ACCOUNT created")
+  print("Index IDX_PAY_AUTH_TENANT_ACCT created")
   cursor.execute(CREATE_PAYMENT_ID_INDEX)
   print("Index IDX_PAYMENT_AUTH_PAYMENT_ID created")
   cursor.execute(CREATE_EXPIRES_INDEX)
