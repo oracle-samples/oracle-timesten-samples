@@ -133,7 +133,9 @@ This sample demonstrates how an application can use TimesTen as the primary stor
 
 > **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
 
-* Creates and drops the `ai_response_cache` table
+The sample performs the following steps:
+
+* Creates an `ai_response_cache` table
 * Creates indexes for tenant/model and expiration lookups
 * Seeds one expired cache entry
 * Processes sample AI requests, showing cache misses and cache hits
@@ -172,7 +174,9 @@ This sample demonstrates how an application can use TimesTen as the primary stor
 
 > **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, or run in-database model inference.
 
-* Creates and drops the `chat_sessions` table
+The sample performs the following steps:
+
+* Creates a `chat_sessions` table
 * Creates indexes for tenant/user and expiration lookups
 * Seeds one expired chat session
 * Starts and resumes sample chat sessions
@@ -208,7 +212,9 @@ This sample demonstrates how an application can use TimesTen as a fast online fe
 
 > **Note:** The sample uses simulated feature updates and does not call an AI model, perform vector search, or run in-database model inference.
 
-* Creates and drops the `user_features` table
+The sample performs the following steps:
+
+* Creates a `user_features` table
 * Creates indexes for tenant/user and freshness lookups
 * Seeds one stale feature row
 * Upserts fresh feature values for sample users
@@ -248,7 +254,9 @@ This sample demonstrates how an application can use TimesTen as a fast store for
 
 > **Note:** The sample uses simulated authorization rules. It does not call an external payment gateway, perform fraud-model inference, or depend on an external service.
 
-* Creates and drops the `payment_authorizations` table
+The sample performs the following steps:
+
+* Creates a `payment_authorizations` table
 * Creates indexes for tenant/account, payment id, and expiration lookups
 * Seeds one expired authorization record
 * Processes sample payment authorization requests
@@ -287,7 +295,9 @@ This sample demonstrates how an application can use TimesTen as a fast store for
 
 > **Note:** The sample uses simulated routing rules. It does not call a telecom switch, perform network signaling, or depend on an external service.
 
-* Creates and drops the `call_routing_state` table
+The sample performs the following steps:
+
+* Creates a `call_routing_state` table
 * Creates indexes for tenant/subscriber, call id, and expiration lookups
 * Seeds one expired routing record
 * Processes sample call routing requests
@@ -388,7 +398,9 @@ Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim 
 
 This sample demonstrates how to store, index, update, and query JSON documents in TimesTen using the `python-oracledb` driver. It showcases loading JSON files, creating a functional index on JSON content, retrieving documents by identifier and by user, and presenting JSON line items in a relational view.
 
-* Creates and drops the `j_purchaseorder` table that stores JSON purchase orders
+The sample performs the following steps:
+
+* Creates a `j_purchaseorder` table that stores JSON purchase orders
 * Inserts two JSON purchase orders loaded from sample files
 * Creates a JSON index on the `User` attribute for efficient lookups
 * Updates a purchase order document with revised JSON content

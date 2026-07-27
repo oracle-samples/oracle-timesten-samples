@@ -14,7 +14,7 @@
  *   names, service names, regions, request counters, session status, and a
  *   last-seen timestamp. It demonstrates basic SQL operations that are common
  *   in low-latency application state management:
- *     - Creates the 'api_sessions' table
+ *     - Creates an 'api_sessions' table
  *     - Populates the table (based on 'NUM_RECORDS')
  *     - Performs a number of SELECTS (based on 'READ_PERCENTAGE')
  *     - Updates request counters and last-seen timestamps for active sessions

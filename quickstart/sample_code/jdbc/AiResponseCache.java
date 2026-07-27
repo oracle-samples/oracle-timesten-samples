@@ -14,6 +14,16 @@
  *   NOTE: Responses are simulated; this sample does not call an AI model,
  *   perform vector search, run in-database model inference, or demonstrate
  *   TimesTen Cache for Oracle Database.
+ *
+ *   The sample performs the following steps:
+ *     - Creates an 'ai_response_cache' table
+ *     - Creates indexes for tenant/model and expiration lookups
+ *     - Seeds one expired cache entry
+ *     - Processes sample AI requests, showing cache misses and hits
+ *     - Updates hit counts and last-accessed timestamps on cache hits
+ *     - Stores model metadata in a JSON column and queries it with SQL/JSON
+ *     - Deletes expired cache entries
+ *     - Drops the table
  */
 
 package jdbc.demo;

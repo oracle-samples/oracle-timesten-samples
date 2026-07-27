@@ -13,6 +13,16 @@
  *
  *   NOTE: The sample uses simulated feature updates and does not call an AI
  *   model, perform vector search, or run in-database model inference.
+ *
+ *   The sample performs the following steps:
+ *     - Creates a 'user_features' table
+ *     - Creates indexes for tenant/user and freshness lookups
+ *     - Seeds one stale feature row
+ *     - Upserts fresh feature values for sample users
+ *     - Fetches the current feature set for a user with low latency
+ *     - Stores a JSON audit payload for the resulting personalization decision
+ *     - Deletes stale feature rows
+ *     - Drops the table
  */
 
 package jdbc.demo;

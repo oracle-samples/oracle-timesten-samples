@@ -469,18 +469,71 @@ Example:
 
   `java jdbc.demo.ApiSessions`
 
-
 **AiResponseCache**
 
 This sample demonstrates a fast AI response cache pattern in TimesTen. It creates a cache table with response text, metadata, hit counts, and expiration timestamps; simulates cache hits and misses; and then removes expired rows before dropping the table. The demo keeps TimesTen as the active system of record for the cache state and uses simulated responses so the focus stays on the storage and retrieval pattern.
 
 Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
 
+The sample performs the following steps:
+
+  - Creates an `ai_response_cache` table
+  - Creates indexes for tenant/model and expiration lookups
+  - Seeds one expired cache entry
+  - Processes sample AI requests, showing cache misses and cache hits
+  - Updates hit counts and last-accessed timestamps on cache hits
+  - Stores model metadata in a JSON column and queries it with SQL/JSON
+  - Deletes expired cache entries
+  - Drops the table
+
 Example:
 
   Run the program using the default DSN (sampledb)
 
   `java jdbc.demo.AiResponseCache`
+
+**ChatSessionMemory**
+
+This sample demonstrates a short-lived AI chat/session memory pattern in TimesTen. It creates a chat session table with tenant, user, topic, session-state, and expiration fields; stores recent messages, tool-call metadata, safety labels, and citations in JSON; simulates a resumed conversation; and removes expired rows before dropping the table. The demo uses simulated replies so the focus stays on fast session restoration and state management.
+
+The sample performs the following steps:
+
+  - Creates a `chat_sessions` table
+  - Creates indexes for tenant/user and expiration lookups
+  - Seeds one expired chat session
+  - Starts and resumes sample chat sessions
+  - Stores recent messages and metadata in JSON
+  - Queries JSON fields to summarize active sessions
+  - Deletes expired chat sessions
+  - Drops the table
+
+Example:
+
+  Run the program using the default DSN (sampledb)
+
+  `java jdbc.demo.ChatSessionMemory`
+
+
+**FeatureStore**
+
+This sample demonstrates a real-time online feature store pattern in TimesTen. It creates a feature table with tenant, user, feature name, feature value, freshness, and expiration fields; upserts fresh feature values; stores a JSON audit trail for the resulting personalization decision; and removes stale rows before dropping the table. The demo uses simulated feature updates so the focus stays on low-latency reads, writes, and freshness management.
+
+The sample performs the following steps:
+
+  - Creates a `user_features` table
+  - Creates indexes for tenant/user and freshness lookups
+  - Seeds one stale feature row
+  - Upserts fresh feature values for sample users
+  - Fetches the current feature set for a user with low latency
+  - Stores a JSON audit payload for the resulting personalization decision
+  - Deletes stale feature rows
+  - Drops the table
+
+Example:
+
+  Run the program using the default DSN (sampledb)
+
+  `java jdbc.demo.FeatureStore`
 
 
 **PaymentAuthorizationState**

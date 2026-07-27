@@ -15,7 +15,7 @@
 #     model, perform vector search, or run in-database model inference.
 #
 #     The sample performs the following steps:
-#       - Creates the 'user_features' table
+#       - Creates a 'user_features' table
 #       - Creates indexes for tenant/user and freshness lookups
 #       - Seeds one stale feature row so cleanup behavior is visible
 #       - Upserts fresh feature values for sample users

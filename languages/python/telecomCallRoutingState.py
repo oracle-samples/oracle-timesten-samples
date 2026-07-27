@@ -15,7 +15,7 @@
 #     switch, perform network signaling, or depend on an external service.
 #
 #     The sample performs the following steps:
-#       - Creates the 'call_routing_state' table
+#       - Creates a 'call_routing_state' table
 #       - Creates indexes for tenant/subscriber, call id, and expiration
 #         lookups
 #       - Seeds one expired routing record

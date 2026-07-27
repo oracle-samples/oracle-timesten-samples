@@ -14,7 +14,7 @@
  *    perform vector search, or run in-database model inference.
  *
  *    The sample performs the following steps:
- *      - Creates the 'chat_sessions' table
+ *      - Creates a 'chat_sessions' table
  *      - Creates indexes for tenant/user and expiration lookups
  *      - Seeds one expired session so cleanup behavior is visible
  *      - Starts and resumes sample chat sessions

@@ -12,6 +12,16 @@
  *
  *   NOTE: Responses are simulated; this sample does not call an AI model,
  *   perform vector search, or run in-database model inference.
+ *
+ *   The sample performs the following steps:
+ *     - Creates a 'chat_sessions' table
+ *     - Creates indexes for tenant/user and expiration lookups
+ *     - Seeds one expired chat session
+ *     - Starts and resumes sample chat sessions
+ *     - Stores recent messages and metadata in JSON
+ *     - Queries JSON fields to summarize active sessions
+ *     - Deletes expired chat sessions
+ *     - Drops the table
  */
 
 package jdbc.demo;

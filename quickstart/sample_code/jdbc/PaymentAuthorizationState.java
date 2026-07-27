@@ -14,6 +14,17 @@
  *   The sample uses simulated authorization rules. It does not call an
  *   external payment gateway, perform fraud-model inference, or depend on an
  *   external service.
+ *
+ *   The sample performs the following steps:
+ *     - Creates a 'payment_authorizations' table
+ *     - Creates indexes for tenant/account, payment id, and expiration lookups
+ *     - Seeds one expired authorization record
+ *     - Processes payment authorization requests
+ *     - Shows a repeated request being replayed from the existing state
+ *     - Stores request and decision metadata in JSON
+ *     - Summarizes active authorizations by tenant/account/status
+ *     - Deletes expired authorization records
+ *     - Drops the table
  */
 
 package jdbc.demo;

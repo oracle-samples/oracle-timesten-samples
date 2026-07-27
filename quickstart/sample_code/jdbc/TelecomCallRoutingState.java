@@ -13,6 +13,17 @@
  *
  *   The sample uses simulated routing rules. It does not call a telecom
  *   switch, perform network signaling, or depend on an external service.
+ *
+ *   The sample performs the following steps:
+ *     - Creates a 'call_routing_state' table
+ *     - Creates indexes for tenant/subscriber, call id, and expiration lookups
+ *     - Seeds one expired routing record
+ *     - Processes call routing requests
+ *     - Shows a repeated request being replayed from the existing state
+ *     - Stores request and decision metadata in JSON
+ *     - Summarizes active routing decisions by tenant/subscriber/state
+ *     - Deletes expired routing records
+ *     - Drops the table
  */
 
 package jdbc.demo;

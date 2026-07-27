@@ -16,7 +16,7 @@
  *    TimesTen Cache for Oracle Database.
  *
  *    The sample performs the following steps:
- *      - Creates the 'ai_response_cache' table
+ *      - Creates an 'ai_response_cache' table
  *      - Creates indexes for tenant/model and expiration lookups
  *      - Seeds one expired cache entry
  *      - Processes sample AI requests, showing cache misses and hits

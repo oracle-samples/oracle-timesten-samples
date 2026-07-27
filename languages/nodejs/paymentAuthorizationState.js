@@ -16,7 +16,7 @@
  *   external service.
  *
  *   The sample performs the following steps:
- *     - Creates the 'payment_authorizations' table
+ *     - Creates a 'payment_authorizations' table
  *     - Creates indexes for tenant/account, payment id, and expiration lookups
  *     - Seeds one expired authorization record
  *     - Processes sample payment authorization requests

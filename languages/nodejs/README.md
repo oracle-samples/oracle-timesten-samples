@@ -62,11 +62,11 @@ Once the samples are downloaded locally, you can change to languages/nodejs subd
 
 This simple sample program connects to a TimesTen database and performs the following operations:
 
-* creates a table named Employees
-*  inserts 3 rows to the table
-*  select the rows from the table
-*  drops the table
-*  disconnects from the database.
+* Creates a table named Employees
+* Inserts 3 rows to the table
+* Select the rows from the table
+* Drops the table
+* Disconnects from the database.
 
 Example:
 
@@ -132,7 +132,9 @@ This sample demonstrates how an application can use TimesTen as the primary stor
 
 > **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
 
-* Creates and drops the `ai_response_cache` table
+The sample performs the following steps:
+
+* Creates an `ai_response_cache` table
 * Creates indexes for tenant/model and expiration lookups
 * Seeds one expired cache entry
 * Processes sample AI requests, showing cache misses and cache hits
@@ -171,7 +173,9 @@ This sample demonstrates how an application can use TimesTen as the primary stor
 
 > **Note:** Responses are simulated; this sample does not call an AI model, perform vector search, or run in-database model inference.
 
-* Creates and drops the `chat_sessions` table
+The sample performs the following steps:
+
+* Creates a `chat_sessions` table
 * Creates indexes for tenant/user and expiration lookups
 * Seeds one expired chat session
 * Starts and resumes sample chat sessions
@@ -214,7 +218,9 @@ This sample demonstrates how an application can use TimesTen as a fast online fe
 
 > **Note:** The sample uses simulated feature updates and does not call an AI model, perform vector search, or run in-database model inference.
 
-* Creates and drops the `user_features` table
+The sample performs the following steps:
+
+* Creates a `user_features` table
 * Creates indexes for tenant/user and freshness lookups
 * Seeds one stale feature row so cleanup behavior is visible
 * Upserts fresh feature values for sample users
@@ -254,7 +260,9 @@ This sample demonstrates how an application can use TimesTen as a fast store for
 
 > **Note:** The sample uses simulated authorization rules. It does not call an external payment gateway, perform fraud-model inference, or depend on an external service.
 
-* Creates and drops the `payment_authorizations` table
+The sample performs the following steps:
+
+* Creates a `payment_authorizations` table
 * Creates indexes for tenant/account, payment id, and expiration lookups
 * Seeds one expired authorization record
 * Processes sample payment authorization requests
@@ -293,7 +301,9 @@ This sample demonstrates how an application can use TimesTen as a fast store for
 
 > **Note:** The sample uses simulated routing rules. It does not call a telecom switch, perform network signaling, or depend on an external service.
 
-* Creates and drops the `call_routing_state` table
+The sample performs the following steps:
+
+* Creates a `call_routing_state` table
 * Creates indexes for tenant/subscriber, call id, and expiration lookups
 * Seeds one expired routing record
 * Processes sample call routing requests
@@ -394,7 +404,9 @@ Aliquam erat volutpat. Maecenas porttitor vel sapien non viverra. Sed dignissim 
 
 This sample showcases TimesTen JSON capabilities from Node.js using the `node-oracledb` driver. It recreates a JSON-enabled purchase order table, loads and updates JSON documents, creates a functional JSON index, runs JSON_VALUE queries by user, and renders line items through `JSON_TABLE`.
 
-* Creates and drops the `j_purchaseorder` table used to store JSON purchase orders
+The sample performs the following steps:
+
+* Creates a `j_purchaseorder` table to store JSON purchase orders
 * Loads two purchase order documents from JSON files
 * Builds a JSON value index on the `User` field for targeted lookups
 * Updates an existing purchase order with revised JSON content
