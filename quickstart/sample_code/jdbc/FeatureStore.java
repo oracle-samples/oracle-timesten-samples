@@ -138,6 +138,8 @@ public class FeatureStore
   };
 
   private final IOLibrary ioLibrary;
+  private String userOverride;
+  private String passwordOverride;
 
   private static final class FeatureUpdate
   {
@@ -216,8 +218,10 @@ public class FeatureStore
     }
 
     AccessControl accessControl = new AccessControl();
-    String username = resolveUsername(accessControl);
-    String password = accessControl.getPassword(username);
+    String username = (userOverride != null) ? userOverride : resolveUsername(accessControl);
+    String password = (passwordOverride != null)
+                      ? passwordOverride
+                      : accessControl.getPassword(username);
     String url = buildJdbcUrl();
 
     System.out.println();
@@ -259,12 +263,48 @@ public class FeatureStore
 
   private boolean parseOptions(String[] args, String usage)
   {
-    return ioLibrary.parseOpts(args, usage);
+    List<String> forwardedArgs = new ArrayList<String>();
+
+    for (int i = 0; i < args.length; i++)
+    {
+      String arg = args[i];
+
+      if ("-user".equals(arg) || "-username".equals(arg))
+      {
+        if (i + 1 >= args.length)
+        {
+          System.err.println("Missing value for " + arg);
+          System.err.println(usage);
+          return false;
+        }
+        userOverride = args[++i];
+      }
+      else if ("-password".equals(arg) || "-pwd".equals(arg))
+      {
+        if (i + 1 >= args.length)
+        {
+          System.err.println("Missing value for " + arg);
+          System.err.println(usage);
+          return false;
+        }
+        passwordOverride = args[++i];
+      }
+      else
+      {
+        forwardedArgs.add(arg);
+      }
+    }
+
+    String[] ioArgs = forwardedArgs.toArray(new String[forwardedArgs.size()]);
+    return ioLibrary.parseOpts(ioArgs, usage);
   }
 
   private String buildUsage()
   {
-    return ioLibrary.getUsageString(PROGRAM_NAME);
+    String baseUsage = ioLibrary.getUsageString(PROGRAM_NAME);
+    String userOption = "\n  -user <name>  supply username non-interactively";
+    String pwdOption  = "\n  -password <pw> supply password non-interactively";
+    return baseUsage + userOption + pwdOption;
   }
 
   private boolean loadDrivers()
