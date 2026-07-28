@@ -201,15 +201,16 @@ public class AiResponseCache
                       : accessControl.getPassword(username);
     String url = buildJdbcUrl();
 
+    System.out.println("=== AI response cache demo ===");
     System.out.println();
     System.out.println("Connecting using URL: " + url);
 
     try (Connection connection = DriverManager.getConnection(url, username, password))
     {
       connection.setAutoCommit(true);
-      System.out.println("Connected");
+      System.out.println("✓ Connected");
       runDemo(connection);
-      System.out.println("Completed AI response cache sample operations");
+      System.out.println("✓ Completed AI response cache sample operations");
     }
     catch (SQLException e)
     {
@@ -228,7 +229,7 @@ public class AiResponseCache
     {
       String arg = args[i];
 
-      if ("-user".equals(arg) || "-username".equals(arg))
+      if ("-u".equals(arg) || "-user".equals(arg) || "-username".equals(arg))
       {
         if (i + 1 >= args.length)
         {
@@ -238,7 +239,7 @@ public class AiResponseCache
         }
         userOverride = args[++i];
       }
-      else if ("-password".equals(arg) || "-pwd".equals(arg))
+      else if ("-p".equals(arg) || "-password".equals(arg) || "-pwd".equals(arg))
       {
         if (i + 1 >= args.length)
         {
@@ -261,8 +262,8 @@ public class AiResponseCache
   private String buildUsage()
   {
     String baseUsage = ioLibrary.getUsageString(PROGRAM_NAME);
-    String userOption = "\n  -user <name>  supply username non-interactively";
-    String pwdOption  = "\n  -password <pw> supply password non-interactively";
+    String userOption = "\n  -u, -user <name>       supply username non-interactively";
+    String pwdOption  = "\n  -p, -password <pw>     supply password non-interactively";
     return baseUsage + userOption + pwdOption;
   }
 
@@ -324,19 +325,19 @@ public class AiResponseCache
     try (PreparedStatement statement = connection.prepareStatement(CREATE_TABLE_SQL))
     {
       statement.execute();
-      System.out.println("Table " + TABLE_NAME + " created");
+      System.out.println("✓ Table " + TABLE_NAME + " created");
     }
 
     try (PreparedStatement statement = connection.prepareStatement(CREATE_TENANT_MODEL_INDEX_SQL))
     {
       statement.execute();
-      System.out.println("Index IDX_AI_CACHE_TENANT_MODEL created");
+      System.out.println("✓ Index IDX_AI_CACHE_TENANT_MODEL created");
     }
 
     try (PreparedStatement statement = connection.prepareStatement(CREATE_EXPIRES_INDEX_SQL))
     {
       statement.execute();
-      System.out.println("Index IDX_AI_CACHE_EXPIRES created");
+      System.out.println("✓ Index IDX_AI_CACHE_EXPIRES created");
     }
   }
 
@@ -345,13 +346,13 @@ public class AiResponseCache
     try (PreparedStatement statement = connection.prepareStatement(DROP_TABLE_SQL))
     {
       statement.execute();
-      System.out.println("Table " + TABLE_NAME + " dropped");
+      System.out.println("✓ Table " + TABLE_NAME + " dropped");
     }
     catch (SQLException e)
     {
       if (reportMissing)
       {
-        System.out.println("Table " + TABLE_NAME + " not dropped: " + e.getMessage());
+        System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
       }
     }
   }
@@ -365,7 +366,7 @@ public class AiResponseCache
     SimulatedResponse response = simulateModelResponse(request);
 
     insertCacheEntry(connection, request, response.responseText, response.metadataJson, createdAt, expiresAt);
-    System.out.println("Seeded 1 expired cache entry");
+    System.out.println("✓ Seeded 1 expired cache entry");
   }
 
   private void processRequest(Connection connection, AiRequest request) throws SQLException
@@ -382,7 +383,7 @@ public class AiResponseCache
         update.executeUpdate();
       }
 
-      System.out.println("CACHE HIT  tenant=" + request.tenantId +
+      System.out.println("→ Cache hit: tenant=" + request.tenantId +
                          " model=" + request.modelName +
                          " hits=" + (cachedEntry.hitCount + 1) +
                          " expires=" + cachedEntry.expiresAt);
@@ -396,7 +397,7 @@ public class AiResponseCache
     Timestamp expiresAt = new Timestamp(createdAt.getTime() + (CACHE_TTL_MINUTES * 60L * 1000L));
 
     insertCacheEntry(connection, request, response.responseText, response.metadataJson, createdAt, expiresAt);
-    System.out.println("CACHE MISS tenant=" + request.tenantId +
+    System.out.println("→ Cache miss: tenant=" + request.tenantId +
                        " model=" + request.modelName +
                        " stored_for_minutes=" + CACHE_TTL_MINUTES);
     System.out.println("  Response: " + response.responseText);
@@ -451,7 +452,7 @@ public class AiResponseCache
 
   private void printCacheSummary(Connection connection) throws SQLException
   {
-    System.out.println("Cache summary by tenant and model:");
+    System.out.println("⋯ Cache summary by tenant and model:");
     String summarySql = "SELECT tenant_id, model_name, COUNT(*), SUM(hit_count) "
                       + "FROM " + TABLE_NAME + " "
                       + "GROUP BY tenant_id, model_name "
@@ -474,7 +475,7 @@ public class AiResponseCache
       }
     }
 
-    System.out.println("Metadata safety labels:");
+    System.out.println("⋯ Metadata safety labels:");
     String metadataSql = "SELECT cache_key, "
                        + "JSON_VALUE(metadata, '$.safetyLabel' RETURNING VARCHAR2(30)) "
                        + "FROM " + TABLE_NAME + " "
@@ -498,7 +499,7 @@ public class AiResponseCache
     {
       statement.setTimestamp(1, currentTimestamp());
       int deleted = statement.executeUpdate();
-      System.out.println("Deleted " + deleted + " expired cache entry");
+      System.out.println("✓ Deleted " + deleted + " expired cache entry");
     }
   }
 

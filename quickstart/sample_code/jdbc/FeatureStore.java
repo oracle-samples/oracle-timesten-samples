@@ -224,6 +224,7 @@ public class FeatureStore
                       : accessControl.getPassword(username);
     String url = buildJdbcUrl();
 
+    System.out.println("=== Feature store demo ===");
     System.out.println();
     System.out.println("Connecting using URL: " + url);
 
@@ -233,9 +234,9 @@ public class FeatureStore
       connection = DriverManager.getConnection(url, username, password);
       connection.setAutoCommit(true);
 
-      System.out.println("Connected");
+      System.out.println("✓ Connected");
       runDemo(connection);
-      System.out.println("Completed feature store sample operations");
+      System.out.println("✓ Completed feature store sample operations");
       return 0;
     }
     catch (SQLException e)
@@ -269,7 +270,7 @@ public class FeatureStore
     {
       String arg = args[i];
 
-      if ("-user".equals(arg) || "-username".equals(arg))
+      if ("-u".equals(arg) || "-user".equals(arg) || "-username".equals(arg))
       {
         if (i + 1 >= args.length)
         {
@@ -279,7 +280,7 @@ public class FeatureStore
         }
         userOverride = args[++i];
       }
-      else if ("-password".equals(arg) || "-pwd".equals(arg))
+      else if ("-p".equals(arg) || "-password".equals(arg) || "-pwd".equals(arg))
       {
         if (i + 1 >= args.length)
         {
@@ -302,8 +303,8 @@ public class FeatureStore
   private String buildUsage()
   {
     String baseUsage = ioLibrary.getUsageString(PROGRAM_NAME);
-    String userOption = "\n  -user <name>  supply username non-interactively";
-    String pwdOption  = "\n  -password <pw> supply password non-interactively";
+    String userOption = "\n  -u, -user <name>       supply username non-interactively";
+    String pwdOption  = "\n  -p, -password <pw>     supply password non-interactively";
     return baseUsage + userOption + pwdOption;
   }
 
@@ -368,19 +369,19 @@ public class FeatureStore
     {
       statement.execute();
     }
-    System.out.println("Table " + TABLE_NAME + " created");
+    System.out.println("✓ Table " + TABLE_NAME + " created");
 
     try (PreparedStatement statement = connection.prepareStatement(CREATE_TENANT_USER_INDEX_SQL))
     {
       statement.execute();
     }
-    System.out.println("Index IDX_USER_FEATURES_TENANT_USER created");
+    System.out.println("✓ Index IDX_USER_FEATURES_TENANT_USER created");
 
     try (PreparedStatement statement = connection.prepareStatement(CREATE_FRESHNESS_INDEX_SQL))
     {
       statement.execute();
     }
-    System.out.println("Index IDX_USER_FEATURES_FRESHNESS created");
+    System.out.println("✓ Index IDX_USER_FEATURES_FRESHNESS created");
   }
 
   private void seedStaleFeature(Connection connection) throws SQLException
@@ -394,7 +395,7 @@ public class FeatureStore
     Timestamp expiresAt = new Timestamp(System.currentTimeMillis() - (60L * 1000L));
     FeatureRecord record = buildFeatureRecord(staleFeature, freshnessTs, expiresAt, "stale_seed");
     insertFeature(connection, record, freshnessTs, expiresAt);
-    System.out.println("Seeded 1 stale feature row");
+    System.out.println("✓ Seeded 1 stale feature row");
   }
 
   private void upsertFeature(Connection connection, FeatureUpdate feature) throws SQLException
@@ -404,7 +405,7 @@ public class FeatureStore
     FeatureRecord record = buildFeatureRecord(feature, freshnessTs, expiresAt, "fresh_feature_upsert");
     insertOrReplaceFeature(connection, record, freshnessTs, expiresAt);
     System.out.println(
-        "FEATURE UPSERT tenant=" + feature.tenantId
+        "→ Feature upsert: tenant=" + feature.tenantId
         + " user=" + feature.userId
         + " feature=" + feature.featureName
         + " model=" + feature.modelVersion);
@@ -527,7 +528,7 @@ public class FeatureStore
     {
       statement.setTimestamp(1, currentTimestamp());
       int deleted = statement.executeUpdate();
-      System.out.println("Deleted " + deleted + " expired feature row");
+      System.out.println("✓ Deleted " + deleted + " expired feature row");
     }
   }
 
@@ -547,7 +548,7 @@ public class FeatureStore
     {
       if (reportMissing)
       {
-        System.out.println("Table " + TABLE_NAME + " not dropped: " + e.getMessage());
+        System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
       }
     }
   }

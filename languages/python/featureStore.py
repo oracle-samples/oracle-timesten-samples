@@ -191,21 +191,21 @@ def drop_table(cursor, report_missing):
 
   try:
     cursor.execute(DROP_TABLE)
-    print(f"Table {TABLE_NAME} dropped")
+    print(f"✓ Table {TABLE_NAME} dropped")
   except Exception as err:
     if report_missing:
-      print(f"Table {TABLE_NAME} not dropped: {err}")
+      print(f"⚠ Table {TABLE_NAME} not dropped: {err}")
 
 
 def create_schema(cursor):
   """Create the feature store table and supporting indexes."""
 
   cursor.execute(CREATE_TABLE)
-  print(f"Table {TABLE_NAME} created")
+  print(f"✓ Table {TABLE_NAME} created")
   cursor.execute(CREATE_TENANT_USER_INDEX)
-  print("Index IDX_USER_FEATURES_TENANT_USER created")
+  print("✓ Index IDX_USER_FEATURES_TENANT_USER created")
   cursor.execute(CREATE_FRESHNESS_INDEX)
-  print("Index IDX_USER_FEATURES_FRESHNESS created")
+  print("✓ Index IDX_USER_FEATURES_FRESHNESS created")
 
 
 def build_feature_key(feature):
@@ -269,7 +269,7 @@ def upsert_feature(cursor, feature):
   audit_payload = audit_payload_to_json(feature, feature["decision"], "fresh_feature_upsert")
   insert_feature(cursor, feature, freshness_ts, expires_at, audit_payload)
   print(
-      "FEATURE UPSERT "
+      "→ Feature upsert: "
       f"tenant={feature['tenant_id']} user={feature['user_id']} "
       f"feature={feature['feature_name']} model={feature['model_version']}")
 
@@ -299,7 +299,7 @@ def seed_stale_feature(cursor):
   expires_at = current_timestamp() - datetime.timedelta(minutes=1)
   audit_payload = audit_payload_to_json(stale_feature, stale_feature["decision"], "stale_seed")
   insert_feature(cursor, stale_feature, freshness_ts, expires_at, audit_payload)
-  print("Seeded 1 stale feature row")
+  print("✓ Seeded 1 stale feature row")
 
 
 def fetch_active_features(cursor, tenant_id, user_id):
@@ -312,7 +312,7 @@ def fetch_active_features(cursor, tenant_id, user_id):
 def print_feature_summary(cursor):
   """Print summary information for active feature rows."""
 
-  print("Active feature groups:")
+  print("⋯ Active feature groups:")
   cursor.execute(SELECT_FEATURE_SUMMARY, [current_timestamp()])
   rows = cursor.fetchall()
   for tenant_id, user_id, feature_count, numeric_sum in rows:
@@ -337,7 +337,7 @@ def delete_expired_features(cursor):
 
   cursor.execute(DELETE_EXPIRED, [current_timestamp()])
   deleted = cursor.rowcount if cursor.rowcount is not None else 0
-  print(f"Deleted {deleted} expired feature row")
+  print(f"✓ Deleted {deleted} expired feature row")
 
 
 def run():
@@ -346,6 +346,7 @@ def run():
   connection = None
   cursor = None
   try:
+    print("=== Feature store demo ===")
     connection = connect()
     cursor = connection.cursor()
     drop_table(cursor, False)
@@ -360,6 +361,7 @@ def run():
     print_feature_set(cursor, "field_service", "user_204")
     delete_expired_features(cursor)
     drop_table(cursor, True)
+    print("✓ Completed feature store sample operations")
   except Exception as err:
     print("An error occurred", str(err))
   finally:

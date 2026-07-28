@@ -228,23 +228,23 @@ def drop_table(cursor, report_missing):
 
   try:
     cursor.execute(DROP_TABLE)
-    print(f"Table {TABLE_NAME} dropped")
+    print(f"✓ Table {TABLE_NAME} dropped")
   except Exception as err:
     if report_missing:
-      print(f"Table {TABLE_NAME} not dropped: {err}")
+      print(f"⚠ Table {TABLE_NAME} not dropped: {err}")
 
 
 def create_schema(cursor):
   """Create the payment authorization table and supporting indexes."""
 
   cursor.execute(CREATE_TABLE)
-  print(f"Table {TABLE_NAME} created")
+  print(f"✓ Table {TABLE_NAME} created")
   cursor.execute(CREATE_TENANT_ACCOUNT_INDEX)
-  print("Index IDX_PAY_AUTH_TENANT_ACCT created")
+  print("✓ Index IDX_PAY_AUTH_TENANT_ACCT created")
   cursor.execute(CREATE_PAYMENT_ID_INDEX)
-  print("Index IDX_PAYMENT_AUTH_PAYMENT_ID created")
+  print("✓ Index IDX_PAYMENT_AUTH_PAYMENT_ID created")
   cursor.execute(CREATE_EXPIRES_INDEX)
-  print("Index IDX_PAYMENT_AUTH_EXPIRES created")
+  print("✓ Index IDX_PAYMENT_AUTH_EXPIRES created")
 
 
 def build_authorization_key(payment):
@@ -348,7 +348,7 @@ def seed_expired_authorization(cursor):
           now,
           expired_at,
       ))
-  print("Seeded 1 expired authorization record")
+  print("✓ Seeded 1 expired authorization record")
 
 
 def lookup_existing_authorization(cursor, auth_key, now):
@@ -399,7 +399,7 @@ def authorize_payment(cursor, payment):
   if existing is not None:
     status, reason, expires_at_text = existing
     print(
-        "AUTH REPLAY "
+        "→ Authorization replay: "
         f"tenant={payment['tenant_id']} account={payment['account_id']} "
         f"merchant={payment['merchant_id']} payment_id={payment['payment_id']} "
         f"status={status} reason={reason} expires_at={expires_at_text}")
@@ -408,7 +408,7 @@ def authorize_payment(cursor, payment):
   status, reason, expires_at = evaluate_payment(payment)
   store_authorization(cursor, payment, status, reason, expires_at)
   print(
-      "AUTH DECISION "
+      "→ Authorization decision: "
       f"tenant={payment['tenant_id']} account={payment['account_id']} "
       f"merchant={payment['merchant_id']} payment_id={payment['payment_id']} "
       f"status={status} amount={format_money(payment['amount_cents'])} "
@@ -420,14 +420,14 @@ def authorize_payment(cursor, payment):
 def summarize_active_authorizations(cursor):
   """Print a compact summary of active authorizations."""
 
-  print("Active authorizations by tenant/account/status:")
+  print("⋯ Active authorizations by tenant/account/status:")
   cursor.execute(SELECT_ACTIVE_SUMMARY, (current_timestamp(),))
   for tenant_id, account_id, status, row_count, amount_cents in cursor:
     print(
         f"  tenant={tenant_id:<12} account={account_id:<10} "
         f"status={status:<8} rows={row_count:<2} total={format_money(amount_cents or 0)}")
 
-  print("Active authorization details:")
+  print("⋯ Active authorization details:")
   cursor.execute(SELECT_ACTIVE_DETAILS, (current_timestamp(),))
   for payment_id, merchant_id, status, reason, amount_cents, risk_score, expires_at_text in cursor:
     print(
@@ -441,7 +441,7 @@ def cleanup_expired_authorizations(cursor):
 
   now = current_timestamp()
   cursor.execute(DELETE_EXPIRED, (now,))
-  print(f"Deleted {cursor.rowcount} expired authorization record" +
+  print(f"✓ Deleted {cursor.rowcount} expired authorization record" +
         ("" if cursor.rowcount == 1 else "s"))
 
 
@@ -452,6 +452,7 @@ def run():
   cursor = connection.cursor()
 
   try:
+    print("=== Payment authorization demo ===")
     drop_table(cursor, False)
     create_schema(cursor)
     seed_expired_authorization(cursor)
@@ -462,7 +463,7 @@ def run():
     summarize_active_authorizations(cursor)
     cleanup_expired_authorizations(cursor)
     drop_table(cursor, False)
-    print("Connection has been released")
+    print("✓ Completed payment authorization sample operations")
   finally:
     cursor.close()
     connection.close()

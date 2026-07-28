@@ -134,21 +134,21 @@ def drop_table(cursor, report_missing):
 
   try:
     cursor.execute(DROP_TABLE)
-    print(f"Table {TABLE_NAME} dropped")
+    print(f"✓ Table {TABLE_NAME} dropped")
   except Exception as err:
     if report_missing:
-      print(f"Table {TABLE_NAME} not dropped: {err}")
+      print(f"⚠ Table {TABLE_NAME} not dropped: {err}")
 
 
 def create_schema(cursor):
   """Create the cache table and supporting indexes."""
 
   cursor.execute(CREATE_TABLE)
-  print(f"Table {TABLE_NAME} created")
+  print(f"✓ Table {TABLE_NAME} created")
   cursor.execute(CREATE_TENANT_MODEL_INDEX)
-  print("Index IDX_AI_CACHE_TENANT_MODEL created")
+  print("✓ Index IDX_AI_CACHE_TENANT_MODEL created")
   cursor.execute(CREATE_EXPIRES_INDEX)
-  print("Index IDX_AI_CACHE_EXPIRES created")
+  print("✓ Index IDX_AI_CACHE_EXPIRES created")
 
 
 def build_cache_key(request):
@@ -234,7 +234,7 @@ def seed_expired_entry(cursor):
   expires_at = current_timestamp() - datetime.timedelta(minutes=1)
   response_text, metadata = simulate_model_response(expired_request)
   insert_cache_entry(cursor, expired_request, response_text, metadata, created_at, expires_at)
-  print("Seeded 1 expired cache entry")
+  print("✓ Seeded 1 expired cache entry")
 
 
 def find_cached_response(cursor, cache_key):
@@ -254,7 +254,7 @@ def process_request(cursor, request):
     cursor.execute(UPDATE_CACHE_HIT, [current_timestamp(), cache_key])
     metadata = json.loads(metadata_json)
     print(
-        "CACHE HIT  "
+        "→ Cache hit: "
         f"tenant={request['tenant_id']} model={request['model_name']} "
         f"hits={hit_count + 1} expires={expires_at}")
     print(f"  Response: {response_text}")
@@ -266,7 +266,7 @@ def process_request(cursor, request):
   expires_at = created_at + datetime.timedelta(minutes=CACHE_TTL_MINUTES)
   insert_cache_entry(cursor, request, response_text, metadata, created_at, expires_at)
   print(
-      "CACHE MISS "
+      "→ Cache miss: "
       f"tenant={request['tenant_id']} model={request['model_name']} "
       f"stored_for_minutes={CACHE_TTL_MINUTES}")
   print(f"  Response: {response_text}")
@@ -275,7 +275,7 @@ def process_request(cursor, request):
 def print_cache_summary(cursor):
   """Print summary information about active cache entries."""
 
-  print("Cache summary by tenant and model:")
+  print("⋯ Cache summary by tenant and model:")
   cursor.execute(f"""
     SELECT tenant_id, model_name, COUNT(*), SUM(hit_count)
     FROM {TABLE_NAME}
@@ -287,7 +287,7 @@ def print_cache_summary(cursor):
         f"  tenant={tenant_id:<14} model={model_name:<22} "
         f"entries={int(entry_count)} hits={int(hit_count)}")
 
-  print("Metadata safety labels:")
+  print("⋯ Metadata safety labels:")
   cursor.execute(f"""
     SELECT cache_key,
            JSON_VALUE(metadata, '$.safetyLabel' RETURNING VARCHAR2(30))
@@ -303,7 +303,7 @@ def delete_expired_entries(cursor):
 
   cursor.execute(DELETE_EXPIRED, [current_timestamp()])
   deleted = cursor.rowcount if cursor.rowcount is not None else 0
-  print(f"Deleted {deleted} expired cache entry")
+  print(f"✓ Deleted {deleted} expired cache entry")
 
 
 def run():
@@ -312,6 +312,7 @@ def run():
   connection = None
   cursor = None
   try:
+    print("=== AI response cache demo ===")
     connection = connect()
     cursor = connection.cursor()
     drop_table(cursor, False)
@@ -324,6 +325,7 @@ def run():
     print_cache_summary(cursor)
     delete_expired_entries(cursor)
     drop_table(cursor, True)
+    print("✓ Completed AI response cache sample operations")
   except Exception as err:
     print("An error occurred", str(err))
   finally:

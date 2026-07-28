@@ -193,6 +193,7 @@ async function main() {
   let connection;
 
   try {
+    console.log('=== Payment authorization demo ===');
     connection = await connect();
     await dropTable(connection, false);
     await createSchema(connection);
@@ -228,24 +229,24 @@ async function connect() {
 async function dropTable(connection, reportMissing) {
   try {
     await connection.execute(DROP_TABLE);
-    console.log(`Table ${TABLE_NAME} dropped`);
+    console.log(`✓ Table ${TABLE_NAME} dropped`);
   }
   catch (err) {
     if (reportMissing) {
-      console.log(`Table ${TABLE_NAME} not dropped: ${err.message}`);
+      console.log(`⚠ Table ${TABLE_NAME} not dropped: ${err.message}`);
     }
   }
 }
 
 async function createSchema(connection) {
   await connection.execute(CREATE_TABLE);
-  console.log(`Table ${TABLE_NAME} created`);
+  console.log(`✓ Table ${TABLE_NAME} created`);
   await connection.execute(CREATE_TENANT_ACCOUNT_INDEX);
-  console.log('Index IDX_PAY_AUTH_TENANT_ACCT created');
+  console.log('✓ Index IDX_PAY_AUTH_TENANT_ACCT created');
   await connection.execute(CREATE_PAYMENT_ID_INDEX);
-  console.log('Index IDX_PAYMENT_AUTH_PAYMENT_ID created');
+  console.log('✓ Index IDX_PAYMENT_AUTH_PAYMENT_ID created');
   await connection.execute(CREATE_EXPIRES_INDEX);
-  console.log('Index IDX_PAYMENT_AUTH_EXPIRES created');
+  console.log('✓ Index IDX_PAYMENT_AUTH_EXPIRES created');
 }
 
 function buildAuthorizationKey(payment) {
@@ -356,7 +357,7 @@ async function seedExpiredAuthorization(connection) {
     expiredAt
   ]);
 
-  console.log('Seeded 1 expired authorization record');
+  console.log('✓ Seeded 1 expired authorization record');
 }
 
 async function lookupExistingAuthorization(connection, authKey) {
@@ -408,7 +409,7 @@ async function authorizePayment(connection, payment) {
   if (existing !== null) {
     const [status, reason, expiresAtText] = existing;
     console.log(
-      `AUTH REPLAY tenant=${payment.tenant_id} account=${payment.account_id} ` +
+      `→ Authorization replay: tenant=${payment.tenant_id} account=${payment.account_id} ` +
       `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
       `status=${status} reason=${reason} expires_at=${expiresAtText}`
     );
@@ -419,7 +420,7 @@ async function authorizePayment(connection, payment) {
   const expiresAt = new Date(currentTimestamp().getTime() + decision.ttlMinutes * 60000);
   await storeAuthorization(connection, payment, decision.status, decision.reason, expiresAt);
   console.log(
-    `AUTH DECISION tenant=${payment.tenant_id} account=${payment.account_id} ` +
+    `→ Authorization decision: tenant=${payment.tenant_id} account=${payment.account_id} ` +
     `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
     `status=${decision.status} amount=${formatMoney(payment.amount_cents)} ` +
     `risk=${payment.risk_score.toFixed(2)} reason=${decision.reason} ` +
@@ -430,7 +431,7 @@ async function authorizePayment(connection, payment) {
 }
 
 async function summarizeActiveAuthorizations(connection) {
-  console.log('Active authorizations by tenant/account/status:');
+  console.log('⋯ Active authorizations by tenant/account/status:');
 
   const summary = await connection.execute(SELECT_ACTIVE_SUMMARY, [currentTimestamp()]);
   for (const row of summary.rows) {
@@ -458,7 +459,7 @@ async function summarizeActiveAuthorizations(connection) {
 async function cleanupExpiredAuthorizations(connection) {
   const result = await connection.execute(DELETE_EXPIRED, [currentTimestamp()]);
   console.log(
-    `Deleted ${result.rowsAffected} expired authorization record` +
+    `✓ Deleted ${result.rowsAffected} expired authorization record` +
     (result.rowsAffected === 1 ? '' : 's')
   );
 }

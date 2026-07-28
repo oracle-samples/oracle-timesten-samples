@@ -228,6 +228,7 @@ public class PaymentAuthorizationState
                       : accessControl.getPassword(username);
     String url = buildJdbcUrl();
 
+    System.out.println("=== Payment authorization state demo ===");
     System.out.println();
     System.out.println("Connecting using URL: " + url);
 
@@ -237,9 +238,9 @@ public class PaymentAuthorizationState
       connection = DriverManager.getConnection(url, username, password);
       connection.setAutoCommit(true);
 
-      System.out.println("Connected");
+      System.out.println("✓ Connected");
       runDemo(connection);
-      System.out.println("Completed payment authorization sample operations");
+      System.out.println("✓ Completed payment authorization sample operations");
       return 0;
     }
     catch (SQLException e)
@@ -273,7 +274,7 @@ public class PaymentAuthorizationState
     {
       String arg = args[i];
 
-      if ("-user".equals(arg) || "-username".equals(arg))
+      if ("-u".equals(arg) || "-user".equals(arg) || "-username".equals(arg))
       {
         if (i + 1 >= args.length)
         {
@@ -283,7 +284,7 @@ public class PaymentAuthorizationState
         }
         userOverride = args[++i];
       }
-      else if ("-password".equals(arg) || "-pwd".equals(arg))
+      else if ("-p".equals(arg) || "-password".equals(arg) || "-pwd".equals(arg))
       {
         if (i + 1 >= args.length)
         {
@@ -306,8 +307,8 @@ public class PaymentAuthorizationState
   private String buildUsage()
   {
     String baseUsage = ioLibrary.getUsageString(PROGRAM_NAME);
-    String userOption = "\n  -user <name>  supply username non-interactively";
-    String pwdOption  = "\n  -password <pw> supply password non-interactively";
+    String userOption = "\n  -u, -user <name>       supply username non-interactively";
+    String pwdOption  = "\n  -p, -password <pw>     supply password non-interactively";
     return baseUsage + userOption + pwdOption;
   }
 
@@ -366,13 +367,13 @@ public class PaymentAuthorizationState
   private void createTable(Connection connection) throws SQLException
   {
     executeStatement(connection, CREATE_TABLE_SQL);
-    System.out.println("Table " + TABLE_NAME + " created");
+    System.out.println("✓ Table " + TABLE_NAME + " created");
     executeStatement(connection, CREATE_TENANT_ACCOUNT_INDEX_SQL);
-    System.out.println("Index IDX_PAY_AUTH_TENANT_ACCT created");
+    System.out.println("✓ Index IDX_PAY_AUTH_TENANT_ACCT created");
     executeStatement(connection, CREATE_PAYMENT_ID_INDEX_SQL);
-    System.out.println("Index IDX_PAYMENT_AUTH_PAYMENT_ID created");
+    System.out.println("✓ Index IDX_PAYMENT_AUTH_PAYMENT_ID created");
     executeStatement(connection, CREATE_EXPIRES_INDEX_SQL);
-    System.out.println("Index IDX_PAYMENT_AUTH_EXPIRES created");
+    System.out.println("✓ Index IDX_PAYMENT_AUTH_EXPIRES created");
   }
 
   private void seedExpiredAuthorization(Connection connection) throws SQLException
@@ -392,7 +393,7 @@ public class PaymentAuthorizationState
       statement.executeUpdate();
     }
 
-    System.out.println("Seeded 1 expired authorization record");
+    System.out.println("✓ Seeded 1 expired authorization record");
   }
 
   private String buildAuthorizationKey(PaymentRequest request)
@@ -477,7 +478,7 @@ public class PaymentAuthorizationState
           String reason = resultSet.getString(2);
           String expiresAtText = resultSet.getString(3);
           System.out.println(
-              "AUTH REPLAY tenant=" + request.tenantId
+              "→ Authorization replay: tenant=" + request.tenantId
               + " account=" + request.accountId
               + " merchant=" + request.merchantId
               + " payment_id=" + request.paymentId
@@ -503,7 +504,7 @@ public class PaymentAuthorizationState
     }
 
     System.out.println(
-        "AUTH DECISION tenant=" + request.tenantId
+        "→ Authorization decision: tenant=" + request.tenantId
         + " account=" + request.accountId
         + " merchant=" + request.merchantId
         + " payment_id=" + request.paymentId
@@ -540,7 +541,7 @@ public class PaymentAuthorizationState
 
   private void summarizeActiveAuthorizations(Connection connection) throws SQLException
   {
-    System.out.println("Active authorizations by tenant/account/status:");
+    System.out.println("⋯ Active authorizations by tenant/account/status:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_SUMMARY_SQL))
     {
       statement.setTimestamp(1, currentTimestamp());
@@ -563,7 +564,7 @@ public class PaymentAuthorizationState
       }
     }
 
-    System.out.println("Active authorization details:");
+    System.out.println("⋯ Active authorization details:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_DETAILS_SQL))
     {
       statement.setTimestamp(1, currentTimestamp());
@@ -597,7 +598,7 @@ public class PaymentAuthorizationState
     {
       statement.setTimestamp(1, currentTimestamp());
       int rows = statement.executeUpdate();
-      System.out.println("Deleted " + rows + " expired authorization record" + (rows == 1 ? "" : "s"));
+      System.out.println("✓ Deleted " + rows + " expired authorization record" + (rows == 1 ? "" : "s"));
     }
   }
 
@@ -611,13 +612,13 @@ public class PaymentAuthorizationState
     try (PreparedStatement statement = connection.prepareStatement(DROP_TABLE_SQL))
     {
       statement.execute();
-      System.out.println("Table " + TABLE_NAME + " dropped");
+      System.out.println("✓ Table " + TABLE_NAME + " dropped");
     }
     catch (SQLException e)
     {
       if (reportMissing)
       {
-        System.out.println("Table " + TABLE_NAME + " not dropped: " + e.getMessage());
+        System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
       }
     }
   }

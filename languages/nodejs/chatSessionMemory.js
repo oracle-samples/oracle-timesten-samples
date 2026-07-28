@@ -159,6 +159,7 @@ async function main() {
   let connection;
 
   try {
+    console.log('=== Chat session memory demo ===');
     connection = await connect();
     await dropTable(connection, false);
     await createSchema(connection);
@@ -194,22 +195,22 @@ async function connect() {
 async function dropTable(connection, reportMissing) {
   try {
     await connection.execute(DROP_TABLE);
-    console.log(`Table ${TABLE_NAME} dropped`);
+    console.log(`✓ Table ${TABLE_NAME} dropped`);
   }
   catch (err) {
     if (reportMissing) {
-      console.log(`Table ${TABLE_NAME} not dropped: ${err.message}`);
+      console.log(`⚠ Table ${TABLE_NAME} not dropped: ${err.message}`);
     }
   }
 }
 
 async function createSchema(connection) {
   await connection.execute(CREATE_TABLE);
-  console.log(`Table ${TABLE_NAME} created`);
+  console.log(`✓ Table ${TABLE_NAME} created`);
   await connection.execute(CREATE_TENANT_USER_INDEX);
-  console.log('Index IDX_CHAT_SESSIONS_TENANT_USER created');
+  console.log('✓ Index IDX_CHAT_SESSIONS_TENANT_USER created');
   await connection.execute(CREATE_EXPIRES_INDEX);
-  console.log('Index IDX_CHAT_SESSIONS_EXPIRES created');
+  console.log('✓ Index IDX_CHAT_SESSIONS_EXPIRES created');
 }
 
 function buildSessionKey(turn) {
@@ -406,7 +407,7 @@ async function seedExpiredSession(connection) {
   appendTurn(sessionState, expiredTurn, assistantText);
 
   await insertSession(connection, sessionKey, expiredTurn, sessionState, createdAt, expiresAt);
-  console.log('Seeded 1 expired chat session');
+  console.log('✓ Seeded 1 expired chat session');
 }
 
 async function processTurn(connection, turn) {
@@ -421,7 +422,7 @@ async function processTurn(connection, turn) {
     appendTurn(sessionState, turn, assistantText);
     await updateSession(connection, sessionKey, sessionState, now, expiresAt);
     console.log(
-      'SESSION RESUME',
+      '→ Session resume:',
       `tenant=${turn.tenant_id}`,
       `user=${turn.user_id}`,
       `topic=${turn.conversation_topic}`,
@@ -434,7 +435,7 @@ async function processTurn(connection, turn) {
     const sessionState = buildSessionState(turn, assistantText);
     await insertSession(connection, sessionKey, turn, sessionState, now, expiresAt);
     console.log(
-      'SESSION START',
+      '→ Session start:',
       `tenant=${turn.tenant_id}`,
       `user=${turn.user_id}`,
       `topic=${turn.conversation_topic}`,
@@ -445,7 +446,7 @@ async function processTurn(connection, turn) {
 }
 
 async function printActiveSummary(connection) {
-  console.log('Active sessions by tenant/user/topic:');
+  console.log('⋯ Active sessions by tenant/user/topic:');
   let result = await connection.execute(SELECT_ACTIVE_SUMMARY, [currentTimestamp()]);
   for (const row of result.rows) {
     console.log(
@@ -481,7 +482,7 @@ async function printActiveSummary(connection) {
 async function deleteExpiredSessions(connection) {
   const result = await connection.execute(DELETE_EXPIRED, [currentTimestamp()]);
   const deleted = result.rowsAffected || 0;
-  console.log(`Deleted ${deleted} expired chat session`);
+  console.log(`✓ Deleted ${deleted} expired chat session`);
 }
 
 async function releaseConnection(connection) {

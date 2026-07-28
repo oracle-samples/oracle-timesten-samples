@@ -356,6 +356,7 @@ public class ChatSessionMemory
                       : accessControl.getPassword(username);
     String url = buildJdbcUrl();
 
+    System.out.println("=== Chat session memory demo ===");
     System.out.println();
     System.out.println("Connecting using URL: " + url);
 
@@ -365,9 +366,9 @@ public class ChatSessionMemory
       connection = DriverManager.getConnection(url, username, password);
       connection.setAutoCommit(true);
 
-      System.out.println("Connected");
+      System.out.println("✓ Connected");
       runDemo(connection);
-      System.out.println("Completed chat session memory sample operations");
+      System.out.println("✓ Completed chat session memory sample operations");
       return 0;
     }
     catch (SQLException e)
@@ -401,7 +402,7 @@ public class ChatSessionMemory
     {
       String arg = args[i];
 
-      if ("-user".equals(arg) || "-username".equals(arg))
+      if ("-u".equals(arg) || "-user".equals(arg) || "-username".equals(arg))
       {
         if (i + 1 >= args.length)
         {
@@ -411,7 +412,7 @@ public class ChatSessionMemory
         }
         userOverride = args[++i];
       }
-      else if ("-password".equals(arg) || "-pwd".equals(arg))
+      else if ("-p".equals(arg) || "-password".equals(arg) || "-pwd".equals(arg))
       {
         if (i + 1 >= args.length)
         {
@@ -434,8 +435,8 @@ public class ChatSessionMemory
   private String buildUsage()
   {
     String baseUsage = ioLibrary.getUsageString(PROGRAM_NAME);
-    String userOption = "\n  -user <name>  supply username non-interactively";
-    String pwdOption  = "\n  -password <pw> supply password non-interactively";
+    String userOption = "\n  -u, -user <name>       supply username non-interactively";
+    String pwdOption  = "\n  -p, -password <pw>     supply password non-interactively";
     return baseUsage + userOption + pwdOption;
   }
 
@@ -498,19 +499,19 @@ public class ChatSessionMemory
     {
       statement.execute();
     }
-    System.out.println("Table " + TABLE_NAME + " created");
+    System.out.println("✓ Table " + TABLE_NAME + " created");
 
     try (PreparedStatement statement = connection.prepareStatement(CREATE_TENANT_USER_INDEX_SQL))
     {
       statement.execute();
     }
-    System.out.println("Index IDX_CHAT_SESSIONS_TENANT_USER created");
+    System.out.println("✓ Index IDX_CHAT_SESSIONS_TENANT_USER created");
 
     try (PreparedStatement statement = connection.prepareStatement(CREATE_EXPIRES_INDEX_SQL))
     {
       statement.execute();
     }
-    System.out.println("Index IDX_CHAT_SESSIONS_EXPIRES created");
+    System.out.println("✓ Index IDX_CHAT_SESSIONS_EXPIRES created");
   }
 
   private void seedExpiredSession(Connection connection) throws SQLException
@@ -528,7 +529,7 @@ public class ChatSessionMemory
     context.appendTurn(expiredTurn, assistantText, createdAt);
 
     insertSession(connection, context, createdAt, expiresAt);
-    System.out.println("Seeded 1 expired chat session");
+    System.out.println("✓ Seeded 1 expired chat session");
   }
 
   private void processTurn(Connection connection, ChatTurn turn) throws SQLException
@@ -545,7 +546,7 @@ public class ChatSessionMemory
       insertSession(connection, context, now, expiresAt);
       sessionContexts.put(sessionKey, context);
       System.out.println(
-          "SESSION START tenant=" + turn.tenantId
+          "→ Session start: tenant=" + turn.tenantId
           + " user=" + turn.userId
           + " topic=" + turn.topic
           + " turns=1");
@@ -558,7 +559,7 @@ public class ChatSessionMemory
       updateSession(connection, context, now, expiresAt);
       sessionContexts.put(sessionKey, context);
       System.out.println(
-          "SESSION RESUME tenant=" + turn.tenantId
+          "→ Session resume: tenant=" + turn.tenantId
           + " user=" + turn.userId
           + " topic=" + turn.topic
           + " turns=" + context.turnCount);
@@ -598,7 +599,7 @@ public class ChatSessionMemory
 
   private void printActiveSummary(Connection connection) throws SQLException
   {
-    System.out.println("Active sessions by tenant/user/topic:");
+    System.out.println("⋯ Active sessions by tenant/user/topic:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_SUMMARY_SQL))
     {
       statement.setTimestamp(1, currentTimestamp());
@@ -623,7 +624,7 @@ public class ChatSessionMemory
       }
     }
 
-    System.out.println("Latest session memory snapshots:");
+    System.out.println("⋯ Latest session memory snapshots:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_STATE_SQL))
     {
       statement.setTimestamp(1, currentTimestamp());
@@ -655,7 +656,7 @@ public class ChatSessionMemory
     {
       statement.setTimestamp(1, currentTimestamp());
       int deleted = statement.executeUpdate();
-      System.out.println("Deleted " + deleted + " expired chat session");
+      System.out.println("✓ Deleted " + deleted + " expired chat session");
     }
   }
 
@@ -675,7 +676,7 @@ public class ChatSessionMemory
     {
       if (reportMissing)
       {
-        System.out.println("Table " + TABLE_NAME + " not dropped: " + e.getMessage());
+        System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
       }
     }
   }

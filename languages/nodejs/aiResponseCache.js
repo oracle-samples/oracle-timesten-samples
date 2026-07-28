@@ -119,6 +119,7 @@ async function main() {
   let connection;
 
   try {
+    console.log('=== AI response cache demo ===');
     connection = await connect();
     await dropTable(connection, false);
     await createSchema(connection);
@@ -154,22 +155,22 @@ async function connect() {
 async function dropTable(connection, reportMissing) {
   try {
     await connection.execute(DROP_TABLE);
-    console.log(`Table ${TABLE_NAME} dropped`);
+    console.log(`✓ Table ${TABLE_NAME} dropped`);
   }
   catch (err) {
     if (reportMissing) {
-      console.log(`Table ${TABLE_NAME} not dropped: ${err.message}`);
+      console.log(`⚠ Table ${TABLE_NAME} not dropped: ${err.message}`);
     }
   }
 }
 
 async function createSchema(connection) {
   await connection.execute(CREATE_TABLE);
-  console.log(`Table ${TABLE_NAME} created`);
+  console.log(`✓ Table ${TABLE_NAME} created`);
   await connection.execute(CREATE_TENANT_MODEL_INDEX);
-  console.log('Index IDX_AI_CACHE_TENANT_MODEL created');
+  console.log('✓ Index IDX_AI_CACHE_TENANT_MODEL created');
   await connection.execute(CREATE_EXPIRES_INDEX);
-  console.log('Index IDX_AI_CACHE_EXPIRES created');
+  console.log('✓ Index IDX_AI_CACHE_EXPIRES created');
 }
 
 function buildCacheKey(request) {
@@ -246,7 +247,7 @@ async function seedExpiredEntry(connection) {
   const { responseText, metadata } = simulateModelResponse(expiredRequest);
 
   await insertCacheEntry(connection, expiredRequest, responseText, metadata, createdAt, expiresAt);
-  console.log('Seeded 1 expired cache entry');
+  console.log('✓ Seeded 1 expired cache entry');
 }
 
 async function findCachedResponse(connection, cacheKey) {
@@ -271,7 +272,7 @@ async function processRequest(connection, request) {
 
     await connection.execute(UPDATE_CACHE_HIT, [new Date(), cacheKey]);
     console.log(
-      'CACHE HIT  ' +
+      '→ Cache hit: ' +
       `tenant=${request.tenant_id} model=${request.model_name} ` +
       `hits=${hitCount + 1} expires=${expiresAt}`
     );
@@ -286,7 +287,7 @@ async function processRequest(connection, request) {
 
   await insertCacheEntry(connection, request, responseText, metadata, createdAt, expiresAt);
   console.log(
-    'CACHE MISS ' +
+    '→ Cache miss: ' +
     `tenant=${request.tenant_id} model=${request.model_name} ` +
     `stored_for_minutes=${CACHE_TTL_MINUTES}`
   );
@@ -294,7 +295,7 @@ async function processRequest(connection, request) {
 }
 
 async function printCacheSummary(connection) {
-  console.log('Cache summary by tenant and model:');
+  console.log('⋯ Cache summary by tenant and model:');
   const summaryResult = await connection.execute(`
     SELECT tenant_id, model_name, COUNT(*), SUM(hit_count)
     FROM ai_response_cache
@@ -313,7 +314,7 @@ async function printCacheSummary(connection) {
     );
   }
 
-  console.log('Metadata safety labels:');
+  console.log('⋯ Metadata safety labels:');
   const metadataResult = await connection.execute(`
     SELECT cache_key,
            JSON_VALUE(metadata, '$.safetyLabel' RETURNING VARCHAR2(30))
@@ -331,7 +332,7 @@ async function printCacheSummary(connection) {
 async function deleteExpiredEntries(connection) {
   const result = await connection.execute(DELETE_EXPIRED, [new Date()]);
   const deleted = result.rowsAffected || 0;
-  console.log(`Deleted ${deleted} expired cache entry`);
+  console.log(`✓ Deleted ${deleted} expired cache entry`);
 }
 
 async function releaseConnection(connection) {

@@ -209,23 +209,23 @@ def drop_table(cursor, report_missing):
 
   try:
     cursor.execute(DROP_TABLE)
-    print(f"Table {TABLE_NAME} dropped")
+    print(f"✓ Table {TABLE_NAME} dropped")
   except Exception as err:
     if report_missing:
-      print(f"Table {TABLE_NAME} not dropped: {err}")
+      print(f"⚠ Table {TABLE_NAME} not dropped: {err}")
 
 
 def create_schema(cursor):
   """Create the call routing table and supporting indexes."""
 
   cursor.execute(CREATE_TABLE)
-  print(f"Table {TABLE_NAME} created")
+  print(f"✓ Table {TABLE_NAME} created")
   cursor.execute(CREATE_TENANT_SUBSCRIBER_INDEX)
-  print("Index IDX_CALL_ROUTE_TENANT_SUB created")
+  print("✓ Index IDX_CALL_ROUTE_TENANT_SUB created")
   cursor.execute(CREATE_CALL_ID_INDEX)
-  print("Index IDX_CALL_ROUTE_CALL_ID created")
+  print("✓ Index IDX_CALL_ROUTE_CALL_ID created")
   cursor.execute(CREATE_EXPIRES_INDEX)
-  print("Index IDX_CALL_ROUTE_EXPIRES created")
+  print("✓ Index IDX_CALL_ROUTE_EXPIRES created")
 
 
 def build_routing_key(call_request):
@@ -336,7 +336,7 @@ def seed_expired_routing(cursor):
           now,
           expired_at,
       ))
-  print("Seeded 1 expired routing record")
+  print("✓ Seeded 1 expired routing record")
 
 
 def lookup_existing_routing(cursor, routing_key, now):
@@ -386,7 +386,7 @@ def route_call(cursor, call_request):
   if existing is not None:
     state, reason, expires_at_text = existing
     print(
-        "ROUTE REPLAY "
+        "→ Routing replay: "
         f"tenant={call_request['tenant_id']} subscriber={call_request['subscriber_id']} "
         f"call_id={call_request['call_id']} state={state} reason={reason} "
         f"expires_at={expires_at_text}")
@@ -395,7 +395,7 @@ def route_call(cursor, call_request):
   state, reason, expires_at = evaluate_routing(call_request)
   store_routing(cursor, call_request, state, reason, expires_at)
   print(
-      "ROUTE DECISION "
+      "→ Routing decision: "
       f"tenant={call_request['tenant_id']} subscriber={call_request['subscriber_id']} "
       f"call_id={call_request['call_id']} state={state} "
       f"source={call_request['source_region']} target={call_request['target_region']} "
@@ -407,14 +407,14 @@ def route_call(cursor, call_request):
 def summarize_active_routing(cursor):
   """Print a compact summary of active routing decisions."""
 
-  print("Active routing decisions by tenant/subscriber/state:")
+  print("⋯ Active routing decisions by tenant/subscriber/state:")
   cursor.execute(SELECT_ACTIVE_SUMMARY, (current_timestamp(),))
   for tenant_id, subscriber_id, state, row_count in cursor:
     print(
         f"  tenant={tenant_id:<12} subscriber={subscriber_id:<10} "
         f"state={state:<11} rows={row_count}")
 
-  print("Active routing details:")
+  print("⋯ Active routing details:")
   cursor.execute(SELECT_ACTIVE_DETAILS, (current_timestamp(),))
   for call_id, source_region, target_region, network_slice, priority_class, state, reason, expires_at_text in cursor:
     print(
@@ -428,7 +428,7 @@ def cleanup_expired_routing(cursor):
 
   now = current_timestamp()
   cursor.execute(DELETE_EXPIRED, (now,))
-  print(f"Deleted {cursor.rowcount} expired routing record" +
+  print(f"✓ Deleted {cursor.rowcount} expired routing record" +
         ("" if cursor.rowcount == 1 else "s"))
 
 
@@ -439,6 +439,7 @@ def run():
   cursor = connection.cursor()
 
   try:
+    print("=== Telecom call routing demo ===")
     drop_table(cursor, False)
     create_schema(cursor)
     seed_expired_routing(cursor)
@@ -449,7 +450,7 @@ def run():
     summarize_active_routing(cursor)
     cleanup_expired_routing(cursor)
     drop_table(cursor, False)
-    print("Connection has been released")
+    print("✓ Completed telecom call routing sample operations")
   finally:
     cursor.close()
     connection.close()

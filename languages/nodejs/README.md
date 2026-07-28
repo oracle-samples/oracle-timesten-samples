@@ -146,25 +146,29 @@ Example:
 
 ```
 % node aiResponseCache.js -u username -p password [-c <connectionString>]
-Table ai_response_cache created
-Index IDX_AI_CACHE_TENANT_MODEL created
-Index IDX_AI_CACHE_EXPIRES created
-Seeded 1 expired cache entry
-CACHE MISS tenant=retail_app model=support-summary-v1 stored_for_minutes=30
+=== AI response cache demo ===
+
+Connecting using URL: jdbc:timesten:direct:sampledb
+✓ Connected
+✓ Table ai_response_cache created
+✓ Index IDX_AI_CACHE_TENANT_MODEL created
+✓ Index IDX_AI_CACHE_EXPIRES created
+✓ Seeded 1 expired cache entry
+→ Cache miss: tenant=retail_app model=support-summary-v1 stored_for_minutes=30
   Response: Simulated response for retail_app using support-summary-v1: Summarize order 45012 for a support agent.
-CACHE HIT  tenant=retail_app model=support-summary-v1 hits=1 expires=...
+→ Cache hit: tenant=retail_app model=support-summary-v1 hits=1 expires=...
   Response: Simulated response for retail_app using support-summary-v1: Summarize order 45012 for a support agent.
   Safety label from metadata: allowed
-CACHE MISS tenant=field_service model=technician-assist-v1 stored_for_minutes=30
+→ Cache miss: tenant=field_service model=technician-assist-v1 stored_for_minutes=30
   Response: Simulated response for field_service using technician-assist-v1: Draft troubleshooting steps for a router with intermittent packet loss.
-Cache summary by tenant and model:
+⋯ Cache summary by tenant and model:
   tenant=field_service  model=technician-assist-v1   entries=1 hits=0
   tenant=retail_app     model=support-summary-v1     entries=2 hits=1
-Metadata safety labels:
+⋯ Metadata safety labels:
   cache_key=... safetyLabel=allowed
-Deleted 1 expired cache entry
-Table ai_response_cache dropped
-Connection has been released
+✓ Deleted 1 expired cache entry
+✓ Table ai_response_cache dropped
+✓ Completed AI response cache sample operations
 ```
 
 ### chatSessionMemory.js
@@ -187,22 +191,28 @@ Example:
 
 ```
 % node chatSessionMemory.js -u username -p password [-c <connectionString>]
-Table chat_sessions created
-Index IDX_CHAT_SESSIONS_TENANT_USER created
-Index IDX_CHAT_SESSIONS_EXPIRES created
-Seeded 1 expired chat session
-SESSION START tenant=retail_app user=user_001 topic=order-status turns=1
+=== Chat session memory demo ===
+
+Connecting using URL: jdbc:timesten:direct:sampledb
+✓ Connected
+✓ Table chat_sessions created
+✓ Index IDX_CHAT_SESSIONS_TENANT_USER created
+✓ Index IDX_CHAT_SESSIONS_EXPIRES created
+✓ Seeded 1 expired chat session
+→ Session start: tenant=retail_app user=user_001 topic=order-status turns=1
   Assistant: Simulated reply for retail_app using support-summary-v1: The order is currently in transit and should arrive tomorrow.
-SESSION RESUME tenant=retail_app user=user_001 topic=order-status turns=2
+→ Session resume: tenant=retail_app user=user_001 topic=order-status turns=2
   Assistant: Simulated reply for retail_app using support-summary-v1: I remember your earlier message: Where is order 45012?. The order is still in transit and is expected to arrive tomorrow.
-SESSION START tenant=field_service user=user_204 topic=router-troubleshooting turns=1
+→ Session start: tenant=field_service user=user_204 topic=router-troubleshooting turns=1
   Assistant: Simulated reply for field_service using technician-assist-v1: The router is still showing intermittent packet loss, so continue with the cable and firmware checks.
-Active sessions by tenant/user/topic:
+⋯ Active sessions by tenant/user/topic:
   tenant=field_service user=user_204  topic=router-troubleshooting   turns=1 model=technician-assist-v1   safety=allowed
   tenant=retail_app    user=user_001  topic=order-status            turns=2 model=support-summary-v1    safety=allowed
-Deleted 1 expired chat session
-Table chat_sessions dropped
-Connection has been released
+⋯ Latest session memory snapshots:
+  session=... tenant=retail_app topic=order-status updated=... expires=...
+✓ Deleted 1 expired chat session
+✓ Table chat_sessions dropped
+✓ Completed chat session memory sample operations
 ```
 
 The sample also prints a session summary that is easier to scan as a table:
@@ -232,14 +242,18 @@ Example:
 
 ```
 % node featureStore.js -u username -p password [-c <connectionString>]
-Table user_features created
-Index IDX_USER_FEATURES_TENANT_USER created
-Index IDX_USER_FEATURES_FRESHNESS created
-Seeded 1 stale feature row
-FEATURE UPSERT tenant=retail_app user=user_001 feature=cart_value model=feature-agg-v1
-FEATURE UPSERT tenant=retail_app user=user_001 feature=preferred_channel model=feature-agg-v1
-FEATURE UPSERT tenant=field_service user=user_204 feature=device_risk model=feature-agg-v2
-Active feature groups:
+=== Feature store demo ===
+
+Connecting using URL: jdbc:timesten:direct:sampledb
+✓ Connected
+✓ Table user_features created
+✓ Index IDX_USER_FEATURES_TENANT_USER created
+✓ Index IDX_USER_FEATURES_FRESHNESS created
+✓ Seeded 1 stale feature row
+→ Feature upsert: tenant=retail_app user=user_001 feature=cart_value model=feature-agg-v1
+→ Feature upsert: tenant=retail_app user=user_001 feature=preferred_channel model=feature-agg-v1
+→ Feature upsert: tenant=field_service user=user_204 feature=device_risk model=feature-agg-v2
+⋯ Active feature groups:
   tenant=field_service user=user_204  features=1 numeric_sum=73
   tenant=retail_app    user=user_001  features=2 numeric_sum=128
 Current features for tenant=retail_app user=user_001:
@@ -249,9 +263,9 @@ Current features for tenant=retail_app user=user_001:
   feature=preferred_channel freshness=... model=feature-agg-v1
     value={"valueType":"string","value":"mobile","source":"profile-service","freshness":"minutes"}
     audit={"tenantId":"retail_app","userId":"user_001","featureName":"preferred_channel",...}
-Deleted 1 expired feature row
-Table user_features dropped
-Connection has been released
+✓ Deleted 1 expired feature row
+✓ Table user_features dropped
+✓ Completed feature store sample operations
 ```
 
 ### paymentAuthorizationState.js
@@ -275,24 +289,28 @@ Example:
 
 ```
 % node paymentAuthorizationState.js -u username -p password [-c <connectionString>]
-Table payment_authorizations created
-Index IDX_PAYMENT_AUTH_TENANT_ACCOUNT created
-Index IDX_PAYMENT_AUTH_PAYMENT_ID created
-Index IDX_PAYMENT_AUTH_EXPIRES created
-Seeded 1 expired authorization record
-AUTH DECISION tenant=retail_app account=acct_1001 merchant=orchard-books payment_id=pay_1001 status=APPROVED amount=$49.95 risk=0.12 reason=within_limit_and_low_risk hold_expires=...
-AUTH REPLAY tenant=retail_app account=acct_1001 merchant=orchard-books payment_id=pay_1001 status=APPROVED reason=within_limit_and_low_risk expires_at=...
-AUTH DECISION tenant=retail_app account=acct_1002 merchant=pro-office-supplies payment_id=pay_2001 status=DECLINED amount=$399.00 risk=0.08 reason=amount_exceeds_limit hold_expires=...
-AUTH DECISION tenant=field_service account=acct_2001 merchant=route-parts payment_id=pay_3001 status=REVIEW amount=$149.00 risk=0.87 reason=risk_score_requires_review hold_expires=...
-Active authorizations by tenant/account/status:
+=== Payment authorization state demo ===
+
+Connecting using URL: jdbc:timesten:direct:sampledb
+✓ Connected
+✓ Table payment_authorizations created
+✓ Index IDX_PAYMENT_AUTH_TENANT_ACCOUNT created
+✓ Index IDX_PAYMENT_AUTH_PAYMENT_ID created
+✓ Index IDX_PAYMENT_AUTH_EXPIRES created
+✓ Seeded 1 expired authorization record
+→ Authorization decision: tenant=retail_app account=acct_1001 merchant=orchard-books payment_id=pay_1001 status=APPROVED amount=$49.95 risk=0.12 reason=within_limit_and_low_risk hold_expires=...
+→ Authorization replay: tenant=retail_app account=acct_1001 merchant=orchard-books payment_id=pay_1001 status=APPROVED reason=within_limit_and_low_risk expires_at=...
+→ Authorization decision: tenant=retail_app account=acct_1002 merchant=pro-office-supplies payment_id=pay_2001 status=DECLINED amount=$399.00 risk=0.08 reason=amount_exceeds_limit hold_expires=...
+→ Authorization decision: tenant=field_service account=acct_2001 merchant=route-parts payment_id=pay_3001 status=REVIEW amount=$149.00 risk=0.87 reason=risk_score_requires_review hold_expires=...
+⋯ Active authorizations by tenant/account/status:
   tenant=field_service account=acct_2001 status=REVIEW   rows=1  total=$149.00
   tenant=retail_app    account=acct_1001 status=APPROVED rows=1  total=$49.95
   tenant=retail_app    account=acct_1002 status=DECLINED rows=1  total=$399.00
-Active authorization details:
+⋯ Active authorization details:
   payment_id=pay_1001   merchant=orchard-books        status=APPROVED amount=$49.95 risk=0.12 reason=within_limit_and_low_risk   expires_at=...
-Deleted 1 expired authorization record
-Table payment_authorizations dropped
-Connection has been released
+✓ Deleted 1 expired authorization record
+✓ Table payment_authorizations dropped
+✓ Completed payment authorization sample operations
 ```
 
 ### telecomCallRoutingState.js
@@ -316,24 +334,28 @@ Example:
 
 ```
 % node telecomCallRoutingState.js -u username -p password [-c <connectionString>]
-Table call_routing_state created
-Index IDX_CALL_ROUTING_TENANT_SUBSCRIBER created
-Index IDX_CALL_ROUTING_CALL_ID created
-Index IDX_CALL_ROUTING_EXPIRES created
-Seeded 1 expired routing record
-ROUTE DECISION tenant=north_mobile subscriber=sub_1001 call_id=call_1001 state=ROUTED source=us-east target=us-east slice=gold reason=standard_route hold_expires=...
-ROUTE REPLAY tenant=north_mobile subscriber=sub_1001 call_id=call_1001 state=ROUTED reason=standard_route expires_at=...
-ROUTE DECISION tenant=north_mobile subscriber=sub_2002 call_id=call_2001 state=BLOCKED source=us-east target=eu-west slice=silver reason=roaming_not_allowed hold_expires=...
-ROUTE DECISION tenant=field_support subscriber=sub_3003 call_id=call_3001 state=PRIORITIZED source=us-west target=us-west slice=platinum reason=emergency_route_override hold_expires=...
-Active routing decisions by tenant/subscriber/state:
+=== Telecom call routing state demo ===
+
+Connecting using URL: jdbc:timesten:direct:sampledb
+✓ Connected
+✓ Table call_routing_state created
+✓ Index IDX_CALL_ROUTING_TENANT_SUBSCRIBER created
+✓ Index IDX_CALL_ROUTING_CALL_ID created
+✓ Index IDX_CALL_ROUTING_EXPIRES created
+✓ Seeded 1 expired routing record
+→ Routing decision: tenant=north_mobile subscriber=sub_1001 call_id=call_1001 state=ROUTED source=us-east target=us-east slice=gold reason=standard_route hold_expires=...
+→ Routing replay: tenant=north_mobile subscriber=sub_1001 call_id=call_1001 state=ROUTED reason=standard_route expires_at=...
+→ Routing decision: tenant=north_mobile subscriber=sub_2002 call_id=call_2001 state=BLOCKED source=us-east target=eu-west slice=silver reason=roaming_not_allowed hold_expires=...
+→ Routing decision: tenant=field_support subscriber=sub_3003 call_id=call_3001 state=PRIORITIZED source=us-west target=us-west slice=platinum reason=emergency_route_override hold_expires=...
+⋯ Active routing decisions by tenant/subscriber/state:
   tenant=field_support subscriber=sub_3003 state=PRIORITIZED rows=1
   tenant=north_mobile subscriber=sub_1001 state=ROUTED      rows=1
   tenant=north_mobile subscriber=sub_2002 state=BLOCKED     rows=1
-Active routing details:
+⋯ Active routing details:
   call_id=call_1001   source=us-east  target=us-east  slice=gold     priority=standard   state=ROUTED      reason=standard_route           expires_at=...
-Deleted 1 expired routing record
-Table call_routing_state dropped
-Connection has been released
+✓ Deleted 1 expired routing record
+✓ Table call_routing_state dropped
+✓ Completed telecom call routing sample operations
 ```
 
 ### queriesAndPlsql.js

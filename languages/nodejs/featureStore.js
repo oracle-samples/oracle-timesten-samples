@@ -159,6 +159,7 @@ async function main() {
   let connection;
 
   try {
+    console.log('=== Feature store demo ===');
     connection = await connect();
     await dropTable(connection, false);
     await createSchema(connection);
@@ -196,22 +197,22 @@ async function connect() {
 async function dropTable(connection, reportMissing) {
   try {
     await connection.execute(DROP_TABLE);
-    console.log(`Table ${TABLE_NAME} dropped`);
+    console.log(`✓ Table ${TABLE_NAME} dropped`);
   }
   catch (err) {
     if (reportMissing) {
-      console.log(`Table ${TABLE_NAME} not dropped: ${err.message}`);
+      console.log(`⚠ Table ${TABLE_NAME} not dropped: ${err.message}`);
     }
   }
 }
 
 async function createSchema(connection) {
   await connection.execute(CREATE_TABLE);
-  console.log(`Table ${TABLE_NAME} created`);
+  console.log(`✓ Table ${TABLE_NAME} created`);
   await connection.execute(CREATE_TENANT_USER_INDEX);
-  console.log('Index IDX_USER_FEATURES_TENANT_USER created');
+  console.log('✓ Index IDX_USER_FEATURES_TENANT_USER created');
   await connection.execute(CREATE_FRESHNESS_INDEX);
-  console.log('Index IDX_USER_FEATURES_FRESHNESS created');
+  console.log('✓ Index IDX_USER_FEATURES_FRESHNESS created');
 }
 
 function buildFeatureKey(feature) {
@@ -276,7 +277,7 @@ async function upsertFeature(connection, feature) {
 
   await insertFeature(connection, feature, freshnessTs, expiresAt, auditPayload);
   console.log(
-    'FEATURE UPSERT',
+    '→ Feature upsert:',
     `tenant=${feature.tenant_id}`,
     `user=${feature.user_id}`,
     `feature=${feature.feature_name}`,
@@ -308,11 +309,11 @@ async function seedStaleFeature(connection) {
   const auditPayload = auditPayloadToJson(staleFeature, staleFeature.decision, 'stale_seed');
 
   await insertFeature(connection, staleFeature, freshnessTs, expiresAt, auditPayload);
-  console.log('Seeded 1 stale feature row');
+  console.log('✓ Seeded 1 stale feature row');
 }
 
 async function printFeatureSummary(connection) {
-  console.log('Active feature groups:');
+  console.log('⋯ Active feature groups:');
   const result = await connection.execute(SELECT_FEATURE_SUMMARY, [currentTimestamp()]);
   for (const row of result.rows) {
     console.log(
@@ -335,7 +336,7 @@ async function printFeatureSet(connection, tenantId, userId) {
 async function deleteExpiredFeatures(connection) {
   const result = await connection.execute(DELETE_EXPIRED, [currentTimestamp()]);
   const deleted = result.rowsAffected || 0;
-  console.log(`Deleted ${deleted} expired feature row`);
+  console.log(`✓ Deleted ${deleted} expired feature row`);
 }
 
 async function releaseConnection(connection) {

@@ -183,21 +183,21 @@ def drop_table(cursor, report_missing):
 
   try:
     cursor.execute(DROP_TABLE)
-    print(f"Table {TABLE_NAME} dropped")
+    print(f"✓ Table {TABLE_NAME} dropped")
   except Exception as err:
     if report_missing:
-      print(f"Table {TABLE_NAME} not dropped: {err}")
+      print(f"⚠ Table {TABLE_NAME} not dropped: {err}")
 
 
 def create_schema(cursor):
   """Create the chat memory table and supporting indexes."""
 
   cursor.execute(CREATE_TABLE)
-  print(f"Table {TABLE_NAME} created")
+  print(f"✓ Table {TABLE_NAME} created")
   cursor.execute(CREATE_TENANT_USER_INDEX)
-  print("Index IDX_CHAT_SESSIONS_TENANT_USER created")
+  print("✓ Index IDX_CHAT_SESSIONS_TENANT_USER created")
   cursor.execute(CREATE_EXPIRES_INDEX)
-  print("Index IDX_CHAT_SESSIONS_EXPIRES created")
+  print("✓ Index IDX_CHAT_SESSIONS_EXPIRES created")
 
 
 def build_session_key(turn):
@@ -406,7 +406,7 @@ def seed_expired_session(cursor):
   append_turn(session_state, expired_turn, assistant_text)
 
   insert_session(cursor, session_key, expired_turn, session_state, created_at, expires_at)
-  print("Seeded 1 expired chat session")
+  print("✓ Seeded 1 expired chat session")
 
 
 def process_turn(cursor, turn):
@@ -423,7 +423,7 @@ def process_turn(cursor, turn):
     append_turn(session_state, turn, assistant_text)
     update_session(cursor, session_key, session_state, now, expires_at)
     print(
-        "SESSION RESUME "
+        "→ Session resume: "
         f"tenant={turn['tenant_id']} user={turn['user_id']} "
         f"topic={turn['conversation_topic']} turns={session_state['turn_count']}")
     print(f"  Assistant: {assistant_text}")
@@ -432,7 +432,7 @@ def process_turn(cursor, turn):
     session_state = build_session_state(turn, assistant_text)
     insert_session(cursor, session_key, turn, session_state, now, expires_at)
     print(
-        "SESSION START "
+        "→ Session start: "
         f"tenant={turn['tenant_id']} user={turn['user_id']} "
         f"topic={turn['conversation_topic']} turns=1")
     print(f"  Assistant: {assistant_text}")
@@ -441,7 +441,7 @@ def process_turn(cursor, turn):
 def print_active_summary(cursor):
   """Print summary information for active chat sessions."""
 
-  print("Active sessions by tenant/user/topic:")
+  print("⋯ Active sessions by tenant/user/topic:")
   cursor.execute(SELECT_ACTIVE_SUMMARY, [current_timestamp()])
   rows = cursor.fetchall()
   for tenant_id, user_id, conversation_topic, turn_count, model_name, safety_status in rows:
@@ -449,7 +449,7 @@ def print_active_summary(cursor):
         f"  tenant={tenant_id:<14} user={user_id:<10} topic={conversation_topic:<24} "
         f"turns={int(turn_count)} model={model_name:<22} safety={safety_status}")
 
-  print("Latest session memory snapshots:")
+  print("⋯ Latest session memory snapshots:")
   cursor.execute(SELECT_ACTIVE_STATE, [current_timestamp()])
   for session_key, tenant_id, user_id, conversation_topic, session_state_json, last_updated_at, expires_at in cursor.fetchall():
     session_state = json.loads(session_state_json)
@@ -469,7 +469,7 @@ def delete_expired_sessions(cursor):
 
   cursor.execute(DELETE_EXPIRED, [current_timestamp()])
   deleted = cursor.rowcount if cursor.rowcount is not None else 0
-  print(f"Deleted {deleted} expired chat session")
+  print(f"✓ Deleted {deleted} expired chat session")
 
 
 def run():
@@ -478,6 +478,7 @@ def run():
   connection = None
   cursor = None
   try:
+    print("=== Chat session memory demo ===")
     connection = connect()
     cursor = connection.cursor()
     drop_table(cursor, False)
@@ -490,6 +491,7 @@ def run():
     print_active_summary(cursor)
     delete_expired_sessions(cursor)
     drop_table(cursor, True)
+    print("✓ Completed chat session memory sample operations")
   except Exception as err:
     print("An error occurred", str(err))
   finally:

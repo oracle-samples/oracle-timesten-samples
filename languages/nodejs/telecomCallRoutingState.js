@@ -186,6 +186,7 @@ async function main() {
   let connection;
 
   try {
+    console.log('=== Telecom call routing demo ===');
     connection = await connect();
     await dropTable(connection, false);
     await createSchema(connection);
@@ -221,24 +222,24 @@ async function connect() {
 async function dropTable(connection, reportMissing) {
   try {
     await connection.execute(DROP_TABLE);
-    console.log(`Table ${TABLE_NAME} dropped`);
+    console.log(`✓ Table ${TABLE_NAME} dropped`);
   }
   catch (err) {
     if (reportMissing) {
-      console.log(`Table ${TABLE_NAME} not dropped: ${err.message}`);
+      console.log(`⚠ Table ${TABLE_NAME} not dropped: ${err.message}`);
     }
   }
 }
 
 async function createSchema(connection) {
   await connection.execute(CREATE_TABLE);
-  console.log(`Table ${TABLE_NAME} created`);
+  console.log(`✓ Table ${TABLE_NAME} created`);
   await connection.execute(CREATE_TENANT_SUBSCRIBER_INDEX);
-  console.log('Index IDX_CALL_ROUTE_TENANT_SUB created');
+  console.log('✓ Index IDX_CALL_ROUTE_TENANT_SUB created');
   await connection.execute(CREATE_CALL_ID_INDEX);
-  console.log('Index IDX_CALL_ROUTE_CALL_ID created');
+  console.log('✓ Index IDX_CALL_ROUTE_CALL_ID created');
   await connection.execute(CREATE_EXPIRES_INDEX);
-  console.log('Index IDX_CALL_ROUTE_EXPIRES created');
+  console.log('✓ Index IDX_CALL_ROUTE_EXPIRES created');
 }
 
 function buildRoutingKey(callRequest) {
@@ -349,7 +350,7 @@ async function seedExpiredRouting(connection) {
     expiredAt
   ]);
 
-  console.log('Seeded 1 expired routing record');
+  console.log('✓ Seeded 1 expired routing record');
 }
 
 async function lookupExistingRouting(connection, routingKey) {
@@ -398,7 +399,7 @@ async function routeCall(connection, callRequest) {
   if (existing !== null) {
     const [state, reason, expiresAtText] = existing;
     console.log(
-      `ROUTE REPLAY tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
+      `→ Routing replay: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
       `call_id=${callRequest.call_id} state=${state} reason=${reason} expires_at=${expiresAtText}`
     );
     return state;
@@ -408,7 +409,7 @@ async function routeCall(connection, callRequest) {
   const expiresAt = new Date(currentTimestamp().getTime() + decision.ttlMinutes * 60000);
   await storeRouting(connection, callRequest, decision.state, decision.reason, expiresAt);
   console.log(
-    `ROUTE DECISION tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
+    `→ Routing decision: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
     `call_id=${callRequest.call_id} state=${decision.state} source=${callRequest.source_region} ` +
     `target=${callRequest.target_region} slice=${callRequest.network_slice} ` +
     `reason=${decision.reason} hold_expires=${expiresAt.toISOString()}`
@@ -418,7 +419,7 @@ async function routeCall(connection, callRequest) {
 }
 
 async function summarizeActiveRouting(connection) {
-  console.log('Active routing decisions by tenant/subscriber/state:');
+  console.log('⋯ Active routing decisions by tenant/subscriber/state:');
 
   const summary = await connection.execute(SELECT_ACTIVE_SUMMARY, [currentTimestamp()]);
   for (const row of summary.rows) {
@@ -429,7 +430,7 @@ async function summarizeActiveRouting(connection) {
     );
   }
 
-  console.log('Active routing details:');
+  console.log('⋯ Active routing details:');
   const details = await connection.execute(SELECT_ACTIVE_DETAILS, [currentTimestamp()]);
   for (const row of details.rows) {
     const [callId, sourceRegion, targetRegion, networkSlice, priorityClass, state, reason, expiresAtText] = row;
@@ -445,7 +446,7 @@ async function summarizeActiveRouting(connection) {
 async function cleanupExpiredRouting(connection) {
   const result = await connection.execute(DELETE_EXPIRED, [currentTimestamp()]);
   console.log(
-    `Deleted ${result.rowsAffected} expired routing record` +
+    `✓ Deleted ${result.rowsAffected} expired routing record` +
     (result.rowsAffected === 1 ? '' : 's')
   );
 }

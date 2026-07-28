@@ -490,7 +490,7 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.AiResponseCache`
+  `java jdbc.demo.AiResponseCache -u username -p password`
 
 **ChatSessionMemory**
 
@@ -511,7 +511,7 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.ChatSessionMemory`
+  `java jdbc.demo.ChatSessionMemory -u username -p password`
 
 
 **FeatureStore**
@@ -533,7 +533,7 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.FeatureStore`
+  `java jdbc.demo.FeatureStore -u username -p password`
 
 
 **PaymentAuthorizationState**
@@ -556,7 +556,7 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.PaymentAuthorizationState`
+  `java jdbc.demo.PaymentAuthorizationState -u username -p password`
 
 
 **TelecomCallRoutingState**
@@ -579,7 +579,7 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.TelecomCallRoutingState`
+  `java jdbc.demo.TelecomCallRoutingState -u username -p password`
 
 
 For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/java-developer/index.html).
