@@ -109,7 +109,9 @@ public class AiResponseCache
     new AiRequest("retail_app", "user_001", "support-summary-v1",
                   "Summarize order 45012 for a support agent.", 0.2),
     new AiRequest("field_service", "user_204", "technician-assist-v1",
-                  "Draft troubleshooting steps for a router with intermittent packet loss.", 0.1)
+                  "Draft troubleshooting steps for a router with intermittent packet loss.", 0.1),
+    new AiRequest("retail_app", "user_001", "support-summary-v2",
+                  "Draft a brief shipping update for order 45012.", 0.2)
   };
 
   private IOLibrary ioLibrary;
@@ -306,15 +308,19 @@ public class AiResponseCache
 
   private void runDemo(Connection connection) throws SQLException
   {
+    // Start from a clean table so the cache story is deterministic on every run.
     dropTable(connection, false);
     createSchema(connection);
+    // Seed one expired entry so the TTL cleanup path is visible.
     seedExpiredEntry(connection);
 
+    // Each request first checks the cache and only simulates a response on a miss.
     for (AiRequest request : SAMPLE_REQUESTS)
     {
       processRequest(connection, request);
     }
 
+    // Show the active cache footprint before stale rows are removed.
     printCacheSummary(connection);
     deleteExpiredEntries(connection);
     dropTable(connection, true);
@@ -371,9 +377,11 @@ public class AiResponseCache
 
   private void processRequest(Connection connection, AiRequest request) throws SQLException
   {
+    long startNanos = System.nanoTime();
     String cacheKey = buildCacheKey(request);
     CacheEntry cachedEntry = findCachedResponse(connection, cacheKey);
 
+    // A cache hit reuses the stored response and only refreshes access metadata.
     if (cachedEntry != null)
     {
       try (PreparedStatement update = connection.prepareStatement(UPDATE_CACHE_HIT_SQL))
@@ -386,7 +394,8 @@ public class AiResponseCache
       System.out.println("→ Cache hit: tenant=" + request.tenantId +
                          " model=" + request.modelName +
                          " hits=" + (cachedEntry.hitCount + 1) +
-                         " expires=" + cachedEntry.expiresAt);
+                         " expires=" + cachedEntry.expiresAt +
+                         " elapsed_ms=" + elapsedMillis(startNanos));
       System.out.println("  Response: " + cachedEntry.responseText);
       System.out.println("  Safety label from metadata: " + cachedEntry.safetyLabel);
       return;
@@ -396,10 +405,12 @@ public class AiResponseCache
     Timestamp createdAt = currentTimestamp();
     Timestamp expiresAt = new Timestamp(createdAt.getTime() + (CACHE_TTL_MINUTES * 60L * 1000L));
 
+    // Cache misses become the new working set for the next request.
     insertCacheEntry(connection, request, response.responseText, response.metadataJson, createdAt, expiresAt);
     System.out.println("→ Cache miss: tenant=" + request.tenantId +
                        " model=" + request.modelName +
-                       " stored_for_minutes=" + CACHE_TTL_MINUTES);
+                       " stored_for_minutes=" + CACHE_TTL_MINUTES +
+                       " elapsed_ms=" + elapsedMillis(startNanos));
     System.out.println("  Response: " + response.responseText);
   }
 
@@ -452,6 +463,7 @@ public class AiResponseCache
 
   private void printCacheSummary(Connection connection) throws SQLException
   {
+    // Show the current cache footprint grouped by tenant and model.
     System.out.println("⋯ Cache summary by tenant and model:");
     String summarySql = "SELECT tenant_id, model_name, COUNT(*), SUM(hit_count) "
                       + "FROM " + TABLE_NAME + " "
@@ -491,6 +503,11 @@ public class AiResponseCache
         System.out.println("  cache_key=" + cacheKey.substring(0, 12) + "... safetyLabel=" + safetyLabel);
       }
     }
+  }
+
+  private long elapsedMillis(long startNanos)
+  {
+    return (System.nanoTime() - startNanos) / 1_000_000L;
   }
 
   private void deleteExpiredEntries(Connection connection) throws SQLException

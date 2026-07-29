@@ -164,6 +164,18 @@ const CALL_REQUESTS = [
     roaming_allowed: true,
     preferred_route: 'edge-west-9',
     hold_minutes: 15
+  },
+  {
+    tenant_id: 'field_support',
+    subscriber_id: 'sub_4004',
+    call_id: 'call_4001',
+    source_region: 'us-west',
+    target_region: 'us-west',
+    network_slice: 'gold',
+    priority_class: 'standard',
+    roaming_allowed: true,
+    preferred_route: 'edge-west-5',
+    hold_minutes: 12
   }
 ];
 
@@ -188,14 +200,18 @@ async function main() {
   try {
     console.log('=== Telecom call routing demo ===');
     connection = await connect();
+    // Recreate the table so each run starts from a clean routing state.
     await dropTable(connection, false);
     await createSchema(connection);
+    // Seed one expired row so the TTL cleanup takes care of it.
     await seedExpiredRouting(connection);
 
+    // Each request exercises either replayed or freshly computed routing.
     for (const callRequest of CALL_REQUESTS) {
       await routeCall(connection, callRequest);
     }
 
+    // Show the live routing state before stale rows are removed.
     await summarizeActiveRouting(connection);
     await cleanupExpiredRouting(connection);
     await dropTable(connection, true);
@@ -393,32 +409,38 @@ async function storeRouting(connection, callRequest, state, reason, expiresAt) {
 }
 
 async function routeCall(connection, callRequest) {
+  const startTime = Date.now();
   const routingKey = buildRoutingKey(callRequest);
   const existing = await lookupExistingRouting(connection, routingKey);
 
+  // Replaying an existing route keeps the routing path deterministic.
   if (existing !== null) {
     const [state, reason, expiresAtText] = existing;
     console.log(
       `→ Routing replay: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
-      `call_id=${callRequest.call_id} state=${state} reason=${reason} expires_at=${expiresAtText}`
+      `call_id=${callRequest.call_id} state=${state} reason=${reason} expires_at=${expiresAtText} ` +
+      `elapsed_ms=${Date.now() - startTime}`
     );
     return state;
   }
 
   const decision = evaluateRouting(callRequest);
   const expiresAt = new Date(currentTimestamp().getTime() + decision.ttlMinutes * 60000);
+  // New routing decisions are stored so later replays can return the same result.
   await storeRouting(connection, callRequest, decision.state, decision.reason, expiresAt);
   console.log(
     `→ Routing decision: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
     `call_id=${callRequest.call_id} state=${decision.state} source=${callRequest.source_region} ` +
     `target=${callRequest.target_region} slice=${callRequest.network_slice} ` +
-    `reason=${decision.reason} hold_expires=${expiresAt.toISOString()}`
+    `reason=${decision.reason} hold_expires=${expiresAt.toISOString()} ` +
+    `elapsed_ms=${Date.now() - startTime}`
   );
 
   return decision.state;
 }
 
 async function summarizeActiveRouting(connection) {
+  // Show the active routing footprint grouped by tenant, subscriber, and state.
   console.log('⋯ Active routing decisions by tenant/subscriber/state:');
 
   const summary = await connection.execute(SELECT_ACTIVE_SUMMARY, [currentTimestamp()]);

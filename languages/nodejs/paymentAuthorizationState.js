@@ -170,6 +170,19 @@ const PAYMENT_REQUESTS = [
     spend_limit_cents: 20000,
     risk_threshold: 0.75,
     hold_minutes: 20
+  },
+  {
+    tenant_id: 'field_service',
+    account_id: 'acct_2001',
+    merchant_id: 'depot-supplies',
+    payment_id: 'pay_3002',
+    amount_cents: 8600,
+    currency: 'USD',
+    payment_method: 'debit_card',
+    risk_score: 0.18,
+    spend_limit_cents: 20000,
+    risk_threshold: 0.75,
+    hold_minutes: 20
   }
 ];
 
@@ -195,14 +208,18 @@ async function main() {
   try {
     console.log('=== Payment authorization demo ===');
     connection = await connect();
+    // Recreate the table so the authorization trail starts cleanly.
     await dropTable(connection, false);
     await createSchema(connection);
+    // Seed one expired row so the TTL cleanup path is visible.
     await seedExpiredAuthorization(connection);
 
+    // Each request exercises either a replay or a fresh authorization decision.
     for (const payment of PAYMENT_REQUESTS) {
       await authorizePayment(connection, payment);
     }
 
+    // Show the active decisions before stale rows are removed.
     await summarizeActiveAuthorizations(connection);
     await cleanupExpiredAuthorizations(connection);
     await dropTable(connection, true);
@@ -404,33 +421,39 @@ async function storeAuthorization(connection, payment, status, reason, expiresAt
 
 async function authorizePayment(connection, payment) {
   const authKey = buildAuthorizationKey(payment);
+  const startTime = Date.now();
   const existing = await lookupExistingAuthorization(connection, authKey);
 
+  // Replaying an existing decision keeps the authorization path idempotent.
   if (existing !== null) {
     const [status, reason, expiresAtText] = existing;
     console.log(
       `→ Authorization replay: tenant=${payment.tenant_id} account=${payment.account_id} ` +
       `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
-      `status=${status} reason=${reason} expires_at=${expiresAtText}`
+      `status=${status} reason=${reason} expires_at=${expiresAtText} ` +
+      `elapsed_ms=${Date.now() - startTime}`
     );
     return status;
   }
 
   const decision = evaluatePayment(payment);
   const expiresAt = new Date(currentTimestamp().getTime() + decision.ttlMinutes * 60000);
+  // New decisions are stored so the same payment request can be answered consistently.
   await storeAuthorization(connection, payment, decision.status, decision.reason, expiresAt);
   console.log(
     `→ Authorization decision: tenant=${payment.tenant_id} account=${payment.account_id} ` +
     `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
     `status=${decision.status} amount=${formatMoney(payment.amount_cents)} ` +
     `risk=${payment.risk_score.toFixed(2)} reason=${decision.reason} ` +
-    `hold_expires=${expiresAt.toISOString()}`
+    `hold_expires=${expiresAt.toISOString()} ` +
+    `elapsed_ms=${Date.now() - startTime}`
   );
 
   return decision.status;
 }
 
 async function summarizeActiveAuthorizations(connection) {
+  // Show both the grouped view and the detailed authorization state.
   console.log('⋯ Active authorizations by tenant/account/status:');
 
   const summary = await connection.execute(SELECT_ACTIVE_SUMMARY, [currentTimestamp()]);

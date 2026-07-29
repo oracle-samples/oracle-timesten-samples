@@ -125,7 +125,12 @@ public class ChatSessionMemory
                  "I need the previous troubleshooting steps for the packet-loss issue.",
                  "The router is still showing intermittent packet loss, so continue with the cable and firmware checks.",
                  "lookup_device_notes", "field-notes",
-                 "{\"responseStyle\":\"detailed\",\"locale\":\"en-US\"}")
+                 "{\"responseStyle\":\"detailed\",\"locale\":\"en-US\"}"),
+    new ChatTurn("retail_app", "user_001", "order-status", "support-summary-v1",
+                 "Can you give me the latest update with a delivery window?",
+                 "The order is still in transit and is expected to arrive tomorrow.",
+                 "lookup_order_status", "shipment-feed",
+                 "{\"responseStyle\":\"concise\",\"locale\":\"en-US\"}")
   };
 
   private final IOLibrary ioLibrary;
@@ -479,15 +484,19 @@ public class ChatSessionMemory
 
   private void runDemo(Connection connection) throws SQLException
   {
+    // Recreate the table so the conversation trail is deterministic.
     dropTable(connection, false);
     createSchema(connection);
+    // Seed one expired session so TTL cleanup is visible.
     seedExpiredSession(connection);
 
+    // Each turn shows either a new session or a resumed one.
     for (ChatTurn turn : SAMPLE_TURNS)
     {
       processTurn(connection, turn);
     }
 
+    // Print the live memory snapshot before stale rows are removed.
     printActiveSummary(connection);
     deleteExpiredSessions(connection);
     dropTable(connection, true);
@@ -535,10 +544,12 @@ public class ChatSessionMemory
   private void processTurn(Connection connection, ChatTurn turn) throws SQLException
   {
     String sessionKey = buildSessionKey(turn);
+    long startNanos = System.nanoTime();
     Timestamp now = currentTimestamp();
     Timestamp expiresAt = addMinutes(now, SESSION_TTL_MINUTES);
     SessionContext context = sessionContexts.get(sessionKey);
 
+    // A resumed session appends to existing chat memory instead of starting over.
     if (context == null)
     {
       String assistantText = simulateAssistantReply(turn, null);
@@ -549,7 +560,8 @@ public class ChatSessionMemory
           "→ Session start: tenant=" + turn.tenantId
           + " user=" + turn.userId
           + " topic=" + turn.topic
-          + " turns=1");
+          + " turns=1"
+          + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
       System.out.println("  Assistant: " + assistantText);
     }
     else
@@ -562,7 +574,8 @@ public class ChatSessionMemory
           "→ Session resume: tenant=" + turn.tenantId
           + " user=" + turn.userId
           + " topic=" + turn.topic
-          + " turns=" + context.turnCount);
+          + " turns=" + context.turnCount
+          + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
       System.out.println("  Assistant: " + assistantText);
     }
   }
@@ -599,6 +612,7 @@ public class ChatSessionMemory
 
   private void printActiveSummary(Connection connection) throws SQLException
   {
+    // Show the current chat memory state that is still worth keeping hot.
     System.out.println("⋯ Active sessions by tenant/user/topic:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_SUMMARY_SQL))
     {

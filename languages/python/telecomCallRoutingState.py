@@ -29,6 +29,7 @@
 import datetime
 import hashlib
 import json
+import time
 
 import oracledb
 
@@ -168,6 +169,18 @@ CALL_REQUESTS = [
         "roaming_allowed": True,
         "preferred_route": "edge-west-9",
         "hold_minutes": 15,
+    },
+    {
+        "tenant_id": "field_support",
+        "subscriber_id": "sub_4004",
+        "call_id": "call_4001",
+        "source_region": "us-west",
+        "target_region": "us-west",
+        "network_slice": "gold",
+        "priority_class": "standard",
+        "roaming_allowed": True,
+        "preferred_route": "edge-west-5",
+        "hold_minutes": 12,
     },
 ]
 
@@ -380,19 +393,23 @@ def store_routing(cursor, call_request, state, reason, expires_at):
 def route_call(cursor, call_request):
   """Route a call request, returning an idempotent stored decision."""
 
+  start_time = time.perf_counter()
   now = current_timestamp()
   routing_key = build_routing_key(call_request)
   existing = lookup_existing_routing(cursor, routing_key, now)
+  # If routing state already exists, replay it instead of recalculating.
   if existing is not None:
     state, reason, expires_at_text = existing
     print(
         "→ Routing replay: "
         f"tenant={call_request['tenant_id']} subscriber={call_request['subscriber_id']} "
         f"call_id={call_request['call_id']} state={state} reason={reason} "
-        f"expires_at={expires_at_text}")
+        f"expires_at={expires_at_text} "
+        f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
     return state
 
   state, reason, expires_at = evaluate_routing(call_request)
+  # New routing decisions are stored so the same event stays deterministic.
   store_routing(cursor, call_request, state, reason, expires_at)
   print(
       "→ Routing decision: "
@@ -400,13 +417,15 @@ def route_call(cursor, call_request):
       f"call_id={call_request['call_id']} state={state} "
       f"source={call_request['source_region']} target={call_request['target_region']} "
       f"slice={call_request['network_slice']} reason={reason} "
-      f"hold_expires={expires_at.isoformat(timespec='seconds')}")
+      f"hold_expires={expires_at.isoformat(timespec='seconds')} "
+      f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
   return state
 
 
 def summarize_active_routing(cursor):
   """Print a compact summary of active routing decisions."""
 
+  # Show the current routing picture before stale rows are removed.
   print("⋯ Active routing decisions by tenant/subscriber/state:")
   cursor.execute(SELECT_ACTIVE_SUMMARY, (current_timestamp(),))
   for tenant_id, subscriber_id, state, row_count in cursor:
@@ -440,13 +459,17 @@ def run():
 
   try:
     print("=== Telecom call routing demo ===")
+    # Recreate the routing table so each run starts from a clean state.
     drop_table(cursor, False)
     create_schema(cursor)
+    # Seed an expired routing row so TTL cleanup is easy to demonstrate.
     seed_expired_routing(cursor)
 
+    # Each request demonstrates either a replay or a fresh routing decision.
     for call_request in CALL_REQUESTS:
       route_call(cursor, call_request)
 
+    # Show the live routing state before removing what has expired.
     summarize_active_routing(cursor)
     cleanup_expired_routing(cursor)
     drop_table(cursor, False)

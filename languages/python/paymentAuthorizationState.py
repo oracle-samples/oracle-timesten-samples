@@ -29,6 +29,7 @@
 import datetime
 import hashlib
 import json
+import time
 
 import oracledb
 
@@ -171,6 +172,19 @@ PAYMENT_REQUESTS = [
         "currency": "USD",
         "payment_method": "mobile_wallet",
         "risk_score": 0.87,
+        "spend_limit_cents": 20000,
+        "risk_threshold": 0.75,
+        "hold_minutes": 20,
+    },
+    {
+        "tenant_id": "field_service",
+        "account_id": "acct_2001",
+        "merchant_id": "depot-supplies",
+        "payment_id": "pay_3002",
+        "amount_cents": 8600,
+        "currency": "USD",
+        "payment_method": "debit_card",
+        "risk_score": 0.18,
         "spend_limit_cents": 20000,
         "risk_threshold": 0.75,
         "hold_minutes": 20,
@@ -395,7 +409,9 @@ def authorize_payment(cursor, payment):
 
   now = current_timestamp()
   auth_key = build_authorization_key(payment)
+  start_time = time.perf_counter()
   existing = lookup_existing_authorization(cursor, auth_key, now)
+  # If we have already made the decision, return it instead of recomputing it.
   if existing is not None:
     status, reason, expires_at_text = existing
     print(
@@ -403,9 +419,11 @@ def authorize_payment(cursor, payment):
         f"tenant={payment['tenant_id']} account={payment['account_id']} "
         f"merchant={payment['merchant_id']} payment_id={payment['payment_id']} "
         f"status={status} reason={reason} expires_at={expires_at_text}")
+    print(f"  elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
     return status
 
   status, reason, expires_at = evaluate_payment(payment)
+  # New decisions are stored so the same request can be replayed consistently.
   store_authorization(cursor, payment, status, reason, expires_at)
   print(
       "→ Authorization decision: "
@@ -414,12 +432,14 @@ def authorize_payment(cursor, payment):
       f"status={status} amount={format_money(payment['amount_cents'])} "
       f"risk={payment['risk_score']:.2f} reason={reason} "
       f"hold_expires={expires_at.isoformat(timespec='seconds')}")
+  print(f"  elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
   return status
 
 
 def summarize_active_authorizations(cursor):
   """Print a compact summary of active authorizations."""
 
+  # Show both a grouped view and the per-payment decision details.
   print("⋯ Active authorizations by tenant/account/status:")
   cursor.execute(SELECT_ACTIVE_SUMMARY, (current_timestamp(),))
   for tenant_id, account_id, status, row_count, amount_cents in cursor:
@@ -453,13 +473,17 @@ def run():
 
   try:
     print("=== Payment authorization demo ===")
+    # Recreate the authorization table so the demo starts cleanly every time.
     drop_table(cursor, False)
     create_schema(cursor)
+    # Seed an expired row so the TTL cleanup path is visible.
     seed_expired_authorization(cursor)
 
+    # Process each request as an idempotent authorization decision.
     for payment in PAYMENT_REQUESTS:
       authorize_payment(cursor, payment)
 
+    # Show the live decisions, then clean up what is no longer current.
     summarize_active_authorizations(cursor)
     cleanup_expired_authorizations(cursor)
     drop_table(cursor, False)

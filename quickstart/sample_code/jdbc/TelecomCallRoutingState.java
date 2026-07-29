@@ -133,7 +133,10 @@ public class TelecomCallRoutingState
                     "edge-eu-2", 10),
     new CallRequest("field_support", "sub_3003", "call_3001",
                     "us-west", "us-west", "platinum", "emergency", true,
-                    "edge-west-9", 15)
+                    "edge-west-9", 15),
+    new CallRequest("field_support", "sub_4004", "call_4001",
+                    "us-west", "us-west", "gold", "standard", true,
+                    "edge-west-5", 12)
   };
 
   private static final CallRequest EXPIRED_ROUTING =
@@ -352,15 +355,19 @@ public class TelecomCallRoutingState
 
   private void runDemo(Connection connection) throws SQLException
   {
+    // Recreate the table so each run starts from a clean routing state.
     dropTable(connection, false);
     createTable(connection);
+    // Seed one expired row so TTL cleanup is visible.
     seedExpiredRouting(connection);
 
+    // Each request exercises either replayed or freshly computed routing.
     for (CallRequest callRequest : CALL_REQUESTS)
     {
       routeCall(connection, callRequest);
     }
 
+    // Show the live routing state before stale rows are removed.
     summarizeActiveRouting(connection);
     cleanupExpiredRouting(connection);
   }
@@ -469,9 +476,11 @@ public class TelecomCallRoutingState
 
   private void routeCall(Connection connection, CallRequest request) throws SQLException
   {
+    long startNanos = System.nanoTime();
     Timestamp now = currentTimestamp();
     String routingKey = buildRoutingKey(request);
 
+    // Replaying an existing route keeps the routing path deterministic.
     try (PreparedStatement lookup = connection.prepareStatement(SELECT_EXISTING_ROUTING_SQL))
     {
       lookup.setString(1, routingKey);
@@ -490,7 +499,8 @@ public class TelecomCallRoutingState
               + " call_id=" + request.callId
               + " state=" + state
               + " reason=" + reason
-              + " expires_at=" + expiresAtText);
+              + " expires_at=" + expiresAtText
+              + " elapsed_ms=" + elapsedMillis(startNanos));
           return;
         }
       }
@@ -502,6 +512,7 @@ public class TelecomCallRoutingState
     String decisionPayload = decisionPayloadToJson(request, decision.state, decision.reason,
                                                    expiresAt.toString());
 
+    // New routing decisions are stored so later replays can return the same result.
     try (PreparedStatement insert = connection.prepareStatement(INSERT_ROUTING_SQL))
     {
       bindRouting(insert, routingKey, request, decision.state, decision.reason,
@@ -518,7 +529,8 @@ public class TelecomCallRoutingState
         + " target=" + request.targetRegion
         + " slice=" + request.networkSlice
         + " reason=" + decision.reason
-        + " hold_expires=" + expiresAt.toString());
+        + " hold_expires=" + expiresAt.toString()
+        + " elapsed_ms=" + elapsedMillis(startNanos));
   }
 
   private void bindRouting(PreparedStatement statement, String routingKey,
@@ -546,6 +558,7 @@ public class TelecomCallRoutingState
 
   private void summarizeActiveRouting(Connection connection) throws SQLException
   {
+    // Show the active routing footprint grouped by tenant, subscriber, and state.
     System.out.println("⋯ Active routing decisions by tenant/subscriber/state:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_SUMMARY_SQL))
     {
@@ -626,6 +639,11 @@ public class TelecomCallRoutingState
         System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
       }
     }
+  }
+
+  private long elapsedMillis(long startNanos)
+  {
+    return (System.nanoTime() - startNanos) / 1_000_000L;
   }
 
   private void executeStatement(Connection connection, String sql) throws SQLException

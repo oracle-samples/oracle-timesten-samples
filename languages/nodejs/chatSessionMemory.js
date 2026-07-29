@@ -150,6 +150,20 @@ const SAMPLE_TURNS = [
       responseStyle: 'detailed',
       locale: 'en-US'
     }
+  },
+  {
+    tenant_id: 'retail_app',
+    user_id: 'user_001',
+    conversation_topic: 'order-status',
+    model_name: 'support-summary-v1',
+    user_message: 'Can you give me the latest update with a delivery window?',
+    response_hint: 'The order is still in transit and is expected to arrive tomorrow.',
+    tool_name: 'lookup_order_status',
+    citation_ref: 'shipment-feed',
+    preferences: {
+      responseStyle: 'concise',
+      locale: 'en-US'
+    }
   }
 ];
 
@@ -161,14 +175,18 @@ async function main() {
   try {
     console.log('=== Chat session memory demo ===');
     connection = await connect();
+    // Recreate the table so the conversation trail is deterministic.
     await dropTable(connection, false);
     await createSchema(connection);
+    // Seed one expired row so the TTL cleanup takes care of it.
     await seedExpiredSession(connection);
 
+    // Each turn shows either a new session or a resumed one.
     for (const turn of SAMPLE_TURNS) {
       await processTurn(connection, turn);
     }
 
+    // Print the live memory snapshot before stale rows are removed.
     await printActiveSummary(connection);
     await deleteExpiredSessions(connection);
     await dropTable(connection, true);
@@ -412,10 +430,12 @@ async function seedExpiredSession(connection) {
 
 async function processTurn(connection, turn) {
   const sessionKey = buildSessionKey(turn);
+  const startTime = Date.now();
   const activeSession = await loadActiveSession(connection, sessionKey);
   const now = currentTimestamp();
   const expiresAt = new Date(now.getTime() + (SESSION_TTL_MINUTES * 60 * 1000));
 
+  // A resumed session appends to existing chat memory instead of starting over.
   if (activeSession) {
     const sessionState = activeSession.sessionState;
     const assistantText = simulateAssistantReply(turn, sessionState);
@@ -426,7 +446,8 @@ async function processTurn(connection, turn) {
       `tenant=${turn.tenant_id}`,
       `user=${turn.user_id}`,
       `topic=${turn.conversation_topic}`,
-      `turns=${sessionState.turn_count}`
+      `turns=${sessionState.turn_count}`,
+      `elapsed_ms=${Date.now() - startTime}`
     );
     console.log(`  Assistant: ${assistantText}`);
   }
@@ -439,13 +460,15 @@ async function processTurn(connection, turn) {
       `tenant=${turn.tenant_id}`,
       `user=${turn.user_id}`,
       `topic=${turn.conversation_topic}`,
-      'turns=1'
+      'turns=1',
+      `elapsed_ms=${Date.now() - startTime}`
     );
     console.log(`  Assistant: ${assistantText}`);
   }
 }
 
 async function printActiveSummary(connection) {
+  // Show the current chat memory state that is still worth keeping hot.
   console.log('⋯ Active sessions by tenant/user/topic:');
   let result = await connection.execute(SELECT_ACTIVE_SUMMARY, [currentTimestamp()]);
   for (const row of result.rows) {

@@ -132,7 +132,9 @@ public class PaymentAuthorizationState
     new PaymentRequest("retail_app", "acct_1002", "pro-office-supplies", "pay_2001",
                        39900, "USD", "credit_card", 0.08, 25000, 0.75, 10),
     new PaymentRequest("field_service", "acct_2001", "route-parts", "pay_3001",
-                       14900, "USD", "mobile_wallet", 0.87, 20000, 0.75, 20)
+                       14900, "USD", "mobile_wallet", 0.87, 20000, 0.75, 20),
+    new PaymentRequest("field_service", "acct_2001", "depot-supplies", "pay_3002",
+                       8600, "USD", "debit_card", 0.18, 20000, 0.75, 20)
   };
 
   private static final PaymentRequest EXPIRED_AUTHORIZATION =
@@ -351,15 +353,19 @@ public class PaymentAuthorizationState
 
   private void runDemo(Connection connection) throws SQLException
   {
+    // Recreate the table so the authorization trail starts cleanly.
     dropTable(connection, false);
     createTable(connection);
+    // Seed one expired row so the TTL cleanup path is visible.
     seedExpiredAuthorization(connection);
 
+    // Each request exercises either a replay or a fresh authorization decision.
     for (PaymentRequest request : PAYMENT_REQUESTS)
     {
       authorizePayment(connection, request);
     }
 
+    // Show the active decisions before stale rows are removed.
     summarizeActiveAuthorizations(connection);
     cleanupExpiredAuthorizations(connection);
   }
@@ -464,7 +470,9 @@ public class PaymentAuthorizationState
   {
     Timestamp now = currentTimestamp();
     String authorizationKey = buildAuthorizationKey(request);
+    long startNanos = System.nanoTime();
 
+    // Replaying an existing decision keeps the authorization path idempotent.
     try (PreparedStatement lookup = connection.prepareStatement(SELECT_EXISTING_AUTHORIZATION_SQL))
     {
       lookup.setString(1, authorizationKey);
@@ -484,7 +492,8 @@ public class PaymentAuthorizationState
               + " payment_id=" + request.paymentId
               + " status=" + status
               + " reason=" + reason
-              + " expires_at=" + expiresAtText);
+              + " expires_at=" + expiresAtText
+              + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
           return;
         }
       }
@@ -496,6 +505,7 @@ public class PaymentAuthorizationState
     String decisionPayload = decisionPayloadToJson(request, decision.status, decision.reason,
                                                    expiresAt.toString());
 
+    // New decisions are stored so the same payment request can be answered consistently.
     try (PreparedStatement insert = connection.prepareStatement(INSERT_AUTHORIZATION_SQL))
     {
       bindAuthorization(insert, authorizationKey, request, decision.status, decision.reason,
@@ -512,7 +522,8 @@ public class PaymentAuthorizationState
         + " amount=" + formatMoney(request.amountCents)
         + " risk=" + String.format("%.2f", request.riskScore)
         + " reason=" + decision.reason
-        + " hold_expires=" + expiresAt.toString());
+        + " hold_expires=" + expiresAt.toString()
+        + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
   }
 
   private void bindAuthorization(PreparedStatement statement, String authorizationKey,
@@ -541,6 +552,7 @@ public class PaymentAuthorizationState
 
   private void summarizeActiveAuthorizations(Connection connection) throws SQLException
   {
+    // Show both the grouped view and the detailed authorization state.
     System.out.println("⋯ Active authorizations by tenant/account/status:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_SUMMARY_SQL))
     {

@@ -27,6 +27,7 @@
 import datetime
 import hashlib
 import json
+import time
 
 import oracledb
 
@@ -158,6 +159,23 @@ FEATURE_UPDATES = [
             "confidence": 0.81,
         },
     },
+    {
+        "tenant_id": "retail_app",
+        "user_id": "user_001",
+        "feature_name": "delivery_eta_hours",
+        "feature_value": {
+            "valueType": "numeric",
+            "value": 18,
+            "source": "shipping-service",
+            "freshness": "hours",
+        },
+        "model_version": "feature-agg-v1",
+        "decision": {
+            "variant": "fast-tracked",
+            "reason": "recent_support_contact",
+            "confidence": 0.84,
+        },
+    },
 ]
 
 
@@ -264,14 +282,17 @@ def insert_feature(cursor, feature, freshness_ts, expires_at, audit_payload):
 def upsert_feature(cursor, feature):
   """Upsert a fresh feature value for a user."""
 
+  start_time = time.perf_counter()
   freshness_ts = current_timestamp()
   expires_at = freshness_ts + datetime.timedelta(minutes=FEATURE_TTL_MINUTES)
   audit_payload = audit_payload_to_json(feature, feature["decision"], "fresh_feature_upsert")
+  # Each upsert represents the latest signal the app wants to keep available now.
   insert_feature(cursor, feature, freshness_ts, expires_at, audit_payload)
   print(
       "→ Feature upsert: "
       f"tenant={feature['tenant_id']} user={feature['user_id']} "
-      f"feature={feature['feature_name']} model={feature['model_version']}")
+      f"feature={feature['feature_name']} model={feature['model_version']} "
+      f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
 
 
 def seed_stale_feature(cursor):
@@ -312,6 +333,7 @@ def fetch_active_features(cursor, tenant_id, user_id):
 def print_feature_summary(cursor):
   """Print summary information for active feature rows."""
 
+  # This summary shows the hot feature set grouped by tenant and user.
   print("⋯ Active feature groups:")
   cursor.execute(SELECT_FEATURE_SUMMARY, [current_timestamp()])
   rows = cursor.fetchall()
@@ -324,12 +346,14 @@ def print_feature_summary(cursor):
 def print_feature_set(cursor, tenant_id, user_id):
   """Print the current features for a single user."""
 
+  start_time = time.perf_counter()
   rows = fetch_active_features(cursor, tenant_id, user_id)
   print(f"Current features for tenant={tenant_id} user={user_id}:")
   for feature_name, feature_value_json, freshness_ts, model_version, audit_json in rows:
     print(f"  feature={feature_name} freshness={freshness_ts} model={model_version}")
     print(f"    value={feature_value_json}")
     print(f"    audit={audit_json}")
+  print(f"  elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
 
 
 def delete_expired_features(cursor):
@@ -349,13 +373,17 @@ def run():
     print("=== Feature store demo ===")
     connection = connect()
     cursor = connection.cursor()
+    # Rebuild the table so every run starts from the same feature snapshot.
     drop_table(cursor, False)
     create_schema(cursor)
+    # Seed a stale row so freshness cleanup is visible in the walkthrough.
     seed_stale_feature(cursor)
 
+    # Upserts simulate fresh feature updates arriving from the application.
     for feature in FEATURE_UPDATES:
       upsert_feature(cursor, feature)
 
+    # Read back the current state before removing what has gone stale.
     print_feature_summary(cursor)
     print_feature_set(cursor, "retail_app", "user_001")
     print_feature_set(cursor, "field_service", "user_204")

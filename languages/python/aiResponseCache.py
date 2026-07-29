@@ -28,6 +28,7 @@
 import datetime
 import hashlib
 import json
+import time
 
 import oracledb
 
@@ -106,6 +107,13 @@ SAMPLE_REQUESTS = [
     "model_name": "technician-assist-v1",
     "prompt": "Draft troubleshooting steps for a router with intermittent packet loss.",
     "temperature": 0.1,
+  },
+  {
+    "tenant_id": "retail_app",
+    "user_id": "user_001",
+    "model_name": "support-summary-v2",
+    "prompt": "Draft a brief shipping update for order 45012.",
+    "temperature": 0.2,
   },
 ]
 
@@ -248,7 +256,9 @@ def process_request(cursor, request):
   """Process one AI request using TimesTen as the active response cache."""
 
   cache_key = build_cache_key(request)
+  start_time = time.perf_counter()
   cached_row = find_cached_response(cursor, cache_key)
+  # First check for a fresh answer; only synthesize a new response on a miss.
   if cached_row:
     response_text, metadata_json, hit_count, expires_at = cached_row
     cursor.execute(UPDATE_CACHE_HIT, [current_timestamp(), cache_key])
@@ -256,7 +266,8 @@ def process_request(cursor, request):
     print(
         "→ Cache hit: "
         f"tenant={request['tenant_id']} model={request['model_name']} "
-        f"hits={hit_count + 1} expires={expires_at}")
+        f"hits={hit_count + 1} expires={expires_at} "
+        f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
     print(f"  Response: {response_text}")
     print(f"  Safety label from metadata: {metadata['safetyLabel']}")
     return
@@ -264,17 +275,20 @@ def process_request(cursor, request):
   response_text, metadata = simulate_model_response(request)
   created_at = current_timestamp()
   expires_at = created_at + datetime.timedelta(minutes=CACHE_TTL_MINUTES)
+  # Cache misses become the new working set for the next request.
   insert_cache_entry(cursor, request, response_text, metadata, created_at, expires_at)
   print(
       "→ Cache miss: "
       f"tenant={request['tenant_id']} model={request['model_name']} "
-      f"stored_for_minutes={CACHE_TTL_MINUTES}")
+      f"stored_for_minutes={CACHE_TTL_MINUTES} "
+      f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
   print(f"  Response: {response_text}")
 
 
 def print_cache_summary(cursor):
   """Print summary information about active cache entries."""
 
+  # Show the current cache footprint before cleanup removes stale rows.
   print("⋯ Cache summary by tenant and model:")
   cursor.execute(f"""
     SELECT tenant_id, model_name, COUNT(*), SUM(hit_count)
@@ -315,13 +329,17 @@ def run():
     print("=== AI response cache demo ===")
     connection = connect()
     cursor = connection.cursor()
+    # Start from a clean table so the demo is deterministic on every run.
     drop_table(cursor, False)
     create_schema(cursor)
+    # Seed one expired entry so TTL cleanup is visible in the output.
     seed_expired_entry(cursor)
 
+    # Each request demonstrates the cache-hit / cache-miss branch.
     for request in SAMPLE_REQUESTS:
       process_request(cursor, request)
 
+    # Summarize the active cache state, then remove and drop what is stale.
     print_cache_summary(cursor)
     delete_expired_entries(cursor)
     drop_table(cursor, True)

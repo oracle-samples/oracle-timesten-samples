@@ -26,6 +26,7 @@
 import datetime
 import hashlib
 import json
+import time
 
 import oracledb
 
@@ -150,6 +151,20 @@ SAMPLE_TURNS = [
             "locale": "en-US",
         },
     },
+    {
+        "tenant_id": "retail_app",
+        "user_id": "user_001",
+        "conversation_topic": "order-status",
+        "model_name": "support-summary-v1",
+        "user_message": "Can you give me the latest update with a delivery window?",
+        "response_hint": "The order is still in transit and is expected to arrive tomorrow.",
+        "tool_name": "lookup_order_status",
+        "citation_ref": "shipment-feed",
+        "preferences": {
+            "responseStyle": "concise",
+            "locale": "en-US",
+        },
+    },
 ]
 
 
@@ -245,6 +260,7 @@ def build_session_state(turn, assistant_text):
   """Create the initial JSON state for a new chat session."""
 
   timestamp_text = current_timestamp_text()
+  # The JSON payload keeps the live conversation context small and local to the app.
   return {
       "tenantId": turn["tenant_id"],
       "userId": turn["user_id"],
@@ -298,6 +314,7 @@ def append_turn(session_state, turn, assistant_text):
 
   timestamp_text = current_timestamp_text()
   messages = session_state.setdefault("messages", [])
+  # Resuming a session means appending the new user turn and model reply.
   messages.append({
       "role": "user",
       "content": turn["user_message"],
@@ -413,6 +430,7 @@ def process_turn(cursor, turn):
   """Insert or update a chat session turn."""
 
   session_key = build_session_key(turn)
+  start_time = time.perf_counter()
   active_session = load_active_session(cursor, session_key)
   now = current_timestamp()
   expires_at = now + datetime.timedelta(minutes=SESSION_TTL_MINUTES)
@@ -425,7 +443,8 @@ def process_turn(cursor, turn):
     print(
         "→ Session resume: "
         f"tenant={turn['tenant_id']} user={turn['user_id']} "
-        f"topic={turn['conversation_topic']} turns={session_state['turn_count']}")
+        f"topic={turn['conversation_topic']} turns={session_state['turn_count']} "
+        f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
     print(f"  Assistant: {assistant_text}")
   else:
     assistant_text = simulate_assistant_reply(turn, None)
@@ -434,13 +453,15 @@ def process_turn(cursor, turn):
     print(
         "→ Session start: "
         f"tenant={turn['tenant_id']} user={turn['user_id']} "
-        f"topic={turn['conversation_topic']} turns=1")
+        f"topic={turn['conversation_topic']} turns=1 "
+        f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
     print(f"  Assistant: {assistant_text}")
 
 
 def print_active_summary(cursor):
   """Print summary information for active chat sessions."""
 
+  # This snapshot shows the live chat state that is still worth keeping hot.
   print("⋯ Active sessions by tenant/user/topic:")
   cursor.execute(SELECT_ACTIVE_SUMMARY, [current_timestamp()])
   rows = cursor.fetchall()
@@ -481,13 +502,17 @@ def run():
     print("=== Chat session memory demo ===")
     connection = connect()
     cursor = connection.cursor()
+    # Recreate the table each run so the memory trail is predictable.
     drop_table(cursor, False)
     create_schema(cursor)
+    # Seed one expired session so the TTL cleanup path is easy to see.
     seed_expired_session(cursor)
 
+    # Each turn demonstrates either a new session or a resumed one.
     for turn in SAMPLE_TURNS:
       process_turn(cursor, turn)
 
+    # Show the current memory snapshot before expired rows are removed.
     print_active_summary(cursor)
     delete_expired_sessions(cursor)
     drop_table(cursor, True)

@@ -110,6 +110,13 @@ const SAMPLE_REQUESTS = [
     model_name: 'technician-assist-v1',
     prompt: 'Draft troubleshooting steps for a router with intermittent packet loss.',
     temperature: 0.1
+  },
+  {
+    tenant_id: 'retail_app',
+    user_id: 'user_001',
+    model_name: 'support-summary-v2',
+    prompt: 'Draft a brief shipping update for order 45012.',
+    temperature: 0.2
   }
 ];
 
@@ -121,14 +128,18 @@ async function main() {
   try {
     console.log('=== AI response cache demo ===');
     connection = await connect();
+    // Rebuild the table so each run starts from the same cache state.
     await dropTable(connection, false);
     await createSchema(connection);
+    // Seed one expired row so the TTL cleanup takes care of it.
     await seedExpiredEntry(connection);
 
+    // Each request first probes the cache and only simulates a response on a miss.
     for (const request of SAMPLE_REQUESTS) {
       await processRequest(connection, request);
     }
 
+    // Show the current cache footprint before stale rows are removed.
     await printCacheSummary(connection);
     await deleteExpiredEntries(connection);
     await dropTable(connection, true);
@@ -260,9 +271,11 @@ async function findCachedResponse(connection, cacheKey) {
 }
 
 async function processRequest(connection, request) {
+  const startTime = Date.now();
   const cacheKey = buildCacheKey(request);
   const cachedRow = await findCachedResponse(connection, cacheKey);
 
+  // A cache hit reuses the stored response and just refreshes the access metadata.
   if (cachedRow) {
     const responseText = cachedRow[0];
     const metadataJson = cachedRow[1];
@@ -274,7 +287,8 @@ async function processRequest(connection, request) {
     console.log(
       '→ Cache hit: ' +
       `tenant=${request.tenant_id} model=${request.model_name} ` +
-      `hits=${hitCount + 1} expires=${expiresAt}`
+      `hits=${hitCount + 1} expires=${expiresAt} ` +
+      `elapsed_ms=${Date.now() - startTime}`
     );
     console.log(`  Response: ${responseText}`);
     console.log(`  Safety label from metadata: ${metadata.safetyLabel}`);
@@ -285,16 +299,19 @@ async function processRequest(connection, request) {
   const createdAt = new Date();
   const expiresAt = new Date(createdAt.getTime() + (CACHE_TTL_MINUTES * 60 * 1000));
 
+  // Cache misses become the new working set for the next request.
   await insertCacheEntry(connection, request, responseText, metadata, createdAt, expiresAt);
   console.log(
     '→ Cache miss: ' +
     `tenant=${request.tenant_id} model=${request.model_name} ` +
-    `stored_for_minutes=${CACHE_TTL_MINUTES}`
+    `stored_for_minutes=${CACHE_TTL_MINUTES} ` +
+    `elapsed_ms=${Date.now() - startTime}`
   );
   console.log(`  Response: ${responseText}`);
 }
 
 async function printCacheSummary(connection) {
+  // Show the active cache footprint grouped by tenant and model.
   console.log('⋯ Cache summary by tenant and model:');
   const summaryResult = await connection.execute(`
     SELECT tenant_id, model_name, COUNT(*), SUM(hit_count)

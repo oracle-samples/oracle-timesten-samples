@@ -134,7 +134,11 @@ public class FeatureStore
     new FeatureUpdate("field_service", "user_204", "device_risk",
                       "{\"valueType\":\"numeric\",\"value\":73,\"source\":\"device-telemetry\",\"freshness\":\"seconds\"}",
                       "feature-agg-v2",
-                      "{\"variant\":\"proactive-support\",\"reason\":\"elevated_risk_score\",\"confidence\":0.81}")
+                      "{\"variant\":\"proactive-support\",\"reason\":\"elevated_risk_score\",\"confidence\":0.81}"),
+    new FeatureUpdate("retail_app", "user_001", "delivery_eta_hours",
+                      "{\"valueType\":\"numeric\",\"value\":18,\"source\":\"shipping-service\",\"freshness\":\"hours\"}",
+                      "feature-agg-v1",
+                      "{\"variant\":\"fast-tracked\",\"reason\":\"recent_support_contact\",\"confidence\":0.84}")
   };
 
   private final IOLibrary ioLibrary;
@@ -347,15 +351,19 @@ public class FeatureStore
 
   private void runDemo(Connection connection) throws SQLException
   {
+    // Recreate the table so every run starts from the same feature snapshot.
     dropTable(connection, false);
     createSchema(connection);
+    // Seed a stale row so freshness cleanup is visible in the walkthrough.
     seedStaleFeature(connection);
 
+    // Each upsert models a fresh signal arriving from the application.
     for (FeatureUpdate feature : FEATURE_UPDATES)
     {
       upsertFeature(connection, feature);
     }
 
+    // Read back the current feature state before removing stale rows.
     printFeatureSummary(connection);
     printFeatureSet(connection, "retail_app", "user_001");
     printFeatureSet(connection, "field_service", "user_204");
@@ -400,15 +408,18 @@ public class FeatureStore
 
   private void upsertFeature(Connection connection, FeatureUpdate feature) throws SQLException
   {
+    long startNanos = System.nanoTime();
     Timestamp freshnessTs = currentTimestamp();
     Timestamp expiresAt = addMinutes(freshnessTs, FEATURE_TTL_MINUTES);
     FeatureRecord record = buildFeatureRecord(feature, freshnessTs, expiresAt, "fresh_feature_upsert");
+    // Each upsert keeps the latest feature value close to the decisioning path.
     insertOrReplaceFeature(connection, record, freshnessTs, expiresAt);
     System.out.println(
         "→ Feature upsert: tenant=" + feature.tenantId
         + " user=" + feature.userId
         + " feature=" + feature.featureName
-        + " model=" + feature.modelVersion);
+        + " model=" + feature.modelVersion
+        + " elapsed_ms=" + elapsedMillis(startNanos));
   }
 
   private FeatureRecord buildFeatureRecord(FeatureUpdate feature, Timestamp freshnessTs,
@@ -475,6 +486,7 @@ public class FeatureStore
 
   private void printFeatureSummary(Connection connection) throws SQLException
   {
+    // Show the active feature footprint grouped by tenant and user.
     System.out.println("Active feature groups:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_FEATURE_SUMMARY_SQL))
     {
@@ -499,6 +511,7 @@ public class FeatureStore
 
   private void printFeatureSet(Connection connection, String tenantId, String userId) throws SQLException
   {
+    long startNanos = System.nanoTime();
     System.out.println("Current features for tenant=" + tenantId + " user=" + userId + ":");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_ACTIVE_FEATURES_SQL))
     {
@@ -520,6 +533,7 @@ public class FeatureStore
         }
       }
     }
+    System.out.println("  elapsed_ms=" + elapsedMillis(startNanos));
   }
 
   private void deleteExpiredFeatures(Connection connection) throws SQLException
@@ -551,6 +565,11 @@ public class FeatureStore
         System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
       }
     }
+  }
+
+  private long elapsedMillis(long startNanos)
+  {
+    return (System.nanoTime() - startNanos) / 1_000_000L;
   }
 
   private Timestamp currentTimestamp()

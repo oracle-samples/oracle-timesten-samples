@@ -150,6 +150,23 @@ const FEATURE_UPDATES = [
       reason: 'elevated_risk_score',
       confidence: 0.81
     }
+  },
+  {
+    tenant_id: 'retail_app',
+    user_id: 'user_001',
+    feature_name: 'delivery_eta_hours',
+    feature_value: {
+      valueType: 'numeric',
+      value: 18,
+      source: 'shipping-service',
+      freshness: 'hours'
+    },
+    model_version: 'feature-agg-v1',
+    decision: {
+      variant: 'fast-tracked',
+      reason: 'recent_support_contact',
+      confidence: 0.84
+    }
   }
 ];
 
@@ -161,14 +178,18 @@ async function main() {
   try {
     console.log('=== Feature store demo ===');
     connection = await connect();
+    // Rebuild the table so every run starts from the same feature snapshot.
     await dropTable(connection, false);
     await createSchema(connection);
+    // Seed a stale row so freshness cleanup is visible in the walkthrough.
     await seedStaleFeature(connection);
 
+    // Each upsert models a fresh signal arriving from the application.
     for (const feature of FEATURE_UPDATES) {
       await upsertFeature(connection, feature);
     }
 
+    // Read back the current feature state before removing stale rows.
     await printFeatureSummary(connection);
     await printFeatureSet(connection, 'retail_app', 'user_001');
     await printFeatureSet(connection, 'field_service', 'user_204');
@@ -271,17 +292,20 @@ async function insertFeature(connection, feature, freshnessTs, expiresAt, auditP
 }
 
 async function upsertFeature(connection, feature) {
+  const startTime = Date.now();
   const freshnessTs = currentTimestamp();
   const expiresAt = new Date(freshnessTs.getTime() + (FEATURE_TTL_MINUTES * 60 * 1000));
   const auditPayload = auditPayloadToJson(feature, feature.decision, 'fresh_feature_upsert');
 
+  // Each upsert keeps the latest feature value close to the decisioning path.
   await insertFeature(connection, feature, freshnessTs, expiresAt, auditPayload);
   console.log(
     '→ Feature upsert:',
     `tenant=${feature.tenant_id}`,
     `user=${feature.user_id}`,
     `feature=${feature.feature_name}`,
-    `model=${feature.model_version}`
+    `model=${feature.model_version}`,
+    `elapsed_ms=${Date.now() - startTime}`
   );
 }
 
@@ -313,6 +337,7 @@ async function seedStaleFeature(connection) {
 }
 
 async function printFeatureSummary(connection) {
+  // Show the active feature footprint grouped by tenant and user.
   console.log('⋯ Active feature groups:');
   const result = await connection.execute(SELECT_FEATURE_SUMMARY, [currentTimestamp()]);
   for (const row of result.rows) {
@@ -324,6 +349,7 @@ async function printFeatureSummary(connection) {
 }
 
 async function printFeatureSet(connection, tenantId, userId) {
+  const startTime = Date.now();
   const result = await connection.execute(SELECT_ACTIVE_FEATURES, [tenantId, userId, currentTimestamp()]);
   console.log(`Current features for tenant=${tenantId} user=${userId}:`);
   for (const row of result.rows) {
@@ -331,6 +357,7 @@ async function printFeatureSet(connection, tenantId, userId) {
     console.log(`    value=${row[1]}`);
     console.log(`    audit=${row[4]}`);
   }
+  console.log(`  elapsed_ms=${Date.now() - startTime}`);
 }
 
 async function deleteExpiredFeatures(connection) {
