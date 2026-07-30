@@ -557,7 +557,7 @@ public class FeatureStore
     try (PreparedStatement statement = connection.prepareStatement(DROP_TABLE_SQL))
     {
       statement.execute();
-      System.out.println("Table " + TABLE_NAME + " dropped");
+      System.out.println("✓ Table " + TABLE_NAME + " dropped");
     }
     catch (SQLException e)
     {

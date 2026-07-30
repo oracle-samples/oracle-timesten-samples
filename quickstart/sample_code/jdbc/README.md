@@ -161,6 +161,14 @@ For JMS programs, also include **timesten.jmsxla** in **--enable-native-access**
 
 ### Sample programs instructions and examples
 
+The concise commands in the individual examples below apply to a non-modular
+or mixed build. If you compile these samples as a module, use the modular form
+shown above. For example, with JDK 25:
+
+    java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
+      --enable-native-access=timesten.jdbc \
+      --module my.jdbc.app.module/jdbc.demo.AiResponseCache -u username -p password
+
 **asyncJMS** or **asyncJMS2**
 
 These two programs use the TimesTen JMS/XLA implementation to process messages. `asyncJMS` uses Javax JMS, while `asyncJMS2` uses Jakarta JMS. The functions of these two programs are:
@@ -471,7 +479,7 @@ Example:
 
 **AiResponseCache**
 
-This sample demonstrates a fast AI response cache pattern in TimesTen. It creates a cache table with response text, metadata, hit counts, and expiration timestamps; simulates cache hits and misses; and then removes expired rows before dropping the table. The demo keeps TimesTen as the active system of record for the cache state and uses simulated responses so the focus stays on the storage and retrieval pattern.
+This sample demonstrates a fast AI response cache pattern in TimesTen. It creates a cache table with response text, metadata, hit counts, and expiration timestamps; simulates cache hits and misses; and then removes expired rows before dropping the table. The demo keeps TimesTen as the primary store for active cache state and uses simulated responses so the focus stays on the storage and retrieval pattern.
 
 Responses are simulated; this sample does not call an AI model, perform vector search, run in-database model inference, or demonstrate TimesTen Cache for Oracle Database.
 
@@ -484,7 +492,6 @@ The sample performs the following steps:
   - Updates hit counts and last-accessed timestamps on cache hits
   - Stores model metadata in a JSON column and queries it with SQL/JSON
   - Deletes expired cache entries
-  - Drops the table
 
 Example:
 
@@ -505,7 +512,6 @@ The sample performs the following steps:
   - Stores recent messages and metadata in JSON
   - Queries JSON fields to summarize active sessions
   - Deletes expired chat sessions
-  - Drops the table
 
 Example:
 
@@ -527,7 +533,6 @@ The sample performs the following steps:
   - Fetches the current feature set for a user with low latency
   - Stores a JSON audit payload for the resulting personalization decision
   - Deletes stale feature rows
-  - Drops the table
 
 Example:
 
@@ -550,7 +555,6 @@ The sample performs the following steps:
   - Stores request and decision metadata in JSON
   - Summarizes active authorizations by tenant/account/status
   - Deletes expired authorization records
-  - Drops the table
 
 Example:
 
@@ -573,7 +577,6 @@ The sample performs the following steps:
   - Stores request and decision metadata in JSON
   - Summarizes active routing decisions by tenant/subscriber/state
   - Deletes expired routing records
-  - Drops the table
 
 Example:
 

@@ -124,6 +124,7 @@ main();
 
 async function main() {
   let connection;
+  let completed = false;
 
   try {
     console.log('=== AI response cache demo ===');
@@ -143,23 +144,29 @@ async function main() {
     await printCacheSummary(connection);
     await deleteExpiredEntries(connection);
     await dropTable(connection, true);
+    completed = true;
   }
   catch (err) {
     console.error(err);
   }
   finally {
     await releaseConnection(connection);
+    if (completed) {
+      console.log('✓ Completed AI response cache sample operations');
+    }
   }
 }
 
 async function connect() {
   const credentials = accessControl.getCredentials('aiResponseCache.js');
+  console.log('Connecting to TimesTen');
   const connection = await oracledb.getConnection({
     user          : credentials['-u'],
     password      : credentials['-p'],
     connectString : credentials['-c']
   });
 
+  console.log('✓ Connected');
   return connection;
 }
 

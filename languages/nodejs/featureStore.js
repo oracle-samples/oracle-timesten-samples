@@ -174,6 +174,7 @@ main();
 
 async function main() {
   let connection;
+  let completed = false;
 
   try {
     console.log('=== Feature store demo ===');
@@ -195,23 +196,29 @@ async function main() {
     await printFeatureSet(connection, 'field_service', 'user_204');
     await deleteExpiredFeatures(connection);
     await dropTable(connection, true);
+    completed = true;
   }
   catch (err) {
     console.error(err);
   }
   finally {
     await releaseConnection(connection);
+    if (completed) {
+      console.log('✓ Completed feature store sample operations');
+    }
   }
 }
 
 async function connect() {
   const credentials = accessControl.getCredentials('featureStore.js');
+  console.log('Connecting to TimesTen');
   const connection = await oracledb.getConnection({
     user: credentials['-u'],
     password: credentials['-p'],
     connectString: credentials['-c']
   });
 
+  console.log('✓ Connected');
   return connection;
 }
 

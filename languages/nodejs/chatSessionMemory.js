@@ -171,6 +171,7 @@ main();
 
 async function main() {
   let connection;
+  let completed = false;
 
   try {
     console.log('=== Chat session memory demo ===');
@@ -190,23 +191,29 @@ async function main() {
     await printActiveSummary(connection);
     await deleteExpiredSessions(connection);
     await dropTable(connection, true);
+    completed = true;
   }
   catch (err) {
     console.error(err);
   }
   finally {
     await releaseConnection(connection);
+    if (completed) {
+      console.log('✓ Completed chat session memory sample operations');
+    }
   }
 }
 
 async function connect() {
   const credentials = accessControl.getCredentials('chatSessionMemory.js');
+  console.log('Connecting to TimesTen');
   const connection = await oracledb.getConnection({
     user: credentials['-u'],
     password: credentials['-p'],
     connectString: credentials['-c']
   });
 
+  console.log('✓ Connected');
   return connection;
 }
 
@@ -250,7 +257,16 @@ function shorten(text, limit = 80) {
 }
 
 function currentTimestampText() {
-  return new Date().toISOString();
+  const timestamp = currentTimestamp();
+  const year = timestamp.getUTCFullYear();
+  const month = String(timestamp.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(timestamp.getUTCDate()).padStart(2, '0');
+  const hours = String(timestamp.getUTCHours()).padStart(2, '0');
+  const minutes = String(timestamp.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(timestamp.getUTCSeconds()).padStart(2, '0');
+  const milliseconds = String(timestamp.getUTCMilliseconds()).padStart(3, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
 }
 
 function currentTimestamp() {

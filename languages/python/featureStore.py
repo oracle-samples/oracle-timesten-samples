@@ -196,11 +196,13 @@ def connect():
 
   oracledb.init_oracle_client()
   credentials = AccessControl.getCredentials("featureStore.py")
+  print("Connecting to TimesTen")
   connection = oracledb.connect(
       user=credentials.user,
       password=credentials.password,
       dsn=credentials.connstr)
   connection.autocommit = True
+  print("✓ Connected")
   return connection
 
 

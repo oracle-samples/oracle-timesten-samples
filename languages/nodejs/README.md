@@ -142,13 +142,14 @@ The sample performs the following steps:
 * Stores model metadata in a JSON column and queries it with SQL/JSON
 * Deletes expired cache entries
 
-Example:
+Example output (abbreviated; elapsed times and timestamps vary by environment):
+Decision lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node aiResponseCache.js -u username -p password [-c <connectionString>]
 === AI response cache demo ===
 
-Connecting using URL: jdbc:timesten:direct:sampledb
+Connecting to TimesTen
 ✓ Connected
 ✓ Table ai_response_cache created
 ✓ Index IDX_AI_CACHE_TENANT_MODEL created
@@ -187,13 +188,14 @@ The sample performs the following steps:
 * Queries JSON fields to summarize active sessions
 * Deletes expired chat sessions
 
-Example:
+Example output (abbreviated; elapsed times and timestamps vary by environment):
+Decision lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node chatSessionMemory.js -u username -p password [-c <connectionString>]
 === Chat session memory demo ===
 
-Connecting using URL: jdbc:timesten:direct:sampledb
+Connecting to TimesTen
 ✓ Connected
 ✓ Table chat_sessions created
 ✓ Index IDX_CHAT_SESSIONS_TENANT_USER created
@@ -238,13 +240,14 @@ The sample performs the following steps:
 * Stores a JSON audit payload for the resulting personalization decision
 * Deletes stale feature rows
 
-Example:
+Example output (abbreviated; elapsed times and timestamps vary by environment):
+Upsert and readback lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node featureStore.js -u username -p password [-c <connectionString>]
 === Feature store demo ===
 
-Connecting using URL: jdbc:timesten:direct:sampledb
+Connecting to TimesTen
 ✓ Connected
 ✓ Table user_features created
 ✓ Index IDX_USER_FEATURES_TENANT_USER created
@@ -285,16 +288,17 @@ The sample performs the following steps:
 * Summarizes active authorizations by tenant/account/status
 * Deletes expired authorization records
 
-Example:
+Example output (abbreviated; elapsed times and timestamps vary by environment):
+Decision and replay lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node paymentAuthorizationState.js -u username -p password [-c <connectionString>]
 === Payment authorization demo ===
 
-Connecting using URL: jdbc:timesten:direct:sampledb
+Connecting to TimesTen
 ✓ Connected
 ✓ Table payment_authorizations created
-✓ Index IDX_PAYMENT_AUTH_TENANT_ACCOUNT created
+✓ Index IDX_PAY_AUTH_TENANT_ACCT created
 ✓ Index IDX_PAYMENT_AUTH_PAYMENT_ID created
 ✓ Index IDX_PAYMENT_AUTH_EXPIRES created
 ✓ Seeded 1 expired authorization record
@@ -330,18 +334,19 @@ The sample performs the following steps:
 * Summarizes active routing decisions by tenant/subscriber/state
 * Deletes expired routing records
 
-Example:
+Example output (abbreviated; elapsed times and timestamps vary by environment):
+Decision and replay lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node telecomCallRoutingState.js -u username -p password [-c <connectionString>]
 === Telecom call routing demo ===
 
-Connecting using URL: jdbc:timesten:direct:sampledb
+Connecting to TimesTen
 ✓ Connected
 ✓ Table call_routing_state created
-✓ Index IDX_CALL_ROUTING_TENANT_SUBSCRIBER created
-✓ Index IDX_CALL_ROUTING_CALL_ID created
-✓ Index IDX_CALL_ROUTING_EXPIRES created
+✓ Index IDX_CALL_ROUTE_TENANT_SUB created
+✓ Index IDX_CALL_ROUTE_CALL_ID created
+✓ Index IDX_CALL_ROUTE_EXPIRES created
 ✓ Seeded 1 expired routing record
 → Routing decision: tenant=north_mobile subscriber=sub_1001 call_id=call_1001 state=ROUTED source=us-east target=us-east slice=gold reason=standard_route hold_expires=...
 → Routing replay: tenant=north_mobile subscriber=sub_1001 call_id=call_1001 state=ROUTED reason=standard_route expires_at=...

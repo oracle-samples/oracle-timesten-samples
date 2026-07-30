@@ -196,6 +196,7 @@ main();
 
 async function main() {
   let connection;
+  let completed = false;
 
   try {
     console.log('=== Telecom call routing demo ===');
@@ -215,23 +216,29 @@ async function main() {
     await summarizeActiveRouting(connection);
     await cleanupExpiredRouting(connection);
     await dropTable(connection, true);
+    completed = true;
   }
   catch (err) {
     console.error(err);
   }
   finally {
     await releaseConnection(connection);
+    if (completed) {
+      console.log('✓ Completed telecom call routing sample operations');
+    }
   }
 }
 
 async function connect() {
   const credentials = accessControl.getCredentials('telecomCallRoutingState.js');
+  console.log('Connecting to TimesTen');
   const connection = await oracledb.getConnection({
     user: credentials['-u'],
     password: credentials['-p'],
     connectString: credentials['-c']
   });
 
+  console.log('✓ Connected');
   return connection;
 }
 

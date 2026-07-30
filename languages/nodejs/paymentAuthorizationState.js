@@ -204,6 +204,7 @@ main();
 
 async function main() {
   let connection;
+  let completed = false;
 
   try {
     console.log('=== Payment authorization demo ===');
@@ -223,24 +224,29 @@ async function main() {
     await summarizeActiveAuthorizations(connection);
     await cleanupExpiredAuthorizations(connection);
     await dropTable(connection, true);
-    console.log('✓ Completed payment authorization sample operations');
+    completed = true;
   }
   catch (err) {
     console.error(err);
   }
   finally {
     await releaseConnection(connection);
+    if (completed) {
+      console.log('✓ Completed payment authorization sample operations');
+    }
   }
 }
 
 async function connect() {
   const credentials = accessControl.getCredentials('paymentAuthorizationState.js');
+  console.log('Connecting to TimesTen');
   const connection = await oracledb.getConnection({
     user: credentials['-u'],
     password: credentials['-p'],
     connectString: credentials['-c']
   });
 
+  console.log('✓ Connected');
   return connection;
 }
 
@@ -283,7 +289,7 @@ function currentTimestamp() {
 }
 
 function currentTimestampText() {
-  return new Date().toISOString();
+  return formatTimestamp(currentTimestamp());
 }
 
 function formatTimestamp(date) {

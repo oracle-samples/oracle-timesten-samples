@@ -215,7 +215,7 @@ def current_timestamp():
 def current_timestamp_text():
   """Return a compact timestamp string for JSON payloads."""
 
-  return current_timestamp().isoformat(timespec="milliseconds")
+  return current_timestamp().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 
 def format_timestamp(timestamp):
@@ -235,11 +235,13 @@ def connect():
 
   oracledb.init_oracle_client()
   credentials = AccessControl.getCredentials("paymentAuthorizationState.py")
+  print("Connecting to TimesTen")
   connection = oracledb.connect(
       user=credentials.user,
       password=credentials.password,
       dsn=credentials.connstr)
   connection.autocommit = True
+  print("✓ Connected")
   return connection
 
 
