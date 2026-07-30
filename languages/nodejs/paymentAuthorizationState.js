@@ -421,7 +421,7 @@ async function storeAuthorization(connection, payment, status, reason, expiresAt
 
 async function authorizePayment(connection, payment) {
   const authKey = buildAuthorizationKey(payment);
-  const startTime = Date.now();
+  const startTime = process.hrtime.bigint();
   const existing = await lookupExistingAuthorization(connection, authKey);
 
   // Replaying an existing decision keeps the authorization path idempotent.
@@ -431,7 +431,7 @@ async function authorizePayment(connection, payment) {
       `→ Authorization replay: tenant=${payment.tenant_id} account=${payment.account_id} ` +
       `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
       `status=${status} reason=${reason} expires_at=${expiresAtText} ` +
-      `elapsed_ms=${Date.now() - startTime}`
+      `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
     );
     return status;
   }
@@ -446,10 +446,14 @@ async function authorizePayment(connection, payment) {
     `status=${decision.status} amount=${formatMoney(payment.amount_cents)} ` +
     `risk=${payment.risk_score.toFixed(2)} reason=${decision.reason} ` +
     `hold_expires=${expiresAt.toISOString()} ` +
-    `elapsed_ms=${Date.now() - startTime}`
+    `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
   );
 
   return decision.status;
+}
+
+function elapsedMs(startTime) {
+  return Number(process.hrtime.bigint() - startTime) / 1e6;
 }
 
 async function summarizeActiveAuthorizations(connection) {

@@ -409,7 +409,7 @@ async function storeRouting(connection, callRequest, state, reason, expiresAt) {
 }
 
 async function routeCall(connection, callRequest) {
-  const startTime = Date.now();
+  const startTime = process.hrtime.bigint();
   const routingKey = buildRoutingKey(callRequest);
   const existing = await lookupExistingRouting(connection, routingKey);
 
@@ -419,7 +419,7 @@ async function routeCall(connection, callRequest) {
     console.log(
       `→ Routing replay: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
       `call_id=${callRequest.call_id} state=${state} reason=${reason} expires_at=${expiresAtText} ` +
-      `elapsed_ms=${Date.now() - startTime}`
+      `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
     );
     return state;
   }
@@ -433,10 +433,14 @@ async function routeCall(connection, callRequest) {
     `call_id=${callRequest.call_id} state=${decision.state} source=${callRequest.source_region} ` +
     `target=${callRequest.target_region} slice=${callRequest.network_slice} ` +
     `reason=${decision.reason} hold_expires=${expiresAt.toISOString()} ` +
-    `elapsed_ms=${Date.now() - startTime}`
+    `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
   );
 
   return decision.state;
+}
+
+function elapsedMs(startTime) {
+  return Number(process.hrtime.bigint() - startTime) / 1e6;
 }
 
 async function summarizeActiveRouting(connection) {

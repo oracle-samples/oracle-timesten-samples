@@ -430,7 +430,7 @@ async function seedExpiredSession(connection) {
 
 async function processTurn(connection, turn) {
   const sessionKey = buildSessionKey(turn);
-  const startTime = Date.now();
+  const startTime = process.hrtime.bigint();
   const activeSession = await loadActiveSession(connection, sessionKey);
   const now = currentTimestamp();
   const expiresAt = new Date(now.getTime() + (SESSION_TTL_MINUTES * 60 * 1000));
@@ -447,7 +447,7 @@ async function processTurn(connection, turn) {
       `user=${turn.user_id}`,
       `topic=${turn.conversation_topic}`,
       `turns=${sessionState.turn_count}`,
-      `elapsed_ms=${Date.now() - startTime}`
+      `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
     );
     console.log(`  Assistant: ${assistantText}`);
   }
@@ -461,10 +461,14 @@ async function processTurn(connection, turn) {
       `user=${turn.user_id}`,
       `topic=${turn.conversation_topic}`,
       'turns=1',
-      `elapsed_ms=${Date.now() - startTime}`
+      `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
     );
     console.log(`  Assistant: ${assistantText}`);
   }
+}
+
+function elapsedMs(startTime) {
+  return Number(process.hrtime.bigint() - startTime) / 1e6;
 }
 
 async function printActiveSummary(connection) {

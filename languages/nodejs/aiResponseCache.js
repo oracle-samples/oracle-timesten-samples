@@ -271,7 +271,7 @@ async function findCachedResponse(connection, cacheKey) {
 }
 
 async function processRequest(connection, request) {
-  const startTime = Date.now();
+  const startTime = process.hrtime.bigint();
   const cacheKey = buildCacheKey(request);
   const cachedRow = await findCachedResponse(connection, cacheKey);
 
@@ -288,7 +288,7 @@ async function processRequest(connection, request) {
       '→ Cache hit: ' +
       `tenant=${request.tenant_id} model=${request.model_name} ` +
       `hits=${hitCount + 1} expires=${expiresAt} ` +
-      `elapsed_ms=${Date.now() - startTime}`
+      `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
     );
     console.log(`  Response: ${responseText}`);
     console.log(`  Safety label from metadata: ${metadata.safetyLabel}`);
@@ -305,9 +305,13 @@ async function processRequest(connection, request) {
     '→ Cache miss: ' +
     `tenant=${request.tenant_id} model=${request.model_name} ` +
     `stored_for_minutes=${CACHE_TTL_MINUTES} ` +
-    `elapsed_ms=${Date.now() - startTime}`
+    `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
   );
   console.log(`  Response: ${responseText}`);
+}
+
+function elapsedMs(startTime) {
+  return Number(process.hrtime.bigint() - startTime) / 1e6;
 }
 
 async function printCacheSummary(connection) {

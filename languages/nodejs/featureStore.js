@@ -292,7 +292,7 @@ async function insertFeature(connection, feature, freshnessTs, expiresAt, auditP
 }
 
 async function upsertFeature(connection, feature) {
-  const startTime = Date.now();
+  const startTime = process.hrtime.bigint();
   const freshnessTs = currentTimestamp();
   const expiresAt = new Date(freshnessTs.getTime() + (FEATURE_TTL_MINUTES * 60 * 1000));
   const auditPayload = auditPayloadToJson(feature, feature.decision, 'fresh_feature_upsert');
@@ -305,7 +305,7 @@ async function upsertFeature(connection, feature) {
     `user=${feature.user_id}`,
     `feature=${feature.feature_name}`,
     `model=${feature.model_version}`,
-    `elapsed_ms=${Date.now() - startTime}`
+    `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
   );
 }
 
@@ -349,7 +349,7 @@ async function printFeatureSummary(connection) {
 }
 
 async function printFeatureSet(connection, tenantId, userId) {
-  const startTime = Date.now();
+  const startTime = process.hrtime.bigint();
   const result = await connection.execute(SELECT_ACTIVE_FEATURES, [tenantId, userId, currentTimestamp()]);
   console.log(`Current features for tenant=${tenantId} user=${userId}:`);
   for (const row of result.rows) {
@@ -357,7 +357,11 @@ async function printFeatureSet(connection, tenantId, userId) {
     console.log(`    value=${row[1]}`);
     console.log(`    audit=${row[4]}`);
   }
-  console.log(`  elapsed_ms=${Date.now() - startTime}`);
+  console.log(`  elapsed_ms=${elapsedMs(startTime).toFixed(2)}`);
+}
+
+function elapsedMs(startTime) {
+  return Number(process.hrtime.bigint() - startTime) / 1e6;
 }
 
 async function deleteExpiredFeatures(connection) {
