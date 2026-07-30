@@ -71,7 +71,7 @@ INSERT_FEATURE = f"""
 SELECT_ACTIVE_FEATURES = f"""
   SELECT feature_name,
          JSON_SERIALIZE(feature_value RETURNING VARCHAR2(4000)),
-         TO_CHAR(freshness_ts, 'YYYY-MM-DD HH24:MI:SS'),
+         TO_CHAR(freshness_ts, 'YYYY-MM-DD HH24:MI:SS.FF3'),
          model_version,
          JSON_SERIALIZE(audit_payload RETURNING VARCHAR2(4000))
   FROM {TABLE_NAME}
@@ -188,7 +188,7 @@ def current_timestamp():
 def current_timestamp_text():
   """Return a compact timestamp string for JSON payloads."""
 
-  return current_timestamp().isoformat(timespec="seconds")
+  return current_timestamp().isoformat(timespec="milliseconds")
 
 
 def connect():

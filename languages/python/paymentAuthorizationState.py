@@ -215,7 +215,7 @@ def current_timestamp():
 def current_timestamp_text():
   """Return a compact timestamp string for JSON payloads."""
 
-  return current_timestamp().isoformat(timespec="seconds")
+  return current_timestamp().isoformat(timespec="milliseconds")
 
 
 def format_timestamp(timestamp):
@@ -346,7 +346,7 @@ def seed_expired_authorization(cursor):
       EXPIRED_AUTHORIZATION,
       "EXPIRED",
       "seeded_expired_state",
-      expired_at.isoformat(timespec="seconds"))
+      format_timestamp(expired_at))
 
   cursor.execute(
       INSERT_AUTHORIZATION,
@@ -385,7 +385,7 @@ def store_authorization(cursor, payment, status, reason, expires_at):
   auth_key = build_authorization_key(payment)
   request_payload = request_payload_to_json(payment)
   decision_payload = decision_payload_to_json(
-      payment, status, reason, expires_at.isoformat(timespec="seconds"))
+      payment, status, reason, format_timestamp(expires_at))
 
   cursor.execute(
       INSERT_AUTHORIZATION,

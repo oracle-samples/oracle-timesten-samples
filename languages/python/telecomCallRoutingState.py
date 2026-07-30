@@ -82,7 +82,7 @@ INSERT_ROUTING = f"""
 SELECT_EXISTING_ROUTING = f"""
   SELECT route_state,
          route_reason,
-         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS')
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM {TABLE_NAME}
   WHERE routing_key = :1
     AND expires_at > :2
@@ -107,7 +107,7 @@ SELECT_ACTIVE_DETAILS = f"""
          priority_class,
          route_state,
          route_reason,
-         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS')
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM {TABLE_NAME}
   WHERE expires_at > :1
   ORDER BY tenant_id, subscriber_id, call_id
@@ -290,6 +290,12 @@ def decision_payload_to_json(call_request, state, reason, expires_at_text):
   return json.dumps(payload, separators=(",", ":"))
 
 
+def format_timestamp(timestamp):
+  """Format timestamps with fixed millisecond precision for display."""
+
+  return timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+
 def evaluate_routing(call_request):
   """Apply deterministic routing rules to a call request."""
 
@@ -328,7 +334,7 @@ def seed_expired_routing(cursor):
       EXPIRED_ROUTING,
       "EXPIRED",
       "seeded_expired_state",
-      expired_at.isoformat(timespec="seconds"))
+      format_timestamp(expired_at))
 
   cursor.execute(
       INSERT_ROUTING,
@@ -366,7 +372,7 @@ def store_routing(cursor, call_request, state, reason, expires_at):
   routing_key = build_routing_key(call_request)
   request_payload = request_payload_to_json(call_request)
   decision_payload = decision_payload_to_json(
-      call_request, state, reason, expires_at.isoformat(timespec="seconds"))
+      call_request, state, reason, format_timestamp(expires_at))
 
   cursor.execute(
       INSERT_ROUTING,
@@ -402,10 +408,10 @@ def route_call(cursor, call_request):
     state, reason, expires_at_text = existing
     print(
         "→ Routing replay: "
-        f"tenant={call_request['tenant_id']} subscriber={call_request['subscriber_id']} "
-        f"call_id={call_request['call_id']} state={state} reason={reason} "
-        f"expires_at={expires_at_text} "
-        f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
+      f"tenant={call_request['tenant_id']} subscriber={call_request['subscriber_id']} "
+      f"call_id={call_request['call_id']} state={state} reason={reason} "
+      f"expires_at={expires_at_text} "
+      f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
     return state
 
   state, reason, expires_at = evaluate_routing(call_request)
@@ -417,7 +423,7 @@ def route_call(cursor, call_request):
       f"call_id={call_request['call_id']} state={state} "
       f"source={call_request['source_region']} target={call_request['target_region']} "
       f"slice={call_request['network_slice']} reason={reason} "
-      f"hold_expires={expires_at.isoformat(timespec='seconds')} "
+      f"hold_expires={format_timestamp(expires_at)} "
       f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
   return state
 

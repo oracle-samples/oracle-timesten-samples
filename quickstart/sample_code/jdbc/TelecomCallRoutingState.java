@@ -38,6 +38,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,7 +97,7 @@ public class TelecomCallRoutingState
     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   private static final String SELECT_EXISTING_ROUTING_SQL =
-    "SELECT route_state, route_reason, TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS') "
+    "SELECT route_state, route_reason, TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3') "
     + "FROM " + TABLE_NAME + " "
     + "WHERE routing_key = ? "
     + "  AND expires_at > ?";
@@ -110,7 +111,7 @@ public class TelecomCallRoutingState
 
   private static final String SELECT_ACTIVE_DETAILS_SQL =
     "SELECT call_id, source_region, target_region, network_slice, priority_class, "
-    + "       route_state, route_reason, TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS') "
+    + "       route_state, route_reason, TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3') "
     + "FROM " + TABLE_NAME + " "
     + "WHERE expires_at > ? "
     + "ORDER BY tenant_id, subscriber_id, call_id";
@@ -392,7 +393,7 @@ public class TelecomCallRoutingState
     String routingKey = buildRoutingKey(request);
     String requestPayload = requestPayloadToJson(request);
     String decisionPayload = decisionPayloadToJson(request, "EXPIRED", "seeded_expired_state",
-                                                   expiredAt.toString());
+                                                   formatTimestamp(expiredAt));
 
     try (PreparedStatement statement = connection.prepareStatement(INSERT_ROUTING_SQL))
     {
@@ -510,7 +511,7 @@ public class TelecomCallRoutingState
     Timestamp expiresAt = new Timestamp(now.getTime() + decision.ttlMinutes * 60_000L);
     String requestPayload = requestPayloadToJson(request);
     String decisionPayload = decisionPayloadToJson(request, decision.state, decision.reason,
-                                                   expiresAt.toString());
+                                                   formatTimestamp(expiresAt));
 
     // New routing decisions are stored so later replays can return the same result.
     try (PreparedStatement insert = connection.prepareStatement(INSERT_ROUTING_SQL))
@@ -529,7 +530,7 @@ public class TelecomCallRoutingState
         + " target=" + request.targetRegion
         + " slice=" + request.networkSlice
         + " reason=" + decision.reason
-        + " hold_expires=" + expiresAt.toString()
+        + " hold_expires=" + formatTimestamp(expiresAt)
         + " elapsed_ms=" + formatElapsedMillis(startNanos));
   }
 
@@ -644,6 +645,15 @@ public class TelecomCallRoutingState
   private String formatElapsedMillis(long startNanos)
   {
     return String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0);
+  }
+
+  private String formatTimestamp(Timestamp timestamp)
+  {
+    if (timestamp == null)
+    {
+      return "";
+    }
+    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(timestamp);
   }
 
   private void executeStatement(Connection connection, String sql) throws SQLException

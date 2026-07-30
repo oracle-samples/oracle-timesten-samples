@@ -124,6 +124,12 @@ def current_timestamp():
   return datetime.datetime.now()
 
 
+def format_timestamp(timestamp):
+  """Format timestamps with fixed millisecond precision for display."""
+
+  return timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+
 def connect():
   """Create and return a TimesTen connection."""
 
@@ -266,7 +272,7 @@ def process_request(cursor, request):
     print(
         "→ Cache hit: "
         f"tenant={request['tenant_id']} model={request['model_name']} "
-        f"hits={hit_count + 1} expires={expires_at} "
+        f"hits={hit_count + 1} expires={format_timestamp(expires_at)} "
         f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
     print(f"  Response: {response_text}")
     print(f"  Safety label from metadata: {metadata['safetyLabel']}")

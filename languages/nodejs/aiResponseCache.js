@@ -287,7 +287,7 @@ async function processRequest(connection, request) {
     console.log(
       '→ Cache hit: ' +
       `tenant=${request.tenant_id} model=${request.model_name} ` +
-      `hits=${hitCount + 1} expires=${expiresAt} ` +
+      `hits=${hitCount + 1} expires=${formatTimestamp(expiresAt)} ` +
       `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
     );
     console.log(`  Response: ${responseText}`);
@@ -312,6 +312,15 @@ async function processRequest(connection, request) {
 
 function elapsedMs(startTime) {
   return Number(process.hrtime.bigint() - startTime) / 1e6;
+}
+
+function formatTimestamp(value) {
+  const date = new Date(value);
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const pad3 = (n) => String(n).padStart(3, '0');
+  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())} ` +
+         `${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}:${pad2(date.getUTCSeconds())}.` +
+         `${pad3(date.getUTCMilliseconds())}`;
 }
 
 async function printCacheSummary(connection) {

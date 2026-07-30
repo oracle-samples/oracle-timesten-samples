@@ -66,8 +66,8 @@ const INSERT_SESSION = `
 
 const SELECT_ACTIVE_SESSION = `
   SELECT JSON_SERIALIZE(session_state RETURNING VARCHAR2(4000)),
-         last_updated_at,
-         expires_at
+         TO_CHAR(last_updated_at, 'YYYY-MM-DD HH24:MI:SS.FF3'),
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM chat_sessions
   WHERE session_key = :1 AND expires_at > :2
 `;
@@ -98,8 +98,8 @@ const SELECT_ACTIVE_STATE = `
          user_id,
          conversation_topic,
          JSON_SERIALIZE(session_state RETURNING VARCHAR2(4000)),
-         last_updated_at,
-         expires_at
+         TO_CHAR(last_updated_at, 'YYYY-MM-DD HH24:MI:SS.FF3'),
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM chat_sessions
   WHERE expires_at > :1
   ORDER BY last_updated_at DESC

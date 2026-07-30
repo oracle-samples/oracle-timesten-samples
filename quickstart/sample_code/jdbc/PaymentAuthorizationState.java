@@ -114,7 +114,7 @@ public class PaymentAuthorizationState
 
   private static final String SELECT_ACTIVE_DETAILS_SQL =
     "SELECT payment_id, merchant_id, status, decision_reason, amount_cents, risk_score, "
-    + "       expires_at "
+    + "       TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3') "
     + "FROM " + TABLE_NAME + " "
     + "WHERE expires_at > ? "
     + "ORDER BY tenant_id, account_id, payment_id";

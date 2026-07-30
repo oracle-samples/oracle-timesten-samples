@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -187,7 +188,7 @@ public class ChatSessionMemory
       builder.append('{');
       builder.append("\"role\":\"").append(escapeJson(role)).append("\",");
       builder.append("\"content\":\"").append(escapeJson(content)).append("\",");
-      builder.append("\"timestamp\":\"").append(timestamp.toString()).append("\"");
+      builder.append("\"timestamp\":\"").append(formatTimestamp(timestamp)).append("\"");
       if (extraJson != null && !extraJson.isEmpty())
       {
         builder.append(',');
@@ -656,8 +657,8 @@ public class ChatSessionMemory
               "  session=" + sessionKey.substring(0, 12)
               + "... tenant=" + tenantId
               + " topic=" + topic
-              + " updated=" + lastUpdatedAt
-              + " expires=" + expiresAt);
+              + " updated=" + formatTimestamp(lastUpdatedAt)
+              + " expires=" + formatTimestamp(expiresAt));
           System.out.println("    session_state_json=" + shorten(sessionJson, 110));
         }
       }
@@ -759,6 +760,15 @@ public class ChatSessionMemory
       return text;
     }
     return text.substring(0, limit - 3) + "...";
+  }
+
+  private static String formatTimestamp(Timestamp timestamp)
+  {
+    if (timestamp == null)
+    {
+      return "";
+    }
+    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(timestamp);
   }
 
   private String sha256Hex(String text)

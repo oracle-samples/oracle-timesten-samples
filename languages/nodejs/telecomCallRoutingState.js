@@ -82,7 +82,7 @@ const INSERT_ROUTING = `
 const SELECT_EXISTING_ROUTING = `
   SELECT route_state,
          route_reason,
-         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS')
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM call_routing_state
   WHERE routing_key = :1
     AND expires_at > :2
@@ -107,7 +107,7 @@ const SELECT_ACTIVE_DETAILS = `
          priority_class,
          route_state,
          route_reason,
-         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS')
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM call_routing_state
   WHERE expires_at > :1
   ORDER BY tenant_id, subscriber_id, call_id
@@ -272,6 +272,14 @@ function currentTimestamp() {
   return new Date();
 }
 
+function formatTimestamp(date) {
+  const pad2 = (value) => String(value).padStart(2, '0');
+  const pad3 = (value) => String(value).padStart(3, '0');
+  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())} ` +
+         `${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}:${pad2(date.getUTCSeconds())}.` +
+         `${pad3(date.getUTCMilliseconds())}`;
+}
+
 function requestPayloadToJson(callRequest) {
   return JSON.stringify({
     tenantId: callRequest.tenant_id,
@@ -345,7 +353,7 @@ async function seedExpiredRouting(connection) {
     EXPIRED_ROUTING,
     'EXPIRED',
     'seeded_expired_state',
-    expiredAt.toISOString()
+    formatTimestamp(expiredAt)
   );
 
   await connection.execute(INSERT_ROUTING, [
@@ -386,7 +394,7 @@ async function storeRouting(connection, callRequest, state, reason, expiresAt) {
     callRequest,
     state,
     reason,
-    expiresAt.toISOString()
+    formatTimestamp(expiresAt)
   );
 
   await connection.execute(INSERT_ROUTING, [
@@ -432,7 +440,7 @@ async function routeCall(connection, callRequest) {
     `→ Routing decision: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
     `call_id=${callRequest.call_id} state=${decision.state} source=${callRequest.source_region} ` +
     `target=${callRequest.target_region} slice=${callRequest.network_slice} ` +
-    `reason=${decision.reason} hold_expires=${expiresAt.toISOString()} ` +
+    `reason=${decision.reason} hold_expires=${formatTimestamp(expiresAt)} ` +
     `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
   );
 

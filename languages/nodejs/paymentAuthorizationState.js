@@ -361,7 +361,7 @@ async function seedExpiredAuthorization(connection) {
     EXPIRED_AUTHORIZATION,
     'EXPIRED',
     'seeded_expired_state',
-    expiredAt.toISOString()
+    formatTimestamp(expiredAt)
   );
 
   await connection.execute(INSERT_AUTHORIZATION, [
@@ -403,7 +403,7 @@ async function storeAuthorization(connection, payment, status, reason, expiresAt
     payment,
     status,
     reason,
-    expiresAt.toISOString()
+    formatTimestamp(expiresAt)
   );
 
   await connection.execute(INSERT_AUTHORIZATION, [

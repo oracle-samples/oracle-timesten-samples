@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -394,7 +395,7 @@ public class AiResponseCache
       System.out.println("→ Cache hit: tenant=" + request.tenantId +
                          " model=" + request.modelName +
                          " hits=" + (cachedEntry.hitCount + 1) +
-                         " expires=" + cachedEntry.expiresAt +
+                         " expires=" + formatTimestamp(cachedEntry.expiresAt) +
                          " elapsed_ms=" + formatElapsedMillis(startNanos));
       System.out.println("  Response: " + cachedEntry.responseText);
       System.out.println("  Safety label from metadata: " + cachedEntry.safetyLabel);
@@ -508,6 +509,15 @@ public class AiResponseCache
   private String formatElapsedMillis(long startNanos)
   {
     return String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0);
+  }
+
+  private String formatTimestamp(Timestamp timestamp)
+  {
+    if (timestamp == null)
+    {
+      return "";
+    }
+    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(timestamp);
   }
 
   private void deleteExpiredEntries(Connection connection) throws SQLException

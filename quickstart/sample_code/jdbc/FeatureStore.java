@@ -37,6 +37,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,7 +95,7 @@ public class FeatureStore
   private static final String SELECT_ACTIVE_FEATURES_SQL =
     "SELECT feature_name, "
     + "       JSON_SERIALIZE(feature_value RETURNING VARCHAR2(4000)), "
-    + "       TO_CHAR(freshness_ts, 'YYYY-MM-DD HH24:MI:SS'), "
+    + "       TO_CHAR(freshness_ts, 'YYYY-MM-DD HH24:MI:SS.FF3'), "
     + "       model_version, "
     + "       JSON_SERIALIZE(audit_payload RETURNING VARCHAR2(4000)) "
     + "FROM " + TABLE_NAME + " "
@@ -584,7 +585,7 @@ public class FeatureStore
 
   private String currentTimestampText()
   {
-    return currentTimestamp().toString();
+    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(currentTimestamp());
   }
 
   private String padRight(String value, int width)

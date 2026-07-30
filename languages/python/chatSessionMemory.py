@@ -66,8 +66,8 @@ INSERT_SESSION = f"""
 
 SELECT_ACTIVE_SESSION = f"""
   SELECT JSON_SERIALIZE(session_state RETURNING VARCHAR2(4000)),
-         last_updated_at,
-         expires_at
+         TO_CHAR(last_updated_at, 'YYYY-MM-DD HH24:MI:SS.FF3'),
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM {TABLE_NAME}
   WHERE session_key = :1 AND expires_at > :2
 """
@@ -98,8 +98,8 @@ SELECT_ACTIVE_STATE = f"""
          user_id,
          conversation_topic,
          JSON_SERIALIZE(session_state RETURNING VARCHAR2(4000)),
-         last_updated_at,
-         expires_at
+         TO_CHAR(last_updated_at, 'YYYY-MM-DD HH24:MI:SS.FF3'),
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM {TABLE_NAME}
   WHERE expires_at > :1
   ORDER BY last_updated_at DESC
@@ -177,7 +177,7 @@ def current_timestamp():
 def current_timestamp_text():
   """Return a compact timestamp string for JSON payloads."""
 
-  return current_timestamp().isoformat(timespec="seconds")
+  return current_timestamp().isoformat(timespec="milliseconds")
 
 
 def connect():
