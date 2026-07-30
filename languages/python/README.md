@@ -144,7 +144,6 @@ The sample performs the following steps:
 * Deletes expired cache entries
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Decision lines include `elapsed_ms` measurements from the local run.
 
 ```
 % python3 aiResponseCache.py -u username -p password [-c <connectionString>]
@@ -190,7 +189,6 @@ The sample performs the following steps:
 * Deletes expired chat sessions
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Decision lines include `elapsed_ms` measurements from the local run.
 
 ```
 % python3 chatSessionMemory.py -u username -p password [-c <connectionString>]
@@ -235,7 +233,6 @@ The sample performs the following steps:
 * Deletes stale feature rows
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Upsert and readback lines include `elapsed_ms` measurements from the local run.
 
 ```
 % python3 featureStore.py -u username -p password [-c <connectionString>]
@@ -283,7 +280,6 @@ The sample performs the following steps:
 * Deletes expired authorization records
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Decision and replay lines include `elapsed_ms` measurements from the local run.
 
 ```
 % python3 paymentAuthorizationState.py -u username -p password [-c <connectionString>]
@@ -329,7 +325,6 @@ The sample performs the following steps:
 * Deletes expired routing records
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Decision and replay lines include `elapsed_ms` measurements from the local run.
 
 ```
 % python3 telecomCallRoutingState.py -u username -p password [-c <connectionString>]

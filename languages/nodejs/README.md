@@ -143,7 +143,6 @@ The sample performs the following steps:
 * Deletes expired cache entries
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Decision lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node aiResponseCache.js -u username -p password [-c <connectionString>]
@@ -189,7 +188,6 @@ The sample performs the following steps:
 * Deletes expired chat sessions
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Decision lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node chatSessionMemory.js -u username -p password [-c <connectionString>]
@@ -241,7 +239,6 @@ The sample performs the following steps:
 * Deletes stale feature rows
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Upsert and readback lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node featureStore.js -u username -p password [-c <connectionString>]
@@ -289,7 +286,6 @@ The sample performs the following steps:
 * Deletes expired authorization records
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Decision and replay lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node paymentAuthorizationState.js -u username -p password [-c <connectionString>]
@@ -335,7 +331,6 @@ The sample performs the following steps:
 * Deletes expired routing records
 
 Example output (abbreviated; elapsed times and timestamps vary by environment):
-Decision and replay lines include `elapsed_ms` measurements from the local run.
 
 ```
 % node telecomCallRoutingState.js -u username -p password [-c <connectionString>]
