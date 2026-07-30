@@ -395,7 +395,7 @@ public class AiResponseCache
                          " model=" + request.modelName +
                          " hits=" + (cachedEntry.hitCount + 1) +
                          " expires=" + cachedEntry.expiresAt +
-                         " elapsed_ms=" + elapsedMillis(startNanos));
+                         " elapsed_ms=" + formatElapsedMillis(startNanos));
       System.out.println("  Response: " + cachedEntry.responseText);
       System.out.println("  Safety label from metadata: " + cachedEntry.safetyLabel);
       return;
@@ -410,7 +410,7 @@ public class AiResponseCache
     System.out.println("→ Cache miss: tenant=" + request.tenantId +
                        " model=" + request.modelName +
                        " stored_for_minutes=" + CACHE_TTL_MINUTES +
-                       " elapsed_ms=" + elapsedMillis(startNanos));
+                       " elapsed_ms=" + formatElapsedMillis(startNanos));
     System.out.println("  Response: " + response.responseText);
   }
 
@@ -505,9 +505,9 @@ public class AiResponseCache
     }
   }
 
-  private long elapsedMillis(long startNanos)
+  private String formatElapsedMillis(long startNanos)
   {
-    return (System.nanoTime() - startNanos) / 1_000_000L;
+    return String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0);
   }
 
   private void deleteExpiredEntries(Connection connection) throws SQLException

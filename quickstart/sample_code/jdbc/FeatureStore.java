@@ -419,7 +419,7 @@ public class FeatureStore
         + " user=" + feature.userId
         + " feature=" + feature.featureName
         + " model=" + feature.modelVersion
-        + " elapsed_ms=" + elapsedMillis(startNanos));
+        + " elapsed_ms=" + formatElapsedMillis(startNanos));
   }
 
   private FeatureRecord buildFeatureRecord(FeatureUpdate feature, Timestamp freshnessTs,
@@ -533,7 +533,7 @@ public class FeatureStore
         }
       }
     }
-    System.out.println("  elapsed_ms=" + elapsedMillis(startNanos));
+    System.out.println("  elapsed_ms=" + formatElapsedMillis(startNanos));
   }
 
   private void deleteExpiredFeatures(Connection connection) throws SQLException
@@ -567,9 +567,9 @@ public class FeatureStore
     }
   }
 
-  private long elapsedMillis(long startNanos)
+  private String formatElapsedMillis(long startNanos)
   {
-    return (System.nanoTime() - startNanos) / 1_000_000L;
+    return String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0);
   }
 
   private Timestamp currentTimestamp()

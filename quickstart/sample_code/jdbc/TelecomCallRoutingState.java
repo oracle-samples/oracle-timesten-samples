@@ -500,7 +500,7 @@ public class TelecomCallRoutingState
               + " state=" + state
               + " reason=" + reason
               + " expires_at=" + expiresAtText
-              + " elapsed_ms=" + elapsedMillis(startNanos));
+              + " elapsed_ms=" + formatElapsedMillis(startNanos));
           return;
         }
       }
@@ -530,7 +530,7 @@ public class TelecomCallRoutingState
         + " slice=" + request.networkSlice
         + " reason=" + decision.reason
         + " hold_expires=" + expiresAt.toString()
-        + " elapsed_ms=" + elapsedMillis(startNanos));
+        + " elapsed_ms=" + formatElapsedMillis(startNanos));
   }
 
   private void bindRouting(PreparedStatement statement, String routingKey,
@@ -641,9 +641,9 @@ public class TelecomCallRoutingState
     }
   }
 
-  private long elapsedMillis(long startNanos)
+  private String formatElapsedMillis(long startNanos)
   {
-    return (System.nanoTime() - startNanos) / 1_000_000L;
+    return String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0);
   }
 
   private void executeStatement(Connection connection, String sql) throws SQLException
