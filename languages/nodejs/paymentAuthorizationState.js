@@ -223,6 +223,7 @@ async function main() {
     await summarizeActiveAuthorizations(connection);
     await cleanupExpiredAuthorizations(connection);
     await dropTable(connection, true);
+    console.log('✓ Completed payment authorization sample operations');
   }
   catch (err) {
     console.error(err);

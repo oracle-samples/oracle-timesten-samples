@@ -99,7 +99,7 @@ public class PaymentAuthorizationState
     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   private static final String SELECT_EXISTING_AUTHORIZATION_SQL =
-    "SELECT status, decision_reason, TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS') "
+    "SELECT status, decision_reason, expires_at "
     + "FROM " + TABLE_NAME + " "
     + "WHERE authorization_key = ? "
     + "  AND expires_at > ?";
@@ -242,7 +242,6 @@ public class PaymentAuthorizationState
 
       System.out.println("✓ Connected");
       runDemo(connection);
-      System.out.println("✓ Completed payment authorization sample operations");
       return 0;
     }
     catch (SQLException e)
@@ -253,6 +252,7 @@ public class PaymentAuthorizationState
     finally
     {
       dropTable(connection, false);
+      System.out.println("✓ Completed payment authorization sample operations");
 
       if (connection != null)
       {
@@ -484,7 +484,7 @@ public class PaymentAuthorizationState
         {
           String status = resultSet.getString(1);
           String reason = resultSet.getString(2);
-          String expiresAtText = resultSet.getString(3);
+          Timestamp expiresAt = resultSet.getTimestamp(3);
           System.out.println(
               "→ Authorization replay: tenant=" + request.tenantId
               + " account=" + request.accountId
@@ -492,7 +492,7 @@ public class PaymentAuthorizationState
               + " payment_id=" + request.paymentId
               + " status=" + status
               + " reason=" + reason
-              + " expires_at=" + expiresAtText
+              + " expires_at=" + formatTimestamp(expiresAt)
               + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
           return;
         }
@@ -522,7 +522,7 @@ public class PaymentAuthorizationState
         + " amount=" + formatMoney(request.amountCents)
         + " risk=" + String.format("%.2f", request.riskScore)
         + " reason=" + decision.reason
-        + " hold_expires=" + expiresAt.toString()
+        + " hold_expires=" + formatTimestamp(expiresAt)
         + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
   }
 
@@ -671,6 +671,11 @@ public class PaymentAuthorizationState
   private String formatMoney(int amountCents)
   {
     return String.format("$%.2f", amountCents / 100.0);
+  }
+
+  private String formatTimestamp(Timestamp timestamp)
+  {
+    return (timestamp == null) ? "" : timestamp.toString();
   }
 
   private String padRight(String text, int width)
