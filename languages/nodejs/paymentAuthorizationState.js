@@ -84,7 +84,7 @@ const INSERT_AUTHORIZATION = `
 const SELECT_EXISTING_AUTHORIZATION = `
   SELECT status,
          decision_reason,
-         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS')
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM payment_authorizations
   WHERE authorization_key = :1
     AND expires_at > :2
@@ -109,7 +109,7 @@ const SELECT_ACTIVE_DETAILS = `
          decision_reason,
          amount_cents,
          risk_score,
-         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS')
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM payment_authorizations
   WHERE expires_at > :1
   ORDER BY tenant_id, account_id, payment_id
@@ -286,6 +286,14 @@ function currentTimestampText() {
   return new Date().toISOString();
 }
 
+function formatTimestamp(date) {
+  const pad2 = (value) => String(value).padStart(2, '0');
+  const pad3 = (value) => String(value).padStart(3, '0');
+  return `${date.getUTCFullYear()}-${pad2(date.getUTCMonth() + 1)}-${pad2(date.getUTCDate())} ` +
+         `${pad2(date.getUTCHours())}:${pad2(date.getUTCMinutes())}:${pad2(date.getUTCSeconds())}.` +
+         `${pad3(date.getUTCMilliseconds())}`;
+}
+
 function formatMoney(amountCents) {
   return `$${(amountCents / 100).toFixed(2)}`;
 }
@@ -446,7 +454,7 @@ async function authorizePayment(connection, payment) {
     `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
     `status=${decision.status} amount=${formatMoney(payment.amount_cents)} ` +
     `risk=${payment.risk_score.toFixed(2)} reason=${decision.reason} ` +
-    `hold_expires=${expiresAt.toISOString()} ` +
+    `hold_expires=${formatTimestamp(expiresAt)} ` +
     `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
   );
 

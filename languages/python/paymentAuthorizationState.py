@@ -84,7 +84,7 @@ INSERT_AUTHORIZATION = f"""
 SELECT_EXISTING_AUTHORIZATION = f"""
   SELECT status,
          decision_reason,
-         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS')
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM {TABLE_NAME}
   WHERE authorization_key = :1
     AND expires_at > :2
@@ -109,7 +109,7 @@ SELECT_ACTIVE_DETAILS = f"""
          decision_reason,
          amount_cents,
          risk_score,
-         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS')
+         TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS.FF3')
   FROM {TABLE_NAME}
   WHERE expires_at > :1
   ORDER BY tenant_id, account_id, payment_id
@@ -216,6 +216,12 @@ def current_timestamp_text():
   """Return a compact timestamp string for JSON payloads."""
 
   return current_timestamp().isoformat(timespec="seconds")
+
+
+def format_timestamp(timestamp):
+  """Format timestamps with fixed millisecond precision for display."""
+
+  return timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 
 def format_money(amount_cents):
@@ -431,7 +437,7 @@ def authorize_payment(cursor, payment):
       f"merchant={payment['merchant_id']} payment_id={payment['payment_id']} "
       f"status={status} amount={format_money(payment['amount_cents'])} "
       f"risk={payment['risk_score']:.2f} reason={reason} "
-      f"hold_expires={expires_at.isoformat(timespec='seconds')}")
+      f"hold_expires={format_timestamp(expires_at)}")
   print(f"  elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
   return status
 

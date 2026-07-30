@@ -39,6 +39,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,7 +114,7 @@ public class PaymentAuthorizationState
 
   private static final String SELECT_ACTIVE_DETAILS_SQL =
     "SELECT payment_id, merchant_id, status, decision_reason, amount_cents, risk_score, "
-    + "       TO_CHAR(expires_at, 'YYYY-MM-DD HH24:MI:SS') "
+    + "       expires_at "
     + "FROM " + TABLE_NAME + " "
     + "WHERE expires_at > ? "
     + "ORDER BY tenant_id, account_id, payment_id";
@@ -675,7 +676,7 @@ public class PaymentAuthorizationState
 
   private String formatTimestamp(Timestamp timestamp)
   {
-    return (timestamp == null) ? "" : timestamp.toString();
+    return (timestamp == null) ? "" : new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(timestamp);
   }
 
   private String padRight(String text, int width)
