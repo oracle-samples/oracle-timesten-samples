@@ -289,7 +289,7 @@ Example:
 
 ```
 % node paymentAuthorizationState.js -u username -p password [-c <connectionString>]
-=== Payment authorization state demo ===
+=== Payment authorization demo ===
 
 Connecting using URL: jdbc:timesten:direct:sampledb
 ✓ Connected
@@ -334,7 +334,7 @@ Example:
 
 ```
 % node telecomCallRoutingState.js -u username -p password [-c <connectionString>]
-=== Telecom call routing state demo ===
+=== Telecom call routing demo ===
 
 Connecting using URL: jdbc:timesten:direct:sampledb
 ✓ Connected

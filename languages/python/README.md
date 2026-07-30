@@ -283,7 +283,7 @@ Example:
 
 ```
 % python3 paymentAuthorizationState.py -u username -p password [-c <connectionString>]
-=== Payment authorization state demo ===
+=== Payment authorization demo ===
 
 Connecting using URL: jdbc:timesten:direct:sampledb
 ✓ Connected
@@ -328,7 +328,7 @@ Example:
 
 ```
 % python3 telecomCallRoutingState.py -u username -p password [-c <connectionString>]
-=== Telecom call routing state demo ===
+=== Telecom call routing demo ===
 
 Connecting using URL: jdbc:timesten:direct:sampledb
 ✓ Connected
