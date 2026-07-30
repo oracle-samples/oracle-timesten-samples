@@ -357,7 +357,7 @@ async function printFeatureSet(connection, tenantId, userId) {
     console.log(`    value=${row[1]}`);
     console.log(`    audit=${row[4]}`);
   }
-  console.log(`  elapsed_ms=${elapsedMs(startTime).toFixed(2)}`);
+  console.log(`  readback_elapsed_ms=${elapsedMs(startTime).toFixed(2)}`);
 }
 
 function elapsedMs(startTime) {

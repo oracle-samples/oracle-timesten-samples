@@ -353,7 +353,7 @@ def print_feature_set(cursor, tenant_id, user_id):
     print(f"  feature={feature_name} freshness={freshness_ts} model={model_version}")
     print(f"    value={feature_value_json}")
     print(f"    audit={audit_json}")
-  print(f"  elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
+  print(f"  readback_elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
 
 
 def delete_expired_features(cursor):

@@ -533,7 +533,7 @@ public class FeatureStore
         }
       }
     }
-    System.out.println("  elapsed_ms=" + formatElapsedMillis(startNanos));
+    System.out.println("  readback_elapsed_ms=" + formatElapsedMillis(startNanos));
   }
 
   private void deleteExpiredFeatures(Connection connection) throws SQLException
