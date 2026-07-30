@@ -233,7 +233,7 @@ public class TelecomCallRoutingState
                       : accessControl.getPassword(username);
     String url = buildJdbcUrl();
 
-    System.out.println("=== Telecom call routing state demo ===");
+    System.out.println("=== Telecom call routing demo ===");
     System.out.println();
     System.out.println("Connecting using URL: " + url);
 
@@ -245,7 +245,6 @@ public class TelecomCallRoutingState
 
       System.out.println("✓ Connected");
       runDemo(connection);
-      System.out.println("✓ Completed telecom call routing sample operations");
       return 0;
     }
     catch (SQLException e)
@@ -268,6 +267,8 @@ public class TelecomCallRoutingState
           printSQLException(e);
         }
       }
+
+      System.out.println("✓ Completed telecom call routing sample operations");
     }
   }
 

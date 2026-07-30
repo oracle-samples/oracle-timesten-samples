@@ -231,7 +231,7 @@ public class PaymentAuthorizationState
                       : accessControl.getPassword(username);
     String url = buildJdbcUrl();
 
-    System.out.println("=== Payment authorization state demo ===");
+    System.out.println("=== Payment authorization demo ===");
     System.out.println();
     System.out.println("Connecting using URL: " + url);
 
@@ -253,7 +253,6 @@ public class PaymentAuthorizationState
     finally
     {
       dropTable(connection, false);
-      System.out.println("✓ Completed payment authorization sample operations");
 
       if (connection != null)
       {
@@ -266,6 +265,8 @@ public class PaymentAuthorizationState
           printSQLException(e);
         }
       }
+
+      System.out.println("✓ Completed payment authorization sample operations");
     }
   }
 

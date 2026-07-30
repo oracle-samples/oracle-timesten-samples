@@ -188,7 +188,7 @@ def current_timestamp():
 def current_timestamp_text():
   """Return a compact timestamp string for JSON payloads."""
 
-  return current_timestamp().isoformat(timespec="milliseconds")
+  return current_timestamp().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 
 def connect():
