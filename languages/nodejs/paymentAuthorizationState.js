@@ -246,7 +246,8 @@ async function main() {
 }
 
 async function connect() {
-  const credentials = accessControl.getCredentials('paymentAuthorizationState.js');
+  const credentials = accessControl.getCredentials(
+    'paymentAuthorizationState.js', 'TT_PASSWORD');
   console.log('Connecting to TimesTen');
   const connection = await oracledb.getConnection({
     user: credentials['-u'],
@@ -523,7 +524,7 @@ async function summarizeActiveAuthorizations(connection) {
     );
   }
 
-  console.log('Active authorization details:');
+  console.log('⋯ Active authorization details:');
   const details = await connection.execute(SELECT_ACTIVE_DETAILS, [currentTimestamp()]);
   for (const row of details.rows) {
     const [paymentId, merchantId, status, reason, amountCents, riskScore, expiresAtText] = row;

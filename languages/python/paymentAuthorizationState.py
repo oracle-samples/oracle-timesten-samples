@@ -80,7 +80,8 @@ INSERT_AUTHORIZATION = f"""
     amount_cents, currency, payment_method, risk_score, status,
     decision_reason, request_payload, decision_payload, created_at,
     updated_at, expires_at)
-  VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16)
+  VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15,
+          TO_TIMESTAMP(:16, 'YYYY-MM-DD HH24:MI:SS.FF3'))
 """
 
 SELECT_EXISTING_AUTHORIZATION = f"""
@@ -242,7 +243,8 @@ def connect():
   """Create and return a TimesTen connection."""
 
   oracledb.init_oracle_client()
-  credentials = AccessControl.getCredentials("paymentAuthorizationState.py")
+  credentials = AccessControl.getCredentials(
+      "paymentAuthorizationState.py", password_env_var="TT_PASSWORD")
   print("Connecting to TimesTen")
   connection = oracledb.connect(
       user=credentials.user,
@@ -376,7 +378,7 @@ def seed_expired_authorization(cursor):
           decision_payload,
           now,
           now,
-          expired_at,
+          format_timestamp(expired_at),
       ))
   print("✓ Seeded 1 expired authorization record")
 
@@ -440,7 +442,7 @@ def store_authorization(cursor, payment, status, reason, expires_at):
           decision_payload,
           now,
           now,
-          expires_at,
+          format_timestamp(expires_at),
       ))
   return auth_key
 
@@ -520,6 +522,7 @@ def run():
 
   connection = None
   cursor = None
+  completed = False
   exit_code = 0
 
   try:
@@ -540,7 +543,7 @@ def run():
     summarize_active_authorizations(cursor)
     cleanup_expired_authorizations(cursor)
     drop_table(cursor, False)
-    print("✓ Completed payment authorization sample operations")
+    completed = True
   except Exception as err:
     print(f"✗ Sample failed: {err}", file=sys.stderr)
     exit_code = 1
@@ -549,16 +552,18 @@ def run():
       try:
         cursor.close()
       except Exception as err:
-        print(f"⚠ Cursor release failed: {err}", file=sys.stderr)
+        print(f"⚠ Cursor close failed: {err}", file=sys.stderr)
         exit_code = 1
     if connection is not None:
       try:
         connection.close()
         print("Connection has been closed")
       except Exception as err:
-        print(f"⚠ Connection release failed: {err}", file=sys.stderr)
+        print(f"⚠ Connection close failed: {err}", file=sys.stderr)
         exit_code = 1
 
+  if completed and exit_code == 0:
+    print("✓ Completed payment authorization sample operations")
   return exit_code
 
 

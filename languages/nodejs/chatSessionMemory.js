@@ -206,7 +206,8 @@ async function main() {
 }
 
 async function connect() {
-  const credentials = accessControl.getCredentials('chatSessionMemory.js');
+  const credentials = accessControl.getCredentials(
+    'chatSessionMemory.js', 'TT_PASSWORD');
   console.log('Connecting to TimesTen');
   const connection = await oracledb.getConnection({
     user: credentials['-u'],
@@ -500,7 +501,7 @@ async function printActiveSummary(connection) {
     );
   }
 
-  console.log('Latest session memory snapshots:');
+  console.log('⋯ Latest session memory snapshots:');
   result = await connection.execute(SELECT_ACTIVE_STATE, [currentTimestamp()]);
   for (const row of result.rows) {
     const sessionKey = row[0];

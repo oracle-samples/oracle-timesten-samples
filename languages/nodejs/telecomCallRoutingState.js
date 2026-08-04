@@ -238,7 +238,8 @@ async function main() {
 }
 
 async function connect() {
-  const credentials = accessControl.getCredentials('telecomCallRoutingState.js');
+  const credentials = accessControl.getCredentials(
+    'telecomCallRoutingState.js', 'TT_PASSWORD');
   console.log('Connecting to TimesTen');
   const connection = await oracledb.getConnection({
     user: credentials['-u'],

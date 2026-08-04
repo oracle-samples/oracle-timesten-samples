@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+* Copyright (c) 2019, 2026 Oracle and/or its affiliates. All rights reserved.
  *
  * Licensed under the Universal Permissive License v 1.0 as shown
  * at http://oss.oracle.com/licenses/upl
@@ -18,9 +18,14 @@ function parseArgs(){
   return opts;
 }
 
-function usage(scriptName){
+function usage(scriptName, passwordEnvVar){
+  const passwordUsage = passwordEnvVar ? '[-p <password>]' : '-p <password>';
+  const passwordDescription = passwordEnvVar
+    ? `-p  <password>: database password for the user, or set ${passwordEnvVar}`
+    : '-p  <password>: database password for the user';
+
   return `
-  Usage: node ${scriptName} -u <userName> -p <password> [-c <connectionString>] 
+  Usage: node ${scriptName} -u <userName> ${passwordUsage} [-c <connectionString>]
 
   To run the sample, pass the following parameters to the sample program:
 
@@ -28,7 +33,7 @@ function usage(scriptName){
 
       -u  <username>: database user name
 
-      -p  <password>: database password for the user
+      ${passwordDescription}
 
     Optional: 
 
@@ -41,11 +46,14 @@ function usage(scriptName){
     `;
 }
 
-function getCredentials(scriptName){
+function getCredentials(scriptName, passwordEnvVar){
   let args = parseArgs();
+  if (typeof args['-p'] === 'undefined' && passwordEnvVar) {
+    args['-p'] = process.env[passwordEnvVar];
+  }
   if(typeof args['-u'] === "undefined" ||
       typeof args['-p'] === "undefined"){
-    console.error(usage(scriptName));
+    console.error(usage(scriptName, passwordEnvVar));
     throw "Error: Bad options format";
   }
   if ('-c' in args){

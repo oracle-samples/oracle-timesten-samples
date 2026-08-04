@@ -232,9 +232,15 @@ public class PaymentAuthorizationState
 
     AccessControl accessControl = new AccessControl();
     String username = (userOverride != null) ? userOverride : resolveUsername(accessControl);
-    String password = (passwordOverride != null)
-                      ? passwordOverride
-                      : accessControl.getPassword(username);
+    String password = passwordOverride;
+    if (password == null)
+    {
+      password = System.getenv("TT_PASSWORD");
+    }
+    if (password == null || password.isEmpty())
+    {
+      password = accessControl.getPassword(username);
+    }
     String url = buildJdbcUrl();
 
     System.out.println("=== Payment authorization demo ===");
@@ -309,7 +315,7 @@ public class PaymentAuthorizationState
   {
     String baseUsage = ioLibrary.getUsageString(PROGRAM_NAME);
     String userOption = "\n  -u, -user <name>       supply username non-interactively";
-    String pwdOption  = "\n  -p, -password <pw>     supply password non-interactively";
+    String pwdOption  = "\n  -p, -password <pw>     supply password, or set TT_PASSWORD";
     return baseUsage + userOption + pwdOption;
   }
 

@@ -165,8 +165,18 @@ For JDK 25, compile the five new demos as a modular application:
 
     javac --module-path $TIMESTEN_HOME/install/lib/ttjdbc25.jar -d out *.java
 
-The modular commands in their individual sections assume this `out` directory
-and use `-u` and `-p` for the TimesTen username and password.
+The modular commands in their individual sections assume this `out` directory.
+
+### Passwords for the modern samples
+
+The five modern demos accept `-p` for a quick local run. To avoid placing a
+password in the command line or shell history, set `TT_PASSWORD` and omit
+`-p` instead:
+
+    export TT_PASSWORD='password'
+
+When both are provided, `-p` takes precedence over `TT_PASSWORD`. If neither
+is provided, the sample prompts for the password.
 
 **asyncJMS** or **asyncJMS2**
 
@@ -498,7 +508,7 @@ Example:
 
     java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
       --enable-native-access=timesten.jdbc \
-      --module my.jdbc.app.module/jdbc.demo.AiResponseCache -u username -p password
+      --module my.jdbc.app.module/jdbc.demo.AiResponseCache -u username [-p password]
 
 **ChatSessionMemory**
 
@@ -520,7 +530,7 @@ Example:
 
     java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
       --enable-native-access=timesten.jdbc \
-      --module my.jdbc.app.module/jdbc.demo.ChatSessionMemory -u username -p password
+      --module my.jdbc.app.module/jdbc.demo.ChatSessionMemory -u username [-p password]
 
 
 **FeatureStore**
@@ -543,7 +553,7 @@ Example:
 
     java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
       --enable-native-access=timesten.jdbc \
-      --module my.jdbc.app.module/jdbc.demo.FeatureStore -u username -p password
+      --module my.jdbc.app.module/jdbc.demo.FeatureStore -u username [-p password]
 
 
 **PaymentAuthorizationState**
@@ -568,7 +578,7 @@ Example:
 
     java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
       --enable-native-access=timesten.jdbc \
-      --module my.jdbc.app.module/jdbc.demo.PaymentAuthorizationState -u username -p password
+      --module my.jdbc.app.module/jdbc.demo.PaymentAuthorizationState -u username [-p password]
 
 
 **TelecomCallRoutingState**
@@ -593,7 +603,7 @@ Example:
 
     java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
       --enable-native-access=timesten.jdbc \
-      --module my.jdbc.app.module/jdbc.demo.TelecomCallRoutingState -u username -p password
+      --module my.jdbc.app.module/jdbc.demo.TelecomCallRoutingState -u username [-p password]
 
 
 For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/java-developer/index.html).

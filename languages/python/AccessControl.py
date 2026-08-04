@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2026 Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
@@ -18,9 +18,17 @@ def parseArgs():
   options, args = parser.parse_args()
   return options;
 
-def usage(scriptName):
+def usage(scriptName, password_env_var=None):
+  password_usage = "-p <password>"
+  password_description = "-p  <password>: database password for the user"
+  if password_env_var:
+    password_usage = "[-p <password>]"
+    password_description = (
+        f"-p  <password>: database password for the user, or set "
+        f"{password_env_var}")
+
   return  """
-  Usage: python {script} -u <userName> -p <password> [-c <connectionString>] 
+  Usage: python {script} -u <userName> {password_usage} [-c <connectionString>]
 
   To run the sample, pass the following parameters to the sample program:
 
@@ -28,7 +36,7 @@ def usage(scriptName):
 
       -u  <username>: database user name
 
-      -p  <password>: database password for the user
+      {password_description}
 
     Optional: 
 
@@ -38,12 +46,19 @@ def usage(scriptName):
     
               {{<net_service_name> | <host>/<host_service_name>:{{ timesten_direct | timesten_client }}}}
 
-          """.format(script = scriptName)
+          """.format(
+              script=scriptName,
+              password_usage=password_usage,
+              password_description=password_description)
 
-def getCredentials(scriptName):
+def getCredentials(scriptName, password_env_var=None):
+  """Return command-line credentials, with an optional password environment variable."""
+  import os
+
   args = parseArgs()
+  if args.password is None and password_env_var:
+    args.password = os.getenv(password_env_var)
   if args.user == None or args.password == None:
-    print(usage(scriptName))
+    print(usage(scriptName, password_env_var))
     raise Exception("Error: Bad options format")
   return args
-

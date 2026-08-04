@@ -224,9 +224,15 @@ public class FeatureStore
 
     AccessControl accessControl = new AccessControl();
     String username = (userOverride != null) ? userOverride : resolveUsername(accessControl);
-    String password = (passwordOverride != null)
-                      ? passwordOverride
-                      : accessControl.getPassword(username);
+    String password = passwordOverride;
+    if (password == null)
+    {
+      password = System.getenv("TT_PASSWORD");
+    }
+    if (password == null || password.isEmpty())
+    {
+      password = accessControl.getPassword(username);
+    }
     String url = buildJdbcUrl();
 
     System.out.println("=== Feature store demo ===");
@@ -301,7 +307,7 @@ public class FeatureStore
   {
     String baseUsage = ioLibrary.getUsageString(PROGRAM_NAME);
     String userOption = "\n  -u, -user <name>       supply username non-interactively";
-    String pwdOption  = "\n  -p, -password <pw>     supply password non-interactively";
+    String pwdOption  = "\n  -p, -password <pw>     supply password, or set TT_PASSWORD";
     return baseUsage + userOption + pwdOption;
   }
 
@@ -479,7 +485,7 @@ public class FeatureStore
   private void printFeatureSummary(Connection connection) throws SQLException
   {
     // Show the active feature footprint grouped by tenant and user.
-    System.out.println("Active feature groups:");
+    System.out.println("⋯ Active feature groups:");
     try (PreparedStatement statement = connection.prepareStatement(SELECT_FEATURE_SUMMARY_SQL))
     {
       statement.setTimestamp(1, currentTimestamp());

@@ -58,6 +58,19 @@ Python sample programs to access TimesTen databases can be downloaded from [Orac
 
 Once the samples are downloaded locally, you can change to languages/python subdirectory and run the samples directly from the local machine.  Descriptions of the sample programs and examples of how to run them are below.
 
+### Passwords for the modern samples
+
+The five modern samples accept `-p` for a quick local run. To avoid placing a
+password in the command line or shell history, set `TT_PASSWORD` and omit
+`-p` instead:
+
+```
+% export TT_PASSWORD='password'
+% python3 aiResponseCache.py -u username [-c <connectionString>]
+```
+
+When both are provided, `-p` takes precedence over `TT_PASSWORD`.
+
 ### simple.py
 
 This simple sample program connects to a TimesTen database and performs the following operations:
@@ -146,7 +159,7 @@ The sample performs the following steps:
 Example output (abbreviated; elapsed times and timestamps vary by environment):
 
 ```
-% python3 aiResponseCache.py -u username -p password [-c <connectionString>]
+% python3 aiResponseCache.py -u username [-p password] [-c <connectionString>]
 === AI response cache demo ===
 
 Connecting to TimesTen
@@ -191,7 +204,7 @@ The sample performs the following steps:
 Example output (abbreviated; elapsed times and timestamps vary by environment):
 
 ```
-% python3 chatSessionMemory.py -u username -p password [-c <connectionString>]
+% python3 chatSessionMemory.py -u username [-p password] [-c <connectionString>]
 === Chat session memory demo ===
 
 Connecting to TimesTen
@@ -235,7 +248,7 @@ The sample performs the following steps:
 Example output (abbreviated; elapsed times and timestamps vary by environment):
 
 ```
-% python3 featureStore.py -u username -p password [-c <connectionString>]
+% python3 featureStore.py -u username [-p password] [-c <connectionString>]
 === Feature store demo ===
 
 Connecting to TimesTen
@@ -283,7 +296,7 @@ The sample performs the following steps:
 Example output (abbreviated; elapsed times and timestamps vary by environment):
 
 ```
-% python3 paymentAuthorizationState.py -u username -p password [-c <connectionString>]
+% python3 paymentAuthorizationState.py -u username [-p password] [-c <connectionString>]
 === Payment authorization demo ===
 
 Connecting to TimesTen
@@ -329,7 +342,7 @@ The sample performs the following steps:
 Example output (abbreviated; elapsed times and timestamps vary by environment):
 
 ```
-% python3 telecomCallRoutingState.py -u username -p password [-c <connectionString>]
+% python3 telecomCallRoutingState.py -u username [-p password] [-c <connectionString>]
 === Telecom call routing demo ===
 
 Connecting to TimesTen

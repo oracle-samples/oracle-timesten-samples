@@ -185,7 +185,8 @@ def connect():
   """Create and return a TimesTen connection."""
 
   oracledb.init_oracle_client()
-  credentials = AccessControl.getCredentials("chatSessionMemory.py")
+  credentials = AccessControl.getCredentials(
+      "chatSessionMemory.py", password_env_var="TT_PASSWORD")
   print("Connecting to TimesTen")
   connection = oracledb.connect(
       user=credentials.user,
@@ -501,6 +502,7 @@ def run():
 
   connection = None
   cursor = None
+  completed = False
   exit_code = 0
   try:
     print("=== Chat session memory demo ===")
@@ -520,7 +522,7 @@ def run():
     print_active_summary(cursor)
     delete_expired_sessions(cursor)
     drop_table(cursor, True)
-    print("✓ Completed chat session memory sample operations")
+    completed = True
   except Exception as err:
     print(f"✗ Sample failed: {err}", file=sys.stderr)
     exit_code = 1
@@ -529,16 +531,18 @@ def run():
       try:
         cursor.close()
       except Exception as err:
-        print(f"⚠ Cursor release failed: {err}", file=sys.stderr)
+        print(f"⚠ Cursor close failed: {err}", file=sys.stderr)
         exit_code = 1
     if connection is not None:
       try:
         connection.close()
         print("Connection has been closed")
       except Exception as err:
-        print(f"⚠ Connection release failed: {err}", file=sys.stderr)
+        print(f"⚠ Connection close failed: {err}", file=sys.stderr)
         exit_code = 1
 
+  if completed and exit_code == 0:
+    print("✓ Completed chat session memory sample operations")
   return exit_code
 
 
