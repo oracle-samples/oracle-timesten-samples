@@ -21,6 +21,7 @@
  *     - Seeds one expired authorization record
  *     - Processes payment authorization requests
  *     - Shows a repeated request being replayed from the existing state
+ *     - Rereads the stored decision if concurrent requests insert the same key
  *     - Stores request and decision metadata in JSON
  *     - Summarizes active authorizations by tenant/account/status
  *     - Deletes expired authorization records
@@ -104,6 +105,11 @@ public class PaymentAuthorizationState
     + "FROM " + TABLE_NAME + " "
     + "WHERE authorization_key = ? "
     + "  AND expires_at > ?";
+
+  private static final String DELETE_EXPIRED_AUTHORIZATION_FOR_KEY_SQL =
+    "DELETE FROM " + TABLE_NAME + " "
+    + "WHERE authorization_key = ? "
+    + "  AND expires_at <= ?";
 
   private static final String SELECT_ACTIVE_SUMMARY_SQL =
     "SELECT tenant_id, account_id, status, COUNT(*), SUM(amount_cents) "
@@ -233,41 +239,32 @@ public class PaymentAuthorizationState
 
     System.out.println("=== Payment authorization demo ===");
     System.out.println();
-    System.out.println("Connecting using URL: " + url);
+    System.out.println("Connecting to TimesTen");
 
-    Connection connection = null;
-    try
+    try (Connection connection = DriverManager.getConnection(url, username, password))
     {
-      connection = DriverManager.getConnection(url, username, password);
       connection.setAutoCommit(true);
 
       System.out.println("✓ Connected");
-      runDemo(connection);
-      return 0;
+      boolean demoSucceeded = false;
+      try
+      {
+        runDemo(connection);
+        demoSucceeded = true;
+      }
+      finally
+      {
+        dropTable(connection, demoSucceeded);
+      }
     }
     catch (SQLException e)
     {
       printSQLException(e);
       return 1;
     }
-    finally
-    {
-      dropTable(connection, false);
 
-      if (connection != null)
-      {
-        try
-        {
-          connection.close();
-        }
-        catch (SQLException e)
-        {
-          printSQLException(e);
-        }
-      }
-
-      System.out.println("✓ Completed payment authorization sample operations");
-    }
+    System.out.println("✓ Completed payment authorization sample operations");
+    return 0;
   }
 
   private boolean parseOptions(String[] args, String usage)
@@ -474,31 +471,12 @@ public class PaymentAuthorizationState
     String authorizationKey = buildAuthorizationKey(request);
     long startNanos = System.nanoTime();
 
-    // Replaying an existing decision keeps the authorization path idempotent.
-    try (PreparedStatement lookup = connection.prepareStatement(SELECT_EXISTING_AUTHORIZATION_SQL))
+    deleteExpiredAuthorizationForKey(connection, authorizationKey, now);
+    String[] existing = findExistingAuthorization(connection, authorizationKey, now);
+    if (existing != null)
     {
-      lookup.setString(1, authorizationKey);
-      lookup.setTimestamp(2, now);
-
-      try (ResultSet resultSet = lookup.executeQuery())
-      {
-        if (resultSet.next())
-        {
-          String status = resultSet.getString(1);
-          String reason = resultSet.getString(2);
-          Timestamp expiresAt = resultSet.getTimestamp(3);
-          System.out.println(
-              "→ Authorization replay: tenant=" + request.tenantId
-              + " account=" + request.accountId
-              + " merchant=" + request.merchantId
-              + " payment_id=" + request.paymentId
-              + " status=" + status
-              + " reason=" + reason
-              + " expires_at=" + formatTimestamp(expiresAt)
-              + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
-          return;
-        }
-      }
+      printAuthorizationReplay(request, existing[0], existing[1], existing[2], startNanos);
+      return;
     }
 
     AuthorizationDecision decision = evaluatePayment(request);
@@ -507,12 +485,28 @@ public class PaymentAuthorizationState
     String decisionPayload = decisionPayloadToJson(request, decision.status, decision.reason,
                                                    expiresAt.toString());
 
-    // New decisions are stored so the same payment request can be answered consistently.
+    // A concurrent copy of this request can win the insert. Reread its stored
+    // decision instead of treating that duplicate key as an application error.
     try (PreparedStatement insert = connection.prepareStatement(INSERT_AUTHORIZATION_SQL))
     {
       bindAuthorization(insert, authorizationKey, request, decision.status, decision.reason,
                         requestPayload, decisionPayload, now, now, expiresAt);
       insert.executeUpdate();
+    }
+    catch (SQLException exception)
+    {
+      if (!isDuplicateKeyError(exception))
+      {
+        throw exception;
+      }
+
+      existing = findExistingAuthorization(connection, authorizationKey, currentTimestamp());
+      if (existing == null)
+      {
+        throw exception;
+      }
+      printAuthorizationReplay(request, existing[0], existing[1], existing[2], startNanos);
+      return;
     }
 
     System.out.println(
@@ -526,6 +520,57 @@ public class PaymentAuthorizationState
         + " reason=" + decision.reason
         + " hold_expires=" + formatTimestamp(expiresAt)
         + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
+  }
+
+  private void deleteExpiredAuthorizationForKey(Connection connection, String authorizationKey,
+                                                Timestamp now) throws SQLException
+  {
+    try (PreparedStatement statement = connection.prepareStatement(DELETE_EXPIRED_AUTHORIZATION_FOR_KEY_SQL))
+    {
+      statement.setString(1, authorizationKey);
+      statement.setTimestamp(2, now);
+      statement.executeUpdate();
+    }
+  }
+
+  private String[] findExistingAuthorization(Connection connection, String authorizationKey,
+                                             Timestamp now) throws SQLException
+  {
+    try (PreparedStatement statement = connection.prepareStatement(SELECT_EXISTING_AUTHORIZATION_SQL))
+    {
+      statement.setString(1, authorizationKey);
+      statement.setTimestamp(2, now);
+      try (ResultSet resultSet = statement.executeQuery())
+      {
+        if (!resultSet.next())
+        {
+          return null;
+        }
+        return new String[] {
+          resultSet.getString(1), resultSet.getString(2), formatTimestamp(resultSet.getTimestamp(3))
+        };
+      }
+    }
+  }
+
+  private void printAuthorizationReplay(PaymentRequest request, String status, String reason,
+                                        String expiresAtText, long startNanos)
+  {
+    System.out.println(
+        "→ Authorization replay: tenant=" + request.tenantId
+        + " account=" + request.accountId
+        + " merchant=" + request.merchantId
+        + " payment_id=" + request.paymentId
+        + " status=" + status
+        + " reason=" + reason
+        + " expires_at=" + expiresAtText
+        + " elapsed_ms=" + String.format("%.2f", (System.nanoTime() - startNanos) / 1_000_000.0));
+  }
+
+  private boolean isDuplicateKeyError(SQLException exception)
+  {
+    return exception.getErrorCode() == 1
+           || (exception.getMessage() != null && exception.getMessage().contains("ORA-00001"));
   }
 
   private void bindAuthorization(PreparedStatement statement, String authorizationKey,
@@ -616,7 +661,7 @@ public class PaymentAuthorizationState
     }
   }
 
-  private void dropTable(Connection connection, boolean reportMissing)
+  private void dropTable(Connection connection, boolean reportFailure) throws SQLException
   {
     if (connection == null)
     {
@@ -630,9 +675,10 @@ public class PaymentAuthorizationState
     }
     catch (SQLException e)
     {
-      if (reportMissing)
+      if (reportFailure)
       {
         System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
+        throw e;
       }
     }
   }

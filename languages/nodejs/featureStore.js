@@ -200,9 +200,10 @@ async function main() {
   }
   catch (err) {
     console.error(err);
+    process.exitCode = 1;
   }
   finally {
-    await releaseConnection(connection);
+    await closeConnection(connection);
     if (completed) {
       console.log('✓ Completed feature store sample operations');
     }
@@ -386,14 +387,15 @@ async function deleteExpiredFeatures(connection) {
   console.log(`✓ Deleted ${deleted} expired feature row`);
 }
 
-async function releaseConnection(connection) {
+async function closeConnection(connection) {
   if (connection) {
     try {
-      await connection.release();
-      console.log('Connection has been released');
+      await connection.close();
+      console.log('Connection has been closed');
     }
     catch (err) {
       console.error(err);
+      process.exitCode = 1;
     }
   }
 }

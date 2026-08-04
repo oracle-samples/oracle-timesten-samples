@@ -26,6 +26,7 @@
 import datetime
 import hashlib
 import json
+import sys
 import time
 
 import oracledb
@@ -500,6 +501,7 @@ def run():
 
   connection = None
   cursor = None
+  exit_code = 0
   try:
     print("=== Chat session memory demo ===")
     connection = connect()
@@ -520,14 +522,25 @@ def run():
     drop_table(cursor, True)
     print("✓ Completed chat session memory sample operations")
   except Exception as err:
-    print("An error occurred", str(err))
+    print(f"✗ Sample failed: {err}", file=sys.stderr)
+    exit_code = 1
   finally:
-    if cursor:
-      cursor.close()
-    if connection:
-      connection.close()
-      print("Connection has been released")
+    if cursor is not None:
+      try:
+        cursor.close()
+      except Exception as err:
+        print(f"⚠ Cursor release failed: {err}", file=sys.stderr)
+        exit_code = 1
+    if connection is not None:
+      try:
+        connection.close()
+        print("Connection has been closed")
+      except Exception as err:
+        print(f"⚠ Connection release failed: {err}", file=sys.stderr)
+        exit_code = 1
+
+  return exit_code
 
 
 if __name__ == "__main__":
-  run()
+  sys.exit(run())

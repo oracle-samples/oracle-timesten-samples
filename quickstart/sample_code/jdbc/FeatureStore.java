@@ -231,40 +231,32 @@ public class FeatureStore
 
     System.out.println("=== Feature store demo ===");
     System.out.println();
-    System.out.println("Connecting using URL: " + url);
+    System.out.println("Connecting to TimesTen");
 
-    Connection connection = null;
-    try
+    try (Connection connection = DriverManager.getConnection(url, username, password))
     {
-      connection = DriverManager.getConnection(url, username, password);
       connection.setAutoCommit(true);
 
       System.out.println("✓ Connected");
-      runDemo(connection);
-      System.out.println("✓ Completed feature store sample operations");
-      return 0;
+      boolean demoSucceeded = false;
+      try
+      {
+        runDemo(connection);
+        demoSucceeded = true;
+      }
+      finally
+      {
+        dropTable(connection, demoSucceeded);
+      }
     }
     catch (SQLException e)
     {
       printSQLException(e);
       return 1;
     }
-    finally
-    {
-      dropTable(connection, false);
 
-      if (connection != null)
-      {
-        try
-        {
-          connection.close();
-        }
-        catch (SQLException e)
-        {
-          printSQLException(e);
-        }
-      }
-    }
+    System.out.println("✓ Completed feature store sample operations");
+    return 0;
   }
 
   private boolean parseOptions(String[] args, String usage)
@@ -369,7 +361,6 @@ public class FeatureStore
     printFeatureSet(connection, "retail_app", "user_001");
     printFeatureSet(connection, "field_service", "user_204");
     deleteExpiredFeatures(connection);
-    dropTable(connection, true);
   }
 
   private void createSchema(Connection connection) throws SQLException
@@ -547,7 +538,7 @@ public class FeatureStore
     }
   }
 
-  private void dropTable(Connection connection, boolean reportMissing)
+  private void dropTable(Connection connection, boolean reportFailure) throws SQLException
   {
     if (connection == null)
     {
@@ -561,9 +552,10 @@ public class FeatureStore
     }
     catch (SQLException e)
     {
-      if (reportMissing)
+      if (reportFailure)
       {
         System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
+        throw e;
       }
     }
   }

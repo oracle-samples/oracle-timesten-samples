@@ -206,14 +206,22 @@ public class AiResponseCache
 
     System.out.println("=== AI response cache demo ===");
     System.out.println();
-    System.out.println("Connecting using URL: " + url);
+    System.out.println("Connecting to TimesTen");
 
     try (Connection connection = DriverManager.getConnection(url, username, password))
     {
       connection.setAutoCommit(true);
       System.out.println("✓ Connected");
-      runDemo(connection);
-      System.out.println("✓ Completed AI response cache sample operations");
+      boolean demoSucceeded = false;
+      try
+      {
+        runDemo(connection);
+        demoSucceeded = true;
+      }
+      finally
+      {
+        dropTable(connection, demoSucceeded);
+      }
     }
     catch (SQLException e)
     {
@@ -221,6 +229,7 @@ public class AiResponseCache
       return 1;
     }
 
+    System.out.println("✓ Completed AI response cache sample operations");
     return 0;
   }
 
@@ -324,7 +333,6 @@ public class AiResponseCache
     // Show the active cache footprint before stale rows are removed.
     printCacheSummary(connection);
     deleteExpiredEntries(connection);
-    dropTable(connection, true);
   }
 
   private void createSchema(Connection connection) throws SQLException
@@ -348,7 +356,7 @@ public class AiResponseCache
     }
   }
 
-  private void dropTable(Connection connection, boolean reportMissing)
+  private void dropTable(Connection connection, boolean reportFailure) throws SQLException
   {
     try (PreparedStatement statement = connection.prepareStatement(DROP_TABLE_SQL))
     {
@@ -357,9 +365,10 @@ public class AiResponseCache
     }
     catch (SQLException e)
     {
-      if (reportMissing)
+      if (reportFailure)
       {
         System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
+        throw e;
       }
     }
   }

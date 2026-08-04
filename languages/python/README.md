@@ -275,6 +275,7 @@ The sample performs the following steps:
 * Seeds one expired authorization record
 * Processes sample payment authorization requests
 * Shows idempotent replay for a repeated payment request
+* Rereads the stored decision if a concurrent request inserts the same key
 * Stores request and decision metadata in JSON
 * Summarizes active authorizations by tenant/account/status
 * Deletes expired authorization records
@@ -320,6 +321,7 @@ The sample performs the following steps:
 * Seeds one expired routing record
 * Processes sample call routing requests
 * Shows idempotent replay for a repeated call request
+* Rereads the stored decision if a concurrent request inserts the same key
 * Stores request and decision metadata in JSON
 * Summarizes active routing decisions by tenant/subscriber/state
 * Deletes expired routing records

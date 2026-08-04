@@ -148,9 +148,10 @@ async function main() {
   }
   catch (err) {
     console.error(err);
+    process.exitCode = 1;
   }
   finally {
-    await releaseConnection(connection);
+    await closeConnection(connection);
     if (completed) {
       console.log('✓ Completed AI response cache sample operations');
     }
@@ -372,14 +373,15 @@ async function deleteExpiredEntries(connection) {
   console.log(`✓ Deleted ${deleted} expired cache entry`);
 }
 
-async function releaseConnection(connection) {
+async function closeConnection(connection) {
   if (connection) {
     try {
-      await connection.release();
-      console.log('Connection has been released');
+      await connection.close();
+      console.log('Connection has been closed');
     }
     catch (err) {
       console.error(err);
+      process.exitCode = 1;
     }
   }
 }

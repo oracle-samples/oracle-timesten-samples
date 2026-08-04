@@ -161,13 +161,12 @@ For JMS programs, also include **timesten.jmsxla** in **--enable-native-access**
 
 ### Sample programs instructions and examples
 
-The concise commands in the individual examples below apply to a non-modular
-or mixed build. If you compile these samples as a module, use the modular form
-shown above. For example, with JDK 25:
+For JDK 25, compile the five new demos as a modular application:
 
-    java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
-      --enable-native-access=timesten.jdbc \
-      --module my.jdbc.app.module/jdbc.demo.AiResponseCache -u username -p password
+    javac --module-path $TIMESTEN_HOME/install/lib/ttjdbc25.jar -d out *.java
+
+The modular commands in their individual sections assume this `out` directory
+and use `-u` and `-p` for the TimesTen username and password.
 
 **asyncJMS** or **asyncJMS2**
 
@@ -497,7 +496,9 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.AiResponseCache -u username -p password`
+    java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
+      --enable-native-access=timesten.jdbc \
+      --module my.jdbc.app.module/jdbc.demo.AiResponseCache -u username -p password
 
 **ChatSessionMemory**
 
@@ -517,7 +518,9 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.ChatSessionMemory -u username -p password`
+    java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
+      --enable-native-access=timesten.jdbc \
+      --module my.jdbc.app.module/jdbc.demo.ChatSessionMemory -u username -p password
 
 
 **FeatureStore**
@@ -538,12 +541,14 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.FeatureStore -u username -p password`
+    java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
+      --enable-native-access=timesten.jdbc \
+      --module my.jdbc.app.module/jdbc.demo.FeatureStore -u username -p password
 
 
 **PaymentAuthorizationState**
 
-This sample demonstrates a real-time payment authorization state flow in TimesTen. It creates a payment authorization table with tenant, account, merchant, amount, risk, status, and expiration fields; applies deterministic authorization rules; stores request and decision metadata in JSON; shows idempotent replay for repeated payment requests; and removes expired rows before dropping the table. The demo uses simulated rules so the focus stays on low-latency decisioning and state management.
+This sample demonstrates a real-time payment authorization state flow in TimesTen. It creates a payment authorization table with tenant, account, merchant, amount, risk, status, and expiration fields; applies deterministic authorization rules; stores request and decision metadata in JSON; replays repeated payment requests; and rereads the stored decision if concurrent requests insert the same key. It removes expired rows before dropping the table. The demo uses simulated rules so the focus stays on low-latency decisioning and state management.
 
 The sample performs the following steps:
 
@@ -552,6 +557,7 @@ The sample performs the following steps:
   - Seeds one expired authorization record
   - Processes payment authorization requests
   - Shows a repeated request being replayed from the existing state
+  - Rereads the stored decision if a concurrent request inserts the same key
   - Stores request and decision metadata in JSON
   - Summarizes active authorizations by tenant/account/status
   - Deletes expired authorization records
@@ -560,12 +566,14 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.PaymentAuthorizationState -u username -p password`
+    java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
+      --enable-native-access=timesten.jdbc \
+      --module my.jdbc.app.module/jdbc.demo.PaymentAuthorizationState -u username -p password
 
 
 **TelecomCallRoutingState**
 
-This sample demonstrates a real-time telecom call routing state flow in TimesTen. It creates a call routing table with tenant, subscriber, call, region, slice, priority, route state, and expiration fields; applies deterministic routing rules; stores request and decision metadata in JSON; shows idempotent replay for repeated call requests; and removes expired rows before dropping the table. The demo uses simulated rules so the focus stays on low-latency routing decisions and state management.
+This sample demonstrates a real-time telecom call routing state flow in TimesTen. It creates a call routing table with tenant, subscriber, call, region, slice, priority, route state, and expiration fields; applies deterministic routing rules; stores request and decision metadata in JSON; replays repeated call requests; and rereads the stored decision if concurrent requests insert the same key. It removes expired rows before dropping the table. The demo uses simulated rules so the focus stays on low-latency routing decisions and state management.
 
 The sample performs the following steps:
 
@@ -574,6 +582,7 @@ The sample performs the following steps:
   - Seeds one expired routing record
   - Processes call routing requests
   - Shows a repeated request being replayed from the existing state
+  - Rereads the stored decision if a concurrent request inserts the same key
   - Stores request and decision metadata in JSON
   - Summarizes active routing decisions by tenant/subscriber/state
   - Deletes expired routing records
@@ -582,7 +591,9 @@ Example:
 
   Run the program using the default DSN (sampledb)
 
-  `java jdbc.demo.TelecomCallRoutingState -u username -p password`
+    java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
+      --enable-native-access=timesten.jdbc \
+      --module my.jdbc.app.module/jdbc.demo.TelecomCallRoutingState -u username -p password
 
 
 For more information on Java programming with Oracle TimesTen, refer to the [Oracle TimesTen In-Memory Database Java Developer's Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/java-developer/index.html).

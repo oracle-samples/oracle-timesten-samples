@@ -195,9 +195,10 @@ async function main() {
   }
   catch (err) {
     console.error(err);
+    process.exitCode = 1;
   }
   finally {
-    await releaseConnection(connection);
+    await closeConnection(connection);
     if (completed) {
       console.log('✓ Completed chat session memory sample operations');
     }
@@ -528,14 +529,15 @@ async function deleteExpiredSessions(connection) {
   console.log(`✓ Deleted ${deleted} expired chat session`);
 }
 
-async function releaseConnection(connection) {
+async function closeConnection(connection) {
   if (connection) {
     try {
-      await connection.release();
-      console.log('Connection has been released');
+      await connection.close();
+      console.log('Connection has been closed');
     }
     catch (err) {
       console.error(err);
+      process.exitCode = 1;
     }
   }
 }

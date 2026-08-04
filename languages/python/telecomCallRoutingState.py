@@ -21,6 +21,7 @@
 #       - Seeds one expired routing record
 #       - Processes sample call routing requests
 #       - Shows idempotent replay for a repeated call request
+#       - Rereads the stored decision if concurrent requests insert the same key
 #       - Stores request and decision metadata in JSON
 #       - Summarizes active routing decisions by tenant/subscriber/state
 #       - Deletes expired routing records
@@ -29,6 +30,7 @@
 import datetime
 import hashlib
 import json
+import sys
 import time
 
 import oracledb
@@ -86,6 +88,12 @@ SELECT_EXISTING_ROUTING = f"""
   FROM {TABLE_NAME}
   WHERE routing_key = :1
     AND expires_at > :2
+"""
+
+DELETE_EXPIRED_ROUTING_FOR_KEY = f"""
+  DELETE FROM {TABLE_NAME}
+  WHERE routing_key = :1
+    AND expires_at <= :2
 """
 
 SELECT_ACTIVE_SUMMARY = f"""
@@ -367,6 +375,31 @@ def lookup_existing_routing(cursor, routing_key, now):
   return cursor.fetchone()
 
 
+def delete_expired_routing_for_key(cursor, routing_key, now):
+  """Remove an expired routing decision before accepting the same key again."""
+
+  cursor.execute(DELETE_EXPIRED_ROUTING_FOR_KEY, (routing_key, now))
+
+
+def is_duplicate_key_error(error):
+  """Return whether a database error reports a primary-key conflict."""
+
+  error_info = error.args[0] if error.args else None
+  return (getattr(error_info, "code", None) == 1
+          or "ORA-00001" in str(error_info))
+
+
+def print_routing_replay(call_request, state, reason, expires_at_text, start_time):
+  """Print a replayed routing decision consistently."""
+
+  print(
+      "→ Routing replay: "
+      f"tenant={call_request['tenant_id']} subscriber={call_request['subscriber_id']} "
+      f"call_id={call_request['call_id']} state={state} reason={reason} "
+      f"expires_at={expires_at_text} "
+      f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
+
+
 def store_routing(cursor, call_request, state, reason, expires_at):
   """Persist a new routing decision."""
 
@@ -404,21 +437,30 @@ def route_call(cursor, call_request):
   start_time = time.perf_counter()
   now = current_timestamp()
   routing_key = build_routing_key(call_request)
+  delete_expired_routing_for_key(cursor, routing_key, now)
   existing = lookup_existing_routing(cursor, routing_key, now)
   # If routing state already exists, replay it instead of recalculating.
   if existing is not None:
     state, reason, expires_at_text = existing
-    print(
-        "→ Routing replay: "
-      f"tenant={call_request['tenant_id']} subscriber={call_request['subscriber_id']} "
-      f"call_id={call_request['call_id']} state={state} reason={reason} "
-      f"expires_at={expires_at_text} "
-      f"elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
+    print_routing_replay(
+        call_request, state, reason, expires_at_text, start_time)
     return state
 
   state, reason, expires_at = evaluate_routing(call_request)
-  # New routing decisions are stored so the same event stays deterministic.
-  store_routing(cursor, call_request, state, reason, expires_at)
+  # A concurrent copy of this event can win the insert. In that case, reread
+  # its stored decision instead of treating the duplicate key as an error.
+  try:
+    store_routing(cursor, call_request, state, reason, expires_at)
+  except oracledb.DatabaseError as error:
+    if not is_duplicate_key_error(error):
+      raise
+    existing = lookup_existing_routing(cursor, routing_key, current_timestamp())
+    if existing is None:
+      raise
+    existing_state, existing_reason, expires_at_text = existing
+    print_routing_replay(
+        call_request, existing_state, existing_reason, expires_at_text, start_time)
+    return existing_state
   print(
       "→ Routing decision: "
       f"tenant={call_request['tenant_id']} subscriber={call_request['subscriber_id']} "
@@ -462,11 +504,14 @@ def cleanup_expired_routing(cursor):
 def run():
   """Run the sample."""
 
-  connection = connect()
-  cursor = connection.cursor()
+  connection = None
+  cursor = None
+  exit_code = 0
 
   try:
     print("=== Telecom call routing demo ===")
+    connection = connect()
+    cursor = connection.cursor()
     # Recreate the routing table so each run starts from a clean state.
     drop_table(cursor, False)
     create_schema(cursor)
@@ -482,10 +527,26 @@ def run():
     cleanup_expired_routing(cursor)
     drop_table(cursor, False)
     print("✓ Completed telecom call routing sample operations")
+  except Exception as err:
+    print(f"✗ Sample failed: {err}", file=sys.stderr)
+    exit_code = 1
   finally:
-    cursor.close()
-    connection.close()
+    if cursor is not None:
+      try:
+        cursor.close()
+      except Exception as err:
+        print(f"⚠ Cursor release failed: {err}", file=sys.stderr)
+        exit_code = 1
+    if connection is not None:
+      try:
+        connection.close()
+        print("Connection has been closed")
+      except Exception as err:
+        print(f"⚠ Connection release failed: {err}", file=sys.stderr)
+        exit_code = 1
+
+  return exit_code
 
 
 if __name__ == "__main__":
-  run()
+  sys.exit(run())

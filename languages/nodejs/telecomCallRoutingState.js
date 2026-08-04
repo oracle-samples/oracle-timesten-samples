@@ -21,6 +21,7 @@
  *     - Seeds one expired routing record
  *     - Processes sample call routing requests
  *     - Shows idempotent replay for a repeated call request
+ *     - Rereads the stored decision if concurrent requests insert the same key
  *     - Stores request and decision metadata in JSON
  *     - Summarizes active routing decisions by tenant/subscriber/state
  *     - Deletes expired routing records
@@ -86,6 +87,12 @@ const SELECT_EXISTING_ROUTING = `
   FROM call_routing_state
   WHERE routing_key = :1
     AND expires_at > :2
+`;
+
+const DELETE_EXPIRED_ROUTING_FOR_KEY = `
+  DELETE FROM call_routing_state
+  WHERE routing_key = :1
+    AND expires_at <= :2
 `;
 
 const SELECT_ACTIVE_SUMMARY = `
@@ -220,9 +227,10 @@ async function main() {
   }
   catch (err) {
     console.error(err);
+    process.exitCode = 1;
   }
   finally {
-    await releaseConnection(connection);
+    await closeConnection(connection);
     if (completed) {
       console.log('✓ Completed telecom call routing sample operations');
     }
@@ -393,6 +401,25 @@ async function lookupExistingRouting(connection, routingKey) {
   return result.rows.length > 0 ? result.rows[0] : null;
 }
 
+async function deleteExpiredRoutingForKey(connection, routingKey) {
+  await connection.execute(DELETE_EXPIRED_ROUTING_FOR_KEY, [
+    routingKey,
+    currentTimestamp()
+  ]);
+}
+
+function isDuplicateKeyError(err) {
+  return err.errorNum === 1 || err.code === 'ORA-00001' || /ORA-00001/.test(err.message || '');
+}
+
+function printRoutingReplay(callRequest, state, reason, expiresAtText, startTime) {
+  console.log(
+    `→ Routing replay: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
+    `call_id=${callRequest.call_id} state=${state} reason=${reason} expires_at=${expiresAtText} ` +
+    `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
+  );
+}
+
 async function storeRouting(connection, callRequest, state, reason, expiresAt) {
   const now = currentTimestamp();
   const routingKey = buildRoutingKey(callRequest);
@@ -426,23 +453,34 @@ async function storeRouting(connection, callRequest, state, reason, expiresAt) {
 async function routeCall(connection, callRequest) {
   const startTime = process.hrtime.bigint();
   const routingKey = buildRoutingKey(callRequest);
+  await deleteExpiredRoutingForKey(connection, routingKey);
   const existing = await lookupExistingRouting(connection, routingKey);
 
   // Replaying an existing route keeps the routing path deterministic.
   if (existing !== null) {
     const [state, reason, expiresAtText] = existing;
-    console.log(
-      `→ Routing replay: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
-      `call_id=${callRequest.call_id} state=${state} reason=${reason} expires_at=${expiresAtText} ` +
-      `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
-    );
+    printRoutingReplay(callRequest, state, reason, expiresAtText, startTime);
     return state;
   }
 
   const decision = evaluateRouting(callRequest);
   const expiresAt = new Date(currentTimestamp().getTime() + decision.ttlMinutes * 60000);
-  // New routing decisions are stored so later replays can return the same result.
-  await storeRouting(connection, callRequest, decision.state, decision.reason, expiresAt);
+  // A concurrent copy of this event can win the insert. Reread its stored
+  // decision instead of treating that duplicate key as an application error.
+  try {
+    await storeRouting(connection, callRequest, decision.state, decision.reason, expiresAt);
+  } catch (err) {
+    if (!isDuplicateKeyError(err)) {
+      throw err;
+    }
+    const concurrentDecision = await lookupExistingRouting(connection, routingKey);
+    if (concurrentDecision === null) {
+      throw err;
+    }
+    const [state, reason, expiresAtText] = concurrentDecision;
+    printRoutingReplay(callRequest, state, reason, expiresAtText, startTime);
+    return state;
+  }
   console.log(
     `→ Routing decision: tenant=${callRequest.tenant_id} subscriber=${callRequest.subscriber_id} ` +
     `call_id=${callRequest.call_id} state=${decision.state} source=${callRequest.source_region} ` +
@@ -492,14 +530,15 @@ async function cleanupExpiredRouting(connection) {
   );
 }
 
-async function releaseConnection(connection) {
-  if (connection !== undefined) {
+async function closeConnection(connection) {
+  if (connection) {
     try {
       await connection.close();
-      console.log('Connection has been released');
+      console.log('Connection has been closed');
     }
     catch (err) {
       console.error(err);
+      process.exitCode = 1;
     }
   }
 }

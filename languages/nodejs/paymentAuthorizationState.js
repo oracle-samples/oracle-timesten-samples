@@ -21,6 +21,7 @@
  *     - Seeds one expired authorization record
  *     - Processes sample payment authorization requests
  *     - Shows idempotent replay for a repeated payment request
+ *     - Rereads the stored decision if concurrent requests insert the same key
  *     - Stores request and decision metadata in JSON
  *     - Summarizes active authorizations by tenant/account/status
  *     - Deletes expired authorization records
@@ -88,6 +89,12 @@ const SELECT_EXISTING_AUTHORIZATION = `
   FROM payment_authorizations
   WHERE authorization_key = :1
     AND expires_at > :2
+`;
+
+const DELETE_EXPIRED_AUTHORIZATION_FOR_KEY = `
+  DELETE FROM payment_authorizations
+  WHERE authorization_key = :1
+    AND expires_at <= :2
 `;
 
 const SELECT_ACTIVE_SUMMARY = `
@@ -228,9 +235,10 @@ async function main() {
   }
   catch (err) {
     console.error(err);
+    process.exitCode = 1;
   }
   finally {
-    await releaseConnection(connection);
+    await closeConnection(connection);
     if (completed) {
       console.log('✓ Completed payment authorization sample operations');
     }
@@ -401,6 +409,26 @@ async function lookupExistingAuthorization(connection, authKey) {
   return result.rows.length > 0 ? result.rows[0] : null;
 }
 
+async function deleteExpiredAuthorizationForKey(connection, authKey) {
+  await connection.execute(DELETE_EXPIRED_AUTHORIZATION_FOR_KEY, [
+    authKey,
+    currentTimestamp()
+  ]);
+}
+
+function isDuplicateKeyError(err) {
+  return err.errorNum === 1 || err.code === 'ORA-00001' || /ORA-00001/.test(err.message || '');
+}
+
+function printAuthorizationReplay(payment, status, reason, expiresAtText, startTime) {
+  console.log(
+    `→ Authorization replay: tenant=${payment.tenant_id} account=${payment.account_id} ` +
+    `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
+    `status=${status} reason=${reason} expires_at=${expiresAtText} ` +
+    `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
+  );
+}
+
 async function storeAuthorization(connection, payment, status, reason, expiresAt) {
   const now = currentTimestamp();
   const authKey = buildAuthorizationKey(payment);
@@ -437,24 +465,34 @@ async function storeAuthorization(connection, payment, status, reason, expiresAt
 async function authorizePayment(connection, payment) {
   const authKey = buildAuthorizationKey(payment);
   const startTime = process.hrtime.bigint();
+  await deleteExpiredAuthorizationForKey(connection, authKey);
   const existing = await lookupExistingAuthorization(connection, authKey);
 
   // Replaying an existing decision keeps the authorization path idempotent.
   if (existing !== null) {
     const [status, reason, expiresAtText] = existing;
-    console.log(
-      `→ Authorization replay: tenant=${payment.tenant_id} account=${payment.account_id} ` +
-      `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
-      `status=${status} reason=${reason} expires_at=${expiresAtText} ` +
-      `elapsed_ms=${elapsedMs(startTime).toFixed(2)}`
-    );
+    printAuthorizationReplay(payment, status, reason, expiresAtText, startTime);
     return status;
   }
 
   const decision = evaluatePayment(payment);
   const expiresAt = new Date(currentTimestamp().getTime() + decision.ttlMinutes * 60000);
-  // New decisions are stored so the same payment request can be answered consistently.
-  await storeAuthorization(connection, payment, decision.status, decision.reason, expiresAt);
+  // A concurrent copy of this request can win the insert. Reread its stored
+  // decision instead of treating that duplicate key as an application error.
+  try {
+    await storeAuthorization(connection, payment, decision.status, decision.reason, expiresAt);
+  } catch (err) {
+    if (!isDuplicateKeyError(err)) {
+      throw err;
+    }
+    const concurrentDecision = await lookupExistingAuthorization(connection, authKey);
+    if (concurrentDecision === null) {
+      throw err;
+    }
+    const [status, reason, expiresAtText] = concurrentDecision;
+    printAuthorizationReplay(payment, status, reason, expiresAtText, startTime);
+    return status;
+  }
   console.log(
     `→ Authorization decision: tenant=${payment.tenant_id} account=${payment.account_id} ` +
     `merchant=${payment.merchant_id} payment_id=${payment.payment_id} ` +
@@ -506,14 +544,15 @@ async function cleanupExpiredAuthorizations(connection) {
   );
 }
 
-async function releaseConnection(connection) {
-  if (connection !== undefined) {
+async function closeConnection(connection) {
+  if (connection) {
     try {
       await connection.close();
-      console.log('Connection has been released');
+      console.log('Connection has been closed');
     }
     catch (err) {
       console.error(err);
+      process.exitCode = 1;
     }
   }
 }

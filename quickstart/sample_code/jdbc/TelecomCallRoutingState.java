@@ -20,6 +20,7 @@
  *     - Seeds one expired routing record
  *     - Processes call routing requests
  *     - Shows a repeated request being replayed from the existing state
+ *     - Rereads the stored decision if concurrent requests insert the same key
  *     - Stores request and decision metadata in JSON
  *     - Summarizes active routing decisions by tenant/subscriber/state
  *     - Deletes expired routing records
@@ -101,6 +102,11 @@ public class TelecomCallRoutingState
     + "FROM " + TABLE_NAME + " "
     + "WHERE routing_key = ? "
     + "  AND expires_at > ?";
+
+  private static final String DELETE_EXPIRED_ROUTING_FOR_KEY_SQL =
+    "DELETE FROM " + TABLE_NAME + " "
+    + "WHERE routing_key = ? "
+    + "  AND expires_at <= ?";
 
   private static final String SELECT_ACTIVE_SUMMARY_SQL =
     "SELECT tenant_id, subscriber_id, route_state, COUNT(*) "
@@ -235,41 +241,32 @@ public class TelecomCallRoutingState
 
     System.out.println("=== Telecom call routing demo ===");
     System.out.println();
-    System.out.println("Connecting using URL: " + url);
+    System.out.println("Connecting to TimesTen");
 
-    Connection connection = null;
-    try
+    try (Connection connection = DriverManager.getConnection(url, username, password))
     {
-      connection = DriverManager.getConnection(url, username, password);
       connection.setAutoCommit(true);
 
       System.out.println("✓ Connected");
-      runDemo(connection);
-      return 0;
+      boolean demoSucceeded = false;
+      try
+      {
+        runDemo(connection);
+        demoSucceeded = true;
+      }
+      finally
+      {
+        dropTable(connection, demoSucceeded);
+      }
     }
     catch (SQLException e)
     {
       printSQLException(e);
       return 1;
     }
-    finally
-    {
-      dropTable(connection, false);
 
-      if (connection != null)
-      {
-        try
-        {
-          connection.close();
-        }
-        catch (SQLException e)
-        {
-          printSQLException(e);
-        }
-      }
-
-      System.out.println("✓ Completed telecom call routing sample operations");
-    }
+    System.out.println("✓ Completed telecom call routing sample operations");
+    return 0;
   }
 
   private boolean parseOptions(String[] args, String usage)
@@ -482,30 +479,12 @@ public class TelecomCallRoutingState
     Timestamp now = currentTimestamp();
     String routingKey = buildRoutingKey(request);
 
-    // Replaying an existing route keeps the routing path deterministic.
-    try (PreparedStatement lookup = connection.prepareStatement(SELECT_EXISTING_ROUTING_SQL))
+    deleteExpiredRoutingForKey(connection, routingKey, now);
+    String[] existing = findExistingRouting(connection, routingKey, now);
+    if (existing != null)
     {
-      lookup.setString(1, routingKey);
-      lookup.setTimestamp(2, now);
-
-      try (ResultSet resultSet = lookup.executeQuery())
-      {
-        if (resultSet.next())
-        {
-          String state = resultSet.getString(1);
-          String reason = resultSet.getString(2);
-          String expiresAtText = resultSet.getString(3);
-          System.out.println(
-              "→ Routing replay: tenant=" + request.tenantId
-              + " subscriber=" + request.subscriberId
-              + " call_id=" + request.callId
-              + " state=" + state
-              + " reason=" + reason
-              + " expires_at=" + expiresAtText
-              + " elapsed_ms=" + formatElapsedMillis(startNanos));
-          return;
-        }
-      }
+      printRoutingReplay(request, existing[0], existing[1], existing[2], startNanos);
+      return;
     }
 
     RoutingDecision decision = evaluateRouting(request);
@@ -514,12 +493,28 @@ public class TelecomCallRoutingState
     String decisionPayload = decisionPayloadToJson(request, decision.state, decision.reason,
                                                    formatTimestamp(expiresAt));
 
-    // New routing decisions are stored so later replays can return the same result.
+    // A concurrent copy of this event can win the insert. Reread its stored
+    // decision instead of treating that duplicate key as an application error.
     try (PreparedStatement insert = connection.prepareStatement(INSERT_ROUTING_SQL))
     {
       bindRouting(insert, routingKey, request, decision.state, decision.reason,
                   requestPayload, decisionPayload, now, now, expiresAt);
       insert.executeUpdate();
+    }
+    catch (SQLException exception)
+    {
+      if (!isDuplicateKeyError(exception))
+      {
+        throw exception;
+      }
+
+      existing = findExistingRouting(connection, routingKey, currentTimestamp());
+      if (existing == null)
+      {
+        throw exception;
+      }
+      printRoutingReplay(request, existing[0], existing[1], existing[2], startNanos);
+      return;
     }
 
     System.out.println(
@@ -533,6 +528,56 @@ public class TelecomCallRoutingState
         + " reason=" + decision.reason
         + " hold_expires=" + formatTimestamp(expiresAt)
         + " elapsed_ms=" + formatElapsedMillis(startNanos));
+  }
+
+  private void deleteExpiredRoutingForKey(Connection connection, String routingKey,
+                                          Timestamp now) throws SQLException
+  {
+    try (PreparedStatement statement = connection.prepareStatement(DELETE_EXPIRED_ROUTING_FOR_KEY_SQL))
+    {
+      statement.setString(1, routingKey);
+      statement.setTimestamp(2, now);
+      statement.executeUpdate();
+    }
+  }
+
+  private String[] findExistingRouting(Connection connection, String routingKey,
+                                       Timestamp now) throws SQLException
+  {
+    try (PreparedStatement statement = connection.prepareStatement(SELECT_EXISTING_ROUTING_SQL))
+    {
+      statement.setString(1, routingKey);
+      statement.setTimestamp(2, now);
+      try (ResultSet resultSet = statement.executeQuery())
+      {
+        if (!resultSet.next())
+        {
+          return null;
+        }
+        return new String[] {
+          resultSet.getString(1), resultSet.getString(2), resultSet.getString(3)
+        };
+      }
+    }
+  }
+
+  private void printRoutingReplay(CallRequest request, String state, String reason,
+                                  String expiresAtText, long startNanos)
+  {
+    System.out.println(
+        "→ Routing replay: tenant=" + request.tenantId
+        + " subscriber=" + request.subscriberId
+        + " call_id=" + request.callId
+        + " state=" + state
+        + " reason=" + reason
+        + " expires_at=" + expiresAtText
+        + " elapsed_ms=" + formatElapsedMillis(startNanos));
+  }
+
+  private boolean isDuplicateKeyError(SQLException exception)
+  {
+    return exception.getErrorCode() == 1
+           || (exception.getMessage() != null && exception.getMessage().contains("ORA-00001"));
   }
 
   private void bindRouting(PreparedStatement statement, String routingKey,
@@ -622,7 +667,7 @@ public class TelecomCallRoutingState
     }
   }
 
-  private void dropTable(Connection connection, boolean reportMissing)
+  private void dropTable(Connection connection, boolean reportFailure) throws SQLException
   {
     if (connection == null)
     {
@@ -636,9 +681,10 @@ public class TelecomCallRoutingState
     }
     catch (SQLException e)
     {
-      if (reportMissing)
+      if (reportFailure)
       {
         System.out.println("⚠ Table " + TABLE_NAME + " not dropped: " + e.getMessage());
+        throw e;
       }
     }
   }

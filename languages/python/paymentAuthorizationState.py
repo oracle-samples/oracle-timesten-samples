@@ -21,6 +21,7 @@
 #       - Seeds one expired authorization record
 #       - Processes sample payment authorization requests
 #       - Shows idempotent replay for a repeated payment request
+#       - Rereads the stored decision if concurrent requests insert the same key
 #       - Stores request and decision metadata in JSON
 #       - Summarizes active authorizations by tenant/account/status
 #       - Deletes expired authorization records
@@ -29,6 +30,7 @@
 import datetime
 import hashlib
 import json
+import sys
 import time
 
 import oracledb
@@ -88,6 +90,12 @@ SELECT_EXISTING_AUTHORIZATION = f"""
   FROM {TABLE_NAME}
   WHERE authorization_key = :1
     AND expires_at > :2
+"""
+
+DELETE_EXPIRED_AUTHORIZATION_FOR_KEY = f"""
+  DELETE FROM {TABLE_NAME}
+  WHERE authorization_key = :1
+    AND expires_at <= :2
 """
 
 SELECT_ACTIVE_SUMMARY = f"""
@@ -380,6 +388,31 @@ def lookup_existing_authorization(cursor, auth_key, now):
   return cursor.fetchone()
 
 
+def delete_expired_authorization_for_key(cursor, auth_key, now):
+  """Remove an expired decision before accepting a new request with the same key."""
+
+  cursor.execute(DELETE_EXPIRED_AUTHORIZATION_FOR_KEY, (auth_key, now))
+
+
+def is_duplicate_key_error(error):
+  """Return whether a database error reports a primary-key conflict."""
+
+  error_info = error.args[0] if error.args else None
+  return (getattr(error_info, "code", None) == 1
+          or "ORA-00001" in str(error_info))
+
+
+def print_authorization_replay(payment, status, reason, expires_at_text, start_time):
+  """Print a replayed authorization decision consistently."""
+
+  print(
+      "→ Authorization replay: "
+      f"tenant={payment['tenant_id']} account={payment['account_id']} "
+      f"merchant={payment['merchant_id']} payment_id={payment['payment_id']} "
+      f"status={status} reason={reason} expires_at={expires_at_text}")
+  print(f"  elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
+
+
 def store_authorization(cursor, payment, status, reason, expires_at):
   """Persist a new authorization decision."""
 
@@ -418,21 +451,30 @@ def authorize_payment(cursor, payment):
   now = current_timestamp()
   auth_key = build_authorization_key(payment)
   start_time = time.perf_counter()
+  delete_expired_authorization_for_key(cursor, auth_key, now)
   existing = lookup_existing_authorization(cursor, auth_key, now)
   # If we have already made the decision, return it instead of recomputing it.
   if existing is not None:
     status, reason, expires_at_text = existing
-    print(
-        "→ Authorization replay: "
-        f"tenant={payment['tenant_id']} account={payment['account_id']} "
-        f"merchant={payment['merchant_id']} payment_id={payment['payment_id']} "
-        f"status={status} reason={reason} expires_at={expires_at_text}")
-    print(f"  elapsed_ms={(time.perf_counter() - start_time) * 1000:.2f}")
+    print_authorization_replay(
+        payment, status, reason, expires_at_text, start_time)
     return status
 
   status, reason, expires_at = evaluate_payment(payment)
-  # New decisions are stored so the same request can be replayed consistently.
-  store_authorization(cursor, payment, status, reason, expires_at)
+  # A concurrent copy of this request can win the insert. In that case, reread
+  # its stored decision instead of treating the duplicate key as an error.
+  try:
+    store_authorization(cursor, payment, status, reason, expires_at)
+  except oracledb.DatabaseError as error:
+    if not is_duplicate_key_error(error):
+      raise
+    existing = lookup_existing_authorization(cursor, auth_key, current_timestamp())
+    if existing is None:
+      raise
+    existing_status, existing_reason, expires_at_text = existing
+    print_authorization_replay(
+        payment, existing_status, existing_reason, expires_at_text, start_time)
+    return existing_status
   print(
       "→ Authorization decision: "
       f"tenant={payment['tenant_id']} account={payment['account_id']} "
@@ -476,11 +518,14 @@ def cleanup_expired_authorizations(cursor):
 def run():
   """Run the sample."""
 
-  connection = connect()
-  cursor = connection.cursor()
+  connection = None
+  cursor = None
+  exit_code = 0
 
   try:
     print("=== Payment authorization demo ===")
+    connection = connect()
+    cursor = connection.cursor()
     # Recreate the authorization table so the demo starts cleanly every time.
     drop_table(cursor, False)
     create_schema(cursor)
@@ -496,10 +541,26 @@ def run():
     cleanup_expired_authorizations(cursor)
     drop_table(cursor, False)
     print("✓ Completed payment authorization sample operations")
+  except Exception as err:
+    print(f"✗ Sample failed: {err}", file=sys.stderr)
+    exit_code = 1
   finally:
-    cursor.close()
-    connection.close()
+    if cursor is not None:
+      try:
+        cursor.close()
+      except Exception as err:
+        print(f"⚠ Cursor release failed: {err}", file=sys.stderr)
+        exit_code = 1
+    if connection is not None:
+      try:
+        connection.close()
+        print("Connection has been closed")
+      except Exception as err:
+        print(f"⚠ Connection release failed: {err}", file=sys.stderr)
+        exit_code = 1
+
+  return exit_code
 
 
 if __name__ == "__main__":
-  run()
+  sys.exit(run())
