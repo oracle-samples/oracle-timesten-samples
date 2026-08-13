@@ -10,7 +10,7 @@ If you already know the kind of application pattern you want to see, start here 
 
 | Use case | Primary samples | Why start here |
 | :------- | :-------------- | :------------- |
-| AI and live application state | `ChatSessionMemory`, `FeatureStore`, `AiResponseCache` | Shows TimesTen as a fast store for session memory, personalization features, and response cache. |
+| AI and live application state | `ChatSessionMemory`, `AgentWorkflowState`, `FeatureStore`, `AiResponseCache` | Shows TimesTen for active session, agent-workflow, personalization, and response state. |
 | JSON application data | `JsonSample` | Demonstrates JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
 | Real-time financial authorization state | `PaymentAuthorizationState` | Shows TimesTen as a low-latency store for payment authorization decisions, idempotent replay, and hot risk state. |
 | Real-time telecom call routing state | `TelecomCallRoutingState` | Shows TimesTen as a low-latency store for telecom routing decisions, idempotent replay, and hot session state. |
@@ -22,6 +22,7 @@ If you already know the kind of application pattern you want to see, start here 
 | :----- | :--- | :------------- |
 | API session state | [ApiSessions.java](./ApiSessions.java) | Shows a modern application-session pattern: active session storage, request counters, last-seen timestamps, and row cleanup in TimesTen. |
 | AI chat session memory | [ChatSessionMemory.java](./ChatSessionMemory.java) | Shows a short-lived AI context pattern: recent messages, JSON metadata, TTL cleanup, and fast session restoration in TimesTen. |
+| Agent workflow state | [AgentWorkflowState.java](./AgentWorkflowState.java) | Shows current agent runs, simulated tool-call results, retry-safe reuse, JSON state, and TTL cleanup in TimesTen. |
 | Online feature store | [FeatureStore.java](./FeatureStore.java) | Shows a real-time personalization pattern: feature upserts, JSON audit metadata, freshness checks, and fast retrieval in TimesTen. |
 | JSON with JDBC | [JsonSample.java](./JsonSample.java) | Demonstrates a current application pattern: JSON document storage, indexing, update, filtering, and relational projection with `JSON_TABLE`. |
 | AI response cache | [AiResponseCache.java](./AiResponseCache.java) | Shows how TimesTen can keep a fast cache for simulated AI responses, including hit tracking, expiration, and JSON metadata. |
@@ -42,6 +43,7 @@ The remaining samples are still available for users who need specific TimesTen f
 | PL/SQL integration | `plsqlJDBC` | Calls stored procedures, functions, anonymous blocks, and ref cursors. |
 | JSON | `JsonSample` | Current JSON document example using the TimesTen JSON data type and SQL/JSON functions. |
 | AI chat/session memory | `ChatSessionMemory` | Simulated chat memory cache with TTL, message history, and JSON metadata stored in TimesTen as the primary store for active session state. |
+| Agent workflow state | `AgentWorkflowState` | Simulated agent-run and tool-call state with retry-safe result reuse, JSON metadata, and TTL cleanup. |
 | Online feature store | `FeatureStore` | Simulated personalization feature store with TTL, JSON feature values, audit metadata, and low-latency reads in TimesTen. |
 | AI response cache | `AiResponseCache` | Simulated AI response cache with TTL, hit counting, and JSON metadata stored in TimesTen as the primary store for active cache state. |
 | Payment authorization state | `PaymentAuthorizationState` | Simulated payment authorization flow with TTL, idempotent replay, JSON request/decision metadata, and low-latency decisioning in TimesTen. |
@@ -161,7 +163,7 @@ For JMS programs, also include **timesten.jmsxla** in **--enable-native-access**
 
 ### Sample programs instructions and examples
 
-For JDK 25, compile the five new demos as a modular application:
+For JDK 25, compile the six new demos as a modular application:
 
     javac --module-path $TIMESTEN_HOME/install/lib/ttjdbc25.jar -d out *.java
 
@@ -531,6 +533,39 @@ Example:
     java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
       --enable-native-access=timesten.jdbc \
       --module my.jdbc.app.module/jdbc.demo.ChatSessionMemory -u username [-p password]
+
+**AgentWorkflowState**
+
+This sample demonstrates an agent workflow state pattern in TimesTen. It uses
+one table for current agent runs and another for tool calls, then stores plans,
+tool inputs, tool results, and current state in JSON. It reuses a completed
+tool result for a repeated call and rereads that result if concurrent requests
+insert the same tool-call key. The demo uses simulated agent steps and tool
+results so the focus stays on orchestration state and retry handling.
+
+Agent steps, tool calls, and responses are simulated; this sample does not call
+an AI model, agent framework, external tool service, perform vector search, or
+run in-database model inference.
+
+The sample performs the following steps:
+
+  - Creates `agent_runs` and `agent_tool_calls` tables
+  - Creates indexes for tenant/agent summaries, tool calls by run, and expiration cleanup
+  - Seeds one expired agent run and tool call
+  - Starts sample agent runs and records their current state
+  - Completes simulated tool calls and replays a repeated tool call
+  - Rereads the stored tool result if a concurrent request inserts the same key
+  - Stores run plans, tool inputs, and results in JSON
+  - Summarizes active runs and their tool calls
+  - Deletes expired runs and tool calls
+
+Example:
+
+  Run the program using the default DSN (sampledb)
+
+    java --module-path out:$TIMESTEN_HOME/install/lib/ttjdbc25.jar \
+      --enable-native-access=timesten.jdbc \
+      --module my.jdbc.app.module/jdbc.demo.AgentWorkflowState -u username [-p password]
 
 
 **FeatureStore**

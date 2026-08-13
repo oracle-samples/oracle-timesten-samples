@@ -10,7 +10,7 @@ If you already know the kind of application pattern you want to see, start here 
 
 | Use case | Samples | Why start here |
 | :------- | :------ | :------------- |
-| AI and live application state | `aiResponseCache.js`, `chatSessionMemory.js`, `featureStore.js` | Shows TimesTen as a fast store for hot application state, session memory, and personalization features. |
+| AI and live application state | `aiResponseCache.js`, `chatSessionMemory.js`, `agentWorkflowState.js`, `featureStore.js` | Shows TimesTen for active response, session, agent-workflow, and personalization state. |
 | JSON application data | `jsonSample.js` | Demonstrates JSON document storage, indexing, update, and query workflows. |
 | Real-time financial authorization state | `paymentAuthorizationState.js` | Shows TimesTen as a low-latency store for payment authorization decisions, idempotent replay, and hot risk state. |
 | Real-time telecom call routing state | `telecomCallRoutingState.js` | Shows TimesTen as a low-latency store for telecom routing decisions, idempotent replay, and hot session state. |
@@ -60,7 +60,7 @@ Once the samples are downloaded locally, you can change to languages/nodejs subd
 
 ### Passwords for the modern samples
 
-The five modern samples accept `-p` for a quick local run. To avoid placing a
+The six modern samples accept `-p` for a quick local run. To avoid placing a
 password in the command line or shell history, set `TT_PASSWORD` and omit
 `-p` instead:
 
@@ -234,6 +234,62 @@ The sample also prints a session summary that is easier to scan as a table:
 | :----- | :--- | :---- | ----: | :---- | :----- |
 | field_service | user_204 | router-troubleshooting | 1 | technician-assist-v1 | allowed |
 | retail_app | user_001 | order-status | 2 | support-summary-v1 | allowed |
+
+### agentWorkflowState.js
+
+This sample shows how an application can keep current agent-run and tool-call
+state in TimesTen. It starts deterministic agent runs, stores their plan and
+current state in JSON, completes simulated tool calls, reuses a completed tool
+result when the same call is retried, and removes expired state.
+
+> **Note:** Agent steps, tool calls, and responses are simulated; this sample
+> does not call an AI model, agent framework, external tool service, perform
+> vector search, or run in-database model inference.
+
+The sample performs the following steps:
+
+* Creates `agent_runs` and `agent_tool_calls` tables
+* Creates indexes for tenant/agent summaries, tool calls by run, and expiration cleanup
+* Seeds one expired agent run and tool call
+* Starts sample agent runs and records their current state
+* Completes simulated tool calls and replays a repeated tool call
+* Rereads the stored tool result if a concurrent request inserts the same key
+* Stores run plans, tool inputs, and results in JSON
+* Summarizes active runs and their tool calls
+* Deletes expired runs and tool calls
+
+Example output (abbreviated; elapsed times and timestamps vary by environment):
+
+```
+% node agentWorkflowState.js -u username [-p password] [-c <connectionString>]
+=== Agent workflow state demo ===
+
+Connecting to TimesTen
+✓ Connected
+✓ Table agent_runs created
+✓ Table agent_tool_calls created
+✓ Index IDX_AGENT_RUNS_TENANT_AGENT created
+✓ Index IDX_AGENT_RUNS_EXPIRES created
+✓ Index IDX_AGENT_TOOLS_RUN created
+✓ Index IDX_AGENT_TOOLS_EXPIRES created
+✓ Seeded 1 expired agent run and tool call
+→ Agent run started: tenant=retail_app user=user_001 agent=delivery-assist status=RUNNING step=plan_ready elapsed_ms=...
+→ Tool call completed: agent=delivery-assist tool=lookup_order status=COMPLETED elapsed_ms=...
+→ Tool call completed: agent=delivery-assist tool=check_delivery_status status=COMPLETED elapsed_ms=...
+→ Tool call replay: agent=delivery-assist tool=lookup_order status=COMPLETED expires_at=... elapsed_ms=...
+→ Agent run completed: tenant=retail_app agent=delivery-assist status=COMPLETED elapsed_ms=...
+⋯ Active agent runs by tenant/agent/status:
+  tenant=field_service  agent=technician-assist     status=COMPLETED  runs=1
+  tenant=retail_app     agent=delivery-assist       status=COMPLETED  runs=1
+⋯ Tool calls for active runs:
+  run=... tool=lookup_order             status=COMPLETED  completed_at=...
+    input={"orderId":"45012"}
+    result={"orderId":"45012","status":"in_transit","carrier":"NorthStar"}
+✓ Deleted 1 expired agent run and 1 expired tool call
+✓ Table agent_tool_calls dropped
+✓ Table agent_runs dropped
+✓ Completed agent workflow state sample operations
+```
 
 ### featureStore.js
 
