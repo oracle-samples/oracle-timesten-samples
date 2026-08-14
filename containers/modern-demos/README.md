@@ -57,8 +57,8 @@ The default image is pinned to TimesTen 26.1.1.3.0 with JDK 25 on Oracle Linux
 container-registry.oracle.com/timesten/timesten:26.1.1.3.0-java25-oraclelinux9
 ```
 
-It includes the matching `ttjdbc25.jar`, so the Java samples run with the same
-JDK 25 setup used by their standalone instructions.
+It includes the matching `ttjdbc25.jar`. The demo image adds the JDK 25 compiler
+package so the Java samples can be compiled inside the container.
 
 The modern samples require TimesTen 26.1.1.1.0 or later because they use the
 TimesTen `JSON` data type. The default image satisfies that requirement.
