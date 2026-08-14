@@ -1,14 +1,19 @@
-# Run Modern TimesTen Samples in a Container
+# Modern TimesTen Demo Container Setup
 
-This directory provides a quick way to run the modern Python, Node.js, and
-Java samples with TimesTen in a container. It uses an official TimesTen image
-from Oracle Container Registry as the base, but does not include or redistribute
-that image.
+This directory provides a containerized setup for running the modern Python,
+Node.js, and Java samples with TimesTen. It uses an official TimesTen image from
+Oracle Container Registry as the base, but does not include or redistribute that
+image.
 
 The image built here contains TimesTen, language runtimes, and database drivers.
 The sample source is **not** copied into the image. When the container starts,
 your repository checkout is bind-mounted read-only at `/workspace`, so local
 edits are available immediately without rebuilding the image.
+
+This setup is intended for hosts where Podman or Docker can already pull and
+unpack container images correctly. It is not a prebuilt trial image. The scripts
+build a local helper image from the official TimesTen image and then run the
+modern samples inside that container.
 
 ## What this provides
 
@@ -18,7 +23,7 @@ edits are available immediately without rebuilding the image.
 | [container.cfg](./container.cfg) | Holds the default engine, image, container, optional volume, and demo-user names. |
 | [build](./build) | Builds the TimesTen base image and the derived demo image. |
 | [crvolume](./crvolume) | Creates the optional named volume for persistent TimesTen data. |
-| [ttstart](./ttstart) | Starts the prepared TimesTen container and creates the demo account on first use. |
+| [ttstart](./ttstart) | Starts the TimesTen demo container and creates the demo account on first use. |
 | [ttstop](./ttstop) | Stops the container without removing it. |
 | [ttconnect](./ttconnect) | Opens a shell, or runs a command, with the TimesTen environment configured. |
 | [rmcontainer](./rmcontainer) | Removes a stopped container; an optional volume is retained. |
@@ -26,6 +31,8 @@ edits are available immediately without rebuilding the image.
 | [run](./run) | Runs one modern Python, Node.js, or Java sample inside the container. |
 
 The scripts use Podman by default. Set `CONTAINER_ENGINE=docker` to use Docker.
+Docker may be simpler on developer machines where rootless Podman storage is
+restricted by the host environment.
 
 ## Prerequisites
 
@@ -47,6 +54,22 @@ container-registry.oracle.com/timesten/timesten:26.1.1.3.0-java25-oraclelinux9
 
 It includes the matching `ttjdbc25.jar`, so the Java samples run with the same
 JDK 25 setup used by their standalone instructions.
+
+### Podman host storage note
+
+Rootless Podman stores image layers under the user's container storage location.
+If that location is on AFS, NFS, or another distributed file system, image pulls
+or builds can fail while unpacking the TimesTen image. A common symptom is an
+error similar to:
+
+```text
+lsetxattr /afs: operation not supported
+```
+
+This is a host container-storage issue rather than a TimesTen sample issue. Use
+Docker, or configure Podman to use local storage before building the demo image.
+Some rootless Podman setups also require `/etc/subuid` and `/etc/subgid` ranges
+for the user.
 
 ## Build and start
 

@@ -2,7 +2,7 @@
 
 > This guide covers the original persistent Docker container example in this
 > directory. To run the modern Python, Node.js, and Java samples with Podman by
-> default, use the [modern demo container quick start](./modern-demos).
+> default, use the [modern demo container setup](./modern-demos).
 
 ## Pre-requisites
 

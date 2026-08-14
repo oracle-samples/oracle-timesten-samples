@@ -60,8 +60,8 @@ Once the samples are downloaded locally, you can change to languages/nodejs subd
 
 ### Run modern samples in a container
 
-To run the modern Node.js samples in a prepared TimesTen container, see the
-[container quick start](../../containers/modern-demos).
+To run the modern Node.js samples in a local TimesTen container setup, see the
+[modern demo container setup](../../containers/modern-demos).
 
 ### Passwords for the modern samples
 

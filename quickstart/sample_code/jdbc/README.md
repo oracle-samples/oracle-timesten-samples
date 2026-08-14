@@ -171,8 +171,8 @@ The modular commands in their individual sections assume this `out` directory.
 
 ### Run modern samples in a container
 
-To run the modern Java samples in a prepared TimesTen container, see the
-[container quick start](../../../containers/modern-demos).
+To run the modern Java samples in a local TimesTen container setup, see the
+[modern demo container setup](../../../containers/modern-demos).
 
 ### Passwords for the modern samples
 

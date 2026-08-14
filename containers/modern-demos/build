@@ -18,6 +18,43 @@ if ! load_config; then
   exit 1
 fi
 
+warn_for_rootless_podman_storage() {
+  local graph_root
+  local user_name
+
+  if [[ "${CONTAINER_ENGINE}" != "podman" ]]; then
+    return
+  fi
+
+  if [[ "$(id -u)" -eq 0 ]]; then
+    return
+  fi
+
+  user_name=$(id -un)
+
+  if graph_root=$("${CONTAINER_ENGINE}" info --format '{{.Store.GraphRoot}}' 2>/dev/null); then
+    case "${graph_root}" in
+      /afs/*|/nfs/*|/net/*|/home/*)
+        echo "Warning: rootless Podman storage is set to ${graph_root}." >&2
+        echo "If that path is on AFS, NFS, or another distributed file system," >&2
+        echo "pulling or building the TimesTen image can fail while unpacking layers." >&2
+        echo "Use Docker, or configure Podman to use local storage, if this happens." >&2
+        ;;
+    esac
+  fi
+
+  if [[ -r /etc/subuid && -r /etc/subgid ]]; then
+    if ! awk -F: -v user="${user_name}" '$1 == user { found = 1 } END { exit !found }' /etc/subuid ||
+       ! awk -F: -v user="${user_name}" '$1 == user { found = 1 } END { exit !found }' /etc/subgid; then
+      echo "Warning: no subordinate UID/GID range was found for ${user_name}." >&2
+      echo "Some rootless Podman setups need /etc/subuid and /etc/subgid entries" >&2
+      echo "to pull and unpack images correctly." >&2
+    fi
+  fi
+}
+
+warn_for_rootless_podman_storage
+
 echo "Building TimesTen base image: ${BASE_IMAGE}"
 "${CONTAINER_ENGINE}" build \
   --build-arg "BASEIMAGE=${TIMESTEN_IMAGE}" \

@@ -13,7 +13,7 @@ If you are looking for a modern application pattern, start with the use case bel
 | Real-time financial authorization state | [languages/python/paymentAuthorizationState.py](./languages/python/paymentAuthorizationState.py), [languages/nodejs/paymentAuthorizationState.js](./languages/nodejs/paymentAuthorizationState.js), [quickstart/sample_code/jdbc/PaymentAuthorizationState.java](./quickstart/sample_code/jdbc/PaymentAuthorizationState.java) | Shows TimesTen as a low-latency store for payment authorization decisions, idempotent replay, and hot risk state. |
 | Real-time telecom call routing state | [languages/python/telecomCallRoutingState.py](./languages/python/telecomCallRoutingState.py), [languages/nodejs/telecomCallRoutingState.js](./languages/nodejs/telecomCallRoutingState.js), [quickstart/sample_code/jdbc/TelecomCallRoutingState.java](./quickstart/sample_code/jdbc/TelecomCallRoutingState.java) | Shows TimesTen as a low-latency store for telecom routing decisions, idempotent replay, and hot session state. |
 | Core SQL and transactional patterns | [quickstart/sample_code/jdbc](./quickstart/sample_code/jdbc), [languages/python/sql.py](./languages/python/sql.py), [languages/nodejs/sql.js](./languages/nodejs/sql.js) | Good starting points for operational app-state and transaction samples. |
-| Containers and deployment | [modern demo container quick start](./containers/modern-demos), [persistent container example](./containers), [kubernetes](./kubernetes) | Run the modern samples in a prepared container, or explore persistent and Kubernetes deployments. |
+| Containers and deployment | [modern demo container setup](./containers/modern-demos), [persistent container example](./containers), [kubernetes](./kubernetes) | Run the modern samples in a local container setup, or explore persistent and Kubernetes deployments. |
 
 ## Recommended starting points
 
@@ -24,7 +24,7 @@ If you are new to these samples, start with the language and deployment examples
 | Python | [languages/python](./languages/python) | Python samples using the `python-oracledb` driver. |
 | Node.js | [languages/nodejs](./languages/nodejs) | Node.js samples using the `node-oracledb` driver. |
 | Java | [quickstart/sample_code/jdbc](./quickstart/sample_code/jdbc) | Java samples using the TimesTen JDBC driver. |
-| Containers | [modern demo container quick start](./containers/modern-demos) | Run the modern Python, Node.js, and Java samples in a prepared TimesTen container. |
+| Containers | [modern demo container setup](./containers/modern-demos) | Run the modern Python, Node.js, and Java samples in a local TimesTen container setup. |
 | Kubernetes | [kubernetes](./kubernetes) | Deploy TimesTen with the TimesTen Kubernetes Operator. |
 
 ## Repository layout
@@ -33,7 +33,7 @@ If you are new to these samples, start with the language and deployment examples
 | :-------------------------- | :---------------------------------------------- |
 | [languages](./languages) | Open source language samples for Python and Node.js. |
 | [quickstart](./quickstart)  | QuickStart, Scaleout, administration, and API samples. |
-| [containers](./containers) | Persistent TimesTen container example, including the [modern demo quick start](./containers/modern-demos). |
+| [containers](./containers) | Persistent TimesTen container example, including the [modern demo container setup](./containers/modern-demos). |
 | [kubernetes](./kubernetes) | Shows how to use the TimesTen Kubernetes Operator to deploy TimesTen in Kubernetes. |
 
 ## Long-standing and compatibility samples

@@ -2,8 +2,10 @@
 
 This directory has two container paths:
 
-- [modern-demos](./modern-demos) is the quick start for the modern Python,
-  Node.js, and Java samples. It uses Podman by default and also supports Docker.
+- [modern-demos](./modern-demos) is a containerized setup for the modern
+  Python, Node.js, and Java samples. It uses Podman by default and also
+  supports Docker on hosts where the selected container engine is already
+  configured for local image storage.
 - The files in this directory are the original persistent-container example.
   Its scripts invoke Docker directly and show how to extend the official image
   so a database survives container start/stop events.
