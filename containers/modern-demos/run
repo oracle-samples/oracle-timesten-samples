@@ -77,24 +77,27 @@ case "${language}" in
   python)
     exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
       --workdir /workspace/languages/python \
-      "${DEMO_CONTAINER}" /usr/local/bin/remenv /bin/bash -c \
-      'cd /workspace/languages/python
+      "${DEMO_CONTAINER}" /bin/bash -c \
+      'source /ttdb/ttinst/bin/ttenv.sh >/dev/null 2>&1
+       cd /workspace/languages/python
        exec python3 "$0" "$@"' \
       "${sample}" "${sample_options[@]}"
     ;;
   nodejs)
     exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
       --workdir /workspace/languages/nodejs \
-      "${DEMO_CONTAINER}" /usr/local/bin/remenv /bin/bash -c \
-      'cd /workspace/languages/nodejs
+      "${DEMO_CONTAINER}" /bin/bash -c \
+      'source /ttdb/ttinst/bin/ttenv.sh >/dev/null 2>&1
+       cd /workspace/languages/nodejs
        exec node "$0" "$@"' \
       "${sample}" "${sample_options[@]}"
     ;;
   java)
     exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
       --workdir /workspace/quickstart/sample_code/jdbc \
-      "${DEMO_CONTAINER}" /usr/local/bin/remenv /bin/bash -c \
+      "${DEMO_CONTAINER}" /bin/bash -c \
       'set -e
+       source /ttdb/ttinst/bin/ttenv.sh >/dev/null 2>&1
        cd /workspace/quickstart/sample_code/jdbc
        sample_class=$1
        shift

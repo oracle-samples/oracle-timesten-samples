@@ -19,9 +19,10 @@ ARG NPM_REGISTRY=https://registry.npmjs.org/
 USER root
 
 # The TimesTen 26 Java 25 image is based on Oracle Linux 9. The matching
-# ttjdbc25.jar is supplied by TimesTen; the demo image adds javac for the Java
-# samples.
-RUN dnf install -y python3 python3-pip nodejs npm java-25-openjdk-devel \
+# ttjdbc25.jar is supplied by TimesTen; the demo image adds only the runtime
+# packages and Java compiler needed by the samples.
+RUN dnf install -y --setopt=install_weak_deps=False \
+      python3 python3-pip nodejs npm java-25-openjdk-devel \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 

@@ -58,7 +58,8 @@ container-registry.oracle.com/timesten/timesten:26.1.1.3.0-java25-oraclelinux9
 ```
 
 It includes the matching `ttjdbc25.jar`. The demo image adds the JDK 25 compiler
-package so the Java samples can be compiled inside the container.
+package with weak dependencies disabled so the Java samples can be compiled
+inside the container without pulling in optional desktop packages.
 
 The modern samples require TimesTen 26.1.1.1.0 or later because they use the
 TimesTen `JSON` data type. The default image satisfies that requirement.
