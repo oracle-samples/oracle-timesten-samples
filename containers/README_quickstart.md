@@ -1,4 +1,8 @@
-# TimesTen on Docker Quick Start
+# TimesTen Persistent Container Quick Start
+
+> This guide covers the original persistent Docker container example in this
+> directory. To run the modern Python, Node.js, and Java samples with Podman by
+> default, use the [modern demo container quick start](./modern-demos).
 
 ## Pre-requisites
 
@@ -6,11 +10,11 @@
 
 * This package (Dockerfile, associated scripts and content) extracted on the host. From now on we will refer to the top level directory (containers) as ***pkgdir***.
 
-* The ability to login to the [Oracle Container Registry](https://container-registry.oracle.com) and pull images. You will need your login credentials during the image build process. This implies that (a) you have a valid oracle.com login (free to create) and (b) that you have logged into the [Oracle Container Registry](https://container-registry.oracle.com) and accepted the license agreement.
+* The ability to login to the [Oracle Container Registry](https://container-registry.oracle.com) and pull images. You need a valid Oracle account, acceptance of the image license agreement, and an authentication token generated from the profile **Auth Token** menu. Use the token, not the Oracle account password, when prompted for the registry password. See [Generating an Oracle Container Registry authentication token](https://docs.oracle.com/en/operating-systems/oracle-linux/podman/registries.html#registry_ocr_token) for details.
 
 ## Important Note
 
-It is not _required_ to use any of the provided convenience scripts to build the image or run the container. The scripts are provided as a convenience that leverages the central point of configuration (the **container.cfg** file) and they also serve to illustrate the required docker commands for the various functions.
+It is not _required_ to use any of the provided convenience scripts to build the image or run the container. The scripts are provided as a convenience that leverages the central point of configuration (the **container.cfg** file) and they also illustrate the Docker commands used by this workflow.
  
 ## Build configuration
 
@@ -34,7 +38,7 @@ Before starting to build the TimesTen image and container, you need to perform s
         ...
         $
 
-    When prompted, enter your credentials for the Oracle Container Registry (required in order to pull the base image for the container). Wait for the build to complete. It only takes a short time.
+    When prompted, enter your Oracle account name and Oracle Container Registry authentication token (required to pull the base image). Wait for the build to complete. It only takes a short time.
     
 ## Running the container
     

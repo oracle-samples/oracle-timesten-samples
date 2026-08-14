@@ -58,6 +58,11 @@ Node.js sample programs to access TimesTen databases can be downloaded from [Ora
 
 Once the samples are downloaded locally, you can change to languages/nodejs subdirectory and run the samples directly from the local machine.  Descriptions of the sample programs and examples of how to run them are below.
 
+### Run modern samples in a container
+
+To run the modern Node.js samples in a prepared TimesTen container, see the
+[container quick start](../../containers/modern-demos).
+
 ### Passwords for the modern samples
 
 The six modern samples accept `-p` for a quick local run. To avoid placing a

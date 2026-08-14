@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2026 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Remove the persistent volume used by the modern TimesTen demo container.
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=common
+source "${SCRIPT_DIR}/common"
+
+if [[ $# -ne 0 ]]; then
+  echo "Usage: ./rmvolume" >&2
+  exit 1
+fi
+if ! load_config; then
+  exit 1
+fi
+if "${CONTAINER_ENGINE}" container inspect "${DEMO_CONTAINER}" >/dev/null 2>&1; then
+  echo "Remove container '${DEMO_CONTAINER}' with ./rmcontainer before removing its volume." >&2
+  exit 1
+fi
+
+"${CONTAINER_ENGINE}" volume rm "${DEMO_VOLUME}" >/dev/null
+echo "Volume '${DEMO_VOLUME}' removed."

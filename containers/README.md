@@ -1,6 +1,14 @@
-# Oracle TimesTen In-Memory Database on Docker
+# Oracle TimesTen In-Memory Database Container Examples
 
-Sample Dockerfile and support scripts for building a container image to run the Oracle TimesTen In-Memory Database. This sample is based on the official Oracle TimesTen In-Memory Database container images. It shows how you can extend the official image to support a persistent database that survives container start/stop events.
+This directory has two container paths:
+
+- [modern-demos](./modern-demos) is the quick start for the modern Python,
+  Node.js, and Java samples. It uses Podman by default and also supports Docker.
+- The files in this directory are the original persistent-container example.
+  Its scripts invoke Docker directly and show how to extend the official image
+  so a database survives container start/stop events.
+
+Both paths use the official Oracle TimesTen In-Memory Database container images.
 
 | File / folder name            | Description                                     |
 | :-------------------------- | :---------------------------------------------- |
@@ -19,7 +27,7 @@ Sample Dockerfile and support scripts for building a container image to run the 
 | [ttconnect](./ttconnect) | Script to open an interactive session to the running container, or to run a command in the running container. | 
 | [ttlog](./ttlog) | Script to display the logs for the running container. | 
 | [README](./README.md) | This README file. |
-| [README_quickstart](./README_quickstart.md) | README file that takes you step by step through the (simple) process to create and start a TimesTen container. It is recommended that you start by following the process detailed in this file before emarking on any customizations.|
+| [README_quickstart](./README_quickstart.md) | Step-by-step guide for the original persistent Docker container example. |
 | [README_content](./README_content.md) | README file that describes the files in the [content](./content) directory. |
 | [README_build](./README_build.md) | README file that describes the build process and configuration options. | 
 | [README_usage](./README_usage.md) | README file that provides detailed usage information for the container and associated scripts. | 
@@ -30,7 +38,8 @@ Sample Dockerfile and support scripts for building a container image to run the 
 These can be found in the [Oracle Container Registry](https://container-registry.oracle.com).
 
 ## Supported TimesTen Releases
-This Dockerfile extends the official TimesTen docker container image and supports all current flavours of that image.
+The original persistent example extends the official TimesTen Docker image and
+supports the current variants of that image.
 
 ## More information
 You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
@@ -40,4 +49,3 @@ You can find the online documentation for Oracle TimesTen In-Memory Database in 
 
 ## Blogs
 You can find interesting blogs relating to TimesTen on our [blogs channel](https://blogs.oracle.com/timesten)
-

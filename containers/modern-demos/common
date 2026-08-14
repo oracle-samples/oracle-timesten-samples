@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2026 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Shared helpers for the modern TimesTen demo container scripts.
+
+MODERN_DEMOS_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+REPOSITORY_ROOT=$(cd "${MODERN_DEMOS_DIR}/../.." && pwd)
+
+load_config() {
+  # shellcheck source=container.cfg
+  source "${MODERN_DEMOS_DIR}/container.cfg"
+
+  if ! command -v "${CONTAINER_ENGINE}" >/dev/null 2>&1; then
+    echo "Container engine '${CONTAINER_ENGINE}' was not found." >&2
+    echo "Set CONTAINER_ENGINE to podman or docker and try again." >&2
+    return 1
+  fi
+
+  if [[ "${PERSIST_DATA}" != "true" && "${PERSIST_DATA}" != "false" ]]; then
+    echo "PERSIST_DATA must be true or false." >&2
+    return 1
+  fi
+}
+
+uses_persistent_volume() {
+  [[ "${PERSIST_DATA}" == "true" ]]
+}
+
+container_status() {
+  if ! "${CONTAINER_ENGINE}" container inspect "${DEMO_CONTAINER}" >/dev/null 2>&1; then
+    return 1
+  fi
+  "${CONTAINER_ENGINE}" inspect --format '{{.State.Status}}' "${DEMO_CONTAINER}"
+}
+
+require_running_container() {
+  local status
+  if ! status=$(container_status); then
+    echo "Container '${DEMO_CONTAINER}' was not found. Run ./ttstart first." >&2
+    return 1
+  fi
+  if [[ "${status}" != "running" ]]; then
+    echo "Container '${DEMO_CONTAINER}' is not running. Run ./ttstart first." >&2
+    return 1
+  fi
+}

@@ -1,10 +1,14 @@
 # Using the TimesTen container
 
+> This guide describes the original persistent Docker container example in this
+> directory. For the Podman-first modern sample workflow, use the
+> [modern demo container quick start](./modern-demos).
+
 The operation of the container is controlled by parameters specified at both build time and run time. A number of useful scripts can be found in the top level directory of this package. Use of these scripts is recommended until you become familiar with how things work.
 
 ## Important Note
 
-It is not _required_ to use any of the provided convenience scripts to build the image or run the container. The scripts are provided as a convenience that leverages the central point of configuration (the **container.cfg** file) and they also serve to illustrate the required docker commands for the various functions.
+It is not _required_ to use any of the provided convenience scripts to build the image or run the container. The scripts are provided as a convenience that leverages the central point of configuration (the **container.cfg** file) and they also illustrate the Docker commands used by this workflow.
 
 ## Container startup
 
@@ -76,6 +80,4 @@ This will display the docker log for the container. The **--follow** option will
 Once the TimesTen instance and database have been created, they will persist across container shutdown, startup and build operations _provided that you do not run the **rmvolume** script in the meantime._
 
 If you successfully run the **rmvolume** script, the container's persistent storage is deleted. You must re-create the volume (using the **crvolume** script) before you will be able to run the container again. When you do run the container it will start with a new instance and a newly created database.
-
-
 

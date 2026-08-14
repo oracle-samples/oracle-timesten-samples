@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2026 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Build the local images used to run the modern TimesTen demos.
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=common
+source "${SCRIPT_DIR}/common"
+CONTAINERS_DIR=$(cd "${SCRIPT_DIR}/.." && pwd)
+
+if ! load_config; then
+  exit 1
+fi
+
+echo "Building TimesTen base image: ${BASE_IMAGE}"
+"${CONTAINER_ENGINE}" build \
+  --build-arg "BASEIMAGE=${TIMESTEN_IMAGE}" \
+  --tag "${BASE_IMAGE}" \
+  --file "${CONTAINERS_DIR}/Dockerfile" \
+  "${CONTAINERS_DIR}"
+
+echo "Building modern demo image: ${DEMO_IMAGE}"
+"${CONTAINER_ENGINE}" build \
+  --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
+  --tag "${DEMO_IMAGE}" \
+  --file "${SCRIPT_DIR}/Containerfile" \
+  "${REPOSITORY_ROOT}"
+
+echo "Built ${DEMO_IMAGE}. Run ./ttstart."
