@@ -5,7 +5,7 @@
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
 #
-# Start a TimesTen container prepared to run the modern samples.
+# Start a TimesTen container for the modern samples.
 
 set -euo pipefail
 
@@ -90,8 +90,9 @@ if ! "${CONTAINER_ENGINE}" exec "${DEMO_CONTAINER}" test -f "${SETUP_MARKER}"; t
     --env DEMO_USER \
     --env TT_PASSWORD \
     "${DEMO_CONTAINER}" \
-    /usr/local/bin/remenv /bin/bash -lc \
-    'printf '\''CREATE USER %s IDENTIFIED BY "%s";\nGRANT CREATE SESSION, CREATE TABLE TO %s;\nquit;\n'\'' \
+    /bin/bash -c \
+    'source /ttdb/ttinst/bin/ttenv.sh >/dev/null 2>&1
+     printf '\''CREATE USER %s IDENTIFIED BY "%s";\nGRANT CREATE SESSION, CREATE TABLE TO %s;\nquit;\n'\'' \
       "${DEMO_USER}" "${TT_PASSWORD}" "${DEMO_USER}" | ttIsql sampledb'
   "${CONTAINER_ENGINE}" exec "${DEMO_CONTAINER}" touch "${SETUP_MARKER}"
 fi

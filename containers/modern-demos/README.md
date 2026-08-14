@@ -86,23 +86,31 @@ From this directory, log in to Oracle Container Registry with an authentication
 token. The default engine is Podman; export `CONTAINER_ENGINE=docker` first if
 you use Docker.
 
+Minimal flow:
+
 ```bash
+cd containers/modern-demos
 read -r -p 'Oracle Container Registry username: ' OCR_USERNAME
 read -r -s -p 'Oracle Container Registry authentication token: ' OCR_TOKEN
 printf '\n'
 printf '%s' "$OCR_TOKEN" | "${CONTAINER_ENGINE:-podman}" login \
   --username "$OCR_USERNAME" --password-stdin container-registry.oracle.com
 unset OCR_TOKEN
+
+./build
+
+read -r -s -p 'TimesTen demo password: ' TT_PASSWORD
+export TT_PASSWORD
+printf '\n'
+./ttstart
+
+./run python aiResponseCache.py
+./run nodejs chatSessionMemory.js
+./run java AgentWorkflowState
 ```
 
 Generate the token from the OCR profile **Auth Token** menu. For details, see
 [Generating an Oracle Container Registry authentication token](https://docs.oracle.com/en/operating-systems/oracle-linux/podman/registries.html#registry_ocr_token).
-
-Then build the local images:
-
-```bash
-./build
-```
 
 If your environment requires an internal npm registry, set `NPM_REGISTRY`
 before building:
@@ -118,16 +126,6 @@ matching `ttjdbc25.jar`, then set `TIMESTEN_IMAGE` before building:
 ```bash
 export TIMESTEN_IMAGE=container-registry.oracle.com/timesten/timesten:26.1.1.3.0-java25-oraclelinux9
 ./build
-```
-
-Before the first start, set a password without placing it in shell history,
-then start TimesTen:
-
-```bash
-read -r -s -p 'TimesTen demo password: ' TT_PASSWORD
-export TT_PASSWORD
-printf '\n'
-./ttstart
 ```
 
 `ttstart` creates the `demo` user by default and uses the value of `TT_PASSWORD`

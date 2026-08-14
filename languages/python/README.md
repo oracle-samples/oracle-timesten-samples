@@ -37,7 +37,7 @@ MS Windows 64-bit   | 3.12.3+  |2.2.0+    | 26.1.1.1.0+| N/A
 3. A TimesTen database is created and data source is setup to access that database. 
 4. Environment to access Python, python_oracledb driver and TimesTen data source are set up (i.e. the TimesTen environment script ttenv.sh/ttenv.csh/ttquickstartenv.cmd has been executed)
 
-The six modern Python samples require TimesTen 26.1.1.1.0 or later because
+The modern Python samples require TimesTen 26.1.1.1.0 or later because
 they use the TimesTen `JSON` data type.
 
 For more information on setup, see [TimesTen In-Memory Database Open Source Languages Support Guide](https://docs.oracle.com/en/database/other-databases/timesten/26.1/open-source-languages/index.html).
@@ -68,7 +68,7 @@ To run the modern Python samples in a local TimesTen container setup, see the
 
 ### Passwords for the modern samples
 
-The six modern samples accept `-p` for a quick local run. To avoid placing a
+The modern samples accept `-p` for a quick local run. To avoid placing a
 password in the command line or shell history, set `TT_PASSWORD` and omit
 `-p` instead:
 

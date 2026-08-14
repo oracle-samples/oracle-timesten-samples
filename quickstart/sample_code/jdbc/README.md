@@ -163,12 +163,12 @@ For JMS programs, also include **timesten.jmsxla** in **--enable-native-access**
 
 ### Sample programs instructions and examples
 
-For JDK 25, compile the six modern demos as a modular application:
+For JDK 25, compile the modern demos as a modular application:
 
     javac --module-path $TIMESTEN_HOME/install/lib/ttjdbc25.jar -d out *.java
 
 The modular commands in their individual sections assume this `out` directory.
-These six modern demos require TimesTen 26.1.1.1.0 or later because they use
+These modern demos require TimesTen 26.1.1.1.0 or later because they use
 the TimesTen `JSON` data type.
 
 ### Run modern samples in a container
@@ -178,7 +178,7 @@ To run the modern Java samples in a local TimesTen container setup, see the
 
 ### Passwords for the modern samples
 
-The six modern demos accept `-p` for a quick local run. To avoid placing a
+The modern demos accept `-p` for a quick local run. To avoid placing a
 password in the command line or shell history, set `TT_PASSWORD` and omit
 `-p` instead:
 
