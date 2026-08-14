@@ -104,9 +104,13 @@ case "${language}" in
        output_dir=/tmp/timesten-modern-demos-java
        rm -rf "${output_dir}"
        mkdir -p "${output_dir}"
-       javac --module-path "${TIMESTEN_HOME}/install/lib/ttjdbc25.jar" \
+       javac -encoding UTF-8 \
+         --module-path "${TIMESTEN_HOME}/install/lib/ttjdbc25.jar" \
          -d "${output_dir}" *.java
-       exec java --module-path "${output_dir}:${TIMESTEN_HOME}/install/lib/ttjdbc25.jar" \
+       exec java -Dfile.encoding=UTF-8 \
+         -Dsun.stdout.encoding=UTF-8 \
+         -Dsun.stderr.encoding=UTF-8 \
+         --module-path "${output_dir}:${TIMESTEN_HOME}/install/lib/ttjdbc25.jar" \
          --enable-native-access=timesten.jdbc \
          --module my.jdbc.app.module/jdbc.demo."${sample_class}" "$@"' \
       /bin/bash "${sample}" "${sample_options[@]}"
