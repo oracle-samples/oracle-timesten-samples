@@ -33,10 +33,11 @@ COPY containers/content/remenv /usr/local/bin/remenv
 COPY containers/content/init.sql containers/content/sys.odbc.ini /home/timesten/ttinit/
 COPY containers/content/init-tt containers/content/start-tt containers/content/stop-tt /etc/init.d/
 
-# TimesTen 26 images keep /timesten restricted to root. The demo container runs
-# as the timesten user, so it needs execute/read access to the installation
-# directories during startup.
-RUN chmod o+rx /timesten /timesten/installations \
+# TimesTen 26 images keep the installation tree restricted to root. The demo
+# container runs as the timesten user, so startup needs read/execute access to
+# the installed TimesTen binaries.
+RUN chmod o+rx /timesten \
+    && chmod -R a+rX /timesten/installations \
     && chown -R timesten:timesten /ttdb /home/timesten \
     && chmod 644 /home/timesten/.bashrc /home/timesten/.bash_profile \
     && chmod 755 /usr/local/bin/remenv /etc/init.d/init-tt /etc/init.d/start-tt /etc/init.d/stop-tt

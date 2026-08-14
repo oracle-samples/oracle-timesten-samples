@@ -60,6 +60,9 @@ container-registry.oracle.com/timesten/timesten:26.1.1.3.0-java25-oraclelinux9
 It includes the matching `ttjdbc25.jar`, so the Java samples run with the same
 JDK 25 setup used by their standalone instructions.
 
+The modern samples require TimesTen 26.1.1.1.0 or later because they use the
+TimesTen `JSON` data type. The default image satisfies that requirement.
+
 ### Podman host storage note
 
 Rootless Podman stores image layers under the user's container storage location.

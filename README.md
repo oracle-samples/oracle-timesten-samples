@@ -43,6 +43,10 @@ The QuickStart tree remains part of this repository. It includes long-standing s
 ## Supported TimesTen Releases
 In general these samples require a _minimum_ of **TimesTen 22.1.1.1.0** but our recommendation is to always use the most recent release available for your platform. Some specific samples may require a more recent TimesTen release; any such requirement will be detailed in the sample's README file. These samples all work equally well with regular TimesTen or the free TimesTen Express Edition (TimesTen XE).
 
+The modern demos for AI/application state, payment authorization, telecom call
+routing, and agent workflow state require **TimesTen 26.1.1.1.0 or later**
+because they use the TimesTen `JSON` data type.
+
 ## More information
 You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
 
