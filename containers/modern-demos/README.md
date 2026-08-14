@@ -15,11 +15,16 @@ unpack container images correctly. It is not a prebuilt trial image. The scripts
 build a local helper image from the official TimesTen image and then run the
 modern samples inside that container.
 
+The base image definition in this directory is separate from the original
+persistent-container Dockerfile one level up. That keeps the modern demo setup
+scoped to these samples.
+
 ## What this provides
 
 | File | Purpose |
 | :--- | :------ |
-| [Containerfile](./Containerfile) | Adds Python, Node.js, and their database drivers to a local TimesTen base image. |
+| [Containerfile.base](./Containerfile.base) | Builds the TimesTen base used by the modern demo container. |
+| [Containerfile](./Containerfile) | Adds Python, Node.js, and their database drivers to the modern demo base image. |
 | [container.cfg](./container.cfg) | Holds the default engine, image, container, optional volume, and demo-user names. |
 | [build](./build) | Builds the TimesTen base image and the derived demo image. |
 | [crvolume](./crvolume) | Creates the optional named volume for persistent TimesTen data. |

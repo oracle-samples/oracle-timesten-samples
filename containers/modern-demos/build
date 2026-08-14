@@ -12,8 +12,6 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # shellcheck source=common
 source "${SCRIPT_DIR}/common"
-CONTAINERS_DIR=$(cd "${SCRIPT_DIR}/.." && pwd)
-
 if ! load_config; then
   exit 1
 fi
@@ -59,8 +57,8 @@ echo "Building TimesTen base image: ${BASE_IMAGE}"
 "${CONTAINER_ENGINE}" build \
   --build-arg "BASEIMAGE=${TIMESTEN_IMAGE}" \
   --tag "${BASE_IMAGE}" \
-  --file "${CONTAINERS_DIR}/Dockerfile" \
-  "${CONTAINERS_DIR}"
+  --file "${SCRIPT_DIR}/Containerfile.base" \
+  "${REPOSITORY_ROOT}"
 
 echo "Building modern demo image: ${DEMO_IMAGE}"
 "${CONTAINER_ENGINE}" build \
