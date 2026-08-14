@@ -65,6 +65,7 @@ echo "Building TimesTen base image: ${BASE_IMAGE}"
 echo "Building modern demo image: ${DEMO_IMAGE}"
 "${CONTAINER_ENGINE}" build \
   --build-arg "BASE_IMAGE=${BASE_IMAGE}" \
+  --build-arg "NPM_REGISTRY=${NPM_REGISTRY}" \
   --tag "${DEMO_IMAGE}" \
   --file "${SCRIPT_DIR}/Containerfile" \
   "${REPOSITORY_ROOT}"

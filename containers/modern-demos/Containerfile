@@ -14,6 +14,8 @@
 ARG BASE_IMAGE=tt-modern-demos-base
 FROM ${BASE_IMAGE}
 
+ARG NPM_REGISTRY=https://registry.npmjs.org/
+
 USER root
 
 # The TimesTen 26 Java 25 image is based on Oracle Linux 9. Java and the
@@ -25,7 +27,7 @@ RUN dnf install -y python3 python3-pip nodejs npm \
 # Install the database drivers outside the bind-mounted sample checkout. The
 # Node.js runner sets NODE_PATH so the mounted samples can resolve oracledb.
 RUN python3 -m pip install --no-cache-dir oracledb \
-    && npm install --omit=dev --prefix /opt/timesten-modern-demos oracledb
+    && npm install --registry "${NPM_REGISTRY}" --omit=dev --prefix /opt/timesten-modern-demos oracledb
 
 ENV NODE_PATH=/opt/timesten-modern-demos/node_modules
 

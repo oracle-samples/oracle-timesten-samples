@@ -95,6 +95,14 @@ Then build the local images:
 ./build
 ```
 
+If your environment requires an internal npm registry, set `NPM_REGISTRY`
+before building:
+
+```bash
+export NPM_REGISTRY=https://example.internal.registry/
+./build
+```
+
 To use a different TimesTen image, choose one that includes JDK 25 and the
 matching `ttjdbc25.jar`, then set `TIMESTEN_IMAGE` before building:
 
