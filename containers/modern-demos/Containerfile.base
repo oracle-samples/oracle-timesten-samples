@@ -33,10 +33,12 @@ COPY containers/content/remenv /usr/local/bin/remenv
 COPY containers/content/init.sql containers/content/sys.odbc.ini /home/timesten/ttinit/
 COPY containers/content/init-tt containers/content/start-tt containers/content/stop-tt /etc/init.d/
 
-# TimesTen 26 images keep the installation tree restricted to root. The demo
-# container runs as the timesten user, so startup needs read/execute access to
-# the installed TimesTen binaries.
-RUN chmod o+rx /timesten \
+# TimesTen instance creation must be performed by the installation owner. The
+# modern demo container runs as the timesten user, so this scoped base image
+# makes the TimesTen installation tree owned by timesten before startup.
+RUN chown -R timesten:timesten /timesten/installations \
+    && chown -h timesten:timesten /timesten/installation \
+    && chmod o+rx /timesten \
     && chmod -R a+rX /timesten/installations \
     && chown -R timesten:timesten /ttdb /home/timesten \
     && chmod 644 /home/timesten/.bashrc /home/timesten/.bash_profile \
