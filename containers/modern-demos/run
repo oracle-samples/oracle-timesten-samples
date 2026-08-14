@@ -77,20 +77,25 @@ case "${language}" in
   python)
     exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
       --workdir /workspace/languages/python \
-      "${DEMO_CONTAINER}" /usr/local/bin/remenv \
-      python3 "${sample}" "${sample_options[@]}"
+      "${DEMO_CONTAINER}" /usr/local/bin/remenv /bin/bash -lc \
+      'cd /workspace/languages/python
+       exec python3 "$0" "$@"' \
+      "${sample}" "${sample_options[@]}"
     ;;
   nodejs)
     exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
       --workdir /workspace/languages/nodejs \
-      "${DEMO_CONTAINER}" /usr/local/bin/remenv \
-      node "${sample}" "${sample_options[@]}"
+      "${DEMO_CONTAINER}" /usr/local/bin/remenv /bin/bash -lc \
+      'cd /workspace/languages/nodejs
+       exec node "$0" "$@"' \
+      "${sample}" "${sample_options[@]}"
     ;;
   java)
     exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
       --workdir /workspace/quickstart/sample_code/jdbc \
       "${DEMO_CONTAINER}" /usr/local/bin/remenv /bin/bash -lc \
       'set -e
+       cd /workspace/quickstart/sample_code/jdbc
        sample_class=$1
        shift
        output_dir=/tmp/timesten-modern-demos-java
