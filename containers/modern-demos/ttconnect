@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2026 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Open an interactive shell, or run a command, in the modern demo container.
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=common
+source "${SCRIPT_DIR}/common"
+
+if ! load_config || ! require_running_container; then
+  exit 1
+fi
+
+if [[ $# -eq 0 ]]; then
+  exec "${CONTAINER_ENGINE}" exec --interactive --tty \
+    --workdir /workspace \
+    "${DEMO_CONTAINER}" /usr/local/bin/remenv /bin/bash -il
+fi
+
+exec "${CONTAINER_ENGINE}" exec \
+  --workdir /workspace \
+  "${DEMO_CONTAINER}" /usr/local/bin/remenv "$@"

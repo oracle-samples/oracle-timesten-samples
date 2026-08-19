@@ -1,0 +1,51 @@
+#
+# Copyright (c) 2026 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Base image used by the modern TimesTen demo container setup.
+#
+# This keeps the modern demo container independent from the original
+# persistent-container Dockerfile while reusing the same startup scripts.
+#
+
+ARG BASEIMAGE=container-registry.oracle.com/timesten/timesten:26.1.1.3.0-java25-oraclelinux9
+FROM ${BASEIMAGE}
+
+LABEL "provider"="Oracle"          \
+      "volume.data"="/ttdb"        \
+      "port.daemon"="6624"         \
+      "port.server"="6625"         \
+      "port.replication"="3754"
+
+USER root
+
+# Create the init directory and the volume mount point. Remove the pre-defined
+# TimesTen instance so the existing startup scripts can create one under /ttdb.
+RUN mkdir -m 700 /home/timesten/ttinit \
+    && mkdir -m 775 /ttdb \
+    && rm -rf /timesten/instance1
+
+COPY containers/content/bashrc /home/timesten/.bashrc
+COPY containers/content/bash_profile /home/timesten/.bash_profile
+COPY containers/content/remenv /usr/local/bin/remenv
+COPY containers/content/init.sql containers/content/sys.odbc.ini /home/timesten/ttinit/
+COPY containers/content/init-tt containers/content/start-tt containers/content/stop-tt /etc/init.d/
+
+# TimesTen instance creation must be performed by the installation owner. The
+# modern demo container runs as the timesten user, so this scoped base image
+# makes the TimesTen installation tree owned by timesten before startup.
+RUN chown -R timesten:timesten /timesten/installations \
+    && chown -h timesten:timesten /timesten/installation \
+    && chmod o+rx /timesten \
+    && chmod -R a+rX /timesten/installations \
+    && chown -R timesten:timesten /ttdb /home/timesten \
+    && chmod 644 /home/timesten/.bashrc /home/timesten/.bash_profile \
+    && chmod 755 /usr/local/bin/remenv /etc/init.d/init-tt /etc/init.d/start-tt /etc/init.d/stop-tt
+
+EXPOSE 3754 6624 6625
+
+USER timesten
+
+ENTRYPOINT [ "/usr/bin/bash", "-c", "/etc/init.d/init-tt" ]

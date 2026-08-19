@@ -1,57 +1,74 @@
 #
-# Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2019, 2026 Oracle and/or its affiliates. All rights reserved.
 #
 # Licensed under the Universal Permissive License v 1.0 as shown
 # at http://oss.oracle.com/licenses/upl
 #
 #   DESCRIPTION
-#     This sample performs the follwing steps:
-#       - Creates a table 'vpn_users'
-#       - Populates the table (based on 'NUM_RECORDS').
+#     This sample simulates a small application service that keeps active API
+#     session state in TimesTen. Applications often need fast access to this
+#     type of short-lived operational data to route requests, update activity
+#     counters, and remove sessions that are no longer active.
+#
+#     The sample uses an 'api_sessions' table with session identifiers, user
+#     names, service names, regions, request counters, session status, and a
+#     last-seen timestamp. It demonstrates basic SQL operations that are common
+#     in low-latency application state management:
+#       - Creates the 'api_sessions' table
+#       - Populates the table (based on 'NUM_RECORDS')
 #       - Performs a number of SELECTS (based on 'READ_PERCENTAGE')
-#       - Updates a number of records (based on 'UPDATE_PERCENTAGE')
-#       - Deletes a number of records (based on 'UPDATE_PERCENTAGE')
+#       - Updates request counters and last-seen timestamps for active sessions
+#         (based on 'UPDATE_PERCENTAGE')
+#       - Deletes a number of session records (based on 'UPDATE_PERCENTAGE')
 #       - Drops the table
 #
-import oracledb
+import datetime
 import math
+
+import oracledb
+
 import AccessControl
 
 NUM_RECORDS       = 100  # Number of records to insert. (Must have an exact square root)
-READ_PERCENTAGE   = 80    # Percentage of records to perform SELECTS.
-UPDATE_PERCENTAGE = 20    # Percentage of records to perform UPDATES &  DELETES.
+READ_PERCENTAGE   = 80   # Percentage of records to perform SELECTS.
+UPDATE_PERCENTAGE = 20   # Percentage of records to perform UPDATES & DELETES.
 
 # Declare all the statements.
 # Statements will use positional binding (:1,:2) -> [arg1, arg2]
-createStmnt =  """
-      CREATE TABLE vpn_users(
-        vpn_id             TT_INT   NOT NULL,
-        vpn_nb             TT_INT   NOT NULL,
-        directory_nb       CHAR(100)  NOT NULL,
-        last_calling_party CHAR(100)  NOT NULL,
-        descr              CHAR(100) NOT NULL,
-        PRIMARY KEY (vpn_id, vpn_nb)); 
+createStmnt = """
+      CREATE TABLE api_sessions(
+        session_id     TT_INT        NOT NULL PRIMARY KEY,
+        user_name      VARCHAR2(30)  NOT NULL,
+        service_name   VARCHAR2(40)  NOT NULL,
+        region         VARCHAR2(20)  NOT NULL,
+        request_count  TT_INT        NOT NULL,
+        session_status VARCHAR2(12)  NOT NULL,
+        last_seen      TIMESTAMP     NOT NULL);
 """
 
-insertStmnt = "INSERT INTO vpn_users VALUES (:1,:2,:3,:4,:5)"
+insertStmnt = "INSERT INTO api_sessions VALUES (:1,:2,:3,:4,:5,:6,:7)"
 
 selectStmnt = """
-  SELECT directory_nb, last_calling_party, descr FROM vpn_users
-  WHERE vpn_id = :1 AND vpn_nb= :2
+  SELECT user_name, service_name, region, request_count, session_status
+  FROM api_sessions
+  WHERE session_id = :1
 """
 
 updateStmnt = """
-  UPDATE vpn_users SET last_calling_party = :1 
-  WHERE vpn_id = :2 AND vpn_nb = :3 
+  UPDATE api_sessions
+  SET request_count = request_count + 1,
+      session_status = :1,
+      last_seen = :2
+  WHERE session_id = :3
 """
 
-deleteStmnt = "DELETE FROM vpn_users WHERE vpn_id = :1 AND vpn_nb = :2"
+deleteStmnt = "DELETE FROM api_sessions WHERE session_id = :1"
 
-dropStmnt   = "DROP TABLE vpn_users"
+dropStmnt   = "DROP TABLE api_sessions"
 
 # Get connection and cursor.
 def connect():
-  credentials     = AccessControl.getCredentials("sql.py")
+  credentials = AccessControl.getCredentials("sql.py")
   connection = oracledb.connect(user=credentials.user, password=credentials.password, dsn=credentials.connstr)
   # Set autocommit to true.
   connection.autocommit = True
@@ -61,75 +78,78 @@ def connect():
 def createTable(cursor):
   cursor.execute(createStmnt)
   # Check if the table has been created properly.
-  cursor.execute("SELECT COUNT(*) FROM vpn_users")
+  cursor.execute("SELECT COUNT(*) FROM api_sessions")
   count, = cursor.fetchone()
   if count == 0:
-    print ("Table has been created ")
+    print("Table has been created")
 
 # Populate table
 def populateTable(cursor):
   print("Populating table")
-  # Keys are a combination of vpn_id and vpn_nb
-  keyCnt = int(math.sqrt(NUM_RECORDS));
-  # Prepare insert statement 
+  keyCnt = int(math.sqrt(NUM_RECORDS))
+  services = ["orders", "payments", "search", "support"]
+  regions = ["us-east", "us-west", "eu-central", "ap-south"]
+
+  # Prepare insert statement
   cursor.prepare(insertStmnt)
   # Loop to generate the N key combinations
   for i in range(keyCnt):
     for j in range(keyCnt):
-      iD = i
-      nb = j
-      directoryNb         = "dir_"  + str(i) + str(j)
-      lastCallingParty    = "call_" + str(i) + str(j)
-      desc                = "desc_" + str(i) + str(j)
-      
+      sessionId = (i * keyCnt) + j
+      userName = "user_" + str(i) + str(j)
+      serviceName = services[sessionId % len(services)]
+      region = regions[sessionId % len(regions)]
+      requestCount = sessionId % 25
+      sessionStatus = "ACTIVE"
+      lastSeen = datetime.datetime.now()
 
       # As the stmnt is prepared, just call execute with None as args
       cursor.execute(None,
-          [iD, nb, directoryNb, lastCallingParty, desc])
-    
-    print("  Inserted " + str((i + 1)*keyCnt) + " rows")
-  
+          [sessionId, userName, serviceName, region, requestCount, sessionStatus, lastSeen])
+
+    print("  Inserted " + str((i + 1) * keyCnt) + " rows")
+
   # Verify that the rows have been inserted
-  cursor.execute("SELECT COUNT(*) FROM vpn_users")
+  cursor.execute("SELECT COUNT(*) FROM api_sessions")
   count, = cursor.fetchone()
   if count != (keyCnt * keyCnt):
-    print ("Error populating table")
+    print("Error populating table")
 
 # Perform DML operations
 def performDML(cursor, operation):
-  print("Performing " + operation+"s")
-  # Calculate 'numOperations' depending on the proper precentage
-  if operation   == "select":
-    numOperations = int (100 * (float(READ_PERCENTAGE) / float(NUM_RECORDS)))
-  elif operation == "update" or "delete":
-    numOperations = int (100 * (float(UPDATE_PERCENTAGE) / float(NUM_RECORDS)))
- 
+  print("Performing " + operation + "s")
+  # Calculate 'numOperations' depending on the proper percentage
+  if operation == "select":
+    numOperations = int(NUM_RECORDS * (float(READ_PERCENTAGE) / 100))
+  elif operation == "update" or operation == "delete":
+    numOperations = int(NUM_RECORDS * (float(UPDATE_PERCENTAGE) / 100))
+  else:
+    print("Unsupported operation: " + operation)
+    return
+
   operationsPerformed = 0
 
-  # Keys are a combination of vpn_id and vpn_nb
-  keyCnt = int(math.sqrt(NUM_RECORDS));
+  keyCnt = int(math.sqrt(NUM_RECORDS))
   for i in range(keyCnt):
     for j in range(keyCnt):
-      iD = i
-      nb = j
+      sessionId = (i * keyCnt) + j
 
       # Check which operation was requested and execute it
-      if   operation == "select":
-        cursor.execute(selectStmnt, [iD,nb])
+      if operation == "select":
+        cursor.execute(selectStmnt, [sessionId])
       elif operation == "update":
-        lastCallingParty  = "callU_" + str(iD) + str(nb)
-        cursor.execute(updateStmnt, [lastCallingParty,iD, nb])
+        cursor.execute(updateStmnt, ["ACTIVE", datetime.datetime.now(), sessionId])
       elif operation == "delete":
-        cursor.execute(deleteStmnt, [iD, nb])
+        cursor.execute(deleteStmnt, [sessionId])
 
-      if cursor.rowcount != None:
+      if cursor.rowcount is not None:
         operationsPerformed += 1
 
       if operationsPerformed == numOperations:
-        print("  " + operation+"(ed) " + str(operationsPerformed) + " rows")
+        print("  " + operation + "(ed) " + str(operationsPerformed) + " rows")
         return
 
-    print("  " + operation+"(ed) " + str((i + 1)*keyCnt) + " rows")
+    print("  " + operation + "(ed) " + str((i + 1) * keyCnt) + " rows")
 
 
 # Drop table.

@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2026 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Start a TimesTen container for the modern samples.
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=common
+source "${SCRIPT_DIR}/common"
+
+STARTUP_ATTEMPTS=${STARTUP_ATTEMPTS:-24}
+STARTUP_WAIT_SECONDS=${STARTUP_WAIT_SECONDS:-2}
+SETUP_MARKER=/ttdb/.modern-demos-demo-user-created
+
+if [[ $# -ne 0 ]]; then
+  echo "Usage: ./ttstart" >&2
+  exit 1
+fi
+if ! load_config; then
+  exit 1
+fi
+if [[ ! "${DEMO_USER}" =~ ^[[:alpha:]][[:alnum:]_\$#]{0,29}$ ]]; then
+  echo "DEMO_USER must be a valid unquoted TimesTen identifier." >&2
+  exit 1
+fi
+if ! "${CONTAINER_ENGINE}" image inspect "${DEMO_IMAGE}" >/dev/null 2>&1; then
+  echo "Image '${DEMO_IMAGE}' was not found. Run ./build first." >&2
+  exit 1
+fi
+
+if status=$(container_status); then
+  if [[ "${status}" == "running" ]]; then
+    echo "Container '${DEMO_CONTAINER}' is already running."
+  else
+    echo "Starting existing container '${DEMO_CONTAINER}'."
+    "${CONTAINER_ENGINE}" start "${DEMO_CONTAINER}" >/dev/null
+  fi
+else
+  run_options=(run --detach --init
+    --name "${DEMO_CONTAINER}"
+    --hostname "${DEMO_CONTAINER}")
+
+  if uses_persistent_volume; then
+    if ! "${CONTAINER_ENGINE}" volume inspect "${DEMO_VOLUME}" >/dev/null 2>&1; then
+      echo "Volume '${DEMO_VOLUME}' was not found. Run ./crvolume first." >&2
+      exit 1
+    fi
+    run_options+=(--mount "type=volume,source=${DEMO_VOLUME},target=/ttdb")
+  fi
+
+  run_options+=(--mount "type=bind,source=${REPOSITORY_ROOT},target=/workspace,readonly")
+  echo "Starting container '${DEMO_CONTAINER}'."
+  "${CONTAINER_ENGINE}" "${run_options[@]}" "${DEMO_IMAGE}" >/dev/null
+fi
+
+for ((attempt = 1; attempt <= STARTUP_ATTEMPTS; attempt++)); do
+  logs=$("${CONTAINER_ENGINE}" logs "${DEMO_CONTAINER}" 2>&1)
+  if grep -q "info: TTSTART complete" <<<"${logs}"; then
+    break
+  fi
+  if grep -q "info: TTSTART exit" <<<"${logs}"; then
+    echo "TimesTen startup failed:" >&2
+    printf '%s\n' "${logs}" >&2
+    exit 1
+  fi
+  if (( attempt == STARTUP_ATTEMPTS )); then
+    echo "TimesTen did not finish starting in time:" >&2
+    printf '%s\n' "${logs}" >&2
+    exit 1
+  fi
+  sleep "${STARTUP_WAIT_SECONDS}"
+done
+
+if ! "${CONTAINER_ENGINE}" exec "${DEMO_CONTAINER}" test -f "${SETUP_MARKER}"; then
+  if [[ -z "${TT_PASSWORD:-}" ]]; then
+    echo "Set TT_PASSWORD before the first container start." >&2
+    exit 1
+  fi
+  if [[ "${TT_PASSWORD}" == *'"'* || "${TT_PASSWORD}" == *$'\n'* ]]; then
+    echo "TT_PASSWORD cannot contain a double quote or newline." >&2
+    exit 1
+  fi
+  echo "Creating the demo account."
+  "${CONTAINER_ENGINE}" exec \
+    --env DEMO_USER \
+    --env TT_PASSWORD \
+    "${DEMO_CONTAINER}" \
+    /bin/bash -c \
+    'source /ttdb/ttinst/bin/ttenv.sh >/dev/null 2>&1
+     printf '\''CREATE USER %s IDENTIFIED BY "%s";\nGRANT CREATE SESSION, CREATE TABLE TO %s;\nquit;\n'\'' \
+      "${DEMO_USER}" "${TT_PASSWORD}" "${DEMO_USER}" | ttIsql sampledb'
+  "${CONTAINER_ENGINE}" exec "${DEMO_CONTAINER}" touch "${SETUP_MARKER}"
+fi
+
+echo "TimesTen is ready in container '${DEMO_CONTAINER}'."
+echo "Use ./run python aiResponseCache.py, ./run nodejs agentWorkflowState.js,"
+echo "or ./run java AgentWorkflowState."

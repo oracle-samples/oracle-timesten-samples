@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2026 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Stop the modern TimesTen demo container while preserving it and its volume.
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=common
+source "${SCRIPT_DIR}/common"
+
+if [[ $# -ne 0 ]]; then
+  echo "Usage: ./ttstop" >&2
+  exit 1
+fi
+if ! load_config; then
+  exit 1
+fi
+
+if ! status=$(container_status); then
+  echo "Container '${DEMO_CONTAINER}' does not exist."
+  exit 0
+fi
+if [[ "${status}" != "running" ]]; then
+  echo "Container '${DEMO_CONTAINER}' is already stopped."
+  exit 0
+fi
+
+echo "Stopping container '${DEMO_CONTAINER}'."
+"${CONTAINER_ENGINE}" stop "${DEMO_CONTAINER}" >/dev/null
+echo "Container '${DEMO_CONTAINER}' stopped."

@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2026 Oracle and/or its affiliates. All rights reserved.
+#
+# Licensed under the Universal Permissive License v 1.0 as shown
+# at http://oss.oracle.com/licenses/upl
+#
+# Run one modern sample inside the TimesTen demo container.
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=common
+source "${SCRIPT_DIR}/common"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./run <python|nodejs|java> <sample> [sample options]
+
+Examples:
+  ./run python aiResponseCache.py
+  ./run nodejs agentWorkflowState.js
+  ./run java AgentWorkflowState
+
+Supported samples:
+  Python: aiResponseCache.py, chatSessionMemory.py, agentWorkflowState.py,
+          featureStore.py, paymentAuthorizationState.py, telecomCallRoutingState.py
+  Node.js: aiResponseCache.js, chatSessionMemory.js, agentWorkflowState.js,
+           featureStore.js, paymentAuthorizationState.js, telecomCallRoutingState.js
+  Java: AiResponseCache, ChatSessionMemory, AgentWorkflowState, FeatureStore,
+        PaymentAuthorizationState, TelecomCallRoutingState
+EOF
+}
+
+if [[ $# -lt 2 ]]; then
+  usage >&2
+  exit 1
+fi
+
+language=$1
+sample=$2
+shift 2
+
+if ! load_config || ! require_running_container; then
+  exit 1
+fi
+
+case "${language}:${sample}" in
+  python:aiResponseCache.py|python:chatSessionMemory.py|python:agentWorkflowState.py|\
+  python:featureStore.py|python:paymentAuthorizationState.py|python:telecomCallRoutingState.py|\
+  nodejs:aiResponseCache.js|nodejs:chatSessionMemory.js|nodejs:agentWorkflowState.js|\
+  nodejs:featureStore.js|nodejs:paymentAuthorizationState.js|nodejs:telecomCallRoutingState.js|\
+  java:AiResponseCache|java:ChatSessionMemory|java:AgentWorkflowState|java:FeatureStore|\
+  java:PaymentAuthorizationState|java:TelecomCallRoutingState)
+    ;;
+  *)
+    echo "Unsupported modern sample: ${language} ${sample}" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
+exec_options=(exec)
+if [[ -t 0 && -t 1 ]]; then
+  exec_options+=(--interactive --tty)
+fi
+if [[ -n "${TT_PASSWORD:-}" ]]; then
+  exec_options+=(--env TT_PASSWORD)
+fi
+
+# Put the default username first so a user-supplied -u or -user later in the
+# command line takes precedence.
+sample_options=(-u "${DEMO_USER}" "$@")
+
+case "${language}" in
+  python)
+    exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
+      --workdir /workspace/languages/python \
+      "${DEMO_CONTAINER}" /bin/bash -c \
+      'source /ttdb/ttinst/bin/ttenv.sh >/dev/null 2>&1
+       cd /workspace/languages/python
+       exec python3 "$0" "$@"' \
+      "${sample}" "${sample_options[@]}"
+    ;;
+  nodejs)
+    exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
+      --workdir /workspace/languages/nodejs \
+      "${DEMO_CONTAINER}" /bin/bash -c \
+      'source /ttdb/ttinst/bin/ttenv.sh >/dev/null 2>&1
+       cd /workspace/languages/nodejs
+       exec node "$0" "$@"' \
+      "${sample}" "${sample_options[@]}"
+    ;;
+  java)
+    exec "${CONTAINER_ENGINE}" "${exec_options[@]}" \
+      --workdir /workspace/quickstart/sample_code/jdbc \
+      "${DEMO_CONTAINER}" /bin/bash -c \
+      'set -e
+       source /ttdb/ttinst/bin/ttenv.sh >/dev/null 2>&1
+       cd /workspace/quickstart/sample_code/jdbc
+       sample_class=$1
+       shift
+       output_dir=/tmp/timesten-modern-demos-java
+       rm -rf "${output_dir}"
+       mkdir -p "${output_dir}"
+       javac -encoding UTF-8 \
+         --module-path "${TIMESTEN_HOME}/install/lib/ttjdbc25.jar" \
+         -d "${output_dir}" *.java
+       exec java -Dfile.encoding=UTF-8 \
+         -Dsun.stdout.encoding=UTF-8 \
+         -Dsun.stderr.encoding=UTF-8 \
+         --module-path "${output_dir}:${TIMESTEN_HOME}/install/lib/ttjdbc25.jar" \
+         --enable-native-access=timesten.jdbc \
+         --module my.jdbc.app.module/jdbc.demo."${sample_class}" "$@"' \
+      /bin/bash "${sample}" "${sample_options[@]}"
+    ;;
+esac

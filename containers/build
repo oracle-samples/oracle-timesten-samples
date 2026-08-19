@@ -114,7 +114,7 @@ if [[ ${login} -eq 0 ]]
 then
     echo
     echo "info: Logging in to container registry '${DOCKER_REGISTRY}'"
-    echo "info: Please enter your Oracle credentials when prompted"
+    echo "info: Enter your Oracle account name and Container Registry authentication token when prompted"
     if ! docker login "${DOCKER_REGISTRY}"
     then
         echo
