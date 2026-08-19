@@ -32,7 +32,7 @@ If you are new to these samples, start with the language and deployment examples
 | Repo/Folder name            | Description                                     |
 | :-------------------------- | :---------------------------------------------- |
 | [languages](./languages) | Open source language samples for Python and Node.js. |
-| [quickstart](./quickstart)  | QuickStart, Scaleout, administration, and API samples. |
+| [quickstart](./quickstart)  | QuickStart, administration, and API samples. |
 | [containers](./containers) | Persistent TimesTen container example, including the [modern demo container setup](./containers/modern-demos). |
 | [kubernetes](./kubernetes) | Shows how to use the TimesTen Kubernetes Operator to deploy TimesTen in Kubernetes. |
 
@@ -41,11 +41,14 @@ If you are new to these samples, start with the language and deployment examples
 The QuickStart tree remains part of this repository. It includes long-standing samples for JDBC, ODBC, OCI, PL/SQL, TTClasses, ODP.NET, ODPI-C, J2EE/ORM integrations, administration tasks, cache, replication, and performance testing. These samples are useful for existing deployments, compatibility testing, and product-feature coverage even when they are not the first recommended path for new application developers.
 
 ## Supported TimesTen Releases
-In general these samples require a _minimum_ of **TimesTen 22.1.1.1.0** but our recommendation is to always use the most recent release available for your platform. Some specific samples may require a more recent TimesTen release; any such requirement will be detailed in the sample's README file. These samples all work equally well with regular TimesTen or the free TimesTen Express Edition (TimesTen XE).
+We recommend using **TimesTen 26.1.1.1.0 or later**, especially for the modern
+demos for AI/application state, payment authorization, telecom call routing,
+and agent workflow state. These demos use the TimesTen `JSON` data type, which
+requires TimesTen 26.1.1.1.0 or later.
 
-The modern demos for AI/application state, payment authorization, telecom call
-routing, and agent workflow state require **TimesTen 26.1.1.1.0 or later**
-because they use the TimesTen `JSON` data type.
+Some long-standing and compatibility samples can still run with **TimesTen
+22.1.1.1.0 or later**. Any sample that requires a newer release calls that out
+in its README.
 
 ## More information
 You can find more information about the Oracle TimesTen In-Memory Database on our [Product Portal](https://www.oracle.com/database/technologies/related/timesten.html)
